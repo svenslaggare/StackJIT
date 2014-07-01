@@ -22,4 +22,4 @@ The VM supports 8 locals, indexed from 0 to 7.
 ##Platforms##
 Supports Linux x64.
 <br>
-Tested on Linux Mint 16 x64.
+Tested on Linux Mint 16 & 17 64-bits.

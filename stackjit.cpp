@@ -162,7 +162,7 @@ int main(int argc, char* argv[]) {
                         generatedCode.push_back(0xc1);
                         break;
                     case OpCodes::DIV:
-                        //This gives an runtime error, but I don't know why.
+                        //This gives a runtime error, but I don't know why.
                         generatedCode.push_back(0xf7); //idiv ecx
                         generatedCode.push_back(0xf9);
                         break;
