@@ -25,20 +25,13 @@ int main(int argc, char* argv[]) {
     parseTokens(tokens, vmState.CallTable, input);
 
     //Generate the code for the program
-    for (auto current : input) {
-        generateCode(generatedCode, vmState, current);
-    }
-
-    generatedCode.push_back(0x58); //pop eax
-    generatedCode.push_back(0xc3); //ret
+    generatedCode = generateProgram(input, vmState);
 
     unsigned char* code = generatedCode.data();
     int length = generatedCode.size();
 
-    // Allocate writable/executable memory.
-    // Note: real programs should not map memory both writable
-    // and executable because it is a security risk.
-    void *mem = mmap(NULL, length, PROT_WRITE | PROT_EXEC,
+    //Allocate writable/executable memory
+    void *mem = mmap(nullptr, length, PROT_WRITE | PROT_EXEC,
         MAP_ANON | MAP_PRIVATE, -1, 0);
     memcpy(mem, code, length);
 

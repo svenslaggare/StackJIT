@@ -12,10 +12,23 @@ union LongToBytes {
     unsigned char ByteValues[8];
 };
 
-void pushArray(std::vector<unsigned char>& insts, std::vector<unsigned char> ints) {
-    for (auto current : ints) {
+void pushArray(std::vector<unsigned char>& insts, const std::vector<unsigned char>& values) {
+    for (auto current : values) {
         insts.push_back(current);
     }
+}
+
+std::vector<unsigned char> generateProgram(const std::vector<Instruction>& instructions, VMState& vmState) {
+    std::vector<unsigned char> generatedCode;
+
+    for (auto current : instructions) {
+        generateCode(generatedCode, vmState, current);
+    }
+
+    generatedCode.push_back(0x58); //pop eax
+    generatedCode.push_back(0xc3); //ret
+
+    return generatedCode;
 }
 
 void generateCode(std::vector<unsigned char>& generatedCode, VMState& vmState, const Instruction& inst) {
@@ -132,7 +145,7 @@ void generateCode(std::vector<unsigned char>& generatedCode, VMState& vmState, c
             generatedCode.push_back(converter.ByteValues[6]);
             generatedCode.push_back(converter.ByteValues[7]);
 
-            //Set the function argument
+            //Set the function arguments
             if (numArgs >= 4) {
                 generatedCode.push_back(0x59); //pop rcx
             }
