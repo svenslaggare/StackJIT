@@ -1,14 +1,17 @@
 CC=clang++
 CFLAGS=-c -std=c++11
+LDFLAGS=
+SOURCES=stackjit.cpp instructions.cpp parser.cpp standardlibrary.cpp codegenerator.cpp
+OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=stackjit
 
-all: stackjit
+all: $(SOURCES) $(EXECUTABLE)
+	
+$(EXECUTABLE): $(OBJECTS) 
+	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
 
-stackjit: stackjit.o
-	$(CC) stackjit.o -o $(EXECUTABLE)
-
-stackjit.o: stackjit.cpp
-	$(CC) $(CFLAGS) stackjit.cpp
+.cpp.o:
+	$(CC) $(CFLAGS) $< -o $@
 
 clean:
 	rm -rf *o $(EXECUTABLE)
