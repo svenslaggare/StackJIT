@@ -22,7 +22,7 @@ Currently the functions that can be called is hardcoded.
 * `MUL`: Pops the two operands, multiplies them and pushes to the evaluation stack.
 * `LDLOC <local>`: Pushes the given local to the evaluation stack.
 * `STLOC <local>`: Pops the top operand and stores it in the given local.
-* `CALL <name> <numargs>`: Calls the given function with the given amount of arguments.
+* `CALL <name> <numargs>`: Calls the given function with the given amount of arguments. The arguments are popped from the evaluation stack.
 
 ##Platforms##
 Supports Linux x64.

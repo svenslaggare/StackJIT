@@ -259,9 +259,8 @@ int main(int argc, char* argv[]) {
                     LongToBytes converter;
                     converter.LongValue = funcAddr;
 
-                    generatedCode.push_back(0x48); //mov rcx, <addr>
-                    generatedCode.push_back(0xc7);
-                    generatedCode.push_back(0xc1);
+                    generatedCode.push_back(0x48); //mov rax, <addr>
+                    generatedCode.push_back(0xb8);
 
                     generatedCode.push_back(converter.ByteValues[0]);
                     generatedCode.push_back(converter.ByteValues[1]);
@@ -290,8 +289,8 @@ int main(int argc, char* argv[]) {
                     }
 
                     //Make the call
-                    generatedCode.push_back(0xff); //call rcx
-                    generatedCode.push_back(0xd1);
+                    generatedCode.push_back(0xff); //call rax
+                    generatedCode.push_back(0xd0);
 
                     //Push the result
                     generatedCode.push_back(0x50); //push rax
