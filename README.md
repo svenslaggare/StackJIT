@@ -12,6 +12,9 @@ to the stdout.
 ###Locals###
 The VM supports 8 locals, indexed from 0 to 7.
 
+###Function calls###
+Currently the functions that can be called is hardcoded.
+
 ##Instruction set##
 * `PUSH <value>`: Pushes a 32-bits integer to the evaluation stack.
 * `ADD`: Pops the two operands, adds them and pushes to the evaluation stack.
@@ -19,6 +22,7 @@ The VM supports 8 locals, indexed from 0 to 7.
 * `MUL`: Pops the two operands, multiplies them and pushes to the evaluation stack.
 * `LDLOC <local>`: Pushes the given local to the evaluation stack.
 * `STLOC <local>`: Pops the top operand and stores it in the given local.
+* `CALL <name> <numargs>`: Calls the given function with the given amount of arguments.
 
 ##Platforms##
 Supports Linux x64.
