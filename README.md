@@ -3,6 +3,7 @@ StackJIT
 
 A simple JIT compiler for a stack-based VM.
 <br>
+The JIT part is based on a blog entry by [Josh Haberman](http://blog.reverberate.org/2012/12/hello-jit-world-joy-of-simple-jits.html).
 
 ###Execution###
 All programs must always end with _one_ operand on the evaluation stack, which will be printed

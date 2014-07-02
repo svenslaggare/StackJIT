@@ -1,8 +1,9 @@
 #include <iostream>
+#include <vector>
+#include <map>
 #include <string.h>
 #include <sys/mman.h>
-
-#include <vector>
+#include <math.h>
 
 enum OpCodes
 {
@@ -12,12 +13,14 @@ enum OpCodes
     MUL,
     DIV,
     LOAD_LOCAL,
-    STORE_LOCAL
+    STORE_LOCAL, 
+    CALL
 };
 
 struct Instruction {
     OpCodes OpCode;
     int Value;
+    std::string StrValue;
 };
 
 const int NUM_LOCALS = 8;
@@ -59,6 +62,22 @@ Instruction makeStoreLocal(int local) {
     return inst;
 }
 
+Instruction makeCall(std::string funcName, int numArgs) {
+    Instruction inst;
+    inst.StrValue = funcName;
+    inst.Value = numArgs;
+    inst.OpCode = OpCodes::CALL;
+    return inst;
+}
+
+int vm_abs(int x) {
+    if (x < 0) {
+        return -x;
+    } else {
+        return x;
+    }
+}
+
 std::vector<std::string> tokenizeInput() {
     std::vector<std::string> tokens;
     std::string token;
@@ -85,7 +104,7 @@ std::vector<std::string> tokenizeInput() {
     return tokens;
 }
 
-void parseTokens(const std::vector<std::string>& tokens, std::vector<Instruction>& instructions) {
+void parseTokens(const std::vector<std::string>& tokens, std::map<std::string, long>& callTable,std::vector<Instruction>& instructions) {
     for (int i = 0; i < tokens.size(); i++) {
         std::string current = tokens[i];
 
@@ -107,21 +126,35 @@ void parseTokens(const std::vector<std::string>& tokens, std::vector<Instruction
             int local = stoi(tokens[i + 1]);
             instructions.push_back(makeStoreLocal(local));
         }
+
+        if (current == "CALL") {
+            std::string funcName = tokens[i + 1];
+            int numArgs = stoi(tokens[i + 2]);
+
+            instructions.push_back(makeCall(funcName, numArgs));
+        }
+    }
+}
+
+void pushArray(std::vector<unsigned char>& insts, std::vector<unsigned char> ints) {
+    for (auto current : ints) {
+        insts.push_back(current);
     }
 }
 
 int main(int argc, char* argv[]) {
     std::vector<Instruction> input;
     std::vector<unsigned char> generatedCode;
+    std::map<std::string, long> callTable;
+    callTable["ABS"] = (long)(&vm_abs);
+
     int locals[NUM_LOCALS] = {0};
-    locals[0] = 1337;
-    locals[1] = 0;
 
     //Tokenize the input
     auto tokens = tokenizeInput();
 
     //Parse it
-    parseTokens(tokens, input);
+    parseTokens(tokens, callTable, input);
 
     //Generate the code for the program
     for (auto current : input) {
@@ -181,7 +214,7 @@ int main(int argc, char* argv[]) {
                     LongToBytes converter;
                     converter.LongValue = localsAddr;
 
-                    generatedCode.push_back(0xa1); //mov eax, [<int>]
+                    generatedCode.push_back(0xa1); //mov eax, [<mem addr>]
                     generatedCode.push_back(converter.ByteValues[0]);
                     generatedCode.push_back(converter.ByteValues[1]);
                     generatedCode.push_back(converter.ByteValues[2]);
@@ -206,7 +239,7 @@ int main(int argc, char* argv[]) {
                     LongToBytes converter;
                     converter.LongValue = localsAddr;
 
-                    generatedCode.push_back(0xa3); //mov [<int>], eax
+                    generatedCode.push_back(0xa3); //mov [<mem addr>], eax
                     generatedCode.push_back(converter.ByteValues[0]);
                     generatedCode.push_back(converter.ByteValues[1]);
                     generatedCode.push_back(converter.ByteValues[2]);
@@ -215,6 +248,53 @@ int main(int argc, char* argv[]) {
                     generatedCode.push_back(converter.ByteValues[5]);
                     generatedCode.push_back(converter.ByteValues[6]);
                     generatedCode.push_back(converter.ByteValues[7]);
+                }
+                break;
+            case OpCodes::CALL:
+                {
+                    //Get the address of the function to call
+                    long funcAddr = (long)(callTable[current.StrValue]);
+                    int numArgs = current.Value;
+
+                    LongToBytes converter;
+                    converter.LongValue = funcAddr;
+
+                    generatedCode.push_back(0x48); //mov rcx, <addr>
+                    generatedCode.push_back(0xc7);
+                    generatedCode.push_back(0xc1);
+
+                    generatedCode.push_back(converter.ByteValues[0]);
+                    generatedCode.push_back(converter.ByteValues[1]);
+                    generatedCode.push_back(converter.ByteValues[2]);
+                    generatedCode.push_back(converter.ByteValues[3]);
+                    generatedCode.push_back(converter.ByteValues[4]);
+                    generatedCode.push_back(converter.ByteValues[5]);
+                    generatedCode.push_back(converter.ByteValues[6]);
+                    generatedCode.push_back(converter.ByteValues[7]);
+
+                    //Set the function argument
+                    if (numArgs >= 1) {
+                        generatedCode.push_back(0x5f); //pop rdi
+                    }
+
+                    if (numArgs >= 2) {
+                        generatedCode.push_back(0x5e); //pop rsi
+                    }
+
+                    if (numArgs >= 3) {
+                        generatedCode.push_back(0x5a); //pop rdx
+                    }
+
+                    if (numArgs >= 4) {
+                        generatedCode.push_back(0x59); //pop rcx
+                    }
+
+                    //Make the call
+                    generatedCode.push_back(0xff); //call rcx
+                    generatedCode.push_back(0xd1);
+
+                    //Push the result
+                    generatedCode.push_back(0x50); //push rax
                 }
                 break;
             default:
