@@ -17,9 +17,9 @@ Currently the functions that can be called is hardcoded.
 
 ##Instruction set##
 * `PUSH <value>`: Pushes a 32-bits integer to the evaluation stack.
-* `ADD`: Pops the two operands, adds them and pushes to the evaluation stack.
-* `SUB`: Pops the two operands, subtracts the second one from the one and pushes to the evaluation stack.
-* `MUL`: Pops the two operands, multiplies them and pushes to the evaluation stack.
+* `ADD`: Pops the two operands, adds them and pushes the result to the evaluation stack.
+* `SUB`: Pops the two operands, subtracts the second one from the one and pushes the result to the evaluation stack.
+* `MUL`: Pops the two operands, multiplies them and pushes the result to the evaluation stack.
 * `LDLOC <local>`: Pushes the given local to the evaluation stack.
 * `STLOC <local>`: Pops the top operand and stores it in the given local.
 * `CALL <name> <numargs>`: Calls the given function with the given amount of arguments. The arguments are popped from the evaluation stack.
