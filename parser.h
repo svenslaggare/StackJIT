@@ -7,7 +7,6 @@ struct Instruction;
 
 struct Program {
     std::map<std::string, std::vector<Instruction>*> Functions;
-    std::map<std::string, long> CallTable;
 };
 
 std::vector<std::string> tokenizeInput();

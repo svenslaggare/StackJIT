@@ -15,6 +15,16 @@ The VM supports 8 locals, indexed from 0 to 7.
 ###Function calls###
 Currently the functions that can be called is hardcoded.
 
+###Functions###
+Functions can be defined using the following syntax:
+```
+func <name>
+<function body>
+endfunc
+```
+There is no "return" instruction atm, but all functions but end with _one_
+operand at the evaluation stack.
+
 ##Instruction set##
 * `PUSH <value>`: Pushes a 32-bits integer to the evaluation stack.
 * `ADD`: Pops the two operands, adds them and pushes the result to the evaluation stack.

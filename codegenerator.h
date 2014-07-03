@@ -1,14 +1,23 @@
 #pragma once
 #include <vector>
+#include <map>
 
 struct VMState;
 struct Instruction;
 struct Program;
 
 typedef int (*JitFunction)();
+typedef std::pair<std::string, unsigned int> FunctionCall;
+
+struct Function {
+	std::string Name;
+	std::map<FunctionCall, std::string> CallTable;
+	std::vector<Instruction> Instructions;
+	std::vector<unsigned char> GeneratedCode;
+};
 
 JitFunction generateProgram(Program& program, VMState& vmState);
 
-JitFunction generateFunction(const std::vector<Instruction>& instructions, VMState& vmState);
+JitFunction generateFunction(Function& function, VMState& vmState);
 
-void generateCode(std::vector<unsigned char>& generatedCode, VMState& vmState, const Instruction& inst);
+void generateCode(Function& function, VMState& vmState, const Instruction& inst);

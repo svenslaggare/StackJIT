@@ -7,5 +7,5 @@ const bool ENABLE_DEBUG = true;
 
 struct VMState {
     int Locals[NUM_LOCALS] = {0};
-    std::map<std::string, long> CallTable;
+    std::map<std::string, long> FunctionTable;
 };

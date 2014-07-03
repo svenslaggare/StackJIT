@@ -21,7 +21,7 @@ int vm_println(int x) {
 }
 
 int vm_rand() {
-	return 4;
+	return 1337;
 }
 
 void addStandardLibrary(std::map<std::string, long>& callTable) {

@@ -1,6 +1,7 @@
-func _rand
+func rand
 PUSH 4
 endfunc
-CALL _rand 0
+
+CALL rand 0
 PUSH 2
 ADD

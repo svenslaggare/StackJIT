@@ -15,8 +15,6 @@ int main(int argc, char* argv[]) {
 
     addStandardLibrary(vmState.CallTable);
 
-    program.CallTable = vmState.CallTable;
-
     //Tokenize the input
     auto tokens = tokenizeInput();
 

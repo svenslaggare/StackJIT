@@ -6,6 +6,7 @@
 #include "stackjit.h"
 #include "instructions.h"
 #include "parser.h"
+#include "standardlibrary.h"
 
 union IntToBytes {
     int IntValue;
@@ -24,30 +25,57 @@ void pushArray(std::vector<unsigned char>& insts, const std::vector<unsigned cha
 }
 
 JitFunction generateProgram(Program& program, VMState& vmState) {
+    std::map<FunctionCall, std::string> callTable;
+
     //Generate code for all functions
     for (auto func : program.Functions) {
-        auto funcPtr = generateFunction(*func.second, vmState);
+        Function newFunc;
+        newFunc.Name = func.first;
+        newFunc.Instructions = *func.second;
+
+        auto funcPtr = generateFunction(newFunc, vmState);
 
         if (ENABLE_DEBUG) {
             std::cout << "Defined function '" << func.first << "' at " << (long)funcPtr << std::endl;
         }
 
-        program.CallTable[func.first] = (long)funcPtr;
-        vmState.CallTable[func.first] = (long)funcPtr;
+        for (auto call : newFunc.CallTable) {
+            callTable[call.first] = call.second;
+        }
+
+        vmState.FunctionTable[func.first] = (long)funcPtr;
+    }
+
+    //Fix unresolved calls
+    for (auto call : callTable) {
+        auto funcName = call.first.first;
+        auto offset = call.first.second;
+        auto calledFunc = call.second;
+        long calledFuncAddr = vmState.FunctionTable[calledFunc];
+
+        unsigned char* funcCode = (unsigned char*)vmState.FunctionTable[funcName];
+
+        LongToBytes converter;
+        converter.LongValue = calledFuncAddr;
+
+        int base = offset + 2;
+        for (int i = 0; i < 8; i++) {
+            funcCode[base + i] = converter.ByteValues[i];
+        }
     }
 
     //Return the main func as entry point
-    return (JitFunction)program.CallTable["main"];
+    return (JitFunction)vmState.FunctionTable["main"];
 }
 
-JitFunction generateFunction(const std::vector<Instruction>& instructions, VMState& vmState) {
-    //Generate the code for the program
-    std::vector<unsigned char> generatedCode;
-
-    for (auto current : instructions) {
-        generateCode(generatedCode, vmState, current);
+JitFunction generateFunction(Function& function, VMState& vmState) {
+    for (auto current : function.Instructions) {
+        generateCode(function, vmState, current);
     }
 
+    auto generatedCode = function.GeneratedCode;
+
+    //The return instruction
     generatedCode.push_back(0x58); //pop eax
     generatedCode.push_back(0xc3); //ret
 
@@ -63,7 +91,9 @@ JitFunction generateFunction(const std::vector<Instruction>& instructions, VMSta
     return (int (*)())mem;
 }
 
-void generateCode(std::vector<unsigned char>& generatedCode, VMState& vmState, const Instruction& inst) {
+void generateCode(Function& function, VMState& vmState, const Instruction& inst) {
+    std::vector<unsigned char>& generatedCode = function.GeneratedCode;
+
     switch (inst.OpCode) {
     case OpCodes::PUSH_INT:
         //An operand, push the value
@@ -159,11 +189,17 @@ void generateCode(std::vector<unsigned char>& generatedCode, VMState& vmState, c
     case OpCodes::CALL:
         {
             //Get the address of the function to call
-            long funcAddr = vmState.CallTable[inst.StrValue];
+            long funcAddr = vmState.FunctionTable[inst.StrValue];
             int numArgs = inst.Value;
 
             if (ENABLE_DEBUG) {
                 std::cout << "Calling '" << inst.StrValue + "' at " << funcAddr << std::endl;
+            }
+
+            //Check if the function is defined yet
+            if (funcAddr == 0) {
+                //Mark that the function call needed to be patched with the address later
+                function.CallTable[make_pair(function.Name, generatedCode.size())] = inst.StrValue;
             }
 
             LongToBytes converter;
