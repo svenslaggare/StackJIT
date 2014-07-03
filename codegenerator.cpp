@@ -2,6 +2,9 @@
 #include "stackjit.h"
 #include "instructions.h"
 
+#include <sys/mman.h>
+#include <string.h>
+
 union IntToBytes {
     int IntValue;
     unsigned char ByteValues[4];
@@ -18,7 +21,8 @@ void pushArray(std::vector<unsigned char>& insts, const std::vector<unsigned cha
     }
 }
 
-std::vector<unsigned char> generateProgram(const std::vector<Instruction>& instructions, VMState& vmState) {
+JitFunction generateFunction(const std::vector<Instruction>& instructions, VMState& vmState) {
+    //Generate the code for the program
     std::vector<unsigned char> generatedCode;
 
     for (auto current : instructions) {
@@ -28,7 +32,16 @@ std::vector<unsigned char> generateProgram(const std::vector<Instruction>& instr
     generatedCode.push_back(0x58); //pop eax
     generatedCode.push_back(0xc3); //ret
 
-    return generatedCode;
+    unsigned char* code = generatedCode.data();
+    int length = generatedCode.size();
+
+    //Allocate writable/executable memory
+    void *mem = mmap(nullptr, length, PROT_WRITE | PROT_EXEC,
+        MAP_ANON | MAP_PRIVATE, -1, 0);
+    memcpy(mem, code, length);
+
+    //Return the generated code as a function pointer
+    return (int (*)())mem;
 }
 
 void generateCode(std::vector<unsigned char>& generatedCode, VMState& vmState, const Instruction& inst) {

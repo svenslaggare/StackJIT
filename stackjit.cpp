@@ -24,19 +24,8 @@ int main(int argc, char* argv[]) {
     //Parse it
     parseTokens(tokens, vmState.CallTable, input);
 
-    //Generate the code for the program
-    generatedCode = generateProgram(input, vmState);
-
-    unsigned char* code = generatedCode.data();
-    int length = generatedCode.size();
-
-    //Allocate writable/executable memory
-    void *mem = mmap(nullptr, length, PROT_WRITE | PROT_EXEC,
-        MAP_ANON | MAP_PRIVATE, -1, 0);
-    memcpy(mem, code, length);
-
-    //Convert the generated code to a function pointer
-    int (*program)() = (int (*)())mem;
+    //Generate a function for the instructions
+    int (*program)() = generateFunction(input, vmState);
 
     //Execute the program
     if (enableDebug) {
