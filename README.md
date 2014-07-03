@@ -22,8 +22,8 @@ func <name>
 <function body>
 endfunc
 ```
-There is no "return" instruction atm, but all functions but end with _one_
-operand at the evaluation stack.
+There is no "return" instruction atm, but all functions must end with _one_
+operand at the evaluation stack which will be the return value.
 
 ##Instruction set##
 * `PUSH <value>`: Pushes a 32-bits integer to the evaluation stack.

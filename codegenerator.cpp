@@ -51,16 +51,21 @@ JitFunction generateProgram(Program& program, VMState& vmState) {
         auto funcName = call.first.first;
         auto offset = call.first.second;
         auto calledFunc = call.second;
-        long calledFuncAddr = vmState.FunctionTable[calledFunc];
 
-        unsigned char* funcCode = (unsigned char*)vmState.FunctionTable[funcName];
+        //Check if defined
+        if (vmState.FunctionTable.count(calledFunc) > 0) {
+            long calledFuncAddr = vmState.FunctionTable[calledFunc];
+            unsigned char* funcCode = (unsigned char*)vmState.FunctionTable[funcName];
 
-        LongToBytes converter;
-        converter.LongValue = calledFuncAddr;
+            LongToBytes converter;
+            converter.LongValue = calledFuncAddr;
 
-        int base = offset + 2;
-        for (int i = 0; i < 8; i++) {
-            funcCode[base + i] = converter.ByteValues[i];
+            int base = offset + 2;
+            for (int i = 0; i < 8; i++) {
+                funcCode[base + i] = converter.ByteValues[i];
+            }
+        } else {
+            throw std::string("Function '" + calledFunc + "' not found.");
         }
     }
 
@@ -189,17 +194,20 @@ void generateCode(Function& function, VMState& vmState, const Instruction& inst)
     case OpCodes::CALL:
         {
             //Get the address of the function to call
-            long funcAddr = vmState.FunctionTable[inst.StrValue];
+            long funcAddr = 0;
+
+            //Check if the function is defined yet
+            if (vmState.FunctionTable.count(inst.StrValue) > 0) {
+                funcAddr = vmState.FunctionTable[inst.StrValue];
+            } else {
+                //Mark that the function call needed to be patched with the address later
+                function.CallTable[make_pair(function.Name, generatedCode.size())] = inst.StrValue;
+            }
+
             int numArgs = inst.Value;
 
             if (ENABLE_DEBUG) {
                 std::cout << "Calling '" << inst.StrValue + "' at " << funcAddr << std::endl;
-            }
-
-            //Check if the function is defined yet
-            if (funcAddr == 0) {
-                //Mark that the function call needed to be patched with the address later
-                function.CallTable[make_pair(function.Name, generatedCode.size())] = inst.StrValue;
             }
 
             LongToBytes converter;
