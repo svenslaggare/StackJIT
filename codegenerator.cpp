@@ -1,9 +1,11 @@
+#include <sys/mman.h>
+#include <string.h>
+#include <iostream>
+
 #include "codegenerator.h"
 #include "stackjit.h"
 #include "instructions.h"
-
-#include <sys/mman.h>
-#include <string.h>
+#include "parser.h"
 
 union IntToBytes {
     int IntValue;
@@ -19,6 +21,23 @@ void pushArray(std::vector<unsigned char>& insts, const std::vector<unsigned cha
     for (auto current : values) {
         insts.push_back(current);
     }
+}
+
+JitFunction generateProgram(Program& program, VMState& vmState) {
+    //Generate code for all functions
+    for (auto func : program.Functions) {
+        auto funcPtr = generateFunction(*func.second, vmState);
+
+        if (ENABLE_DEBUG) {
+            std::cout << "Defined function '" << func.first << "' at " << (long)funcPtr << std::endl;
+        }
+
+        program.CallTable[func.first] = (long)funcPtr;
+        vmState.CallTable[func.first] = (long)funcPtr;
+    }
+
+    //Return the main func as entry point
+    return (JitFunction)program.CallTable["main"];
 }
 
 JitFunction generateFunction(const std::vector<Instruction>& instructions, VMState& vmState) {
@@ -142,6 +161,10 @@ void generateCode(std::vector<unsigned char>& generatedCode, VMState& vmState, c
             //Get the address of the function to call
             long funcAddr = vmState.CallTable[inst.StrValue];
             int numArgs = inst.Value;
+
+            if (ENABLE_DEBUG) {
+                std::cout << "Calling '" << inst.StrValue + "' at " << funcAddr << std::endl;
+            }
 
             LongToBytes converter;
             converter.LongValue = funcAddr;

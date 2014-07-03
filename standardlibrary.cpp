@@ -1,5 +1,6 @@
-#include "standardlibrary.h"
 #include <iostream>
+
+#include "standardlibrary.h"
 
 int vm_abs(int x) {
     if (x < 0) {
@@ -19,8 +20,13 @@ int vm_println(int x) {
 	return 0;
 }
 
+int vm_rand() {
+	return 4;
+}
+
 void addStandardLibrary(std::map<std::string, long>& callTable) {
 	callTable["abs"] = (long)(&vm_abs);
 	callTable["print"] = (long)(&vm_print);
 	callTable["println"] = (long)(&vm_println);
+	//callTable["rand"] = (long)(&vm_rand);
 }

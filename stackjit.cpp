@@ -9,38 +9,41 @@
 #include "standardlibrary.h"
 #include "codegenerator.h"
 
-bool enableDebug = true;
-
 int main(int argc, char* argv[]) {
-    std::vector<Instruction> input;
-    std::vector<unsigned char> generatedCode;
-
     VMState vmState;
+    Program program;
+
     addStandardLibrary(vmState.CallTable);
+
+    program.CallTable = vmState.CallTable;
 
     //Tokenize the input
     auto tokens = tokenizeInput();
 
     //Parse it
-    parseTokens(tokens, vmState.CallTable, input);
+    parseTokens(tokens, program);
 
     //Generate a function for the instructions
-    int (*program)() = generateFunction(input, vmState);
+    int (*programPtr)() = generateProgram(program, vmState);
 
     //Execute the program
-    if (enableDebug) {
+    if (ENABLE_DEBUG) {
         std::cout << "Program output: " << std::endl;
     }
 
-    std::cout << program() << std::endl;
+    std::cout << programPtr() << std::endl;
 
-    if (enableDebug) {
+    if (ENABLE_DEBUG) {
         std::cout << std::endl;
         std::cout << "Locals: " << std::endl;
 
         for (int i = 0; i < NUM_LOCALS; i++) {
             std::cout << i << ": " << vmState.Locals[i] << std::endl;
         }
+    }
+
+    for (auto func : program.Functions) {
+        delete func.second;
     }
 
     return 0;
