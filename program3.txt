@@ -1,11 +1,12 @@
-func int_add 2
+func int_add 3
 LDARG 0
 LDARG 1
+ADD
+LDARG 2
 ADD
 endfunc
 
 PUSH 3
 PUSH 6
-CALL int_add 2
-PUSH 12
-CALL int_add 2
+PUSH 5
+CALL int_add 3

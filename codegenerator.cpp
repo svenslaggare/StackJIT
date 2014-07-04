@@ -119,6 +119,7 @@ JitFunction CodeGenerator::generateFunction(Function& function, const VMState& v
     }
 
     // pushArray(function.GeneratedCode, { 0x48, 0x89, 0xEC }); //mov rsp, rbp
+
     //Restore the base pointer
     function.GeneratedCode.push_back(0x5d); //pop rbp
 
