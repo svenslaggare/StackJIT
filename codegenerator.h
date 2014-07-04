@@ -11,13 +11,16 @@ typedef std::pair<std::string, unsigned int> FunctionCall;
 
 struct Function {
 	std::string Name;
+	int NumArgs;
 	std::map<FunctionCall, std::string> CallTable;
 	std::vector<Instruction> Instructions;
 	std::vector<unsigned char> GeneratedCode;
 };
 
-JitFunction generateProgram(Program& program, VMState& vmState);
+namespace CodeGenerator {
+	JitFunction generateProgram(Program& program, VMState& vmState);
 
-JitFunction generateFunction(Function& function, VMState& vmState);
+	JitFunction generateFunction(Function& function, VMState& vmState);
 
-void generateCode(Function& function, VMState& vmState, const Instruction& inst);
+	void generateCode(Function& function, VMState& vmState, const Instruction& inst);
+}

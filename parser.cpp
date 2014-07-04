@@ -5,7 +5,7 @@
 #include "parser.h"
 #include "instructions.h"
 
-std::vector<std::string> tokenizeInput() {
+std::vector<std::string> Parser::tokenizeInput() {
     std::vector<std::string> tokens;
     std::string token;
 
@@ -42,9 +42,11 @@ std::string toLower(std::string str) {
     return newStr;
 }
 
-void parseTokens(const std::vector<std::string>& tokens, Program& program) {
+void Parser::parseTokens(const std::vector<std::string>& tokens, Program& program) {
     bool isFunc = false;
     std::string funcName = "";
+    int funcArgs = 0;
+
     std::vector<Instruction>* mainInstructions = new std::vector<Instruction>();
     std::vector<Instruction>* instructions = mainInstructions;
 
@@ -84,28 +86,38 @@ void parseTokens(const std::vector<std::string>& tokens, Program& program) {
             int numArgs = stoi(tokens[i + 2]);
 
             instructions->push_back(makeCall(funcName, numArgs));
-            // if (program.CallTable.count(funcName) > 0) {
-            //     instructions->push_back(makeCall(funcName, numArgs));
-            // } else {
-            //     throw std::string("Function '" + funcName + "' not found.");
-            // }
+        }
+
+        if (currentToLower == "ldarg") {
+            int argNum = stoi(tokens[i + 1]);
+            instructions->push_back(makeLoadArg(argNum));
         }
 
         if (!isFunc) {
             if (currentToLower == "func") {
                 isFunc = true;
                 funcName = tokens[i + 1];
+                funcArgs = stoi(tokens[i + 2]);
+
                 instructions = new std::vector<Instruction>();
             }
         } else {
             if (currentToLower == "endfunc") {
                 isFunc = false;
-                program.Functions[funcName] = instructions;
+
+                DefinedFunction newFunc;
+                newFunc.NumArgs = funcArgs;
+                newFunc.Instructions = instructions;
+
+                program.Functions[funcName] = newFunc;
                 instructions = mainInstructions;
                 //std::cout << "Defined function: " << funcName << std::endl;
             }
         }
     }
 
-    program.Functions["main"] = mainInstructions;
+    DefinedFunction mainFunc;
+    mainFunc.NumArgs = 0;
+    mainFunc.Instructions = mainInstructions;
+    program.Functions["main"] = mainFunc;
 }

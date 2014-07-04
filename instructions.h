@@ -10,7 +10,8 @@ enum OpCodes
     DIV,
     LOAD_LOCAL,
     STORE_LOCAL, 
-    CALL
+    CALL,
+    LOAD_ARG
 };
 
 struct Instruction {
@@ -24,3 +25,4 @@ Instruction makePushInt(int value);
 Instruction makeLoadLocal(int local);
 Instruction makeStoreLocal(int local);
 Instruction makeCall(std::string funcName, int numArgs);
+Instruction makeLoadArg(int argNum);

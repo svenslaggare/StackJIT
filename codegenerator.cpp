@@ -24,14 +24,15 @@ void pushArray(std::vector<unsigned char>& insts, const std::vector<unsigned cha
     }
 }
 
-JitFunction generateProgram(Program& program, VMState& vmState) {
+JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
     std::map<FunctionCall, std::string> callTable;
 
     //Generate code for all functions
     for (auto func : program.Functions) {
         Function newFunc;
         newFunc.Name = func.first;
-        newFunc.Instructions = *func.second;
+        newFunc.NumArgs = func.second.NumArgs;
+        newFunc.Instructions = *func.second.Instructions;
 
         auto funcPtr = generateFunction(newFunc, vmState);
 
@@ -73,15 +74,58 @@ JitFunction generateProgram(Program& program, VMState& vmState) {
     return (JitFunction)vmState.FunctionTable["main"];
 }
 
-JitFunction generateFunction(Function& function, VMState& vmState) {
+JitFunction CodeGenerator::generateFunction(Function& function, VMState& vmState) {
+    //Save the base pointer
+    function.GeneratedCode.push_back(0x55); //push rbp
+    pushArray(function.GeneratedCode, { 0x48, 0x89, 0xE5 }); //mov rbp, rsp
+
+    std::vector<unsigned char> argRegs { 0x57, 0x56, 0x52, 0x51 }; //rdi, rsi, rdx, rcx 
+
+    //Move function arguments from registers to stack
+    if (function.NumArgs > 0) {
+        //Make room for the arguments on the stack
+        unsigned char argsSize = (unsigned char)(function.NumArgs * 4);
+        pushArray(function.GeneratedCode, { 0x48, 0x83, 0xec, argsSize }); //sub rsp, <size of args>
+
+        //Move the arguments from the registers to the stack
+        if (function.NumArgs >= 4) {
+            pushArray(function.GeneratedCode, { 0x48, 0x89, 0x4D, 0xF0 }); //mov [rbp-16], rcx
+        }
+
+        if (function.NumArgs >= 3) {
+            pushArray(function.GeneratedCode, { 0x48, 0x89, 0x55, 0xF4 }); //mov [rbp-12], rdx
+        }
+
+        if (function.NumArgs >= 2) {
+            pushArray(function.GeneratedCode, { 0x48, 0x89, 0x75, 0xF8 }); //mov [rbp-8], rsi
+        }
+
+        if (function.NumArgs >= 1) {
+            pushArray(function.GeneratedCode, { 0x48, 0x89, 0x7D, 0xFC }); //mov [rbp-4], rdi
+        }
+    }
+
+    //Generate the code for the program
     for (auto current : function.Instructions) {
         generateCode(function, vmState, current);
     }
 
     auto generatedCode = function.GeneratedCode;
 
-    //The return instruction
+    //Pop the return value
     generatedCode.push_back(0x58); //pop eax
+
+    //Pop the function arguments
+    if (function.NumArgs > 0) {
+        unsigned char argsSize = (unsigned char)(function.NumArgs * 4);
+        pushArray(generatedCode, { 0x48, 0x83, 0xc4, argsSize }); //add rsp, <byte> 
+    }
+
+    //Restore the base and stack pointer
+    pushArray(function.GeneratedCode, { 0x48, 0x89, 0xEC }); //mov rsp, rbp
+    generatedCode.push_back(0x5d); //pop rbp
+
+    //Make the return
     generatedCode.push_back(0xc3); //ret
 
     unsigned char* code = generatedCode.data();
@@ -93,10 +137,10 @@ JitFunction generateFunction(Function& function, VMState& vmState) {
     memcpy(mem, code, length);
 
     //Return the generated code as a function pointer
-    return (int (*)())mem;
+    return (JitFunction)mem;
 }
 
-void generateCode(Function& function, VMState& vmState, const Instruction& inst) {
+void CodeGenerator::generateCode(Function& function, VMState& vmState, const Instruction& inst) {
     std::vector<unsigned char>& generatedCode = function.GeneratedCode;
 
     switch (inst.OpCode) {
@@ -117,28 +161,28 @@ void generateCode(Function& function, VMState& vmState, const Instruction& inst)
     case OpCodes::MUL:
     case OpCodes::DIV:
         //Pop 2 operands
-        generatedCode.push_back(0x59); //pop ecx
+        generatedCode.push_back(0x5b); //pop ebx
         generatedCode.push_back(0x58); //pop eax
 
         //Apply the operator
         switch (inst.OpCode) {
             case OpCodes::ADD:
-                generatedCode.push_back(0x01); //add eax, ecx
-                generatedCode.push_back(0xc8);
+                generatedCode.push_back(0x01); //add eax, ebx
+                generatedCode.push_back(0xd8);
                 break;
             case OpCodes::SUB:
-                generatedCode.push_back(0x29); //sub eax, ecx
-                generatedCode.push_back(0xc8);
+                generatedCode.push_back(0x29); //sub eax, ebx
+                generatedCode.push_back(0xd8);
                 break;
             case OpCodes::MUL:
-                generatedCode.push_back(0x0f); //imul eax, ecx
+                generatedCode.push_back(0x0f); //imul eax, ebx
                 generatedCode.push_back(0xaf);
-                generatedCode.push_back(0xc1);
+                generatedCode.push_back(0xc3);
                 break;
             case OpCodes::DIV:
                 //This gives a runtime error, but I don't know why.
-                generatedCode.push_back(0xf7); //idiv ecx
-                generatedCode.push_back(0xf9);
+                generatedCode.push_back(0xf7); //idiv ebx
+                generatedCode.push_back(0xfb);
                 break;
             default:
                 break;
@@ -149,7 +193,7 @@ void generateCode(Function& function, VMState& vmState, const Instruction& inst)
         break;
     case OpCodes::LOAD_LOCAL:
         {
-            //Load eax with the given local
+            //Load rax with the given local
             long localsAddr = (long)(&vmState.Locals[0 + inst.Value]);
 
             LongToBytes converter;
@@ -166,13 +210,13 @@ void generateCode(Function& function, VMState& vmState, const Instruction& inst)
             generatedCode.push_back(converter.ByteValues[7]);
 
             //Push the loaded value
-            generatedCode.push_back(0x50); //push eax
+            generatedCode.push_back(0x50); //push rax
         }
         break;
     case OpCodes::STORE_LOCAL:
         {
             //Pop the top operand
-            generatedCode.push_back(0x58); //pop eax
+            generatedCode.push_back(0x58); //pop rax
 
             //Store eax at the given local
             long localsAddr = (long)(&vmState.Locals[0 + inst.Value]);
@@ -200,7 +244,7 @@ void generateCode(Function& function, VMState& vmState, const Instruction& inst)
             if (vmState.FunctionTable.count(inst.StrValue) > 0) {
                 funcAddr = vmState.FunctionTable[inst.StrValue];
             } else {
-                //Mark that the function call needed to be patched with the address later
+                //Mark that the function call needs to be patched with the address later
                 function.CallTable[make_pair(function.Name, generatedCode.size())] = inst.StrValue;
             }
 
@@ -247,6 +291,34 @@ void generateCode(Function& function, VMState& vmState, const Instruction& inst)
             generatedCode.push_back(0xd0);
 
             //Push the result
+            generatedCode.push_back(0x50); //push rax
+        }
+        break;
+    case OpCodes::LOAD_ARG:
+        {
+            //Load rax with the arg offset
+            IntToBytes converter;
+            converter.IntValue = (inst.Value + 1) * -4;
+
+            generatedCode.push_back(0x48); //mov rax, <int>
+            generatedCode.push_back(0xc7); 
+            generatedCode.push_back(0xc0); 
+            generatedCode.push_back(converter.ByteValues[0]);
+            generatedCode.push_back(converter.ByteValues[1]);
+            generatedCode.push_back(converter.ByteValues[2]);
+            generatedCode.push_back(converter.ByteValues[3]);
+
+            //Now add the base pointer
+            generatedCode.push_back(0x48); //add rax, rbp
+            generatedCode.push_back(0x01);
+            generatedCode.push_back(0xe8);
+
+            //Load rax with the argument from the stack
+            generatedCode.push_back(0x48); //mov rax, [rax]
+            generatedCode.push_back(0x8b);
+            generatedCode.push_back(0x00);
+
+            //Push the loaded value
             generatedCode.push_back(0x50); //push rax
         }
         break;

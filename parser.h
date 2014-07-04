@@ -5,10 +5,18 @@
 
 struct Instruction;
 
-struct Program {
-    std::map<std::string, std::vector<Instruction>*> Functions;
+struct DefinedFunction
+{
+	int NumArgs;
+	std::vector<Instruction>* Instructions;
 };
 
-std::vector<std::string> tokenizeInput();
+struct Program {
+    std::map<std::string, DefinedFunction> Functions;
+};
 
-void parseTokens(const std::vector<std::string>& tokens, Program& program);
+namespace Parser {
+	std::vector<std::string> tokenizeInput();
+	
+	void parseTokens(const std::vector<std::string>& tokens, Program& program);
+}

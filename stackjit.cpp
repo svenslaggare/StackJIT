@@ -13,16 +13,16 @@ int main(int argc, char* argv[]) {
     VMState vmState;
     Program program;
 
-    addStandardLibrary(vmState.CallTable);
+    addStandardLibrary(vmState.FunctionTable);
 
     //Tokenize the input
-    auto tokens = tokenizeInput();
+    auto tokens = Parser::tokenizeInput();
 
     //Parse it
-    parseTokens(tokens, program);
+    Parser::parseTokens(tokens, program);
 
     //Generate a function for the instructions
-    int (*programPtr)() = generateProgram(program, vmState);
+    int (*programPtr)() = CodeGenerator::generateProgram(program, vmState);
 
     //Execute the program
     if (ENABLE_DEBUG) {
@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
     }
 
     for (auto func : program.Functions) {
-        delete func.second;
+        delete func.second.Instructions;
     }
 
     return 0;

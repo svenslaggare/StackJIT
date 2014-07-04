@@ -34,3 +34,10 @@ Instruction makeCall(std::string funcName, int numArgs) {
     inst.OpCode = OpCodes::CALL;
     return inst;
 }
+
+Instruction makeLoadArg(int argNum) {
+    Instruction inst;
+    inst.Value = argNum;
+    inst.OpCode = OpCodes::LOAD_ARG;
+    return inst;
+}
