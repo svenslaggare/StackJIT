@@ -179,7 +179,6 @@ void CodeGenerator::generateCode(Function& function, const VMState& vmState, con
                 generatedCode.push_back(0xc3);
                 break;
             case OpCodes::DIV:
-                //This gives a runtime error, but I don't know why.
                 generatedCode.push_back(0xf7); //idiv ebx
                 generatedCode.push_back(0xfb);
                 break;

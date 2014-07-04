@@ -30,6 +30,7 @@ operand at the evaluation stack which will be the return value.
 * `ADD`: Pops the two operands, adds them and pushes the result to the evaluation stack.
 * `SUB`: Pops the two operands, subtracts the second one from the one and pushes the result to the evaluation stack.
 * `MUL`: Pops the two operands, multiplies them and pushes the result to the evaluation stack.
+* `DIV`: Pops the two operands, divides the first one with the second one and pushes the result to the evaluation stack.
 * `LDLOC <local>`: Pushes the given local to the evaluation stack.
 * `STLOC <local>`: Pops the top operand and stores it in the given local.
 * `CALL <name> <numargs>`: Calls the given function with the given amount of arguments. The arguments are popped from the evaluation stack.

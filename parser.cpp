@@ -20,6 +20,7 @@ std::vector<std::string> Parser::tokenize(std::istream& stream) {
     }
 
     tokens.push_back(token);
+
     return tokens;
 }
 
@@ -45,6 +46,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Program& progra
     for (int i = 0; i < tokens.size(); i++) {
         std::string current = tokens[i];
         std::string currentToLower = toLower(current);
+        // std::cout << current << std::endl;
 
         if (currentToLower == "push") {
             int value = stoi(tokens[i + 1]);
@@ -61,6 +63,10 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Program& progra
 
         if (currentToLower == "mul") {
             instructions->push_back(makeInstruction(OpCodes::MUL));
+        }
+
+        if (currentToLower == "div") {
+            instructions->push_back(makeInstruction(OpCodes::DIV));
         }
 
         if (currentToLower == "ldloc") {

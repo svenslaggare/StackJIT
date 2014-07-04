@@ -20,8 +20,13 @@ int vm_println(int x) {
 	return x;
 }
 
+int vm_div(int x, int y) {
+	return x / y;
+}
+
 void addStandardLibrary(std::map<std::string, long>& callTable) {
 	callTable["abs"] = (long)(&vm_abs);
 	callTable["print"] = (long)(&vm_print);
 	callTable["println"] = (long)(&vm_println);
+	callTable["div"] = (long)(&vm_div);
 }
