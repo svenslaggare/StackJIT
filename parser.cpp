@@ -5,19 +5,12 @@
 #include "parser.h"
 #include "instructions.h"
 
-std::vector<std::string> Parser::tokenizeInput() {
+std::vector<std::string> Parser::tokenize(std::istream& stream) {
     std::vector<std::string> tokens;
     std::string token;
 
-    char c = ' ';
-
-    while (true) {
-        c = getchar();
-
-        if (c == EOF) {
-            break;
-        }
-
+    char c;
+    while (stream.get(c)) {
         if (isspace(c)) {
             tokens.push_back(token);
             token = "";
@@ -27,7 +20,6 @@ std::vector<std::string> Parser::tokenizeInput() {
     }
 
     tokens.push_back(token);
-
     return tokens;
 }
 
@@ -35,7 +27,7 @@ std::string toLower(std::string str) {
     std::string newStr = "";
     int length = str.length();
 
-    for (int i = 0; i < length; ++i) {
+    for (int i = 0; i < length; i++) {
         newStr += std::tolower(str[i]);
     }
 
@@ -111,7 +103,6 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Program& progra
 
                 program.Functions[funcName] = newFunc;
                 instructions = mainInstructions;
-                //std::cout << "Defined function: " << funcName << std::endl;
             }
         }
     }

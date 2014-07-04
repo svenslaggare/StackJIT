@@ -5,18 +5,21 @@
 
 struct Instruction;
 
-struct DefinedFunction
-{
-	int NumArgs;
+//Represents function definition
+struct DefinedFunction {
+	int NumArgs = 0;
 	std::vector<Instruction>* Instructions;
 };
 
+//Represents a program
 struct Program {
     std::map<std::string, DefinedFunction> Functions;
 };
 
 namespace Parser {
-	std::vector<std::string> tokenizeInput();
+	//Tokenizes from the given stream
+	std::vector<std::string> tokenize(std::istream& stream);
 	
+	//Parses the given tokens
 	void parseTokens(const std::vector<std::string>& tokens, Program& program);
 }

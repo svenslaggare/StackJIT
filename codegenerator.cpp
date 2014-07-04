@@ -40,6 +40,7 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
             std::cout << "Defined function '" << func.first << "' at " << (long)funcPtr << std::endl;
         }
 
+        //Add the unresolved call to the program call table
         for (auto call : newFunc.CallTable) {
             callTable[call.first] = call.second;
         }
@@ -74,12 +75,10 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
     return (JitFunction)vmState.FunctionTable["main"];
 }
 
-JitFunction CodeGenerator::generateFunction(Function& function, VMState& vmState) {
+JitFunction CodeGenerator::generateFunction(Function& function, const VMState& vmState) {
     //Save the base pointer
     function.GeneratedCode.push_back(0x55); //push rbp
     pushArray(function.GeneratedCode, { 0x48, 0x89, 0xE5 }); //mov rbp, rsp
-
-    std::vector<unsigned char> argRegs { 0x57, 0x56, 0x52, 0x51 }; //rdi, rsi, rdx, rcx 
 
     //Move function arguments from registers to stack
     if (function.NumArgs > 0) {
@@ -110,26 +109,25 @@ JitFunction CodeGenerator::generateFunction(Function& function, VMState& vmState
         generateCode(function, vmState, current);
     }
 
-    auto generatedCode = function.GeneratedCode;
-
     //Pop the return value
-    generatedCode.push_back(0x58); //pop eax
+    function.GeneratedCode.push_back(0x58); //pop eax
 
-    //Pop the function arguments
+    //Free the arguments
     if (function.NumArgs > 0) {
         unsigned char argsSize = (unsigned char)(function.NumArgs * 4);
-        pushArray(generatedCode, { 0x48, 0x83, 0xc4, argsSize }); //add rsp, <byte> 
+        pushArray(function.GeneratedCode, { 0x48, 0x83, 0xc4, argsSize }); //add rsp, <byte> 
     }
 
-    //Restore the base and stack pointer
-    pushArray(function.GeneratedCode, { 0x48, 0x89, 0xEC }); //mov rsp, rbp
-    generatedCode.push_back(0x5d); //pop rbp
+    // pushArray(function.GeneratedCode, { 0x48, 0x89, 0xEC }); //mov rsp, rbp
+    //Restore the base pointer
+    function.GeneratedCode.push_back(0x5d); //pop rbp
 
     //Make the return
-    generatedCode.push_back(0xc3); //ret
+    function.GeneratedCode.push_back(0xc3); //ret
 
-    unsigned char* code = generatedCode.data();
-    int length = generatedCode.size();
+    unsigned char* code = function.GeneratedCode.data();
+    int length = function.GeneratedCode.size();
+    std::cout << "Func '" << function.Name <<"' size: " << length << std::endl;
 
     //Allocate writable/executable memory
     void *mem = mmap(nullptr, length, PROT_WRITE | PROT_EXEC,
@@ -140,7 +138,7 @@ JitFunction CodeGenerator::generateFunction(Function& function, VMState& vmState
     return (JitFunction)mem;
 }
 
-void CodeGenerator::generateCode(Function& function, VMState& vmState, const Instruction& inst) {
+void CodeGenerator::generateCode(Function& function, const VMState& vmState, const Instruction& inst) {
     std::vector<unsigned char>& generatedCode = function.GeneratedCode;
 
     switch (inst.OpCode) {
@@ -242,7 +240,7 @@ void CodeGenerator::generateCode(Function& function, VMState& vmState, const Ins
 
             //Check if the function is defined yet
             if (vmState.FunctionTable.count(inst.StrValue) > 0) {
-                funcAddr = vmState.FunctionTable[inst.StrValue];
+                funcAddr = vmState.FunctionTable.at(inst.StrValue);
             } else {
                 //Mark that the function call needs to be patched with the address later
                 function.CallTable[make_pair(function.Name, generatedCode.size())] = inst.StrValue;

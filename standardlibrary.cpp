@@ -12,21 +12,16 @@ int vm_abs(int x) {
 
 int vm_print(int x) {
 	std::cout << x;
-	return 0;
+	return x;
 }
 
 int vm_println(int x) {
 	std::cout << x << std::endl;
-	return 0;
-}
-
-int vm_rand() {
-	return 1337;
+	return x;
 }
 
 void addStandardLibrary(std::map<std::string, long>& callTable) {
 	callTable["abs"] = (long)(&vm_abs);
 	callTable["print"] = (long)(&vm_print);
 	callTable["println"] = (long)(&vm_println);
-	//callTable["rand"] = (long)(&vm_rand);
 }

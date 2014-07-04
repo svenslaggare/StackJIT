@@ -9,6 +9,7 @@ struct Program;
 typedef int (*JitFunction)();
 typedef std::pair<std::string, unsigned int> FunctionCall;
 
+//Represents an user defined function
 struct Function {
 	std::string Name;
 	int NumArgs;
@@ -18,9 +19,12 @@ struct Function {
 };
 
 namespace CodeGenerator {
+	//Generates a program
 	JitFunction generateProgram(Program& program, VMState& vmState);
 
-	JitFunction generateFunction(Function& function, VMState& vmState);
+	//Generates a function
+	JitFunction generateFunction(Function& function, const VMState& vmState);
 
-	void generateCode(Function& function, VMState& vmState, const Instruction& inst);
+	//Generates code for the given instruction
+	void generateCode(Function& function, const VMState& vmState, const Instruction& inst);
 }
