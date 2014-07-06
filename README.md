@@ -10,10 +10,12 @@ All programs must always end with _one_ operand on the evaluation stack, which w
 to the stdout.
 
 ###Locals###
-The VM supports 8 locals, indexed from 0 to 7.
+The VM supports 8 locals, indexed from 0 to 7. The locals may be moved to a stack frame basis
+instead of globally.
 
 ###Function calls###
-Currently the functions that can be called is hardcoded.
+Both native and user defined functions can be called. The arguments are popped from
+the evaluation stack where the top operand is the last argument and so on. Only 4 arguments are supported.
 
 ###Functions###
 Functions can be defined using the following syntax:
@@ -34,7 +36,7 @@ operand at the evaluation stack which will be the return value.
 * `LDLOC <local>`: Pushes the given local to the evaluation stack.
 * `STLOC <local>`: Pops the top operand and stores it in the given local.
 * `CALL <name> <numargs>`: Calls the given function with the given amount of arguments. The arguments are popped from the evaluation stack.
-* `LDARG <arg>`: Loads the given argument and pushes it to the evaluation stack.
+* `LDARG <arg>`: Loads the given function argument and pushes it to the evaluation stack.
 
 ##Platforms##
 Supports Linux x64.
