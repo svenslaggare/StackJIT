@@ -2,7 +2,7 @@
 #include <vector>
 
 //The registers
-enum Registers {
+enum Registers : unsigned char {
 	AX = 0b000,
 	CX = 0b001,
 	DX = 0b010,
@@ -20,6 +20,9 @@ namespace Amd64Backend {
 	//Pushes the given register to the stack
 	void pushReg(CodeGen&, Registers);
 
+	//Pushes the given integer to the stack
+	void pushInt(CodeGen&, int);
+
 	//Pops from the stack to the given register
 	void popReg(CodeGen&, Registers);
 
@@ -32,8 +35,11 @@ namespace Amd64Backend {
 	//Moves the content from given memory address to the register
 	void moveMemoryToReg(CodeGen&, Registers, long);
 
-	//Moves the content from memory where the address is in the second registet to the first register
+	//Moves the content from memory where the address is in the second register to the first register
 	void moveMemoryByRegToReg(CodeGen&, Registers, Registers);
+
+	//Moves the content from a registet to memory where the address is in a register + offset
+	void moveRegToMemoryRegWithOffset(CodeGen&, Registers, char, Registers);
 
 	//Moves the given integer (32-bits) to the given register
 	void moveIntToReg(CodeGen&, Registers, int);

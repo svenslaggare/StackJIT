@@ -56,9 +56,11 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
 
         //Check if defined
         if (vmState.FunctionTable.count(calledFunc) > 0) {
+            //Get a pointer to the functions code
             long calledFuncAddr = vmState.FunctionTable[calledFunc];
             unsigned char* funcCode = (unsigned char*)vmState.FunctionTable[funcName];
 
+            //Update the call target
             LongToBytes converter;
             converter.LongValue = calledFuncAddr;
 

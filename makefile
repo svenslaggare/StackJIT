@@ -13,5 +13,9 @@ $(EXECUTABLE): $(OBJECTS)
 .cpp.o:
 	$(CC) $(CFLAGS) $< -o $@
 
+test: amd64-test.cpp 
+	$(CC) -std=c++11 $< amd64.cpp -o $@
+	./$@
+	
 clean:
 	rm -rf *o $(EXECUTABLE)
