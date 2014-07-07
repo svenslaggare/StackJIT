@@ -37,7 +37,7 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
         auto funcPtr = generateFunction(newFunc, vmState);
 
         if (ENABLE_DEBUG) {
-            std::cout << "Defined function '" << func.first << "' at " << (long)funcPtr << std::endl;
+            std::cout << "Defined function '" << func.first << "' at " << (long)funcPtr << "." << std::endl;
         }
 
         //Add the unresolved call to the program call table
@@ -106,7 +106,7 @@ JitFunction CodeGenerator::generateFunction(Function& function, const VMState& v
 
     //Generate the code for the program
     for (auto current : function.Instructions) {
-        generateCode(function, vmState, current);
+        generateInstruction(function, vmState, current);
     }
 
     //Pop the return value
@@ -128,7 +128,10 @@ JitFunction CodeGenerator::generateFunction(Function& function, const VMState& v
 
     unsigned char* code = function.GeneratedCode.data();
     int length = function.GeneratedCode.size();
-    std::cout << "Func '" << function.Name <<"' size: " << length << std::endl;
+
+    if (ENABLE_DEBUG) {
+        std::cout << "Generated function '" << function.Name << "' of size " << length << " bytes." << std::endl;
+    }
 
     //Allocate writable/executable memory
     void *mem = mmap(nullptr, length, PROT_WRITE | PROT_EXEC,
@@ -139,7 +142,7 @@ JitFunction CodeGenerator::generateFunction(Function& function, const VMState& v
     return (JitFunction)mem;
 }
 
-void CodeGenerator::generateCode(Function& function, const VMState& vmState, const Instruction& inst) {
+void CodeGenerator::generateInstruction(Function& function, const VMState& vmState, const Instruction& inst) {
     std::vector<unsigned char>& generatedCode = function.GeneratedCode;
 
     switch (inst.OpCode) {
@@ -249,7 +252,7 @@ void CodeGenerator::generateCode(Function& function, const VMState& vmState, con
             int numArgs = inst.Value;
 
             if (ENABLE_DEBUG) {
-                std::cout << "Calling '" << inst.StrValue + "' at " << funcAddr << std::endl;
+                std::cout << "Calling '" << inst.StrValue + "' at " << funcAddr << "." << std::endl;
             }
 
             LongToBytes converter;

@@ -18,6 +18,7 @@ struct Function {
 	std::vector<unsigned char> GeneratedCode;
 };
 
+//The code generator
 namespace CodeGenerator {
 	//Generates a program
 	JitFunction generateProgram(Program& program, VMState& vmState);
@@ -26,5 +27,5 @@ namespace CodeGenerator {
 	JitFunction generateFunction(Function& function, const VMState& vmState);
 
 	//Generates code for the given instruction
-	void generateCode(Function& function, const VMState& vmState, const Instruction& inst);
+	void generateInstruction(Function& function, const VMState& vmState, const Instruction& inst);
 }

@@ -16,6 +16,7 @@ struct Program {
     std::map<std::string, DefinedFunction> Functions;
 };
 
+//The parser
 namespace Parser {
 	//Tokenizes from the given stream
 	std::vector<std::string> tokenize(std::istream& stream);
