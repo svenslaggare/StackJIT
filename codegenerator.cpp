@@ -7,6 +7,7 @@
 #include "instructions.h"
 #include "parser.h"
 #include "standardlibrary.h"
+#include "amd64.h"
 
 union IntToBytes {
     int IntValue;
@@ -79,8 +80,8 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
 
 JitFunction CodeGenerator::generateFunction(Function& function, const VMState& vmState) {
     //Save the base pointer
-    function.GeneratedCode.push_back(0x55); //push rbp
-    pushArray(function.GeneratedCode, { 0x48, 0x89, 0xE5 }); //mov rbp, rsp
+    Amd64Backend::pushReg(function.GeneratedCode, Registers::BP); //push rbp
+    Amd64Backend::moveRegToReg(function.GeneratedCode, Registers::BP, Registers::SP); //mov rbp, rsp
 
     //Move function arguments from registers to stack
     if (function.NumArgs > 0) {
@@ -90,19 +91,19 @@ JitFunction CodeGenerator::generateFunction(Function& function, const VMState& v
 
         //Move the arguments from the registers to the stack
         if (function.NumArgs >= 4) {
-            pushArray(function.GeneratedCode, { 0x48, 0x89, 0x4D, 0xF0 }); //mov [rbp-16], rcx
+            Amd64Backend::moveRegToMemoryRegWithOffset(function.GeneratedCode, Registers::BP, -16, Registers::CX); //mov [rbp-16], rcx
         }
 
         if (function.NumArgs >= 3) {
-            pushArray(function.GeneratedCode, { 0x48, 0x89, 0x55, 0xF4 }); //mov [rbp-12], rdx
+            Amd64Backend::moveRegToMemoryRegWithOffset(function.GeneratedCode, Registers::BP, -12, Registers::DX); //mov [rbp-12], rdx
         }
 
         if (function.NumArgs >= 2) {
-            pushArray(function.GeneratedCode, { 0x48, 0x89, 0x75, 0xF8 }); //mov [rbp-8], rsi
+            Amd64Backend::moveRegToMemoryRegWithOffset(function.GeneratedCode, Registers::BP, -8, Registers::SI); //mov [rbp-8], rsi
         }
 
         if (function.NumArgs >= 1) {
-            pushArray(function.GeneratedCode, { 0x48, 0x89, 0x7D, 0xFC }); //mov [rbp-4], rdi
+            Amd64Backend::moveRegToMemoryRegWithOffset(function.GeneratedCode, Registers::BP, -4, Registers::DI); //mov [rbp-4], rdi
         }
     }
 
@@ -112,7 +113,7 @@ JitFunction CodeGenerator::generateFunction(Function& function, const VMState& v
     }
 
     //Pop the return value
-    function.GeneratedCode.push_back(0x58); //pop eax
+    Amd64Backend::popReg(function.GeneratedCode, Registers::AX); //pop eax
 
     //Free the arguments
     if (function.NumArgs > 0) {
@@ -123,7 +124,7 @@ JitFunction CodeGenerator::generateFunction(Function& function, const VMState& v
     // pushArray(function.GeneratedCode, { 0x48, 0x89, 0xEC }); //mov rsp, rbp
 
     //Restore the base pointer
-    function.GeneratedCode.push_back(0x5d); //pop rbp
+    Amd64Backend::popReg(function.GeneratedCode, Registers::BP); //pop rbp
 
     //Make the return
     function.GeneratedCode.push_back(0xc3); //ret
@@ -132,7 +133,7 @@ JitFunction CodeGenerator::generateFunction(Function& function, const VMState& v
     int length = function.GeneratedCode.size();
 
     if (ENABLE_DEBUG) {
-        std::cout << "Generated function '" << function.Name << "' of size " << length << " bytes." << std::endl;
+        std::cout << "Generated function '" << function.Name << "' of size: " << length << " bytes." << std::endl;
     }
 
     //Allocate writable/executable memory
@@ -150,23 +151,15 @@ void CodeGenerator::generateInstruction(Function& function, const VMState& vmSta
     switch (inst.OpCode) {
     case OpCodes::PUSH_INT:
         //An operand, push the value
-        generatedCode.push_back(0x68); //push <value>
-
-        //Convert the int to four bytes
-        IntToBytes converter;
-        converter.IntValue = inst.Value;
-        generatedCode.push_back(converter.ByteValues[0]);
-        generatedCode.push_back(converter.ByteValues[1]);
-        generatedCode.push_back(converter.ByteValues[2]);
-        generatedCode.push_back(converter.ByteValues[3]);
+        Amd64Backend::pushInt(generatedCode, inst.Value); //push <value>
         break;
     case OpCodes::ADD:
     case OpCodes::SUB:
     case OpCodes::MUL:
     case OpCodes::DIV:
         //Pop 2 operands
-        generatedCode.push_back(0x5b); //pop ebx
-        generatedCode.push_back(0x58); //pop eax
+        Amd64Backend::popReg(generatedCode, Registers::BX); //pop ebx
+        Amd64Backend::popReg(generatedCode, Registers::AX); //pop eax
 
         //Apply the operator
         switch (inst.OpCode) {
@@ -192,50 +185,30 @@ void CodeGenerator::generateInstruction(Function& function, const VMState& vmSta
         }
 
         //Push the result
-        generatedCode.push_back(0x50); //push eax
+        Amd64Backend::pushReg(generatedCode, Registers::AX); //push eax
         break;
     case OpCodes::LOAD_LOCAL:
         {
             //Load rax with the given local
             long localsAddr = (long)(&vmState.Locals[0 + inst.Value]);
 
-            LongToBytes converter;
-            converter.LongValue = localsAddr;
-
-            generatedCode.push_back(0xa1); //mov rax, [<mem addr>]
-            generatedCode.push_back(converter.ByteValues[0]);
-            generatedCode.push_back(converter.ByteValues[1]);
-            generatedCode.push_back(converter.ByteValues[2]);
-            generatedCode.push_back(converter.ByteValues[3]);
-            generatedCode.push_back(converter.ByteValues[4]);
-            generatedCode.push_back(converter.ByteValues[5]);
-            generatedCode.push_back(converter.ByteValues[6]);
-            generatedCode.push_back(converter.ByteValues[7]);
+            //mov rax, [<mem addr>]
+            Amd64Backend::moveMemoryToReg(generatedCode, Registers::AX, localsAddr);
 
             //Push the loaded value
-            generatedCode.push_back(0x50); //push rax
+            Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
         }
         break;
     case OpCodes::STORE_LOCAL:
         {
             //Pop the top operand
-            generatedCode.push_back(0x58); //pop rax
+            Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
 
             //Store eax at the given local
             long localsAddr = (long)(&vmState.Locals[0 + inst.Value]);
-
-            LongToBytes converter;
-            converter.LongValue = localsAddr;
-
-            generatedCode.push_back(0xa3); //mov [<mem addr>], rax
-            generatedCode.push_back(converter.ByteValues[0]);
-            generatedCode.push_back(converter.ByteValues[1]);
-            generatedCode.push_back(converter.ByteValues[2]);
-            generatedCode.push_back(converter.ByteValues[3]);
-            generatedCode.push_back(converter.ByteValues[4]);
-            generatedCode.push_back(converter.ByteValues[5]);
-            generatedCode.push_back(converter.ByteValues[6]);
-            generatedCode.push_back(converter.ByteValues[7]);
+            
+            //mov [<mem addr>], rax
+            Amd64Backend::moveRegToMemory(generatedCode, localsAddr, Registers::AX);
         }
         break;
     case OpCodes::CALL:
@@ -257,36 +230,24 @@ void CodeGenerator::generateInstruction(Function& function, const VMState& vmSta
                 std::cout << "Calling '" << inst.StrValue + "' at " << funcAddr << "." << std::endl;
             }
 
-            LongToBytes converter;
-            converter.LongValue = funcAddr;
-
-            generatedCode.push_back(0x48); //mov rax, <addr>
-            generatedCode.push_back(0xb8);
-
-            generatedCode.push_back(converter.ByteValues[0]);
-            generatedCode.push_back(converter.ByteValues[1]);
-            generatedCode.push_back(converter.ByteValues[2]);
-            generatedCode.push_back(converter.ByteValues[3]);
-            generatedCode.push_back(converter.ByteValues[4]);
-            generatedCode.push_back(converter.ByteValues[5]);
-            generatedCode.push_back(converter.ByteValues[6]);
-            generatedCode.push_back(converter.ByteValues[7]);
+            //mov rax, <addr>
+            Amd64Backend::moveLongToReg(generatedCode, Registers::AX, funcAddr);
 
             //Set the function arguments
             if (numArgs >= 4) {
-                generatedCode.push_back(0x59); //pop rcx
+                Amd64Backend::popReg(generatedCode, Registers::CX); //pop rcx
             }
 
             if (numArgs >= 3) {
-                generatedCode.push_back(0x5a); //pop rdx
+                Amd64Backend::popReg(generatedCode, Registers::DX); //pop rdx
             }
 
             if (numArgs >= 2) {
-                generatedCode.push_back(0x5e); //pop rsi
+                Amd64Backend::popReg(generatedCode, Registers::SI); //pop rsi
             }
 
             if (numArgs >= 1) {
-                generatedCode.push_back(0x5f); //pop rdi
+                Amd64Backend::popReg(generatedCode, Registers::DI); //pop rdi
             }
 
             //Make the call
@@ -294,7 +255,7 @@ void CodeGenerator::generateInstruction(Function& function, const VMState& vmSta
             generatedCode.push_back(0xd0);
 
             //Push the result
-            generatedCode.push_back(0x50); //push rax
+            Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
         }
         break;
     case OpCodes::LOAD_ARG:
@@ -303,13 +264,8 @@ void CodeGenerator::generateInstruction(Function& function, const VMState& vmSta
             IntToBytes converter;
             converter.IntValue = (inst.Value + 1) * -4;
 
-            generatedCode.push_back(0x48); //mov rax, <int>
-            generatedCode.push_back(0xc7); 
-            generatedCode.push_back(0xc0); 
-            generatedCode.push_back(converter.ByteValues[0]);
-            generatedCode.push_back(converter.ByteValues[1]);
-            generatedCode.push_back(converter.ByteValues[2]);
-            generatedCode.push_back(converter.ByteValues[3]);
+            //mov rax, <int>
+            Amd64Backend::moveIntToReg(generatedCode, Registers::AX, (inst.Value + 1) * -4);
 
             //Now add the base pointer
             generatedCode.push_back(0x48); //add rax, rbp
@@ -317,12 +273,10 @@ void CodeGenerator::generateInstruction(Function& function, const VMState& vmSta
             generatedCode.push_back(0xe8);
 
             //Load rax with the argument from the stack
-            generatedCode.push_back(0x48); //mov rax, [rax]
-            generatedCode.push_back(0x8b);
-            generatedCode.push_back(0x00);
+            Amd64Backend::moveMemoryByRegToReg(generatedCode, Registers::AX, Registers::AX); //mov rax, [rax]
 
             //Push the loaded value
-            generatedCode.push_back(0x50); //push rax
+            Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
         }
         break;
     default:
