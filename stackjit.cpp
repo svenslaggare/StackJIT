@@ -40,6 +40,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    //Free instructions
     for (auto func : program.Functions) {
         delete func.second.Instructions;
     }

@@ -38,7 +38,7 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
         auto funcPtr = generateFunction(newFunc, vmState);
 
         if (ENABLE_DEBUG) {
-            std::cout << "Defined function '" << func.first << "' at " << (long)funcPtr << "." << std::endl;
+            std::cout << "Defined function '" << func.first << "' at 0x" << std::hex << (long)funcPtr << std::dec << "." << std::endl;
         }
 
         //Add the unresolved call to the program call table
@@ -57,7 +57,7 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
 
         //Check if defined
         if (vmState.FunctionTable.count(calledFunc) > 0) {
-            //Get a pointer to the functions code
+            //Get a pointer to the functions instructions
             long calledFuncAddr = vmState.FunctionTable[calledFunc];
             unsigned char* funcCode = (unsigned char*)vmState.FunctionTable[funcName];
 
@@ -137,8 +137,15 @@ JitFunction CodeGenerator::generateFunction(Function& function, const VMState& v
     }
 
     //Allocate writable/executable memory
-    void *mem = mmap(nullptr, length, PROT_WRITE | PROT_EXEC,
-        MAP_ANON | MAP_PRIVATE, -1, 0);
+    void *mem = mmap(
+        nullptr,
+        length,
+        PROT_WRITE | PROT_EXEC,
+        MAP_ANON | MAP_PRIVATE,
+        -1,
+        0);
+
+    //Copy the instructions
     memcpy(mem, code, length);
 
     //Return the generated code as a function pointer
@@ -146,7 +153,7 @@ JitFunction CodeGenerator::generateFunction(Function& function, const VMState& v
 }
 
 void CodeGenerator::generateInstruction(Function& function, const VMState& vmState, const Instruction& inst) {
-    std::vector<unsigned char>& generatedCode = function.GeneratedCode;
+   auto& generatedCode = function.GeneratedCode;
 
     switch (inst.OpCode) {
     case OpCodes::PUSH_INT:
@@ -206,9 +213,7 @@ void CodeGenerator::generateInstruction(Function& function, const VMState& vmSta
 
             //Store eax at the given local
             long localsAddr = (long)(&vmState.Locals[0 + inst.Value]);
-            
-            //mov [<mem addr>], rax
-            Amd64Backend::moveRegToMemory(generatedCode, localsAddr, Registers::AX);
+            Amd64Backend::moveRegToMemory(generatedCode, localsAddr, Registers::AX); //mov [<mem addr>], rax
         }
         break;
     case OpCodes::CALL:
@@ -227,7 +232,7 @@ void CodeGenerator::generateInstruction(Function& function, const VMState& vmSta
             int numArgs = inst.Value;
 
             if (ENABLE_DEBUG) {
-                std::cout << "Calling '" << inst.StrValue + "' at " << funcAddr << "." << std::endl;
+                std::cout << "Calling '" << inst.StrValue + "' at " << std::hex << funcAddr << std::dec << "." << std::endl;
             }
 
             //mov rax, <addr>

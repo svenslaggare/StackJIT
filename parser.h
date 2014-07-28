@@ -5,7 +5,7 @@
 
 struct Instruction;
 
-//Represents function definition
+//Represents a function definition
 struct DefinedFunction {
 	int NumArgs = 0;
 	std::vector<Instruction>* Instructions;
