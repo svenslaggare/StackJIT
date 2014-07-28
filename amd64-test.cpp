@@ -161,6 +161,21 @@ void testMoveLongToReg() {
 	generatedCode.clear();
 }
 
+//Tests the callInReg generator
+void testCallInReg() {
+	std::vector<unsigned char> generatedCode;
+	Amd64Backend::callInReg(generatedCode, Registers::AX);
+	arrayAssert(generatedCode, { 0xFF, 0xD0 } );
+	generatedCode.clear();
+}
+
+//Tests the ret generator
+void testRet() {
+	std::vector<unsigned char> generatedCode;
+	Amd64Backend::ret(generatedCode);
+	arrayAssert(generatedCode, { 0xC3 } );
+}
+
 int main() {
 	std::cout << "Running amd64-test.." << std::endl;
 	testPush();
@@ -173,6 +188,8 @@ int main() {
 	testMoveRegToMemoryRegWithOffset();
 	testMoveIntToReg();
 	testMoveLongToReg();
+	testCallInReg();
+	testRet();
 	std::cout << "All tests passed." << std::endl;
 	return 0;
 }

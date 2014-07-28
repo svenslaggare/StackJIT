@@ -101,3 +101,11 @@ void Amd64Backend::moveLongToReg(CodeGen& codeGen, Registers dest, long value) {
 	}
 }
 
+void Amd64Backend::callInReg(CodeGen& codeGen, Registers func) {
+	codeGen.push_back(0xff);
+    codeGen.push_back(0xd0 | func);
+}
+
+void Amd64Backend::ret(CodeGen& codeGen) {
+	codeGen.push_back(0xc3);
+}

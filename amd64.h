@@ -46,4 +46,10 @@ namespace Amd64Backend {
 
 	//Moves the given long (64-bits) to the given register
 	void moveLongToReg(CodeGen&, Registers, long);
+
+	//Calls the given function where the entry points is in a register
+	void callInReg(CodeGen&, Registers);
+
+	//The return instructiom
+	void ret(CodeGen&);
 }

@@ -11,17 +11,17 @@
 
 union IntToBytes {
     int IntValue;
-    unsigned char ByteValues[4];
+    unsigned char ByteValues[sizeof(int)];
 };
 
 union LongToBytes {
     long LongValue;
-    unsigned char ByteValues[8];
+    unsigned char ByteValues[sizeof(long)];
 };
 
-void pushArray(std::vector<unsigned char>& insts, const std::vector<unsigned char>& values) {
+void pushArray(std::vector<unsigned char>& dest, const std::vector<unsigned char>& values) {
     for (auto current : values) {
-        insts.push_back(current);
+        dest.push_back(current);
     }
 }
 
@@ -127,7 +127,7 @@ JitFunction CodeGenerator::generateFunction(Function& function, const VMState& v
     Amd64Backend::popReg(function.GeneratedCode, Registers::BP); //pop rbp
 
     //Make the return
-    function.GeneratedCode.push_back(0xc3); //ret
+    Amd64Backend::ret(function.GeneratedCode); //ret
 
     unsigned char* code = function.GeneratedCode.data();
     int length = function.GeneratedCode.size();
@@ -136,7 +136,7 @@ JitFunction CodeGenerator::generateFunction(Function& function, const VMState& v
         std::cout << "Generated function '" << function.Name << "' of size: " << length << " bytes." << std::endl;
     }
 
-    //Allocate writable/executable memory
+    //Allocate writable and executable memory
     void *mem = mmap(
         nullptr,
         length,
@@ -198,9 +198,7 @@ void CodeGenerator::generateInstruction(Function& function, const VMState& vmSta
         {
             //Load rax with the given local
             long localsAddr = (long)(&vmState.Locals[0 + inst.Value]);
-
-            //mov rax, [<mem addr>]
-            Amd64Backend::moveMemoryToReg(generatedCode, Registers::AX, localsAddr);
+            Amd64Backend::moveMemoryToReg(generatedCode, Registers::AX, localsAddr); //mov rax, [<mem addr>]
 
             //Push the loaded value
             Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
@@ -235,8 +233,8 @@ void CodeGenerator::generateInstruction(Function& function, const VMState& vmSta
                 std::cout << "Calling '" << inst.StrValue + "' at " << std::hex << funcAddr << std::dec << "." << std::endl;
             }
 
-            //mov rax, <addr>
-            Amd64Backend::moveLongToReg(generatedCode, Registers::AX, funcAddr);
+            //Move the address of the call to rax
+            Amd64Backend::moveLongToReg(generatedCode, Registers::AX, funcAddr); //mov rax, <addr>
 
             //Set the function arguments
             if (numArgs >= 4) {
@@ -256,8 +254,8 @@ void CodeGenerator::generateInstruction(Function& function, const VMState& vmSta
             }
 
             //Make the call
-            generatedCode.push_back(0xff); //call rax
-            generatedCode.push_back(0xd0);
+            Amd64Backend::callInReg(generatedCode, Registers::AX); //call rax
+
 
             //Push the result
             Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
