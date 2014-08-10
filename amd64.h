@@ -52,4 +52,22 @@ namespace Amd64Backend {
 
 	//The return instructiom
 	void ret(CodeGen&);
+
+	//Adds the second register to the first
+	void addRegToReg(CodeGen&, Registers, Registers, bool is32bits = false);
+
+	//Adds the given byte to the given register
+	void addByteToReg(CodeGen&, Registers, char, bool is32bits = false);
+
+	//Subtracts the second register from the first
+	void subRegFromReg(CodeGen&, Registers, Registers, bool is32bits = false);
+
+	//Subtracts the given byte from the given registers
+	void subByteFromReg(CodeGen&, Registers, char, bool is32bits = false);
+
+	//Multiplies the first register by the second
+	void multRegToReg(CodeGen&, Registers, Registers, bool is32bits = false);
+
+	//Divides the second register from the first
+	void divRegFromReg(CodeGen&, Registers, Registers, bool is32bits = false);
 }

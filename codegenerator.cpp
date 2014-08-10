@@ -87,7 +87,7 @@ JitFunction CodeGenerator::generateFunction(Function& function, const VMState& v
     if (function.NumArgs > 0) {
         //Make room for the arguments on the stack
         unsigned char argsSize = (unsigned char)(function.NumArgs * 4);
-        pushArray(function.GeneratedCode, { 0x48, 0x83, 0xec, argsSize }); //sub rsp, <size of args>
+        Amd64Backend::subByteFromReg(function.GeneratedCode, Registers::SP, argsSize); //sub rsp, <size of args>
 
         //Move the arguments from the registers to the stack
         if (function.NumArgs >= 4) {
@@ -118,7 +118,7 @@ JitFunction CodeGenerator::generateFunction(Function& function, const VMState& v
     //Free the arguments
     if (function.NumArgs > 0) {
         unsigned char argsSize = (unsigned char)(function.NumArgs * 4);
-        pushArray(function.GeneratedCode, { 0x48, 0x83, 0xc4, argsSize }); //add rsp, <byte> 
+        Amd64Backend::addByteToReg(function.GeneratedCode, Registers::SP, argsSize); //add rsp, <byte>
     }
 
     // pushArray(function.GeneratedCode, { 0x48, 0x89, 0xEC }); //mov rsp, rbp
@@ -171,21 +171,16 @@ void CodeGenerator::generateInstruction(Function& function, const VMState& vmSta
         //Apply the operator
         switch (inst.OpCode) {
             case OpCodes::ADD:
-                generatedCode.push_back(0x01); //add eax, ebx
-                generatedCode.push_back(0xd8);
+                Amd64Backend::addRegToReg(generatedCode, Registers::AX, Registers::BX, true); //add eax, ebx
                 break;
             case OpCodes::SUB:
-                generatedCode.push_back(0x29); //sub eax, ebx
-                generatedCode.push_back(0xd8);
+                Amd64Backend::subRegFromReg(generatedCode, Registers::AX, Registers::BX, true); //sub eax, ebx
                 break;
             case OpCodes::MUL:
-                generatedCode.push_back(0x0f); //imul eax, ebx
-                generatedCode.push_back(0xaf);
-                generatedCode.push_back(0xc3);
+                Amd64Backend::multRegToReg(generatedCode, Registers::AX, Registers::BX, true); //imul eax, ebx
                 break;
             case OpCodes::DIV:
-                generatedCode.push_back(0xf7); //idiv ebx
-                generatedCode.push_back(0xfb);
+                Amd64Backend::divRegFromReg(generatedCode, Registers::AX, Registers::BX, true); //idiv eax, ebx
                 break;
             default:
                 break;
@@ -256,7 +251,6 @@ void CodeGenerator::generateInstruction(Function& function, const VMState& vmSta
             //Make the call
             Amd64Backend::callInReg(generatedCode, Registers::AX); //call rax
 
-
             //Push the result
             Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
         }
@@ -271,9 +265,7 @@ void CodeGenerator::generateInstruction(Function& function, const VMState& vmSta
             Amd64Backend::moveIntToReg(generatedCode, Registers::AX, (inst.Value + 1) * -4);
 
             //Now add the base pointer
-            generatedCode.push_back(0x48); //add rax, rbp
-            generatedCode.push_back(0x01);
-            generatedCode.push_back(0xe8);
+            Amd64Backend::addRegToReg(generatedCode, Registers::AX, Registers::BP); //add rax, rbp
 
             //Load rax with the argument from the stack
             Amd64Backend::moveMemoryByRegToReg(generatedCode, Registers::AX, Registers::AX); //mov rax, [rax]

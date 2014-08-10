@@ -33,8 +33,8 @@ void Amd64Backend::popReg(CodeGen& codeGen, Registers reg) {
 
 void Amd64Backend::moveRegToReg(CodeGen& codeGen, Registers dest, Registers src) {
 	codeGen.push_back(0x48);
-	codeGen.push_back(0x89);	
-	codeGen.push_back(0xc0 | dest | (src << 3));	
+	codeGen.push_back(0x89);
+	codeGen.push_back(0xc0 | dest | (src << 3));
 }
 
 void Amd64Backend::moveRegToMemory(CodeGen& codeGen, long destAddr, Registers srcReg) {
@@ -108,4 +108,63 @@ void Amd64Backend::callInReg(CodeGen& codeGen, Registers func) {
 
 void Amd64Backend::ret(CodeGen& codeGen) {
 	codeGen.push_back(0xc3);
+}
+
+void Amd64Backend::addRegToReg(CodeGen& codeGen, Registers dest, Registers src, bool is32bits) {
+    if (!is32bits) {
+        codeGen.push_back(0x48);
+    }
+
+    codeGen.push_back(0x01);
+    codeGen.push_back(0xc0 | dest | (src << 3));
+}
+
+void Amd64Backend::addByteToReg(CodeGen& codeGen, Registers destReg, char srcValue, bool is32bits) {
+    if (!is32bits) {
+        codeGen.push_back(0x48);
+    }
+
+    codeGen.push_back(0x83);
+    codeGen.push_back(0xc0 | destReg);
+    codeGen.push_back(srcValue);
+}
+
+void Amd64Backend::subRegFromReg(CodeGen& codeGen, Registers dest, Registers src, bool is32bits) {
+    if (!is32bits) {
+        codeGen.push_back(0x48);
+    }
+
+    codeGen.push_back(0x29);
+    codeGen.push_back(0xc0 | dest | (src << 3));
+}
+
+void Amd64Backend::subByteFromReg(CodeGen& codeGen, Registers destReg, char srcValue, bool is32bits) {
+    if (!is32bits) {
+        codeGen.push_back(0x48);
+    }
+
+    codeGen.push_back(0x83);
+    codeGen.push_back(0xe8 | destReg);
+    codeGen.push_back(srcValue);
+}
+
+void Amd64Backend::multRegToReg(CodeGen& codeGen, Registers dest, Registers src, bool is32bits) {
+    if (!is32bits) {
+        codeGen.push_back(0x48);
+    }
+
+    codeGen.push_back(0x0f);
+    codeGen.push_back(0xaf);
+    codeGen.push_back(0xc0 | src | (dest << 3));
+}
+
+void Amd64Backend::divRegFromReg(CodeGen& codeGen, Registers dest, Registers src, bool is32bits) {
+    assert(dest == Registers::AX && "Only the AX register is supported as dest.");
+
+    if (!is32bits) {
+        codeGen.push_back(0x48);
+    }
+
+    codeGen.push_back(0xf7);
+    codeGen.push_back(0xf8 | src | (dest << 3));
 }
