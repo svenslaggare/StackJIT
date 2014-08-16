@@ -68,7 +68,7 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
             converter.LongValue = calledFuncAddr;
 
             int base = offset + 2;
-            for (int i = 0; i < 8; i++) {
+            for (int i = 0; i < sizeof(long); i++) {
                 funcCode[base + i] = converter.ByteValues[i];
             }
         } else {
