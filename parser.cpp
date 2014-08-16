@@ -38,6 +38,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Program& progra
     bool isFunc = false;
     std::string funcName = "";
     int funcArgs = 0;
+    int numLocals = 4;
 
     std::vector<Instruction>* mainInstructions = new std::vector<Instruction>();
     std::vector<Instruction>* instructions = mainInstructions;
@@ -103,6 +104,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Program& progra
 
                 DefinedFunction newFunc;
                 newFunc.NumArgs = funcArgs;
+                newFunc.NumLocals = numLocals;
                 newFunc.Instructions = instructions;
 
                 program.Functions[funcName] = newFunc;
@@ -114,6 +116,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Program& progra
     //Create the main function
     DefinedFunction mainFunc;
     mainFunc.NumArgs = 0;
+    mainFunc.NumLocals = 4;
     mainFunc.Instructions = mainInstructions;
     program.Functions["main"] = mainFunc;
 }

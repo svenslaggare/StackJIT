@@ -35,6 +35,7 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
         Function newFunc;
         newFunc.Name = func.first;
         newFunc.NumArgs = func.second.NumArgs;
+        newFunc.NumLocals = func.second.NumLocals;
         newFunc.Instructions = *func.second.Instructions;
 
         auto funcPtr = generateFunction(newFunc, vmState);

@@ -13,7 +13,7 @@ typedef std::pair<std::string, unsigned int> FunctionCall;
 struct Function {
 	std::string Name;
 	int NumArgs;
-	int NumLocals = 4;
+	int NumLocals;
 	std::map<FunctionCall, std::string> CallTable;
 	std::vector<Instruction> Instructions;
 	std::vector<unsigned char> GeneratedCode;

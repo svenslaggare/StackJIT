@@ -10,8 +10,8 @@ All programs must always end with _one_ operand on the evaluation stack, which w
 to the stdout.
 
 ###Locals###
-The VM supports 8 locals, indexed from 0 to 7. The locals may be moved to a stack frame basis
-instead of globally.
+The VM supports per stack-frame locals. Currently the number of
+locals per frame is hardcoded to four (indexed 0-3).
 
 ###Function calls###
 Both native and user defined functions can be called. The arguments are popped from

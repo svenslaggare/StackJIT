@@ -8,6 +8,7 @@ struct Instruction;
 //Represents a function definition
 struct DefinedFunction {
 	int NumArgs = 0;
+	int NumLocals = 0;
 	std::vector<Instruction>* Instructions;
 };
 
