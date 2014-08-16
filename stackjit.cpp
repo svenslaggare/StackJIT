@@ -25,20 +25,13 @@ int main(int argc, char* argv[]) {
     int (*programPtr)() = CodeGenerator::generateProgram(program, vmState);
 
     //Execute the program
+    int res = programPtr();
+
     if (ENABLE_DEBUG) {
         std::cout << "Program output: " << std::endl;
     }
 
-    std::cout << programPtr() << std::endl;
-
-    if (ENABLE_DEBUG) {
-        std::cout << std::endl;
-        std::cout << "Locals: " << std::endl;
-
-        for (int i = 0; i < NUM_LOCALS; i++) {
-            std::cout << i << ": " << vmState.Locals[i] << std::endl;
-        }
-    }
+    std::cout << res << std::endl;
 
     //Free instructions
     for (auto func : program.Functions) {
@@ -46,4 +39,29 @@ int main(int argc, char* argv[]) {
     }
 
     return 0;
+}
+
+void rt_printStackFrame(long* basePtr, int numArgs, int numLocals) {
+    std::cout << "----Start StackFrame----" << std::endl;
+    std::cout << "Num args: " << numArgs << std::endl;
+    std::cout << "Num locals: " << numLocals << std::endl;
+
+    long* argsStart = basePtr - 1;
+    long* localsStart = basePtr - 1 - numArgs;
+
+    if (numArgs > 0) {
+        std::cout << std::endl;
+        std::cout << "Args: " << std::endl;
+        for (int i = 0; i < numArgs; i++) {
+            std::cout << i << ": " << argsStart[-i] << std::endl;
+        }
+    }
+
+    std::cout << std::endl;
+
+    std::cout << "Locals: " << std::endl;
+    for (int i = 0; i < numLocals; i++) {
+        std::cout << i << ": " << localsStart[-i] << std::endl;
+    }
+    std::cout << "----End StackFrame----" << std::endl;
 }

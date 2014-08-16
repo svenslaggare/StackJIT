@@ -1,0 +1,12 @@
+func int_push 1
+LDARG 0
+STLOC 1
+LDLOC 1
+endfunc
+
+PUSH 15
+STLOC 1
+PUSH 5
+CALL int_push 1
+STLOC 0
+LDLOC 1

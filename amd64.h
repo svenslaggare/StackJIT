@@ -38,7 +38,7 @@ namespace Amd64Backend {
 	//Moves the content from memory where the address is in the second register to the first register
 	void moveMemoryByRegToReg(CodeGen&, Registers, Registers);
 
-	//Moves the content from a registet to memory where the address is in a register + offset
+	//Moves the content from a register to memory where the address is in a register + offset
 	void moveRegToMemoryRegWithOffset(CodeGen&, Registers, char, Registers);
 
 	//Moves the given integer (32-bits) to the given register
