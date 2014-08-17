@@ -4,6 +4,7 @@
 #include <sys/mman.h>
 
 #include "stackjit.h"
+#include "program.h"
 #include "instructions.h"
 #include "parser.h"
 #include "standardlibrary.h"
@@ -33,16 +34,15 @@ int main(int argc, char* argv[]) {
 
     std::cout << res << std::endl;
 
-    //Free instructions
-    for (auto func : program.Functions) {
-        delete func.second.Instructions;
-    }
-
     return 0;
 }
 
-void rt_printStackFrame(long* basePtr, int numArgs, int numLocals) {
+void rt_printStackFrame(long* basePtr, Function* func) {
+    int numArgs = func->NumArgs;
+    int numLocals = func->NumLocals;
+
     std::cout << "----Start StackFrame----" << std::endl;
+    std::cout << "Func: " << func->Name << std::endl;
     std::cout << "Num args: " << numArgs << std::endl;
     std::cout << "Num locals: " << numLocals << std::endl;
 

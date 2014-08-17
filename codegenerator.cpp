@@ -4,6 +4,7 @@
 
 #include "codegenerator.h"
 #include "stackjit.h"
+#include "program.h"
 #include "instructions.h"
 #include "parser.h"
 #include "standardlibrary.h"
@@ -25,31 +26,25 @@ void pushArray(std::vector<unsigned char>& dest, const std::vector<unsigned char
     }
 }
 
-const int REG_SIZE = 8;
 
 JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
     std::map<FunctionCall, std::string> callTable;
 
     //Generate code for all functions
-    for (auto func : program.Functions) {
-        Function newFunc;
-        newFunc.Name = func.first;
-        newFunc.NumArgs = func.second.NumArgs;
-        newFunc.NumLocals = func.second.NumLocals;
-        newFunc.Instructions = *func.second.Instructions;
-
-        auto funcPtr = generateFunction(newFunc, vmState);
+    for (auto currentFunc : program.Functions) {
+        auto func = currentFunc.second;
+        auto funcPtr = generateFunction(*func, vmState);
 
         if (ENABLE_DEBUG) {
-            std::cout << "Defined function '" << func.first << "' at 0x" << std::hex << (long)funcPtr << std::dec << "." << std::endl;
+            std::cout << "Defined function '" << func->Name << "' at 0x" << std::hex << (long)funcPtr << std::dec << "." << std::endl;
         }
 
         //Add the unresolved call to the program call table
-        for (auto call : newFunc.CallTable) {
+        for (auto call : func->CallTable) {
             callTable[call.first] = call.second;
         }
 
-        vmState.FunctionTable[func.first] = (long)funcPtr;
+        vmState.FunctionTable[func->Name] = (long)funcPtr;
     }
 
     //Fix unresolved calls
@@ -86,39 +81,39 @@ JitFunction CodeGenerator::generateFunction(Function& function, const VMState& v
     Amd64Backend::pushReg(function.GeneratedCode, Registers::BP); //push rbp
     Amd64Backend::moveRegToReg(function.GeneratedCode, Registers::BP, Registers::SP); //mov rbp, rbp
 
-    //Move function arguments from registers to stack
+    //Move function arguments from registers to the stack
     if (function.NumArgs > 0) {
         //Make room for the arguments on the stack
-        char argsSize = function.NumArgs * REG_SIZE;
+        char argsSize = function.NumArgs * Amd64Backend::REG_SIZE;
         Amd64Backend::subByteFromReg(function.GeneratedCode, Registers::SP, argsSize); //sub rsp, <size of args>
 
         //Move the arguments from the registers to the stack
         if (function.NumArgs >= 4) {
-            Amd64Backend::moveRegToMemoryRegWithOffset(function.GeneratedCode, Registers::BP, -REG_SIZE*4, Registers::CX); //mov [rbp-4*REG_SIZE], rcx
+            Amd64Backend::moveRegToMemoryRegWithOffset(function.GeneratedCode, Registers::BP, -Amd64Backend::REG_SIZE*4, Registers::CX); //mov [rbp-4*REG_SIZE], rcx
         }
 
         if (function.NumArgs >= 3) {
-            Amd64Backend::moveRegToMemoryRegWithOffset(function.GeneratedCode, Registers::BP, -REG_SIZE*3, Registers::DX); //mov [rbp-3*REG_SIZE], rdx
+            Amd64Backend::moveRegToMemoryRegWithOffset(function.GeneratedCode, Registers::BP, -Amd64Backend::REG_SIZE*3, Registers::DX); //mov [rbp-3*REG_SIZE], rdx
         }
 
         if (function.NumArgs >= 2) {
-            Amd64Backend::moveRegToMemoryRegWithOffset(function.GeneratedCode, Registers::BP, -REG_SIZE*2, Registers::SI); //mov [rbp-2*REG_SIZE], rsi
+            Amd64Backend::moveRegToMemoryRegWithOffset(function.GeneratedCode, Registers::BP, -Amd64Backend::REG_SIZE*2, Registers::SI); //mov [rbp-2*REG_SIZE], rsi
         }
 
         if (function.NumArgs >= 1) {
-            Amd64Backend::moveRegToMemoryRegWithOffset(function.GeneratedCode, Registers::BP, -REG_SIZE, Registers::DI); //mov [rbp-REG_SIZE], rdi
+            Amd64Backend::moveRegToMemoryRegWithOffset(function.GeneratedCode, Registers::BP, -Amd64Backend::REG_SIZE, Registers::DI); //mov [rbp-REG_SIZE], rdi
         }
     }
 
     //Make room for the locals on the stack
-    char localsSize = (function.NumLocals) * REG_SIZE;
+    char localsSize = (function.NumLocals) * Amd64Backend::REG_SIZE;
     Amd64Backend::subByteFromReg(function.GeneratedCode, Registers::SP, localsSize); //sub rsp, <size of locals>
 
     //Zero the locals
     Amd64Backend::moveIntToReg(function.GeneratedCode, Registers::AX, 0); //mov rax, 0
 
     for (int i = 0; i < function.NumLocals; i++) {
-        int localOffset = (i + function.NumArgs + 1) * -REG_SIZE;
+        int localOffset = (i + function.NumArgs + 1) * -Amd64Backend::REG_SIZE;
         Amd64Backend::moveRegToMemoryRegWithOffset(function.GeneratedCode, Registers::BP, localOffset, Registers::AX); //mov [rbp-local], rax
     }
 
@@ -131,8 +126,7 @@ JitFunction CodeGenerator::generateFunction(Function& function, const VMState& v
     if (ENABLE_DEBUG) {
         Amd64Backend::moveLongToReg(function.GeneratedCode, Registers::AX, (long)&rt_printStackFrame);
         Amd64Backend::moveRegToReg(function.GeneratedCode, Registers::DI, Registers::BP); //BP as the first argument
-        Amd64Backend::moveIntToReg(function.GeneratedCode, Registers::SI, function.NumArgs); //Num args as second argument
-        Amd64Backend::moveIntToReg(function.GeneratedCode, Registers::DX, function.NumLocals); //Num locals as third argument
+        Amd64Backend::moveLongToReg(function.GeneratedCode, Registers::SI, (long)&function); //Address of function as second argument
         Amd64Backend::callInReg(function.GeneratedCode, Registers::AX);
     }
 
@@ -211,7 +205,7 @@ void CodeGenerator::generateInstruction(Function& function, const VMState& vmSta
     case OpCodes::LOAD_LOCAL:
         {
             //Load rax with the locals offset
-            Amd64Backend::moveIntToReg(generatedCode, Registers::AX, (inst.Value + function.NumArgs + stackOffset) * -REG_SIZE); //mov rax, <int>
+            Amd64Backend::moveIntToReg(generatedCode, Registers::AX, (inst.Value + function.NumArgs + stackOffset) * -Amd64Backend::REG_SIZE); //mov rax, <int>
 
             //Now add the base pointer
             Amd64Backend::addRegToReg(generatedCode, Registers::AX, Registers::BP); //add rax, rbp
@@ -228,7 +222,7 @@ void CodeGenerator::generateInstruction(Function& function, const VMState& vmSta
             //Pop the top operand
             Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
 
-            int localOffset = (inst.Value + function.NumArgs + stackOffset) * -REG_SIZE;
+            int localOffset = (inst.Value + function.NumArgs + stackOffset) * -Amd64Backend::REG_SIZE;
 
             //Store the operand at the given local
             Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::BP, localOffset, Registers::AX); //mov [rbp-local], rax
@@ -283,7 +277,7 @@ void CodeGenerator::generateInstruction(Function& function, const VMState& vmSta
     case OpCodes::LOAD_ARG:
         {
             //Load rax with the arg offset
-            Amd64Backend::moveIntToReg(generatedCode, Registers::AX, (inst.Value + stackOffset) * -REG_SIZE); //mov rax, <int>
+            Amd64Backend::moveIntToReg(generatedCode, Registers::AX, (inst.Value + stackOffset) * -Amd64Backend::REG_SIZE); //mov rax, <int>
 
             //Now add the base pointer
             Amd64Backend::addRegToReg(generatedCode, Registers::AX, Registers::BP); //add rax, rbp

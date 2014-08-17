@@ -2,6 +2,8 @@
 #include <string>
 #include <map>
 
+struct Function;
+
 //Indicates if debugging is enabled
 const bool ENABLE_DEBUG = true;
 
@@ -11,4 +13,4 @@ struct VMState {
 };
 
 //Prints the given stack frame
-void rt_printStackFrame(long*, int, int);
+void rt_printStackFrame(long*, Function*);

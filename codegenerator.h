@@ -3,21 +3,12 @@
 #include <map>
 
 struct VMState;
-struct Instruction;
 struct Program;
+struct Function;
+struct Instruction;
 
 typedef int (*JitFunction)();
 typedef std::pair<std::string, unsigned int> FunctionCall;
-
-//Represents an user defined function
-struct Function {
-	std::string Name;
-	int NumArgs;
-	int NumLocals;
-	std::map<FunctionCall, std::string> CallTable;
-	std::vector<Instruction> Instructions;
-	std::vector<unsigned char> GeneratedCode;
-};
 
 //The code generator
 namespace CodeGenerator {
