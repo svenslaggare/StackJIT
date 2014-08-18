@@ -11,7 +11,14 @@ enum OpCodes {
     LOAD_LOCAL,
     STORE_LOCAL, 
     CALL,
-    LOAD_ARG
+    LOAD_ARG,
+    BR,
+    BEQ,
+    BNE,
+    BGT,
+    BGE,
+    BLT,
+    BLE
 };
 
 //Represents an instruction
@@ -38,3 +45,9 @@ Instruction makeCall(std::string funcName, int numArgs);
 
 //Creates a new load argument instruction
 Instruction makeLoadArg(int argNum);
+
+//Creates a new branch instruction
+Instruction makeBr(int target);
+
+//Creates a new instruction with an int as value
+Instruction makeInstWithInt(OpCodes opCode, int value);

@@ -73,4 +73,28 @@ namespace Amd64Backend {
 
 	//Divides the second register from the first
 	void divRegFromReg(CodeGen&, Registers, Registers, bool is32bits = false);
+
+	//Compares the two registers
+	void compareRegToReg(CodeGen&, Registers, Registers);
+
+	//Jumps to the target
+	void jump(CodeGen&, int);
+
+	//Jumps if equal to the target
+	void jumpEqual(CodeGen&, int);
+
+	//Jumps if not equal to the target
+	void jumpNotEqual(CodeGen&, int);
+
+	//Jumps if > to the target
+	void jumpGreaterThan(CodeGen&, int);
+
+	//Jumps if >= to the target
+	void jumpGreaterThanOrEqual(CodeGen&, int);
+
+	//Jumps if < to the target
+	void jumpLessThan(CodeGen&, int);
+
+	//Jumps if <= to the target
+	void jumpLessThanOrEqual(CodeGen&, int);
 }

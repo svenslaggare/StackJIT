@@ -10,6 +10,11 @@
 #include "standardlibrary.h"
 #include "amd64.h"
 
+union ShortToBytes {
+    short ShortValue;
+    unsigned char ByteValues[sizeof(short)];
+};
+
 union IntToBytes {
     int IntValue;
     unsigned char ByteValues[sizeof(int)];
@@ -117,16 +122,18 @@ JitFunction CodeGenerator::generateFunction(Function& function, const VMState& v
         Amd64Backend::moveRegToMemoryRegWithOffset(function.GeneratedCode, Registers::BP, localOffset, Registers::AX); //mov [rbp-local], rax
     }
 
+    FunctionCompilationData functionData { function };
+
     //Generate the code for the program
     for (auto current : function.Instructions) {
-        generateInstruction(function, vmState, current);
+        generateInstruction(functionData, vmState, current);
     }
 
     //If debug is enabled, print the stack frame before return (maybe add when called also?)
     if (ENABLE_DEBUG) {
         Amd64Backend::moveLongToReg(function.GeneratedCode, Registers::AX, (long)&rt_printStackFrame);
         Amd64Backend::moveRegToReg(function.GeneratedCode, Registers::DI, Registers::BP); //BP as the first argument
-        Amd64Backend::moveLongToReg(function.GeneratedCode, Registers::SI, (long)&function); //Address of function as second argument
+        Amd64Backend::moveLongToReg(function.GeneratedCode, Registers::SI, (long)&function); //Address of the function as second argument
         Amd64Backend::callInReg(function.GeneratedCode, Registers::AX);
     }
 
@@ -139,6 +146,27 @@ JitFunction CodeGenerator::generateFunction(Function& function, const VMState& v
 
     //Make the return
     Amd64Backend::ret(function.GeneratedCode); //ret
+
+    //Patch branches with the native targets
+    for (auto branch : functionData.BranchTable) {
+        unsigned int source = branch.first;
+        unsigned int target = branch.second.first;
+        unsigned int instSize = branch.second.second;
+
+        unsigned int nativeTarget = functionData.InstructionNumMapping[target];
+
+        //Calculate the native target
+        IntToBytes converter;
+        converter.IntValue = nativeTarget - source - instSize;
+
+        unsigned int sourceOffset = instSize - 4;
+
+        //Update the source with the native target
+        function.GeneratedCode[source + sourceOffset + 0] = converter.ByteValues[0];
+        function.GeneratedCode[source + sourceOffset + 1] = converter.ByteValues[1];
+        function.GeneratedCode[source + sourceOffset + 2] = converter.ByteValues[2];
+        function.GeneratedCode[source + sourceOffset + 3] = converter.ByteValues[3];
+    }
 
     //Get a pointer & size of the generated instructions
     unsigned char* code = function.GeneratedCode.data();
@@ -164,9 +192,13 @@ JitFunction CodeGenerator::generateFunction(Function& function, const VMState& v
     return (JitFunction)mem;
 }
 
-void CodeGenerator::generateInstruction(Function& function, const VMState& vmState, const Instruction& inst) {
+void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, const VMState& vmState, const Instruction& inst) {
+    auto& function = functionData.Function;
     auto& generatedCode = function.GeneratedCode;
     int stackOffset = 1; //The offset for variables allocated on the stack
+
+    //Make the mapping
+    functionData.InstructionNumMapping.push_back(generatedCode.size());
 
     switch (inst.OpCode) {
     case OpCodes::PUSH_INT:
@@ -287,6 +319,55 @@ void CodeGenerator::generateInstruction(Function& function, const VMState& vmSta
 
             //Push the loaded value
             Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
+        }
+        break;
+    case OpCodes::BR:
+        {
+            Amd64Backend::jump(generatedCode, 0); //jmp <target>
+
+            //As the exact target in native instructions isn't known, defer to later.
+            functionData.BranchTable[generatedCode.size() - 5] = std::make_pair(inst.Value, 5);
+        }
+        break;
+    case OpCodes::BEQ:
+    case OpCodes::BNE:
+    case OpCodes::BGT:
+    case OpCodes::BGE:
+    case OpCodes::BLT:
+    case OpCodes::BLE:
+        {
+            //Pop 2 operands
+            Amd64Backend::popReg(generatedCode, Registers::CX); //pop ecx
+            Amd64Backend::popReg(generatedCode, Registers::AX); //pop eax
+
+            //Compare and jump
+            Amd64Backend::compareRegToReg(generatedCode, Registers::AX, Registers::CX); //cmp rax, rcx
+            
+            switch (inst.OpCode) {
+                case OpCodes::BEQ:
+                    Amd64Backend::jumpEqual(generatedCode, 0); //je <target>
+                    break;
+                case OpCodes::BNE:
+                    Amd64Backend::jumpNotEqual(generatedCode, 0); //jne <target>
+                    break;
+                case OpCodes::BGT:
+                    Amd64Backend::jumpGreaterThan(generatedCode, 0); //jg <target>
+                    break;
+                case OpCodes::BGE:
+                    Amd64Backend::jumpGreaterThanOrEqual(generatedCode, 0); //jge <target>
+                    break;
+                case OpCodes::BLT:
+                    Amd64Backend::jumpLessThan(generatedCode, 0); //jl <target>
+                    break;
+                case OpCodes::BLE:
+                    Amd64Backend::jumpLessThanOrEqual(generatedCode, 0); //jle <target>
+                    break;
+                default:
+                    break;
+            }
+
+            //As the exact target in native instructions isn't known, defer to later.
+            functionData.BranchTable[generatedCode.size() - 6] = std::make_pair(inst.Value, 6);
         }
         break;
     default:

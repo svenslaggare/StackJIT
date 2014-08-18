@@ -25,11 +25,15 @@ int main(int argc, char* argv[]) {
     //Generate a function for the instructions
     int (*programPtr)() = CodeGenerator::generateProgram(program, vmState);
 
+    if (ENABLE_DEBUG) {
+        std::cout << "Program output:" << std::endl;
+    }
+
     //Execute the program
     int res = programPtr();
 
     if (ENABLE_DEBUG) {
-        std::cout << "Program output: " << std::endl;
+        std::cout << "Return value: " << std::endl;
     }
 
     std::cout << res << std::endl;

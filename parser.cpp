@@ -97,6 +97,41 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Program& progra
             currentFunc->Instructions.push_back(makeLoadArg(argNum));
         }
 
+        if (currentToLower == "br") {
+            int target = stoi(tokens[i + 1]);
+            currentFunc->Instructions.push_back(makeBr(target));
+        }
+
+        if (currentToLower == "beq") {
+            int target = stoi(tokens[i + 1]);
+            currentFunc->Instructions.push_back(makeInstWithInt(OpCodes::BEQ, target));
+        }
+
+        if (currentToLower == "bne") {
+            int target = stoi(tokens[i + 1]);
+            currentFunc->Instructions.push_back(makeInstWithInt(OpCodes::BNE, target));
+        }
+
+        if (currentToLower == "bgt") {
+            int target = stoi(tokens[i + 1]);
+            currentFunc->Instructions.push_back(makeInstWithInt(OpCodes::BGT, target));
+        }
+
+        if (currentToLower == "bge") {
+            int target = stoi(tokens[i + 1]);
+            currentFunc->Instructions.push_back(makeInstWithInt(OpCodes::BGE, target));
+        }
+
+        if (currentToLower == "blt") {
+            int target = stoi(tokens[i + 1]);
+            currentFunc->Instructions.push_back(makeInstWithInt(OpCodes::BLT, target));
+        }
+
+        if (currentToLower == "ble") {
+            int target = stoi(tokens[i + 1]);
+            currentFunc->Instructions.push_back(makeInstWithInt(OpCodes::BLE, target));
+        }
+
         if (!isFunc) {
             if (currentToLower == "func") {
                 isFunc = true;
