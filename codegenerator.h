@@ -1,6 +1,5 @@
 #pragma once
 #include <vector>
-#include <map>
 #include <unordered_map>
 
 struct VMState;
@@ -32,6 +31,6 @@ namespace CodeGenerator {
 	//Generates a function
 	JitFunction generateFunction(Function& function, const VMState& vmState);
 
-	//Generates code for the given instruction
+	//Generates native instructions for the given VM instruction
 	void generateInstruction(FunctionCompilationData& functionData, const VMState& vmState, const Instruction& inst);
 }

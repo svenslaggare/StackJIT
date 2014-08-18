@@ -38,8 +38,6 @@ std::string toLower(std::string str) {
 
 void Parser::parseTokens(const std::vector<std::string>& tokens, Program& program) {
     bool isFunc = false;
-    std::string funcName = "";
-    int funcArgs = 0;
     int numLocals = 4;
 
     //Create the main function
@@ -78,12 +76,22 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Program& progra
 
         if (currentToLower == "ldloc") {
             int local = stoi(tokens[i + 1]);
-            currentFunc->Instructions.push_back(makeLoadLocal(local));
+
+            if (local >= 0 && local < currentFunc->NumLocals) {
+                currentFunc->Instructions.push_back(makeLoadLocal(local));
+            } else {
+                throw std::runtime_error("Local out of range.");
+            }
         }
 
         if (currentToLower == "stloc") {
             int local = stoi(tokens[i + 1]);
-            currentFunc->Instructions.push_back(makeStoreLocal(local));
+            
+            if (local >= 0 && local < currentFunc->NumLocals) {
+                currentFunc->Instructions.push_back(makeStoreLocal(local));
+            } else {
+                throw std::runtime_error("Local out of range.");
+            }
         }
 
         if (currentToLower == "call") {
@@ -94,7 +102,12 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Program& progra
 
         if (currentToLower == "ldarg") {
             int argNum = stoi(tokens[i + 1]);
-            currentFunc->Instructions.push_back(makeLoadArg(argNum));
+
+            if (argNum >= 0 && argNum < currentFunc->NumArgs) {
+                currentFunc->Instructions.push_back(makeLoadArg(argNum));
+            } else {
+                throw std::runtime_error("Argument out of range.");
+            }
         }
 
         if (currentToLower == "br") {
@@ -135,17 +148,21 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Program& progra
         if (!isFunc) {
             if (currentToLower == "func") {
                 isFunc = true;
-                funcName = tokens[i + 1];
-                funcArgs = stoi(tokens[i + 2]);
+                std::string funcName = tokens[i + 1];
+                int funcArgs = stoi(tokens[i + 2]);
 
-                //Create a new function        
-                Function* newFunc = new Function;
-                newFunc->Name = funcName;
-                newFunc->NumArgs = funcArgs;
-                newFunc->NumLocals = numLocals;
-                program.Functions[funcName] = newFunc;
+                if (funcArgs >= 0 && funcArgs <= 4) {
+                    //Create a new function        
+                    Function* newFunc = new Function;
+                    newFunc->Name = funcName;
+                    newFunc->NumArgs = funcArgs;
+                    newFunc->NumLocals = numLocals;
+                    program.Functions[funcName] = newFunc;
 
-                currentFunc = newFunc;
+                    currentFunc = newFunc;
+                } else {
+                    throw std::runtime_error("Maximum four arguments are supported.");
+                }
             }
         } else {
             if (currentToLower == "endfunc") {

@@ -10,11 +10,6 @@
 #include "standardlibrary.h"
 #include "amd64.h"
 
-union ShortToBytes {
-    short ShortValue;
-    unsigned char ByteValues[sizeof(short)];
-};
-
 union IntToBytes {
     int IntValue;
     unsigned char ByteValues[sizeof(int)];
@@ -73,7 +68,7 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
                 funcCode[base + i] = converter.ByteValues[i];
             }
         } else {
-            throw std::string("Function '" + calledFunc + "' not found.");
+            throw std::runtime_error("Function '" + calledFunc + "' not found.");
         }
     }
 
@@ -124,7 +119,7 @@ JitFunction CodeGenerator::generateFunction(Function& function, const VMState& v
 
     FunctionCompilationData functionData { function };
 
-    //Generate the code for the program
+    //Generate the native instructions for the program
     for (auto current : function.Instructions) {
         generateInstruction(functionData, vmState, current);
     }
@@ -155,7 +150,7 @@ JitFunction CodeGenerator::generateFunction(Function& function, const VMState& v
 
         unsigned int nativeTarget = functionData.InstructionNumMapping[target];
 
-        //Calculate the native target
+        //Calculate the native jump location
         IntToBytes converter;
         converter.IntValue = nativeTarget - source - instSize;
 
@@ -192,6 +187,14 @@ JitFunction CodeGenerator::generateFunction(Function& function, const VMState& v
     return (JitFunction)mem;
 }
 
+void validateJumpTarget(FunctionCompilationData& functionData, int target) {
+    auto numInst = functionData.Function.Instructions.size();
+
+    if (!(target >= 0 && target < numInst)) {
+        throw std::runtime_error("The jump target is invalid.");
+    }
+}
+
 void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, const VMState& vmState, const Instruction& inst) {
     auto& function = functionData.Function;
     auto& generatedCode = function.GeneratedCode;
@@ -202,7 +205,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
     switch (inst.OpCode) {
     case OpCodes::PUSH_INT:
-        //An operand, push the value
+        //Push the value
         Amd64Backend::pushInt(generatedCode, inst.Value); //push <value>
         break;
     case OpCodes::ADD:
@@ -323,6 +326,9 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::BR:
         {
+            //Validate jump target
+            validateJumpTarget(functionData, inst.Value);
+
             Amd64Backend::jump(generatedCode, 0); //jmp <target>
 
             //As the exact target in native instructions isn't known, defer to later.
@@ -336,6 +342,9 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::BLT:
     case OpCodes::BLE:
         {
+            //Validate jump target
+            validateJumpTarget(functionData, inst.Value);
+            
             //Pop 2 operands
             Amd64Backend::popReg(generatedCode, Registers::CX); //pop ecx
             Amd64Backend::popReg(generatedCode, Registers::AX); //pop eax

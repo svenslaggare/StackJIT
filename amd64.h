@@ -77,24 +77,24 @@ namespace Amd64Backend {
 	//Compares the two registers
 	void compareRegToReg(CodeGen&, Registers, Registers);
 
-	//Jumps to the target
+	//Jumps to the target relative the current instruction
 	void jump(CodeGen&, int);
 
-	//Jumps if equal to the target
+	//Jumps if equal to the target relative the current instruction
 	void jumpEqual(CodeGen&, int);
 
-	//Jumps if not equal to the target
+	//Jumps if not equal to the target relative the current instruction
 	void jumpNotEqual(CodeGen&, int);
 
-	//Jumps if > to the target
+	//Jumps if > to the target relative the current instruction
 	void jumpGreaterThan(CodeGen&, int);
 
-	//Jumps if >= to the target
+	//Jumps if >= to the target relative the current instruction
 	void jumpGreaterThanOrEqual(CodeGen&, int);
 
-	//Jumps if < to the target
+	//Jumps if < to the target relative the current instruction
 	void jumpLessThan(CodeGen&, int);
 
-	//Jumps if <= to the target
+	//Jumps if <= to the target relative the current instruction
 	void jumpLessThanOrEqual(CodeGen&, int);
 }
