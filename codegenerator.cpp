@@ -30,17 +30,19 @@ void pushArray(std::vector<unsigned char>& dest, const std::vector<unsigned char
 JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
     std::map<FunctionCall, std::string> callTable;
 
-    //Generate code for all functions
+    //Generate instructions for all functions
     for (auto currentFunc : program.Functions) {
         auto func = currentFunc.second;
-        auto funcPtr = generateFunction(*func, vmState);
+        FunctionCompilationData funcData { *func };
+
+        auto funcPtr = generateFunction(funcData, vmState);
 
         if (ENABLE_DEBUG) {
             std::cout << "Defined function '" << func->Name << "' at 0x" << std::hex << (long)funcPtr << std::dec << "." << std::endl;
         }
 
         //Add the unresolved call to the program call table
-        for (auto call : func->CallTable) {
+        for (auto call : funcData.CallTable) {
             callTable[call.first] = call.second;
         }
 
@@ -76,7 +78,9 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
     return (JitFunction)vmState.FunctionTable["main"];
 }
 
-JitFunction CodeGenerator::generateFunction(Function& function, const VMState& vmState) {
+JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionData, const VMState& vmState) {
+    auto& function = functionData.Function;
+
     //Save the base pointer
     Amd64Backend::pushReg(function.GeneratedCode, Registers::BP); //push rbp
     Amd64Backend::moveRegToReg(function.GeneratedCode, Registers::BP, Registers::SP); //mov rbp, rbp
@@ -105,19 +109,38 @@ JitFunction CodeGenerator::generateFunction(Function& function, const VMState& v
         }
     }
 
-    //Make room for the locals on the stack
-    char localsSize = (function.NumLocals) * Amd64Backend::REG_SIZE;
-    Amd64Backend::subByteFromReg(function.GeneratedCode, Registers::SP, localsSize); //sub rsp, <size of locals>
+    if (function.NumLocals > 0) {
+        //Make room for the locals on the stack
+        char localsSize = (function.NumLocals) * Amd64Backend::REG_SIZE;
+        Amd64Backend::subByteFromReg(function.GeneratedCode, Registers::SP, localsSize); //sub rsp, <size of locals>
 
-    //Zero the locals
-    Amd64Backend::moveIntToReg(function.GeneratedCode, Registers::AX, 0); //mov rax, 0
+        //Zero the locals
+        // Amd64Backend::moveIntToReg(function.GeneratedCode, Registers::AX, 0); //mov rax, 0
 
-    for (int i = 0; i < function.NumLocals; i++) {
-        int localOffset = (i + function.NumArgs + 1) * -Amd64Backend::REG_SIZE;
-        Amd64Backend::moveRegToMemoryRegWithOffset(function.GeneratedCode, Registers::BP, localOffset, Registers::AX); //mov [rbp-local], rax
+        // for (int i = 0; i < function.NumLocals; i++) {
+        //     int localOffset = (i + function.NumArgs + 1) * -Amd64Backend::REG_SIZE;
+        //     Amd64Backend::moveRegToMemoryRegWithOffset(function.GeneratedCode, Registers::BP, localOffset, Registers::AX); //mov [rbp-local], rax
+        // }
+
+        //Set the dir flag to decrease
+        function.GeneratedCode.push_back(0xFD); //std
+
+        //Set the address where the locals starts
+        Amd64Backend::moveRegToReg(function.GeneratedCode, Registers::DI, Registers::BP); //mov rdi, rbp
+        Amd64Backend::addByteToReg(function.GeneratedCode, Registers::DI, (function.NumArgs + 1) * -Amd64Backend::REG_SIZE); //add rdi, <locals offset>
+
+        //Set the number of locals
+        Amd64Backend::moveIntToReg(function.GeneratedCode, Registers::CX, function.NumLocals); //mov rcx, <num locals>
+
+        //Zero eax
+        pushArray(function.GeneratedCode, { 0x31, 0xC0 }); //xor eax, eax
+
+        //Execute the zeroing
+        pushArray(function.GeneratedCode, { 0xF3, 0x48, 0xAB }); //rep stosq
+
+        //Clear the dir flag
+        function.GeneratedCode.push_back(0xFC); //cld
     }
-
-    FunctionCompilationData functionData { function };
 
     //Generate the native instructions for the program
     for (auto current : function.Instructions) {
@@ -157,10 +180,9 @@ JitFunction CodeGenerator::generateFunction(Function& function, const VMState& v
         unsigned int sourceOffset = instSize - 4;
 
         //Update the source with the native target
-        function.GeneratedCode[source + sourceOffset + 0] = converter.ByteValues[0];
-        function.GeneratedCode[source + sourceOffset + 1] = converter.ByteValues[1];
-        function.GeneratedCode[source + sourceOffset + 2] = converter.ByteValues[2];
-        function.GeneratedCode[source + sourceOffset + 3] = converter.ByteValues[3];
+        for (int i = 0; i < 4; i++) {
+            function.GeneratedCode[source + sourceOffset + i] = converter.ByteValues[i];
+        }
     }
 
     //Get a pointer & size of the generated instructions
@@ -183,7 +205,7 @@ JitFunction CodeGenerator::generateFunction(Function& function, const VMState& v
     //Copy the instructions
     memcpy(mem, code, length);
 
-    //Return the generated code as a function pointer
+    //Return the generated instuctions as a function pointer
     return (JitFunction)mem;
 }
 
@@ -273,7 +295,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 funcAddr = vmState.FunctionTable.at(inst.StrValue);
             } else {
                 //Mark that the function call needs to be patched with the address later
-                function.CallTable[make_pair(function.Name, generatedCode.size())] = inst.StrValue;
+                functionData.CallTable[make_pair(function.Name, generatedCode.size())] = inst.StrValue;
             }
 
             int numArgs = inst.Value;

@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <unordered_map>
+#include <map>
 
 struct VMState;
 struct Program;
@@ -15,6 +16,7 @@ struct FunctionCompilationData {
 	Function& Function; 																 //The function being jitted
 	std::unordered_map<unsigned int, std::pair<unsigned int, unsigned int>> BranchTable; //Branch sources and inst targets
 	std::vector<unsigned int> InstructionNumMapping;									 //Mapping from instruction num to native instruction
+	std::map<FunctionCall, std::string> CallTable;										 //The called functions
 
 	FunctionCompilationData(struct Function& function)
 		: Function(function)
@@ -29,7 +31,7 @@ namespace CodeGenerator {
 	JitFunction generateProgram(Program& program, VMState& vmState);
 
 	//Generates a function
-	JitFunction generateFunction(Function& function, const VMState& vmState);
+	JitFunction generateFunction(FunctionCompilationData& function, const VMState& vmState);
 
 	//Generates native instructions for the given VM instruction
 	void generateInstruction(FunctionCompilationData& functionData, const VMState& vmState, const Instruction& inst);
