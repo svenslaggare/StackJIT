@@ -138,14 +138,34 @@ void Amd64Backend::subRegFromReg(CodeGen& codeGen, Registers dest, Registers src
     codeGen.push_back(0xc0 | dest | (src << 3));
 }
 
-void Amd64Backend::subByteFromReg(CodeGen& codeGen, Registers destReg, char srcValue, bool is32bits) {
+void Amd64Backend::subByteFromReg(CodeGen& codeGen, Registers destReg, char value, bool is32bits) {
     if (!is32bits) {
         codeGen.push_back(0x48);
     }
 
     codeGen.push_back(0x83);
     codeGen.push_back(0xe8 | destReg);
-    codeGen.push_back(srcValue);
+    codeGen.push_back(value);
+}
+
+void Amd64Backend::subIntFromReg(CodeGen& codeGen, Registers destReg, int value, bool is32bits) {
+    if (!is32bits) {
+        codeGen.push_back(0x48);
+    }
+
+    if (destReg == Registers::AX) {
+    	 codeGen.push_back(0x2d);
+    } else {
+    	codeGen.push_back(0x81);
+    	codeGen.push_back(0xe8 | destReg);
+    }
+
+    IntToBytes converter;
+	converter.IntValue = value;
+
+	for (int i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.ByteValues[i]);
+	}
 }
 
 void Amd64Backend::multRegToReg(CodeGen& codeGen, Registers dest, Registers src, bool is32bits) {

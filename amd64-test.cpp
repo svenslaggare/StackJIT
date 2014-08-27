@@ -308,6 +308,35 @@ void testSubByteToReg() {
 	generatedCode.clear();
 }
 
+//Tests the subIntFromReg generator
+void testSubIntFromReg() {
+	std::vector<unsigned char> generatedCode;
+	Amd64Backend::subIntFromReg(generatedCode, Registers::AX, 20000);
+	arrayAssert(generatedCode, { 0x48, 0x2D, 0x20, 0x4E, 0x00, 0x00 } );
+	generatedCode.clear();
+
+	Amd64Backend::subIntFromReg(generatedCode, Registers::BX, 20000);
+	arrayAssert(generatedCode,  { 0x48, 0x81, 0xEB, 0x20, 0x4E, 0x00, 0x00 });
+	generatedCode.clear();
+
+	Amd64Backend::subIntFromReg(generatedCode, Registers::CX, 30000);
+	arrayAssert(generatedCode, { 0x48, 0x81, 0xE9, 0x30, 0x75, 0x00, 0x00 });
+	generatedCode.clear();
+
+	//32 bits
+	Amd64Backend::subIntFromReg(generatedCode, Registers::AX, 20000, true);
+	arrayAssert(generatedCode, { 0x2D, 0x20, 0x4E, 0x00, 0x00 });
+	generatedCode.clear();
+
+	Amd64Backend::subIntFromReg(generatedCode, Registers::BX, 20000, true);
+	arrayAssert(generatedCode, { 0x81, 0xEB, 0x20, 0x4E, 0x00, 0x00 });
+	generatedCode.clear();
+
+	Amd64Backend::subIntFromReg(generatedCode, Registers::CX, 30000, true);
+	arrayAssert(generatedCode, { 0x81, 0xE9, 0x30, 0x75, 0x00, 0x00 });
+	generatedCode.clear();
+}
+
 //Tests the multRegToReg generator
 void testMultRegToReg() {
 	std::vector<unsigned char> generatedCode;
@@ -384,6 +413,7 @@ int main() {
 	testAddByteToReg();
 	testSubRegFromReg();
 	testSubByteToReg();
+	testSubIntFromReg();
 	testMultRegToReg();
 	testDivRegFromReg();
 	std::cout << "All tests passed." << std::endl;
