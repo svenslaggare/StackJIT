@@ -5,9 +5,9 @@ A simple JIT compiler for a stack-based VM.
 <br>
 The JIT part is based on a blog entry by [Josh Haberman](http://blog.reverberate.org/2012/12/hello-jit-world-joy-of-simple-jits.html).
 
-###Execution###
-All programs must always end with _one_ operand on the evaluation stack, which will be printed
-to the stdout.
+###Branches###
+Only branches within the current function is supported. Currently, invalid jump targets
+are caught at runtime. This will be fixed later.
 
 ###Locals###
 The VM supports per stack-frame locals. Currently the number of
@@ -28,6 +28,7 @@ There is no "return" instruction atm, but all functions must end with _one_
 operand at the evaluation stack which will be the return value.
 Functions not enclosed within a function definition is automatically added
 to the 'main' function which is the entry point for a program.
+The returned value will be the output for the program.
 
 ##Instruction set##
 * `PUSH <value>`: Pushes a 32-bits integer to the evaluation stack.

@@ -85,12 +85,20 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
     Amd64Backend::pushReg(function.GeneratedCode, Registers::BP); //push rbp
     Amd64Backend::moveRegToReg(function.GeneratedCode, Registers::BP, Registers::SP); //mov rbp, rbp
 
+    //Calculate the size of the stack
+    int stackSize = (function.NumArgs + function.NumLocals) * Amd64Backend::REG_SIZE;
+
+    if (stackSize > 0) {
+        //Make room for the variables on the stack
+        if (stackSize < 128) {
+            Amd64Backend::subByteFromReg(function.GeneratedCode, Registers::SP, (char)stackSize); //sub rsp, <size of stack>
+        } else {
+            Amd64Backend::subIntFromReg(function.GeneratedCode, Registers::SP, stackSize); //sub rsp, <size of stack>
+        }
+    }
+
     //Move function arguments from registers to the stack
     if (function.NumArgs > 0) {
-        //Make room for the arguments on the stack
-        char argsSize = function.NumArgs * Amd64Backend::REG_SIZE;
-        Amd64Backend::subByteFromReg(function.GeneratedCode, Registers::SP, argsSize); //sub rsp, <size of args>
-
         //Move the arguments from the registers to the stack
         if (function.NumArgs >= 4) {
             Amd64Backend::moveRegToMemoryRegWithOffset(function.GeneratedCode, Registers::BP, -Amd64Backend::REG_SIZE*4, Registers::CX); //mov [rbp-4*REG_SIZE], rcx
@@ -110,11 +118,9 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
     }
 
     if (function.NumLocals > 0) {
-        //Make room for the locals on the stack
-        char localsSize = (function.NumLocals) * Amd64Backend::REG_SIZE;
-        Amd64Backend::subByteFromReg(function.GeneratedCode, Registers::SP, localsSize); //sub rsp, <size of locals>
-
         //Zero the locals
+
+        //This method should be faster? but makes the generated code larger
         // Amd64Backend::moveIntToReg(function.GeneratedCode, Registers::AX, 0); //mov rax, 0
 
         // for (int i = 0; i < function.NumLocals; i++) {

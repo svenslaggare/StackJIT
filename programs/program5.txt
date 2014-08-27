@@ -4,4 +4,4 @@ SUB
 PUSH 4
 MUL
 PUSH 3
-call rt_div 2
+DIV

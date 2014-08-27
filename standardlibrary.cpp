@@ -20,13 +20,8 @@ int std_println(int x) {
 	return x;
 }
 
-int rt_div(int x, int y) {
-	return x / y;
-}
-
 void addStandardLibrary(std::map<std::string, long>& callTable) {
 	callTable["abs"] = (long)(&std_abs);
 	callTable["print"] = (long)(&std_print);
 	callTable["println"] = (long)(&std_println);
-	callTable["rt_div"] = (long)(&rt_div);
 }
