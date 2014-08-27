@@ -188,3 +188,106 @@ void Amd64Backend::divRegFromReg(CodeGen& codeGen, Registers dest, Registers src
     codeGen.push_back(0xf7);
     codeGen.push_back(0xf8 | src | (dest << 3));
 }
+
+void Amd64Backend::compareRegToReg(CodeGen& codeGen, Registers reg1, Registers reg2) {
+	codeGen.push_back(0x48);
+	codeGen.push_back(0x39);
+	codeGen.push_back(0xc0| reg1 | (reg2 << 3));
+}
+
+//Jumps to the target
+void Amd64Backend::jump(CodeGen& codeGen, int target)
+{
+	IntToBytes converter;
+	converter.IntValue = target;
+
+	codeGen.push_back(0xE9);
+
+	for (int i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.ByteValues[i]);
+	}
+}
+
+//Jumps if equal to the target
+void Amd64Backend::jumpEqual(CodeGen& codeGen, int target)
+{
+	IntToBytes converter;
+	converter.IntValue = target;
+
+	codeGen.push_back(0x0F);
+	codeGen.push_back(0x84);
+
+	for (int i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.ByteValues[i]);
+	}
+}
+
+//Jumps if not equal to the target
+void Amd64Backend::jumpNotEqual(CodeGen& codeGen, int target)
+{
+	IntToBytes converter;
+	converter.IntValue = target;
+
+	codeGen.push_back(0x0F);
+	codeGen.push_back(0x85);
+
+	for (int i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.ByteValues[i]);
+	}
+}
+
+//Jumps if > to the target
+void Amd64Backend::jumpGreaterThan(CodeGen& codeGen, int target)
+{
+	IntToBytes converter;
+	converter.IntValue = target;
+
+	codeGen.push_back(0x0F);
+	codeGen.push_back(0x8F);
+
+	for (int i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.ByteValues[i]);
+	}
+}
+
+//Jumps if >= to the target
+void Amd64Backend::jumpGreaterThanOrEqual(CodeGen& codeGen, int target)
+{
+	IntToBytes converter;
+	converter.IntValue = target;
+
+	codeGen.push_back(0x0F);
+	codeGen.push_back(0x8D);
+
+	for (int i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.ByteValues[i]);
+	}
+}
+
+//Jumps if < to the target
+void Amd64Backend::jumpLessThan(CodeGen& codeGen, int target)
+{
+	IntToBytes converter;
+	converter.IntValue = target;
+
+	codeGen.push_back(0x0F);
+	codeGen.push_back(0x8C);
+
+	for (int i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.ByteValues[i]);
+	}
+}
+
+//Jumps if <= to the target
+void Amd64Backend::jumpLessThanOrEqual(CodeGen& codeGen, int target)
+{
+	IntToBytes converter;
+	converter.IntValue = target;
+
+	codeGen.push_back(0x0F);
+	codeGen.push_back(0x8E);
+
+	for (int i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.ByteValues[i]);
+	}
+}

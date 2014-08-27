@@ -395,6 +395,26 @@ void testDivRegFromReg() {
 	generatedCode.clear();
 }
 
+//Tests the compareRegToReg generator
+void testCompareRegToReg() {
+	std::vector<unsigned char> generatedCode;
+	Amd64Backend::compareRegToReg(generatedCode, Registers::AX, Registers::AX);
+	arrayAssert(generatedCode, { 0x48, 0x39, 0xC0 });
+	generatedCode.clear();
+
+	Amd64Backend::compareRegToReg(generatedCode, Registers::AX, Registers::CX);
+	arrayAssert(generatedCode, { 0x48, 0x39, 0xC8 });
+	generatedCode.clear();
+
+	Amd64Backend::compareRegToReg(generatedCode, Registers::CX, Registers::AX);
+	arrayAssert(generatedCode, { 0x48, 0x39, 0xC1 });
+	generatedCode.clear();
+
+	Amd64Backend::compareRegToReg(generatedCode, Registers::CX, Registers::CX);
+	arrayAssert(generatedCode, { 0x48, 0x39, 0xC9 });
+	generatedCode.clear();
+}
+
 int main() {
 	std::cout << "Running amd64-test.." << std::endl;
 	testPush();
@@ -416,6 +436,7 @@ int main() {
 	testSubIntFromReg();
 	testMultRegToReg();
 	testDivRegFromReg();
+	testCompareRegToReg();
 	std::cout << "All tests passed." << std::endl;
 	return 0;
 }

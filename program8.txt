@@ -1,0 +1,16 @@
+PUSH 10
+STLOC 0
+
+LDLOC 0
+call println 1
+
+LDLOC 0
+PUSH 1
+SUB
+STLOC 0
+
+LDLOC 0
+PUSH 0
+BNE 2
+
+PUSH 0

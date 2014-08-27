@@ -17,6 +17,9 @@ typedef std::vector<unsigned char> CodeGen;
 
 //Backend for AMD64
 namespace Amd64Backend {
+	//The size of a register
+	const int REG_SIZE = 8;
+
 	//Pushes the given register to the stack
 	void pushReg(CodeGen&, Registers);
 
@@ -38,7 +41,7 @@ namespace Amd64Backend {
 	//Moves the content from memory where the address is in the second register to the first register
 	void moveMemoryByRegToReg(CodeGen&, Registers, Registers);
 
-	//Moves the content from a registet to memory where the address is in a register + offset
+	//Moves the content from a register to memory where the address is in a register + offset
 	void moveRegToMemoryRegWithOffset(CodeGen&, Registers, char, Registers);
 
 	//Moves the given integer (32-bits) to the given register
@@ -73,4 +76,28 @@ namespace Amd64Backend {
 
 	//Divides the second register from the first
 	void divRegFromReg(CodeGen&, Registers, Registers, bool is32bits = false);
+
+	//Compares the two registers
+	void compareRegToReg(CodeGen&, Registers, Registers);
+
+	//Jumps to the target relative the current instruction
+	void jump(CodeGen&, int);
+
+	//Jumps if equal to the target relative the current instruction
+	void jumpEqual(CodeGen&, int);
+
+	//Jumps if not equal to the target relative the current instruction
+	void jumpNotEqual(CodeGen&, int);
+
+	//Jumps if > to the target relative the current instruction
+	void jumpGreaterThan(CodeGen&, int);
+
+	//Jumps if >= to the target relative the current instruction
+	void jumpGreaterThanOrEqual(CodeGen&, int);
+
+	//Jumps if < to the target relative the current instruction
+	void jumpLessThan(CodeGen&, int);
+
+	//Jumps if <= to the target relative the current instruction
+	void jumpLessThanOrEqual(CodeGen&, int);
 }

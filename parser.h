@@ -4,17 +4,8 @@
 #include <string>
 
 struct Instruction;
-
-//Represents a function definition
-struct DefinedFunction {
-	int NumArgs = 0;
-	std::vector<Instruction>* Instructions;
-};
-
-//Represents a program
-struct Program {
-    std::map<std::string, DefinedFunction> Functions;
-};
+struct Function;
+struct Program;
 
 //The parser
 namespace Parser {

@@ -2,7 +2,7 @@
 
 #include "standardlibrary.h"
 
-int vm_abs(int x) {
+int std_abs(int x) {
     if (x < 0) {
         return -x;
     } else {
@@ -10,18 +10,23 @@ int vm_abs(int x) {
     }
 }
 
-int vm_print(int x) {
+int std_print(int x) {
 	std::cout << x;
 	return x;
 }
 
-int vm_println(int x) {
+int std_println(int x) {
 	std::cout << x << std::endl;
 	return x;
 }
 
+int rt_div(int x, int y) {
+	return x / y;
+}
+
 void addStandardLibrary(std::map<std::string, long>& callTable) {
-	callTable["abs"] = (long)(&vm_abs);
-	callTable["print"] = (long)(&vm_print);
-	callTable["println"] = (long)(&vm_println);
+	callTable["abs"] = (long)(&std_abs);
+	callTable["print"] = (long)(&std_print);
+	callTable["println"] = (long)(&std_println);
+	callTable["rt_div"] = (long)(&rt_div);
 }

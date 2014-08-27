@@ -41,3 +41,17 @@ Instruction makeLoadArg(int argNum) {
     inst.OpCode = OpCodes::LOAD_ARG;
     return inst;
 }
+
+Instruction makeBr(int target) {
+    Instruction inst;
+    inst.Value = target;
+    inst.OpCode = OpCodes::BR;
+    return inst;
+}
+
+Instruction makeInstWithInt(OpCodes opCode, int value) {
+    Instruction inst;
+    inst.Value = value;
+    inst.OpCode = opCode;
+    return inst;
+}

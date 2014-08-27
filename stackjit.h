@@ -2,14 +2,15 @@
 #include <string>
 #include <map>
 
-//The number of locals
-const int NUM_LOCALS = 8;
+struct Function;
 
 //Indicates if debugging is enabled
 const bool ENABLE_DEBUG = true;
 
 //Represents the state for the VM
 struct VMState {
-    int Locals[NUM_LOCALS] = {0};
     std::map<std::string, long> FunctionTable;
 };
+
+//Prints the given stack frame
+void rt_printStackFrame(long*, Function*);
