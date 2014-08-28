@@ -12,6 +12,11 @@ Only branches within the current function is supported.
 The VM supports per stack-frame locals. Currently the number of
 locals per frame is hardcoded to four (indexed 0-3).
 
+###Types###
+The VM supports the given types: Array references and integers (32 bits). Currently, types other
+than int are only supported within method body which means that only ints can be arguments to functions
+and return values. This will be fixed in the future. The types are checked at code generation.
+
 ###Function calls###
 Both native and user defined functions can be called. The arguments are popped from
 the evaluation stack where the top operand is the last argument and so on. Only 4 arguments are supported.
