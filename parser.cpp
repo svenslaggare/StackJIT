@@ -96,8 +96,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Program& progra
 
         if (currentToLower == "call") {
             std::string funcName = tokens[i + 1];
-            int numArgs = stoi(tokens[i + 2]);
-            currentFunc->Instructions.push_back(makeCall(funcName, numArgs));
+            currentFunc->Instructions.push_back(makeCall(funcName));
         }
 
         if (currentToLower == "ldarg") {

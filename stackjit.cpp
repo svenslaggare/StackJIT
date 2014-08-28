@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
     VMState vmState;
     Program program;
 
-    addStandardLibrary(vmState.FunctionTable);
+    addStandardLibrary(vmState);
 
     //Tokenize the input
     auto tokens = Parser::tokenize(std::cin);

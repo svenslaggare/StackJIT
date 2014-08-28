@@ -30,6 +30,12 @@ void pushArray(std::vector<unsigned char>& dest, const std::vector<unsigned char
 JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
     std::map<FunctionCall, std::string> callTable;
 
+    //Add the functions to the func table
+    for (auto currentFunc : program.Functions) {
+        auto func = currentFunc.second;
+        vmState.FunctionTable[func->Name] = FunctionDefinition(func->NumArgs, 0);
+    }
+
     //Generate instructions for all functions
     for (auto currentFunc : program.Functions) {
         auto func = currentFunc.second;
@@ -46,7 +52,8 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
             callTable[call.first] = call.second;
         }
 
-        vmState.FunctionTable[func->Name] = (long)funcPtr;
+        //Set the entry point for the function
+        vmState.FunctionTable[func->Name].EntryPoint = (long)funcPtr;
     }
 
     //Fix unresolved calls
@@ -58,8 +65,8 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
         //Check if defined
         if (vmState.FunctionTable.count(calledFunc) > 0) {
             //Get a pointer to the functions instructions
-            long calledFuncAddr = vmState.FunctionTable[calledFunc];
-            unsigned char* funcCode = (unsigned char*)vmState.FunctionTable[funcName];
+            long calledFuncAddr = vmState.FunctionTable[calledFunc].EntryPoint;
+            unsigned char* funcCode = (unsigned char*)(vmState.FunctionTable[funcName].EntryPoint);
 
             //Update the call target
             LongToBytes converter;
@@ -75,7 +82,7 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
     }
 
     //Return the main func as entry point
-    return (JitFunction)vmState.FunctionTable["main"];
+    return (JitFunction)vmState.FunctionTable["main"].EntryPoint;
 }
 
 JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionData, const VMState& vmState) {
@@ -296,15 +303,16 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             //Get the address of the function to call
             long funcAddr = 0;
 
-            //Check if the function is defined yet
-            if (vmState.FunctionTable.count(inst.StrValue) > 0) {
-                funcAddr = vmState.FunctionTable.at(inst.StrValue);
+            auto funcToCall = vmState.FunctionTable.at(inst.StrValue);
+            int numArgs = funcToCall.NumArgs;
+
+            //Check if the function entry point is defined yet
+            if (funcToCall.EntryPoint != 0) {
+                funcAddr = funcToCall.EntryPoint;
             } else {
-                //Mark that the function call needs to be patched with the address later
+                //Mark that the function call needs to be patched with the entry point later
                 functionData.CallTable[make_pair(function.Name, generatedCode.size())] = inst.StrValue;
             }
-
-            int numArgs = inst.Value;
 
             if (ENABLE_DEBUG) {
                 std::cout << "Calling '" << inst.StrValue + "' at " << std::hex << funcAddr << std::dec << "." << std::endl;

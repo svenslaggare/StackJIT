@@ -41,7 +41,7 @@ Instruction makeLoadLocal(int local);
 Instruction makeStoreLocal(int local);
 
 //Creates a new call instruction
-Instruction makeCall(std::string funcName, int numArgs);
+Instruction makeCall(std::string funcName);
 
 //Creates a new load argument instruction
 Instruction makeLoadArg(int argNum);

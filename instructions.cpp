@@ -27,10 +27,9 @@ Instruction makeStoreLocal(int local) {
     return inst;
 }
 
-Instruction makeCall(std::string funcName, int numArgs) {
+Instruction makeCall(std::string funcName) {
     Instruction inst;
     inst.StrValue = funcName;
-    inst.Value = numArgs;
     inst.OpCode = OpCodes::CALL;
     return inst;
 }

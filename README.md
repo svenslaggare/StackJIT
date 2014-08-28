@@ -38,7 +38,7 @@ The returned value will be the output for the program.
 * `DIV`: Pops two operands, divides the first one with the second one and pushes the result to the evaluation stack.
 * `LDLOC <local>`: Pushes the given local to the evaluation stack.
 * `STLOC <local>`: Pops the top operand and stores it in the given local.
-* `CALL <name> <numargs>`: Calls the given function with the given amount of arguments. The arguments are popped from the evaluation stack.
+* `CALL <name>`: Calls the given function. The arguments are popped from the evaluation stack.
 * `LDARG <arg>`: Loads the given function argument and pushes it to the evaluation stack.
 * `BR <target>`: Branches to target.
 * `BEQ <target>`: Pops two operands, compares them and jump to target if equal.

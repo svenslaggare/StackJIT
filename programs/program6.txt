@@ -7,6 +7,6 @@ endfunc
 PUSH 15
 STLOC 1
 PUSH 5
-CALL int_push 1
+CALL int_push
 STLOC 0
 LDLOC 1

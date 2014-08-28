@@ -6,7 +6,15 @@ LDARG 2
 ADD
 endfunc
 
+func int_mult 3
+LDARG 0
+LDARG 1
+MUL
+LDARG 2
+MUL
+endfunc
+
 PUSH 4
 PUSH 6
 PUSH 5
-CALL int_add 3
+CALL int_add

@@ -1,4 +1,4 @@
 PUSH -5
 PUSH 2
 ADD
-CALL abs 1
+CALL abs

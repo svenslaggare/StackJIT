@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "standardlibrary.h"
+#include "stackjit.h"
 
 int std_abs(int x) {
     if (x < 0) {
@@ -20,8 +21,8 @@ int std_println(int x) {
 	return x;
 }
 
-void addStandardLibrary(std::map<std::string, long>& callTable) {
-	callTable["abs"] = (long)(&std_abs);
-	callTable["print"] = (long)(&std_print);
-	callTable["println"] = (long)(&std_println);
+void addStandardLibrary(VMState& vmState) {
+	vmState.FunctionTable["abs"] = FunctionDefinition(1, (long)(&std_abs));
+	vmState.FunctionTable["print"] = FunctionDefinition(1, (long)(&std_print));
+	vmState.FunctionTable["println"] = FunctionDefinition(1, (long)(&std_println));
 }

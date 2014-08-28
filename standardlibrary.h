@@ -2,9 +2,11 @@
 #include <map>
 #include <string>
 
+struct VMState;
+
 int std_abs(int x);
 int std_print(int x);
 int std_println(int x);
 
-//Adds the standard library to the given call table
-void addStandardLibrary(std::map<std::string, long>& callTable);
+//Adds the standard library to the given VM state
+void addStandardLibrary(VMState& vmState);
