@@ -2,11 +2,13 @@
 #include <vector>
 #include <unordered_map>
 #include <map>
+#include <stack>
 
 struct VMState;
 struct Program;
 struct Function;
 struct Instruction;
+enum Types : char;
 
 typedef int (*JitFunction)();
 typedef std::pair<std::string, unsigned int> FunctionCall;
@@ -17,6 +19,7 @@ struct FunctionCompilationData {
 	std::unordered_map<unsigned int, std::pair<unsigned int, unsigned int>> BranchTable; //Branch sources and inst targets
 	std::vector<unsigned int> InstructionNumMapping;									 //Mapping from instruction num to native instruction
 	std::map<FunctionCall, std::string> CallTable;										 //The called functions
+	std::vector<std::stack<Types>> InstructionOperandTypes;								 //The types of the operands for the instruction
 
 	FunctionCompilationData(struct Function& function)
 		: Function(function)

@@ -144,6 +144,18 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Program& progra
             currentFunc->Instructions.push_back(makeInstWithInt(OpCodes::BLE, target));
         }
 
+        if (currentToLower == "newarr") {
+            currentFunc->Instructions.push_back(makeInstruction(OpCodes::NEW_ARRAY));
+        }
+
+        if (currentToLower == "stelem") {
+            currentFunc->Instructions.push_back(makeInstruction(OpCodes::STORE_ELEMENT));
+        }
+
+        if (currentToLower == "ldelem") {
+            currentFunc->Instructions.push_back(makeInstruction(OpCodes::LOAD_ELEMENT));
+        }
+
         if (!isFunc) {
             if (currentToLower == "func") {
                 isFunc = true;

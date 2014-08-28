@@ -3,6 +3,7 @@ STLOC 0
 
 LDLOC 0
 call println
+STLOC 0
 
 LDLOC 0
 PUSH 1

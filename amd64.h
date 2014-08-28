@@ -1,6 +1,16 @@
 #pragma once
 #include <vector>
 
+union IntToBytes {
+    int IntValue;
+    unsigned char ByteValues[sizeof(int)];
+};
+
+union LongToBytes {
+    long LongValue;
+    unsigned char ByteValues[sizeof(long)];
+};
+
 //The registers
 enum Registers : unsigned char {
 	AX = 0b000,
@@ -39,7 +49,7 @@ namespace Amd64Backend {
 	void moveMemoryToReg(CodeGen&, Registers, long);
 
 	//Moves the content from memory where the address is in the second register to the first register
-	void moveMemoryByRegToReg(CodeGen&, Registers, Registers);
+	void moveMemoryByRegToReg(CodeGen&, Registers, Registers, bool is32bits = false);
 
 	//Moves the content from a register to memory where the address is in a register + offset
 	void moveRegToMemoryRegWithOffset(CodeGen&, Registers, char, Registers);

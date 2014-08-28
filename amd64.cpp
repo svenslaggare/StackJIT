@@ -2,16 +2,6 @@
 #include <vector>
 #include <assert.h>
 
-union IntToBytes {
-    int IntValue;
-    unsigned char ByteValues[sizeof(int)];
-};
-
-union LongToBytes {
-    long LongValue;
-    unsigned char ByteValues[sizeof(long)];
-};
-
 void Amd64Backend::pushReg(CodeGen& codeGen, Registers reg) {
 	codeGen.push_back(0x50 | reg);
 }
@@ -63,8 +53,11 @@ void Amd64Backend::moveMemoryToReg(CodeGen& codeGen, Registers destReg, long src
 	}
 }
 
-void Amd64Backend::moveMemoryByRegToReg(CodeGen& codeGen, Registers dest, Registers srcMemReg) {
-	codeGen.push_back(0x48);
+void Amd64Backend::moveMemoryByRegToReg(CodeGen& codeGen, Registers dest, Registers srcMemReg, bool is32bits) {
+	if (!is32bits) {
+		codeGen.push_back(0x48);
+	}
+
 	codeGen.push_back(0x8b);
 	codeGen.push_back(srcMemReg | (dest << 3));
 }

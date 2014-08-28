@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sys/mman.h>
 
+#include "amd64.h"
 #include "stackjit.h"
 #include "program.h"
 #include "instructions.h"
@@ -10,8 +11,9 @@
 #include "standardlibrary.h"
 #include "codegenerator.h"
 
+VMState vmState;
+
 int main(int argc, char* argv[]) {
-    VMState vmState;
     Program program;
 
     addStandardLibrary(vmState);
@@ -37,6 +39,13 @@ int main(int argc, char* argv[]) {
     }
 
     std::cout << res << std::endl;
+
+    if (ENABLE_DEBUG) {
+        for (auto obj : vmState.Objects) {
+            std::cout << "Freed object at 0x" << std::hex << (long)obj << std::endl;
+            delete[] obj;
+        }
+    }
 
     return 0;
 }
@@ -68,4 +77,29 @@ void rt_printStackFrame(long* basePtr, Function* func) {
         std::cout << i << ": " << localsStart[-i] << std::endl;
     }
     std::cout << "----End StackFrame----" << std::endl;
+}
+
+long rt_newArray(int size) {
+    unsigned char* arrayPtr = new unsigned char[(size + 1) * sizeof(int)] { 0 };
+
+    //Add the array to the list of objects
+    vmState.Objects.push_back(arrayPtr);
+
+    //Set the size of the array
+    IntToBytes converter;
+    converter.IntValue = size;
+    arrayPtr[0] = converter.ByteValues[0];
+    arrayPtr[1] = converter.ByteValues[1];
+    arrayPtr[2] = converter.ByteValues[2];
+    arrayPtr[3] = converter.ByteValues[3];
+
+    return (long)arrayPtr;
+}
+
+void rt_runtimeError(std::string errorMessage) {
+    throw std::runtime_error(errorMessage);
+}
+
+void rt_arrayOutOfBoundsError() {
+    rt_runtimeError("Array index is out of bounds.");
 }

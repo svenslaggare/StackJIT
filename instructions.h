@@ -18,7 +18,10 @@ enum OpCodes {
     BGT,
     BGE,
     BLT,
-    BLE
+    BLE,
+    NEW_ARRAY,
+    LOAD_ELEMENT,
+    STORE_ELEMENT
 };
 
 //Represents an instruction

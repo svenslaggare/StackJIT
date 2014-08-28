@@ -6,8 +6,7 @@ A simple JIT compiler for a stack-based VM.
 The JIT part is based on a blog entry by [Josh Haberman](http://blog.reverberate.org/2012/12/hello-jit-world-joy-of-simple-jits.html).
 
 ###Branches###
-Only branches within the current function is supported. Currently, invalid jump targets
-are caught at runtime. This will be fixed later.
+Only branches within the current function is supported.
 
 ###Locals###
 The VM supports per stack-frame locals. Currently the number of
@@ -27,7 +26,7 @@ endfunc
 There is no "return" instruction atm, but all functions must end with _one_
 operand at the evaluation stack which will be the return value.
 Functions not enclosed within a function definition is automatically added
-to the 'main' function which is the entry point for a program.
+to the 'main' function which is the entry point for the program.
 The returned value will be the output for the program.
 
 ##Instruction set##
@@ -47,7 +46,9 @@ The returned value will be the output for the program.
 * `BGE <target>`: Pops two operands, compares them and jump to target if greater or equal than.
 * `BLT <target>`: Pops two operands, compares them and jump to target if less than.
 * `BLE <target>`: Pops two operands, compares them and jump to target if less or equal than.
-
+* `NEWARR`: Pops the size of the array and creates a new array and pushes the reference on the stack.
+* `STELEM`: Pops the value, index and array reference from the stack and stores the value in the array.
+* `LDELEM`: Pops the ndex and array reference from the stack and loads the given element from the array.
 
 ##Platforms##
 Supports Linux x64.

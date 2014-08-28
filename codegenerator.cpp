@@ -1,8 +1,10 @@
 #include <sys/mman.h>
 #include <string.h>
 #include <iostream>
+#include <stack>
 
 #include "codegenerator.h"
+#include "typechecker.h"
 #include "stackjit.h"
 #include "program.h"
 #include "instructions.h"
@@ -10,22 +12,11 @@
 #include "standardlibrary.h"
 #include "amd64.h"
 
-union IntToBytes {
-    int IntValue;
-    unsigned char ByteValues[sizeof(int)];
-};
-
-union LongToBytes {
-    long LongValue;
-    unsigned char ByteValues[sizeof(long)];
-};
-
 void pushArray(std::vector<unsigned char>& dest, const std::vector<unsigned char>& values) {
     for (auto current : values) {
         dest.push_back(current);
     }
 }
-
 
 JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
     std::map<FunctionCall, std::string> callTable;
@@ -86,6 +77,8 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
 }
 
 JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionData, const VMState& vmState) {
+    TypeChecker::typeCheckFunction(functionData, vmState, true);
+
     auto& function = functionData.Function;
 
     //Save the base pointer
@@ -222,12 +215,18 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
     return (JitFunction)mem;
 }
 
-void validateJumpTarget(FunctionCompilationData& functionData, int target) {
-    auto numInst = functionData.Function.Instructions.size();
+//Generates array bounds checks
+void generateArrayBoundsCheck(std::vector<unsigned char>& generatedCode) {
+    //Get the size of the array (an int)
+    Amd64Backend::moveMemoryByRegToReg(generatedCode, Registers::SI, Registers::AX, true); //mov esi, [rax]
 
-    if (!(target >= 0 && target < numInst)) {
-        throw std::runtime_error("The jump target is invalid.");
-    }
+    //Compare the index and size
+    Amd64Backend::compareRegToReg(generatedCode, Registers::CX, Registers::SI); //cmp rcx, rsi
+    pushArray(generatedCode, { 0x72, 10 + 2 }); //jb <after call>. By using an unsigned comparison, we only need one check.
+
+    //If out of bounds, call the error func
+    Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)&rt_arrayOutOfBoundsError); //mov rdi, <addr of func>
+    Amd64Backend::callInReg(generatedCode, Registers::DI); //call rdi
 }
 
 void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, const VMState& vmState, const Instruction& inst) {
@@ -315,7 +314,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             }
 
             if (ENABLE_DEBUG) {
-                std::cout << "Calling '" << inst.StrValue + "' at " << std::hex << funcAddr << std::dec << "." << std::endl;
+                std::cout << "Calling '" << inst.StrValue + "' at 0x" << std::hex << funcAddr << std::dec << "." << std::endl;
             }
 
             //Move the address of the call to rax
@@ -362,9 +361,6 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::BR:
         {
-            //Validate jump target
-            validateJumpTarget(functionData, inst.Value);
-
             Amd64Backend::jump(generatedCode, 0); //jmp <target>
 
             //As the exact target in native instructions isn't known, defer to later.
@@ -377,10 +373,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::BGE:
     case OpCodes::BLT:
     case OpCodes::BLE:
-        {
-            //Validate jump target
-            validateJumpTarget(functionData, inst.Value);
-            
+        {            
             //Pop 2 operands
             Amd64Backend::popReg(generatedCode, Registers::CX); //pop ecx
             Amd64Backend::popReg(generatedCode, Registers::AX); //pop eax
@@ -414,6 +407,52 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             //As the exact target in native instructions isn't known, defer to later.
             functionData.BranchTable[generatedCode.size() - 6] = std::make_pair(inst.Value, 6);
         }
+        break;
+    case OpCodes::NEW_ARRAY:
+        {
+            //Pop the size as the first arg
+            Amd64Backend::popReg(generatedCode, Registers::DI); //pop rdi
+
+            //Call the newArray runtime function
+            Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&rt_newArray);
+            Amd64Backend::callInReg(generatedCode, Registers::AX);
+
+            //Push the returned pointer
+            Amd64Backend::pushReg(generatedCode, Registers::AX);
+        }
+        break;
+    case OpCodes::STORE_ELEMENT:
+        //Pop the operands
+        Amd64Backend::popReg(generatedCode, Registers::DX); //The value to store
+        Amd64Backend::popReg(generatedCode, Registers::CX); //The index of the element
+        Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the array
+
+        //Bounds check
+        generateArrayBoundsCheck(generatedCode);
+
+        //Compute the address of the element
+        pushArray(generatedCode, { 0x48, 0x6B, 0xC9, 0x04 }); //imul rcx, 4
+        Amd64Backend::addRegToReg(generatedCode, Registers::AX, Registers::CX); //add rax, rcx
+
+        //Store the element
+        Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::AX, 4, Registers::DX); //mov [rax+4], rdx
+        break;
+    case OpCodes::LOAD_ELEMENT:
+        //Pop the operands
+        Amd64Backend::popReg(generatedCode, Registers::CX); //The index of the element
+        Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the array
+
+        //Bounds check
+        generateArrayBoundsCheck(generatedCode);
+
+        //Compute the address of the element
+        pushArray(generatedCode, { 0x48, 0x6B, 0xC9, 0x04 }); //imul rcx, 4
+        Amd64Backend::addRegToReg(generatedCode, Registers::AX, Registers::CX); //add rax, rcx
+        Amd64Backend::addByteToReg(generatedCode, Registers::AX, 4); //add rax, 4
+
+        //Load the element
+        Amd64Backend::moveMemoryByRegToReg(generatedCode, Registers::CX, Registers::AX); //mov rcx, [rax]
+        Amd64Backend::pushReg(generatedCode, Registers::CX); //pop rcx
         break;
     default:
         break;
