@@ -14,7 +14,7 @@ locals per frame is hardcoded to four (indexed 0-3).
 
 ###Types###
 The VM supports the given types: Array references and integers (32 bits). Currently, types other
-than int are only supported within method body which means that only ints can be arguments to functions
+than int are only supported within function bodies which means that only ints can be arguments to functions
 and return values. This will be fixed in the future. The types are checked at code generation.
 
 ###Function calls###
