@@ -40,10 +40,21 @@ int main(int argc, char* argv[]) {
 
     std::cout << res << std::endl;
 
-    if (ENABLE_DEBUG) {
-        for (auto obj : vmState.Objects) {
+    //Free objects
+    for (auto obj : vmState.Objects) {
+        if (ENABLE_DEBUG) {
             std::cout << "Freed object at 0x" << std::hex << (long)obj << std::endl;
-            delete[] obj;
+        }
+        delete[] obj;
+    }
+
+    //Unmapped func memory
+    for (auto funcEntry : vmState.FunctionTable) {
+        auto func = funcEntry.second;
+
+        //Defined function have size > 0
+        if (func.FunctionSize > 0) {
+            munmap((unsigned char*)func.EntryPoint, func.FunctionSize);
         }
     }
 

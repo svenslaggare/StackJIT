@@ -1,7 +1,9 @@
 #include <sys/mman.h>
 #include <string.h>
 #include <iostream>
+#include <fstream>
 #include <stack>
+#include <assert.h>
 
 #include "codegenerator.h"
 #include "typechecker.h"
@@ -24,7 +26,7 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
     //Add the functions to the func table
     for (auto currentFunc : program.Functions) {
         auto func = currentFunc.second;
-        vmState.FunctionTable[func->Name] = FunctionDefinition(func->NumArgs, 0);
+        vmState.FunctionTable[func->Name] = FunctionDefinition(func->NumArgs, 0, 0);
     }
 
     //Generate instructions for all functions
@@ -43,8 +45,9 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
             callTable[call.first] = call.second;
         }
 
-        //Set the entry point for the function
+        //Set the entry point & size for the function
         vmState.FunctionTable[func->Name].EntryPoint = (long)funcPtr;
+        vmState.FunctionTable[func->Name].FunctionSize = func->GeneratedCode.size();
     }
 
     //Fix unresolved calls
@@ -199,17 +202,34 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
         std::cout << "Generated function '" << function.Name << "' of size: " << length << " bytes." << std::endl;
     }
 
-    //Allocate writable and executable memory
+    auto generateAsmFiles = false;
+
+    if (generateAsmFiles) {
+        std::ofstream asmFile (functionData.Function.Name + ".jit", std::ios::binary);
+
+        if (asmFile.is_open()) {
+            asmFile.write((char*)code, length);
+            asmFile.close();
+        }
+    }
+
+    //Allocate writable and readable memory
     void *mem = mmap(
         nullptr,
         length,
-        PROT_WRITE | PROT_EXEC,
+        PROT_WRITE | PROT_READ,
         MAP_ANON | MAP_PRIVATE,
         -1,
         0);
 
+    assert(mem != MAP_FAILED);
+
     //Copy the instructions
     memcpy(mem, code, length);
+
+    //Make the memory executable, but not writable.
+    int success = mprotect(mem, length, PROT_EXEC | PROT_READ);
+    assert(success == 0);
 
     //Return the generated instuctions as a function pointer
     return (JitFunction)mem;

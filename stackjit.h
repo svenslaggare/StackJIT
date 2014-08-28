@@ -12,9 +12,10 @@ const bool ENABLE_DEBUG = true;
 struct FunctionDefinition {
 	char NumArgs;
 	long EntryPoint;
+	int FunctionSize;
 
-	FunctionDefinition(char numArgs, long entryPoint)
-		: NumArgs(numArgs), EntryPoint(entryPoint)
+	FunctionDefinition(char numArgs, long entryPoint, int funcSize)
+		: NumArgs(numArgs), EntryPoint(entryPoint), FunctionSize(funcSize)
 	{
 
 	}

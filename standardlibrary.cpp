@@ -22,7 +22,7 @@ int std_println(int x) {
 }
 
 void addStandardLibrary(VMState& vmState) {
-	vmState.FunctionTable["abs"] = FunctionDefinition(1, (long)(&std_abs));
-	vmState.FunctionTable["print"] = FunctionDefinition(1, (long)(&std_print));
-	vmState.FunctionTable["println"] = FunctionDefinition(1, (long)(&std_println));
+	vmState.FunctionTable["abs"] = FunctionDefinition(1, (long)(&std_abs), 0);
+	vmState.FunctionTable["print"] = FunctionDefinition(1, (long)(&std_print), 0);
+	vmState.FunctionTable["println"] = FunctionDefinition(1, (long)(&std_println), 0);
 }
