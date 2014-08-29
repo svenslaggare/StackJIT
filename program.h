@@ -4,12 +4,18 @@
 #include <vector>
 
 struct Instruction;
+enum Types : unsigned char;
 
 //Represents an user defined function
 struct Function {
 	std::string Name;
+
 	int NumArgs;
+	std::vector<Types> Arguments;
+	Types ReturnType;
+
 	int NumLocals;
+
 	std::vector<Instruction> Instructions;
 	std::vector<unsigned char> GeneratedCode;
 };

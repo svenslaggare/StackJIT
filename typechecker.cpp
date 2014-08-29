@@ -20,9 +20,18 @@ std::string TypeChecker::typeToString(Types type) {
             return "Int";
         case Types::ArrayRef:
             return "ArrayRef";
-        break;
-        default:
-            return "";
+        case Types::Untyped:
+            return "Untyped";
+    }
+}
+
+Types TypeChecker::stringToType(std::string typeStr) {
+    if (typeStr == "int" || typeStr == "Int") {
+        return Types::Int;
+    } else if (typeStr == "arrayref" || typeStr == "ArrayRef") {
+        return Types::ArrayRef;
+    } else {
+        return Types::Untyped;
     }
 }
 
@@ -60,20 +69,21 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, const VMS
     std::stack<Types> operandStack;
 
     auto numInsts = function.Function.Instructions.size();
+    auto& func = function.Function;
 
     std::vector<InstructionTypes> instructionsOperandTypes;
     instructionsOperandTypes.reserve(numInsts);
 
-    auto locals = new Types[function.Function.NumLocals] { Types::Untyped };
+    std::vector<Types> locals(function.Function.NumLocals);
     std::vector<BranchCheck> branches;
 
     int index = 0;
 
     if (showDebug) {
-    	std::cout << "----Type checking: " <<  function.Function.Name << " ----" << std::endl;
+    	std::cout << "----Type checking: " <<  func.Name << "----" << std::endl;
     }
 
-    for (auto inst : function.Function.Instructions) {
+    for (auto inst : func.Instructions) {
     	instructionsOperandTypes.push_back(operandStack);
 
         switch (inst.OpCode) {
@@ -128,24 +138,26 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, const VMS
             break;
         case OpCodes::CALL:
             {
-                int calledFuncNumArgs = vmState.FunctionTable.at(inst.StrValue).NumArgs;
+                auto calledFunc = vmState.FunctionTable.at(inst.StrValue);
+                int calledFuncNumArgs = calledFunc.Arguments.size();
                 assertOperandCount(index, operandStack, calledFuncNumArgs);
 
-                //Only ints can be passed as arguments
-                for (int i = 0; i < calledFuncNumArgs; i++) {
+                //Check the arguments
+                for (int i = calledFuncNumArgs - 1; i >= 0; i--) {
                     auto argType = popType(operandStack);
-                    auto error = checkType(Types::Int, argType);
+                    auto error = checkType(calledFunc.Arguments[i], argType);
 
                     if (error != "") {
                         typeError(index, error);
                     }
                 }
 
-                operandStack.push(Types::Int);
+                //Return type
+                operandStack.push(calledFunc.ReturnType);
             }
             break;
         case OpCodes::LOAD_ARG:
-            operandStack.push(Types::Int);
+            operandStack.push(func.Arguments[inst.Value]);
             break;
         case OpCodes::BEQ:
         case OpCodes::BNE:
@@ -276,8 +288,8 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, const VMS
     if (operandStack.size() == 1) {
         auto returnType = operandStack.top();
 
-        if (returnType != Types::Int) {
-            throw std::runtime_error("Expected 'Int' as return type.");
+        if (returnType != func.ReturnType) {
+            throw std::runtime_error("Expected '" + TypeChecker::typeToString(func.ReturnType) + "' as return type.");
         }
     } else {
         throw std::runtime_error("Expected 1 operand on the stack but got " + std::to_string(operandStack.size()) + " when returning.");
@@ -286,8 +298,6 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, const VMS
     if (showDebug) {
     	std::cout << "----End type checking----" << std::endl;
     }
-
-    delete[] locals;
 
     //Save the operand types
     function.InstructionOperandTypes = instructionsOperandTypes;

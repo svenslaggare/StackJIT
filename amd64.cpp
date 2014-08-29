@@ -99,6 +99,19 @@ void Amd64Backend::callInReg(CodeGen& codeGen, Registers func) {
     codeGen.push_back(0xd0 | func);
 }
 
+void Amd64Backend::call(CodeGen& codeGen, int funcAddr) {
+	codeGen.push_back(0xff);
+	codeGen.push_back(0x14);
+	codeGen.push_back(0x25);
+
+	IntToBytes converter;
+	converter.IntValue = funcAddr;
+
+	for (int i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.ByteValues[i]);
+	}
+}
+
 void Amd64Backend::ret(CodeGen& codeGen) {
 	codeGen.push_back(0xc3);
 }

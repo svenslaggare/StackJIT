@@ -1,8 +1,9 @@
-func int_push 1
-LDARG 0
-STLOC 1
-LDLOC 1
-endfunc
+func int_push(int) int
+{
+	LDARG 0
+	STLOC 1
+	LDLOC 1
+}
 
 PUSH 15
 STLOC 1

@@ -1,8 +1,10 @@
-func int_add 2
-LDARG 0
-LDARG 1
-ADD
-endfunc
+func int_add(int int) int
+{
+	LDARG 0
+	LDARG 1
+	ADD
+	endfunc
+}
 
 PUSH 3
 PUSH 6

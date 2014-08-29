@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
         delete[] obj;
     }
 
-    //Unmapped func memory
+    //Unmap func memory
     for (auto funcEntry : vmState.FunctionTable) {
         auto func = funcEntry.second;
 

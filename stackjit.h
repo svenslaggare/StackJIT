@@ -4,18 +4,27 @@
 #include <vector>
 
 struct Function;
+enum Types : unsigned char;
 
 //Indicates if debugging is enabled
 const bool ENABLE_DEBUG = true;
 
+//Prints type checking if debug is enabled
+const bool PRINT_TYPE_CHECKING = false;
+
+//Indicates if the generated code is outputed as a file
+const bool OUTPUT_GENERATED_CODE = false;
+
 //Represents a function definition
 struct FunctionDefinition {
-	char NumArgs;
+	std::vector<Types> Arguments;
+	Types ReturnType;
+
 	long EntryPoint;
 	int FunctionSize;
 
-	FunctionDefinition(char numArgs, long entryPoint, int funcSize)
-		: NumArgs(numArgs), EntryPoint(entryPoint), FunctionSize(funcSize)
+	FunctionDefinition(std::vector<Types> arguments, Types returnType, long entryPoint, int funcSize)
+		: Arguments(arguments), ReturnType(returnType), EntryPoint(entryPoint), FunctionSize(funcSize)
 	{
 
 	}

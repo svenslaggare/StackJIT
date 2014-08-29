@@ -4,6 +4,7 @@
 #include <fstream>
 #include <stack>
 #include <assert.h>
+#include <limits>
 
 #include "codegenerator.h"
 #include "typechecker.h"
@@ -20,13 +21,27 @@ void pushArray(std::vector<unsigned char>& dest, const std::vector<unsigned char
     }
 }
 
+//Generates array bounds checks
+void generateArrayBoundsCheck(CodeGen& codeGen) {
+    //Get the size of the array (an int)
+    Amd64Backend::moveMemoryByRegToReg(codeGen, Registers::SI, Registers::AX, true); //mov esi, [rax]
+
+    //Compare the index and size
+    Amd64Backend::compareRegToReg(codeGen, Registers::CX, Registers::SI); //cmp rcx, rsi
+    pushArray(codeGen, { 0x72, 10 + 2 }); //jb <after call>. By using an unsigned comparison, we only need one check.
+
+    //If out of bounds, call the error func
+    Amd64Backend::moveLongToReg(codeGen, Registers::DI, (long)&rt_arrayOutOfBoundsError); //mov rdi, <addr of func>
+    Amd64Backend::callInReg(codeGen, Registers::DI); //call rdi
+}
+
 JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
     std::map<FunctionCall, std::string> callTable;
 
     //Add the functions to the func table
     for (auto currentFunc : program.Functions) {
         auto func = currentFunc.second;
-        vmState.FunctionTable[func->Name] = FunctionDefinition(func->NumArgs, 0, 0);
+        vmState.FunctionTable[func->Name] = FunctionDefinition(func->Arguments, func->ReturnType, 0, 0);
     }
 
     //Generate instructions for all functions
@@ -75,12 +90,23 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
         }
     }
 
+    //Make the functions memory executable, but not writable.
+    for (auto currentFunc : program.Functions) {
+        auto func = currentFunc.second;
+
+        void* mem = (void*)vmState.FunctionTable[func->Name].EntryPoint;
+        int length = func->GeneratedCode.size();
+
+        int success = mprotect(mem, length, PROT_EXEC | PROT_READ);
+        assert(success == 0);
+    }
+
     //Return the main func as entry point
     return (JitFunction)vmState.FunctionTable["main"].EntryPoint;
 }
 
 JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionData, const VMState& vmState) {
-    TypeChecker::typeCheckFunction(functionData, vmState, true);
+    TypeChecker::typeCheckFunction(functionData, vmState, ENABLE_DEBUG && PRINT_TYPE_CHECKING);
 
     auto& function = functionData.Function;
 
@@ -120,9 +146,8 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
         }
     }
 
+    //Zero the locals
     if (function.NumLocals > 0) {
-        //Zero the locals
-
         //This method should be faster? but makes the generated code larger
         // Amd64Backend::moveIntToReg(function.GeneratedCode, Registers::AX, 0); //mov rax, 0
 
@@ -199,12 +224,26 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
     int length = function.GeneratedCode.size();
 
     if (ENABLE_DEBUG) {
-        std::cout << "Generated function '" << function.Name << "' of size: " << length << " bytes." << std::endl;
+        std::string argsStr {""};
+        bool isFirst = true;
+
+        for (auto param : function.Arguments) {
+            if (isFirst) {
+                isFirst = false;
+            } else {
+                argsStr += " ";
+            }
+
+            argsStr += TypeChecker::typeToString(param);
+        }
+
+        std::cout
+            << "Generated function '" << function.Name << "(" + argsStr + ") " << TypeChecker::typeToString(function.ReturnType)
+            << "' of size: " << length << " bytes."
+            << std::endl;
     }
 
-    auto generateAsmFiles = false;
-
-    if (generateAsmFiles) {
+    if (OUTPUT_GENERATED_CODE) {
         std::ofstream asmFile (functionData.Function.Name + ".jit", std::ios::binary);
 
         if (asmFile.is_open()) {
@@ -227,26 +266,8 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
     //Copy the instructions
     memcpy(mem, code, length);
 
-    //Make the memory executable, but not writable.
-    int success = mprotect(mem, length, PROT_EXEC | PROT_READ);
-    assert(success == 0);
-
     //Return the generated instuctions as a function pointer
     return (JitFunction)mem;
-}
-
-//Generates array bounds checks
-void generateArrayBoundsCheck(std::vector<unsigned char>& generatedCode) {
-    //Get the size of the array (an int)
-    Amd64Backend::moveMemoryByRegToReg(generatedCode, Registers::SI, Registers::AX, true); //mov esi, [rax]
-
-    //Compare the index and size
-    Amd64Backend::compareRegToReg(generatedCode, Registers::CX, Registers::SI); //cmp rcx, rsi
-    pushArray(generatedCode, { 0x72, 10 + 2 }); //jb <after call>. By using an unsigned comparison, we only need one check.
-
-    //If out of bounds, call the error func
-    Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)&rt_arrayOutOfBoundsError); //mov rdi, <addr of func>
-    Amd64Backend::callInReg(generatedCode, Registers::DI); //call rdi
 }
 
 void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, const VMState& vmState, const Instruction& inst) {
@@ -323,7 +344,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             long funcAddr = 0;
 
             auto funcToCall = vmState.FunctionTable.at(inst.StrValue);
-            int numArgs = funcToCall.NumArgs;
+            int numArgs = funcToCall.Arguments.size();
 
             //Check if the function entry point is defined yet
             if (funcToCall.EntryPoint != 0) {

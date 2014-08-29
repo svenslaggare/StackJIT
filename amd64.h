@@ -63,6 +63,9 @@ namespace Amd64Backend {
 	//Calls the given function where the entry points is in a register
 	void callInReg(CodeGen&, Registers);
 
+	//Calls the given function
+	void call(CodeGen&, int);
+
 	//The return instructiom
 	void ret(CodeGen&);
 

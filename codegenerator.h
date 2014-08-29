@@ -8,7 +8,7 @@ struct VMState;
 struct Program;
 struct Function;
 struct Instruction;
-enum Types : char;
+enum Types : unsigned char;
 
 typedef int (*JitFunction)();
 typedef std::pair<std::string, unsigned int> FunctionCall;

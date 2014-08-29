@@ -1,0 +1,25 @@
+func newArray(int) arrayref
+{
+	LDARG 0
+	NEWARR
+}
+
+func getElement(arrayref int) int
+{
+	LDARG 0
+	LDARG 1
+	LDELEM
+}
+
+PUSH 4
+call newArray
+STLOC 0
+
+LDLOC 0
+PUSH 0
+PUSH 1337
+STELEM
+
+LDLOC 0
+PUSH 0
+call getElement

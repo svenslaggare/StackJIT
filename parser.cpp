@@ -6,6 +6,7 @@
 #include "instructions.h"
 #include "codegenerator.h"
 #include "program.h"
+#include "typechecker.h"
 
 std::vector<std::string> Parser::tokenize(std::istream& stream) {
     std::vector<std::string> tokens;
@@ -13,11 +14,27 @@ std::vector<std::string> Parser::tokenize(std::istream& stream) {
 
     char c;
     while (stream.get(c)) {
+        bool newToken = false;
+        bool newIdentifier = false;
+
         if (isspace(c)) {
+            newToken = true;
+        }
+
+        if (c == ':' || c == '(' || c == ')') {
+            newToken = true;
+            newIdentifier = true;
+        }
+
+        if (newToken) {
             tokens.push_back(token);
             token = "";
         } else {
             token += c;
+        }
+
+        if (newIdentifier) {
+            tokens.push_back(std::string{ c });
         }
     }
 
@@ -37,13 +54,19 @@ std::string toLower(std::string str) {
 }
 
 void Parser::parseTokens(const std::vector<std::string>& tokens, Program& program) {
-    bool isFunc = false;
+    bool isFuncBody = false;
+    bool isFuncDef = false;
+    std::string funcName;
+    bool isFuncParams = false;
+    std::vector<Types> funcParams;
+
     int numLocals = 4;
 
     //Create the main function
     Function* mainFunc = new Function;
     mainFunc->Name = "main";
     mainFunc->NumArgs = 0;
+    mainFunc->ReturnType = Types::Int;
     mainFunc->NumLocals = 4;
     program.Functions["main"] = mainFunc;
 
@@ -156,28 +179,53 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Program& progra
             currentFunc->Instructions.push_back(makeInstruction(OpCodes::LOAD_ELEMENT));
         }
 
-        if (!isFunc) {
-            if (currentToLower == "func") {
-                isFunc = true;
-                std::string funcName = tokens[i + 1];
-                int funcArgs = stoi(tokens[i + 2]);
+        if (!isFuncBody) {
+            if (!isFuncDef) {
+                if (currentToLower == "func") {
+                    isFuncDef = true;
+                    funcName = tokens[i + 1];
+                } else if (currentToLower == "{") {
+                    isFuncBody = true;
+                }
+            } else {
+                if (isFuncParams) {
+                    if (currentToLower == ")") {                        
+                        auto returnType = TypeChecker::stringToType(tokens[i + 2]);
+                        int numArgs = funcParams.size();
 
-                if (funcArgs >= 0 && funcArgs <= 4) {
-                    //Create a new function        
-                    Function* newFunc = new Function;
-                    newFunc->Name = funcName;
-                    newFunc->NumArgs = funcArgs;
-                    newFunc->NumLocals = numLocals;
-                    program.Functions[funcName] = newFunc;
+                        if (numArgs >= 0 && numArgs <= 4) {
+                            //Create a new function        
+                            Function* newFunc = new Function;
+                            newFunc->Name = funcName;
 
-                    currentFunc = newFunc;
-                } else {
-                    throw std::runtime_error("Maximum four arguments are supported.");
+                            newFunc->NumArgs = numArgs;
+                            newFunc->Arguments = funcParams;
+                            newFunc->ReturnType = returnType;
+
+                            newFunc->NumLocals = numLocals;
+                            program.Functions[funcName] = newFunc;
+
+                            currentFunc = newFunc;
+                        } else {
+                            throw std::runtime_error("Maximum four arguments are supported.");
+                        }
+
+                        isFuncParams = false;
+                        isFuncDef = false;
+                        funcParams = {};
+                        funcName = "";
+                    } else {
+                        funcParams.push_back(TypeChecker::stringToType(currentToLower));
+                    }
+                }
+
+                if (currentToLower == "(") {
+                    isFuncParams = true;
                 }
             }
         } else {
-            if (currentToLower == "endfunc") {
-                isFunc = false;
+            if (currentToLower == "}") {
+                isFuncBody = false;
                 currentFunc = mainFunc;
             }
         }

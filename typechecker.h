@@ -6,7 +6,7 @@ struct FunctionCompilationData;
 struct VMState;
 
 //The types
-enum Types : char {
+enum Types : unsigned char {
     Untyped,
     Int,
     ArrayRef
@@ -20,6 +20,9 @@ namespace TypeChecker {
 
 	//Converts the given type to a string
 	std::string typeToString(Types type);
+
+	//Converts the given string into a type
+	Types stringToType(std::string);
 
 	//Type checks the given function
 	void typeCheckFunction(FunctionCompilationData& function, const VMState& vmState, bool showDebug = false);

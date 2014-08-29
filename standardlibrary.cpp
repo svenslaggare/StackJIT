@@ -2,6 +2,7 @@
 
 #include "standardlibrary.h"
 #include "stackjit.h"
+#include "typechecker.h"
 
 int std_abs(int x) {
     if (x < 0) {
@@ -22,7 +23,7 @@ int std_println(int x) {
 }
 
 void addStandardLibrary(VMState& vmState) {
-	vmState.FunctionTable["abs"] = FunctionDefinition(1, (long)(&std_abs), 0);
-	vmState.FunctionTable["print"] = FunctionDefinition(1, (long)(&std_print), 0);
-	vmState.FunctionTable["println"] = FunctionDefinition(1, (long)(&std_println), 0);
+	vmState.FunctionTable["abs"] = FunctionDefinition({ Types::Int }, Types::Int, (long)(&std_abs), 0);
+	vmState.FunctionTable["print"] = FunctionDefinition({ Types::Int }, Types::Int, (long)(&std_print), 0);
+	vmState.FunctionTable["println"] = FunctionDefinition({ Types::Int }, Types::Int, (long)(&std_println), 0);
 }
