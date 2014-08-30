@@ -3,11 +3,16 @@ func int_push(int) int
 	LDARG 0
 	STLOC 1
 	LDLOC 1
+	RET
 }
 
-PUSH 15
-STLOC 1
-PUSH 5
-CALL int_push
-STLOC 0
-LDLOC 1
+func main() int
+{
+	PUSH 15
+	STLOC 1
+	PUSH 5
+	CALL int_push
+	STLOC 0
+	LDLOC 1
+	RET
+}

@@ -16,12 +16,14 @@ Types TypeChecker::popType(std::stack<Types>& stack) {
 
 std::string TypeChecker::typeToString(Types type) {
     switch (type) {
+        case Types::Untyped:
+            return "Untyped";
+        case Types::Void:
+            return "Void";
         case Types::Int:
             return "Int";
         case Types::ArrayRef:
             return "ArrayRef";
-        case Types::Untyped:
-            return "Untyped";
     }
 }
 
@@ -30,6 +32,8 @@ Types TypeChecker::stringToType(std::string typeStr) {
         return Types::Int;
     } else if (typeStr == "arrayref" || typeStr == "ArrayRef") {
         return Types::ArrayRef;
+    } else if (typeStr == "void" || typeStr == "Void") {
+        return Types::Void;
     } else {
         return Types::Untyped;
     }
@@ -77,10 +81,21 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, const VMS
     std::vector<Types> locals(function.Function.NumLocals);
     std::vector<BranchCheck> branches;
 
-    int index = 0;
+    int index = 1;
 
     if (showDebug) {
     	std::cout << "----Type checking: " <<  func.Name << "----" << std::endl;
+    }
+
+    //Check the function definition
+    if (func.ReturnType == Types::Untyped) {
+        throw std::runtime_error("The function cannot return type 'Untyped'.");
+    }
+
+    for (auto arg : func.Arguments) {
+        if (arg == Types::Untyped || arg == Types::Void) {
+            throw std::runtime_error("The argument cannot be of type '" + typeToString(arg) + "'.");
+        }
     }
 
     for (auto inst : func.Instructions) {
@@ -157,7 +172,32 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, const VMS
                 }
 
                 //Return type
-                operandStack.push(calledFunc.ReturnType);
+                if (calledFunc.ReturnType != Types::Void) {
+                    operandStack.push(calledFunc.ReturnType);
+                }
+            }
+            break;
+        case OpCodes::RET:
+            {
+                int returnCount = 1;
+
+                if (func.ReturnType == Types::Void) {
+                    returnCount = 0;
+                }
+
+                if (operandStack.size() == returnCount) {
+                    if (returnCount > 0) {
+                        auto returnType = popType(operandStack);
+
+                        if (returnType != func.ReturnType) {
+                            throw std::runtime_error("Expected '" + TypeChecker::typeToString(func.ReturnType) + "' as return type.");
+                        }
+                    }
+                } else {
+                    typeError(
+                        index,
+                        "Expected " + std::to_string(returnCount) + " operand on the stack but got " + std::to_string(operandStack.size()) + " when returning.");
+                }
             }
             break;
         case OpCodes::LOAD_ARG:
@@ -261,6 +301,12 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, const VMS
             break;
         }
 
+        if (index == numInsts) {
+            if (inst.OpCode != OpCodes::RET) {
+                typeError(index, "Function must end with 'RET' instruction.");
+            }
+        }
+
         index++;
     }
 
@@ -297,16 +343,6 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, const VMS
 
 	        std::cout << std::endl;
 	    }
-    }
-
-    if (operandStack.size() == 1) {
-        auto returnType = operandStack.top();
-
-        if (returnType != func.ReturnType) {
-            throw std::runtime_error("Expected '" + TypeChecker::typeToString(func.ReturnType) + "' as return type.");
-        }
-    } else {
-        throw std::runtime_error("Expected 1 operand on the stack but got " + std::to_string(operandStack.size()) + " when returning.");
     }
 
     if (showDebug) {

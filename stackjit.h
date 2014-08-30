@@ -20,19 +20,37 @@ const bool OUTPUT_GENERATED_CODE = false;
 
 //Represents a function definition
 struct FunctionDefinition {
+	bool IsManaged; //Indicates if the function is implemented in managed code
+
 	std::vector<Types> Arguments;
 	Types ReturnType;
 
 	long EntryPoint;
 	int FunctionSize;
 
+	//Creates a new managed function definition
 	FunctionDefinition(std::vector<Types> arguments, Types returnType, long entryPoint, int funcSize)
-		: Arguments(arguments), ReturnType(returnType), EntryPoint(entryPoint), FunctionSize(funcSize)
+		: Arguments(arguments), ReturnType(returnType), EntryPoint(entryPoint), FunctionSize(funcSize), IsManaged(true)
+	{
+
+	}
+
+	//Creates a new external function definition
+	FunctionDefinition(std::vector<Types> arguments, Types returnType, long entryPoint)
+		: Arguments(arguments), ReturnType(returnType), EntryPoint(entryPoint), IsManaged(false)
 	{
 
 	}
 
 	FunctionDefinition() {}
+
+	//Sets the function body (for managed functions)
+	void SetFunctionBody(long entryPoint, int functionSize) {
+		if (IsManaged) {
+			EntryPoint = entryPoint;
+			FunctionSize = functionSize;
+		}
+	}
 };
 
 //Represents the state for the VM

@@ -12,6 +12,7 @@ enum OpCodes {
     LOAD_LOCAL,
     STORE_LOCAL, 
     CALL,
+    RET,
     LOAD_ARG,
     BR,
     BEQ,

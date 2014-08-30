@@ -2,6 +2,7 @@ func newArray(int) arrayref
 {
 	LDARG 0
 	NEWARR
+	RET
 }
 
 func getElement(arrayref int) int
@@ -9,22 +10,33 @@ func getElement(arrayref int) int
 	LDARG 0
 	LDARG 1
 	LDELEM
+	RET
 }
 
-PUSH 4
-call newArray
-STLOC 0
+func printLine(int) void
+{
+	LDARG 0
+	CALL println
+	RET
+}
 
-LDLOC 0
-PUSH 0
-PUSH 1337
-STELEM
+func main() int
+{
+	PUSH 4
+	call newArray
+	STLOC 0
 
-LDLOC 0
-LDLEN
-call println
-POP
+	LDLOC 0
+	PUSH 0
+	PUSH 1337
+	STELEM
 
-LDLOC 0
-PUSH 0
-call getElement
+	LDLOC 0
+	LDLEN
+	CALL printLine
+
+	LDLOC 0
+	PUSH 0
+	CALL getElement
+	RET
+}

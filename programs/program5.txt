@@ -1,7 +1,11 @@
-PUSH 6
-PUSH 3
-SUB
-PUSH 4
-MUL
-PUSH 3
-DIV
+func main() int
+{
+	PUSH 6
+	PUSH 3
+	SUB
+	PUSH 4
+	MUL
+	PUSH 3
+	DIV
+	RET
+}

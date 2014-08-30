@@ -8,6 +8,7 @@ struct VMState;
 //The types
 enum Types : unsigned char {
     Untyped,
+    Void,
     Int,
     ArrayRef
 };

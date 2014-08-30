@@ -8,13 +8,15 @@ The JIT part is based on a blog entry by [Josh Haberman](http://blog.reverberate
 ###Branches###
 Only branches within the current function is supported.
 
-###Locals###
-The VM supports per stack-frame locals. Currently the number of
-locals per frame is hardcoded to four (indexed 0-3).
-
 ###Types###
-The VM supports the given types: Array references and integers (32 bits). The type names are
-case insensitive, but this may be changed in the future.
+The VM supports the given types: Array references (ArrayRef) and 32bits integers (Int).
+It also supports the special type 'Void' which is only allowed as return type which indicates no return type.
+The type names are case insensitive, but this may be changed in the future.
+
+###Locals###
+The VM supports per stack-frame locals. The locals are typed, but not explicitly typed. The type
+of the local is determined the first time the local is stored (at compile time, not runtime). Loading
+a local without type results in an error. Currently the number of locals per frame is hardcoded to four (indexed 0-3).
 
 ###Function calls###
 Both native and user defined functions can be called. The arguments are popped from
@@ -28,14 +30,13 @@ func <name>(<arg type 1> <arg type 2> ...) <return type>
     <function body>
 }
 ```
-There is no "return" instruction atm, but all functions must end with _one_
-operand at the evaluation stack which will be the return value.
-Functions not enclosed within a function definition is automatically added
-to the 'main' function which is the entry point for the program.
-The returned value will be the output for the program.
+When a function returns, there must be only _one_ (zero if void) operands on the evalutation stack.
+If not, the program will not be executed.
+There must be a function called 'main' which will be the entry point for the program.
 
 ####Main function####
-The signature for the main function is: `func main() Int`.
+The main function must have the following signature: `func main() Int`.
+The returned value from the main function will be the output for the program.
 
 ##Instruction set##
 * `PUSH <value>`: Pushes a 32-bits integer to the evaluation stack.
@@ -47,6 +48,7 @@ The signature for the main function is: `func main() Int`.
 * `LDLOC <local>`: Pushes the given local to the evaluation stack.
 * `STLOC <local>`: Pops the top operand and stores it in the given local.
 * `CALL <name>`: Calls the given function. The arguments are popped from the evaluation stack.
+* `RET`: Returns from the current function, popping the return value from the evalutation stack.
 * `LDARG <arg>`: Loads the given function argument and pushes it to the evaluation stack.
 * `BR <target>`: Branches to target.
 * `BEQ <target>`: Pops two operands, compares them and jump to target if equal.

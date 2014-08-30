@@ -3,11 +3,15 @@ func int_add(int int) int
 	LDARG 0
 	LDARG 1
 	ADD
-	endfunc
+	RET
 }
 
-PUSH 3
-PUSH 6
-CALL int_add
-PUSH 12
-CALL int_add
+func main() int
+{
+	PUSH 3
+	PUSH 6
+	CALL int_add
+	PUSH 12
+	CALL int_add
+	RET
+}

@@ -12,18 +12,16 @@ int std_abs(int x) {
     }
 }
 
-int std_print(int x) {
+void std_print(int x) {
 	std::cout << x;
-	return x;
 }
 
-int std_println(int x) {
+void std_println(int x) {
 	std::cout << x << std::endl;
-	return x;
 }
 
 void addStandardLibrary(VMState& vmState) {
-	vmState.FunctionTable["abs"] = FunctionDefinition({ Types::Int }, Types::Int, (long)(&std_abs), 0);
-	vmState.FunctionTable["print"] = FunctionDefinition({ Types::Int }, Types::Int, (long)(&std_print), 0);
-	vmState.FunctionTable["println"] = FunctionDefinition({ Types::Int }, Types::Int, (long)(&std_println), 0);
+	vmState.FunctionTable["abs"] = FunctionDefinition({ Types::Int }, Types::Int, (long)(&std_abs));
+	vmState.FunctionTable["print"] = FunctionDefinition({ Types::Int }, Types::Void, (long)(&std_print));
+	vmState.FunctionTable["println"] = FunctionDefinition({ Types::Int }, Types::Void, (long)(&std_println));
 }

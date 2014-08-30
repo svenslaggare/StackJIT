@@ -5,7 +5,7 @@ func int_add(int int int) int
 	ADD
 	LDARG 2
 	ADD
-	endfunc
+	RET
 }
 
 func int_mul(int int int) int
@@ -15,10 +15,14 @@ func int_mul(int int int) int
 	MUL
 	LDARG 2
 	MUL
-	endfunc
+	RET
 }
 
-PUSH 4
-PUSH 6
-PUSH 5
-CALL int_add
+func main() int
+{
+	PUSH 4
+	PUSH 6
+	PUSH 5
+	CALL int_add
+	RET
+}

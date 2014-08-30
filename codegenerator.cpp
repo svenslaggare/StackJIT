@@ -61,8 +61,7 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
         }
 
         //Set the entry point & size for the function
-        vmState.FunctionTable[func->Name].EntryPoint = (long)funcPtr;
-        vmState.FunctionTable[func->Name].FunctionSize = func->GeneratedCode.size();
+        vmState.FunctionTable[func->Name].SetFunctionBody((long)funcPtr, func->GeneratedCode.size());
     }
 
     //Fix unresolved calls
@@ -84,10 +83,6 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
             int base = offset + 2;
             for (int i = 0; i < sizeof(long); i++) {
                 funcCode[base + i] = converter.ByteValues[i];
-            }
-
-            if (ENABLE_DEBUG) {
-                std::cout << "Calling '" << calledFunc + "' at 0x" << std::hex << calledFuncAddr << std::dec << "." << std::endl;
             }
         } else {
             throw std::runtime_error("Function '" + calledFunc + "' not found.");
@@ -192,16 +187,6 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
         Amd64Backend::moveLongToReg(function.GeneratedCode, Registers::SI, (long)&function); //Address of the function as second argument
         Amd64Backend::callInReg(function.GeneratedCode, Registers::AX);
     }
-
-    //Pop the return value
-    Amd64Backend::popReg(function.GeneratedCode, Registers::AX); //pop eax
-
-    //Restore the base pointer
-    Amd64Backend::moveRegToReg(function.GeneratedCode, Registers::SP, Registers::BP); //mov rsp, rbp
-    Amd64Backend::popReg(function.GeneratedCode, Registers::BP); //pop rbp
-
-    //Make the return
-    Amd64Backend::ret(function.GeneratedCode); //ret
 
     //Patch branches with the native targets
     for (auto branch : functionData.BranchTable) {
@@ -362,8 +347,11 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 functionData.CallTable[make_pair(function.Name, generatedCode.size())] = inst.StrValue;
             }
 
-            if (ENABLE_DEBUG && funcAddr != 0) {
-                std::cout << "Calling '" << inst.StrValue + "' at 0x" << std::hex << funcAddr << std::dec << "." << std::endl;
+            if (ENABLE_DEBUG) {
+                //Only print external functions
+                if (!funcToCall.IsManaged) {
+                    std::cout << "Calling '" << inst.StrValue + "' at 0x" << std::hex << funcAddr << std::dec << "." << std::endl;
+                }
             }
 
             //Move the address of the call to rax
@@ -393,6 +381,21 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
         }
         break;
+    case OpCodes::RET:
+        {
+            if (function.ReturnType != Types::Void) {
+                //Pop the return value
+                Amd64Backend::popReg(generatedCode, Registers::AX); //pop eax
+            }
+
+            //Restore the base pointer
+            Amd64Backend::moveRegToReg(generatedCode, Registers::SP, Registers::BP); //mov rsp, rbp
+            Amd64Backend::popReg(generatedCode, Registers::BP); //pop rbp
+
+            //Make the return
+            Amd64Backend::ret(generatedCode); //ret
+        }
+    break;
     case OpCodes::LOAD_ARG:
         {
             //Load rax with the arg offset

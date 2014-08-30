@@ -1,17 +1,20 @@
-PUSH 10
-STLOC 0
+func main() int
+{
+	PUSH 10
+	STLOC 0
 
-LDLOC 0
-call println
-STLOC 0
+	LDLOC 0
+	call println
 
-LDLOC 0
-PUSH 1
-SUB
-STLOC 0
+	LDLOC 0
+	PUSH 1
+	SUB
+	STLOC 0
 
-LDLOC 0
-PUSH 0
-BNE 2
+	LDLOC 0
+	PUSH 0
+	BNE 2
 
-PUSH 0
+	PUSH 0
+	RET
+}
