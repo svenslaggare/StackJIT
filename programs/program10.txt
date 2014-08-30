@@ -21,5 +21,10 @@ PUSH 1337
 STELEM
 
 LDLOC 0
+LDLEN
+call println
+POP
+
+LDLOC 0
 PUSH 0
 call getElement

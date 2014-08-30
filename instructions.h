@@ -4,6 +4,7 @@
 //The OP codes for the instuctios
 enum OpCodes {
     PUSH_INT,
+    POP,
     ADD,
     SUB,
     MUL,
@@ -21,7 +22,8 @@ enum OpCodes {
     BLE,
     NEW_ARRAY,
     LOAD_ELEMENT,
-    STORE_ELEMENT
+    STORE_ELEMENT,
+    LOAD_ARRAY_LENGTH
 };
 
 //Represents an instruction

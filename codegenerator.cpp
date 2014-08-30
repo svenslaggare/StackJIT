@@ -85,6 +85,10 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
             for (int i = 0; i < sizeof(long); i++) {
                 funcCode[base + i] = converter.ByteValues[i];
             }
+
+            if (ENABLE_DEBUG) {
+                std::cout << "Calling '" << calledFunc + "' at 0x" << std::hex << calledFuncAddr << std::dec << "." << std::endl;
+            }
         } else {
             throw std::runtime_error("Function '" + calledFunc + "' not found.");
         }
@@ -182,7 +186,7 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
     }
 
     //If debug is enabled, print the stack frame before return (maybe add when called also?)
-    if (ENABLE_DEBUG) {
+    if (ENABLE_DEBUG && PRINT_STACK_FRAME) {
         Amd64Backend::moveLongToReg(function.GeneratedCode, Registers::AX, (long)&rt_printStackFrame);
         Amd64Backend::moveRegToReg(function.GeneratedCode, Registers::DI, Registers::BP); //BP as the first argument
         Amd64Backend::moveLongToReg(function.GeneratedCode, Registers::SI, (long)&function); //Address of the function as second argument
@@ -283,6 +287,10 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         //Push the value
         Amd64Backend::pushInt(generatedCode, inst.Value); //push <value>
         break;
+    case OpCodes::POP:
+        //Pop the value
+        Amd64Backend::popReg(generatedCode, Registers::AX); //pop eax
+        break;
     case OpCodes::ADD:
     case OpCodes::SUB:
     case OpCodes::MUL:
@@ -354,7 +362,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 functionData.CallTable[make_pair(function.Name, generatedCode.size())] = inst.StrValue;
             }
 
-            if (ENABLE_DEBUG) {
+            if (ENABLE_DEBUG && funcAddr != 0) {
                 std::cout << "Calling '" << inst.StrValue + "' at 0x" << std::hex << funcAddr << std::dec << "." << std::endl;
             }
 
@@ -494,6 +502,16 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         //Load the element
         Amd64Backend::moveMemoryByRegToReg(generatedCode, Registers::CX, Registers::AX); //mov rcx, [rax]
         Amd64Backend::pushReg(generatedCode, Registers::CX); //pop rcx
+        break;
+    case OpCodes::LOAD_ARRAY_LENGTH:
+        //Pop the array ref
+        Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+
+        //Get the size of the array (an int)
+        Amd64Backend::moveMemoryByRegToReg(generatedCode, Registers::AX, Registers::AX, true); //mov eax, [rax]
+
+        //Push the size
+        Amd64Backend::pushReg(generatedCode, Registers::AX); //push eax
         break;
     default:
         break;

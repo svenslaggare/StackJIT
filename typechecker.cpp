@@ -90,6 +90,10 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, const VMS
         case OpCodes::PUSH_INT:
             operandStack.push(Types::Int);
             break;
+        case OpCodes::POP:
+            assertOperandCount(index, operandStack, 1);
+            popType(operandStack);
+            break;
         case OpCodes::ADD:
         case OpCodes::SUB:
         case OpCodes::MUL:
@@ -243,7 +247,17 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, const VMS
                 operandStack.push(Types::Int);
             }
             break;
-        default:
+        case OpCodes::LOAD_ARRAY_LENGTH:
+            {
+                assertOperandCount(index, operandStack, 1);
+                auto arrayRefType = popType(operandStack);
+
+                if (arrayRefType != Types::ArrayRef) {
+                    typeError(index, "Expected operand to be ArrayRef.");
+                }
+
+                operandStack.push(Types::Int);
+            }
             break;
         }
 

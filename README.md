@@ -35,10 +35,11 @@ to the 'main' function which is the entry point for the program.
 The returned value will be the output for the program.
 
 ####Main function####
-The signature for the main function is: `func main() int`.
+The signature for the main function is: `func main() Int`.
 
 ##Instruction set##
 * `PUSH <value>`: Pushes a 32-bits integer to the evaluation stack.
+* `POP`: Pops the top value from the evalutation stack.
 * `ADD`: Pops two operands, adds them and pushes the result to the evaluation stack.
 * `SUB`: Pops two operands, subtracts the second one from the one and pushes the result to the evaluation stack.
 * `MUL`: Pops two operands, multiplies them and pushes the result to the evaluation stack.
@@ -56,7 +57,8 @@ The signature for the main function is: `func main() int`.
 * `BLE <target>`: Pops two operands, compares them and jump to target if less or equal than.
 * `NEWARR`: Pops the size of the array and creates a new array and pushes the reference on the stack.
 * `STELEM`: Pops the value, index and array reference from the stack and stores the value in the array.
-* `LDELEM`: Pops the ndex and array reference from the stack and loads the given element from the array.
+* `LDELEM`: Pops the index and array reference from the stack and loads the given element from the array.
+* `LDLEN`: Pops the array reference from the stack and pushes the length of the array.
 
 ##Platforms##
 Supports Linux x64.

@@ -81,6 +81,10 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Program& progra
             currentFunc->Instructions.push_back(makePushInt(value));
         }
 
+        if (currentToLower == "pop") {
+            currentFunc->Instructions.push_back(makeInstruction(OpCodes::POP));
+        }
+
         if (currentToLower == "add") {
             currentFunc->Instructions.push_back(makeInstruction(OpCodes::ADD));
         }
@@ -177,6 +181,10 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Program& progra
 
         if (currentToLower == "ldelem") {
             currentFunc->Instructions.push_back(makeInstruction(OpCodes::LOAD_ELEMENT));
+        }
+
+        if (currentToLower == "ldlen") {
+            currentFunc->Instructions.push_back(makeInstruction(OpCodes::LOAD_ARRAY_LENGTH));
         }
 
         if (!isFuncBody) {
