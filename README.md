@@ -13,9 +13,8 @@ The VM supports per stack-frame locals. Currently the number of
 locals per frame is hardcoded to four (indexed 0-3).
 
 ###Types###
-The VM supports the given types: Array references and integers (32 bits). Currently, types other
-than int are only supported within function bodies which means that only ints can be arguments to functions
-and return values. This will be fixed in the future. The types are checked at code generation.
+The VM supports the given types: Array references and integers (32 bits). The type names are
+case insensitive, but this may be changed in the future.
 
 ###Function calls###
 Both native and user defined functions can be called. The arguments are popped from
@@ -24,15 +23,19 @@ the evaluation stack where the top operand is the last argument and so on. Only 
 ###Functions###
 Functions can be defined using the following syntax:
 ```
-func <name> <numargs>
-<function body>
-endfunc
+func <name>(<arg type 1> <arg type 2> ...) <return type>
+{
+    <function body>
+}
 ```
 There is no "return" instruction atm, but all functions must end with _one_
 operand at the evaluation stack which will be the return value.
 Functions not enclosed within a function definition is automatically added
 to the 'main' function which is the entry point for the program.
 The returned value will be the output for the program.
+
+####Main function####
+The signature for the main function is: `func main() int`.
 
 ##Instruction set##
 * `PUSH <value>`: Pushes a 32-bits integer to the evaluation stack.
