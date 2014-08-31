@@ -1,5 +1,7 @@
 func main() int
 {
+	.locals 1
+	
 	PUSH 1
 	PUSH 1
 	BNE 6

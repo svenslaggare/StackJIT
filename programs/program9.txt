@@ -1,5 +1,7 @@
 func main() int
 {
+	.locals 1
+	
 	PUSH 4
 	NEWARR
 	STLOC 0

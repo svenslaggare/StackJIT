@@ -1,5 +1,7 @@
 func int_push(int) int
 {
+	.locals 2
+
 	LDARG 0
 	STLOC 1
 	LDLOC 1
@@ -8,6 +10,8 @@ func int_push(int) int
 
 func main() int
 {
+	.locals 2
+	
 	PUSH 15
 	STLOC 1
 	PUSH 5

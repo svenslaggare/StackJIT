@@ -6,24 +6,10 @@ Instruction makeInstruction(OpCodes opCode) {
     return inst;
 }
 
-Instruction makePushInt(int value) {
+Instruction makeInstWithInt(OpCodes opCode, int value) {
     Instruction inst;
-    inst.OpCode = OpCodes::PUSH_INT;
     inst.Value = value;
-    return inst;
-}
-
-Instruction makeLoadLocal(int local) {
-    Instruction inst;
-    inst.Value = local;
-    inst.OpCode = OpCodes::LOAD_LOCAL;
-    return inst;
-}
-
-Instruction makeStoreLocal(int local) {
-    Instruction inst;
-    inst.Value = local;
-    inst.OpCode = OpCodes::STORE_LOCAL;
+    inst.OpCode = opCode;
     return inst;
 }
 
@@ -31,26 +17,5 @@ Instruction makeCall(std::string funcName) {
     Instruction inst;
     inst.StrValue = funcName;
     inst.OpCode = OpCodes::CALL;
-    return inst;
-}
-
-Instruction makeLoadArg(int argNum) {
-    Instruction inst;
-    inst.Value = argNum;
-    inst.OpCode = OpCodes::LOAD_ARG;
-    return inst;
-}
-
-Instruction makeBr(int target) {
-    Instruction inst;
-    inst.Value = target;
-    inst.OpCode = OpCodes::BR;
-    return inst;
-}
-
-Instruction makeInstWithInt(OpCodes opCode, int value) {
-    Instruction inst;
-    inst.Value = value;
-    inst.OpCode = opCode;
     return inst;
 }

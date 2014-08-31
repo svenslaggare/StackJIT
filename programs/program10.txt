@@ -22,6 +22,8 @@ func printLine(int) void
 
 func main() int
 {
+	.locals 1
+	
 	PUSH 4
 	call newArray
 	STLOC 0

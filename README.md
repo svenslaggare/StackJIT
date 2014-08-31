@@ -10,13 +10,15 @@ Only branches within the current function is supported.
 
 ###Types###
 The VM supports the given types: Array references (ArrayRef) and 32bits integers (Int).
-It also supports the special type 'Void' which is only allowed as return type which indicates no return type.
+It also supports the special type 'Void' which is only allowed as return type which indicates no return value.
 The type names are case insensitive, but this may be changed in the future.
 
 ###Locals###
 The VM supports per stack-frame locals. The locals are typed, but not explicitly typed. The type
 of the local is determined the first time the local is stored (at compile time, not runtime). Loading
-a local without type results in an error. Currently the number of locals per frame is hardcoded to four (indexed 0-3).
+a local without type results in an error.
+The number of locals a function has _should_ be defined in the beginning of the body with the following
+syntax: `.locals <count>`. If the number of locals isn't defined, zero is choosen.
 
 ###Function calls###
 Both native and user defined functions can be called. The arguments are popped from
