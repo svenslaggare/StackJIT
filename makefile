@@ -1,5 +1,5 @@
 CC=clang++
-CFLAGS=-c -std=c++11
+CFLAGS=-c -std=c++11 -Wall
 LDFLAGS=
 SOURCES=stackjit.cpp instructions.cpp program.cpp parser.cpp standardlibrary.cpp codegenerator.cpp typechecker.cpp amd64.cpp
 OBJECTS=$(SOURCES:.cpp=.o)

@@ -91,7 +91,9 @@ void rt_printStackFrame(long* basePtr, Function* func) {
 }
 
 long rt_newArray(int size) {
-    unsigned char* arrayPtr = new unsigned char[(size + 1) * sizeof(int)] { 0 };
+    int memSize = (size + 1) * sizeof(int);
+    unsigned char* arrayPtr = new unsigned char[memSize];
+    memset(arrayPtr, 0, memSize);
 
     //Add the array to the list of objects
     vmState.Objects.push_back(arrayPtr);

@@ -20,13 +20,14 @@ const bool OUTPUT_GENERATED_CODE = false;
 
 //Represents a function definition
 struct FunctionDefinition {
-	bool IsManaged; //Indicates if the function is implemented in managed code
-
 	std::vector<Types> Arguments;
 	Types ReturnType;
 
 	long EntryPoint;
 	int FunctionSize;
+
+	bool IsManaged; //Indicates if the function is implemented in managed code
+
 
 	//Creates a new managed function definition
 	FunctionDefinition(std::vector<Types> arguments, Types returnType, long entryPoint, int funcSize)
