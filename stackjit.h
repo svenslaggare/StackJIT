@@ -60,6 +60,13 @@ struct VMState {
     std::vector<unsigned char*> Objects;
 };
 
+//Represents an array handle
+struct ArrayHandle {
+	int Size;
+	int* Elements;
+	unsigned char* Handle;
+};
+
 //Prints the given stack frame
 void rt_printStackFrame(long*, Function*);
 
