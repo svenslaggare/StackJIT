@@ -10,7 +10,8 @@ enum Types : unsigned char {
     Untyped,
     Void,
     Int,
-    ArrayRef
+    ArrayRef,
+    StructRef
 };
 
 typedef std::stack<Types> InstructionTypes;

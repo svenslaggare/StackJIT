@@ -5,6 +5,7 @@
 
 struct Function;
 enum Types : unsigned char;
+class ArrayHandle;
 
 //Indicates if debugging is enabled
 const bool ENABLE_DEBUG = true;
@@ -27,7 +28,6 @@ struct FunctionDefinition {
 	int FunctionSize;
 
 	bool IsManaged; //Indicates if the function is implemented in managed code
-
 
 	//Creates a new managed function definition
 	FunctionDefinition(std::vector<Types> arguments, Types returnType, long entryPoint, int funcSize)
@@ -57,14 +57,7 @@ struct FunctionDefinition {
 //Represents the state for the VM
 struct VMState {
     std::map<std::string, FunctionDefinition> FunctionTable;
-    std::vector<unsigned char*> Objects;
-};
-
-//Represents an array handle
-struct ArrayHandle {
-	int Size;
-	int* Elements;
-	unsigned char* Handle;
+    std::vector<ArrayHandle> Objects;
 };
 
 //Prints the given stack frame

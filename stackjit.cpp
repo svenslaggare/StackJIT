@@ -10,6 +10,7 @@
 #include "parser.h"
 #include "standardlibrary.h"
 #include "codegenerator.h"
+#include "objects.h"
 
 VMState vmState;
 
@@ -43,9 +44,10 @@ int main(int argc, char* argv[]) {
     //Free objects
     for (auto obj : vmState.Objects) {
         if (ENABLE_DEBUG) {
-            std::cout << "Freed object at 0x" << std::hex << (long)obj << std::endl;
+            std::cout << "Freed object at 0x" << std::hex << (long)(obj.getHandle()) << std::endl;
         }
-        delete[] obj;
+
+        obj.deleteHandle();
     }
 
     //Unmap func memory
@@ -96,7 +98,7 @@ long rt_newArray(int size) {
     memset(arrayPtr, 0, memSize);
 
     //Add the array to the list of objects
-    vmState.Objects.push_back(arrayPtr);
+    vmState.Objects.push_back(ArrayHandle(size, (int*)(arrayPtr + 4)));
 
     //Set the size of the array
     IntToBytes converter;

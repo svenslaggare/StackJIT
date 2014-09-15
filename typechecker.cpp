@@ -24,6 +24,8 @@ std::string TypeChecker::typeToString(Types type) {
             return "Int";
         case Types::ArrayRef:
             return "ArrayRef";
+        case Types::StructRef:
+            return "StructRef";
     }
 }
 
@@ -32,6 +34,8 @@ Types TypeChecker::stringToType(std::string typeStr) {
         return Types::Int;
     } else if (typeStr == "arrayref" || typeStr == "ArrayRef") {
         return Types::ArrayRef;
+    } else if (typeStr == "structref" || typeStr == "StructRef") {
+        return Types::StructRef; 
     } else if (typeStr == "void" || typeStr == "Void") {
         return Types::Void;
     } else {
