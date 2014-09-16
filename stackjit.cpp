@@ -106,6 +106,7 @@ void rt_printStackFrame(long* basePtr, Function* func) {
     for (int i = 0; i < numLocals; i++) {
         std::cout << i << ": " << localsStart[-i] << std::endl;
     }
+    
     std::cout << "----End StackFrame----" << std::endl;
 }
 

@@ -181,14 +181,6 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
         generateInstruction(functionData, vmState, current);
     }
 
-    //If debug is enabled, print the stack frame before return (maybe add when called also?)
-    if (ENABLE_DEBUG && PRINT_STACK_FRAME) {
-        Amd64Backend::moveLongToReg(function.GeneratedCode, Registers::AX, (long)&rt_printStackFrame);
-        Amd64Backend::moveRegToReg(function.GeneratedCode, Registers::DI, Registers::BP); //BP as the first argument
-        Amd64Backend::moveLongToReg(function.GeneratedCode, Registers::SI, (long)&function); //Address of the function as second argument
-        Amd64Backend::callInReg(function.GeneratedCode, Registers::AX);
-    }
-
     //Patch branches with the native targets
     for (auto branch : functionData.BranchTable) {
         unsigned int source = branch.first;
@@ -384,7 +376,15 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::RET:
         {
-            if (TypeSystem::isPrimitiveType(function.ReturnType, PrimitiveTypes::Void)) {
+            //If debug is enabled, print the stack frame before return (maybe add when called also?)
+            if (ENABLE_DEBUG && PRINT_STACK_FRAME) {
+                Amd64Backend::moveLongToReg(function.GeneratedCode, Registers::AX, (long)&rt_printStackFrame);
+                Amd64Backend::moveRegToReg(function.GeneratedCode, Registers::DI, Registers::BP); //BP as the first argument
+                Amd64Backend::moveLongToReg(function.GeneratedCode, Registers::SI, (long)&function); //Address of the function as second argument
+                Amd64Backend::callInReg(function.GeneratedCode, Registers::AX);
+            }
+
+            if (!TypeSystem::isPrimitiveType(function.ReturnType, PrimitiveTypes::Void)) {
                 //Pop the return value
                 Amd64Backend::popReg(generatedCode, Registers::AX); //pop eax
             }
