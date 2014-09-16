@@ -73,7 +73,6 @@ std::unordered_map<std::string, OpCodes> noOperandsInstructions
     { "sub", OpCodes::SUB },
     { "mul", OpCodes::MUL },
     { "div", OpCodes::DIV },
-    { "newarr", OpCodes::NEW_ARRAY },
     { "stelem", OpCodes::STORE_ELEMENT },
     { "ldelem", OpCodes::LOAD_ELEMENT },
     { "ldlen", OpCodes::LOAD_ARRAY_LENGTH },
@@ -163,6 +162,12 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                 } else {
                     throw std::runtime_error("The argument index is out of range.");
                 }
+            }
+
+            if (currentToLower == "newarr") {
+                assertTokenCount(tokens, i, 1);
+                std::string elementType = tokens[i + 1];
+                currentFunc->Instructions.push_back(makeInstWithStr(OpCodes::NEW_ARRAY, elementType));
             }
 
             if (currentToLower == "br") {

@@ -3,7 +3,7 @@
 ArrayHandle::ArrayHandle(int size, int* elements)
 	: Size(size), Elements(elements)
 {
-	handle = (unsigned char*)elements - 4;
+	handle = ((unsigned char*)elements) - 4;
 }
 
 ArrayHandle::ArrayHandle() : Size(0), Elements(nullptr)

@@ -3,7 +3,7 @@ func main() int
 	.locals 1
 	
 	PUSH 4
-	NEWARR
+	NEWARR int
 	STLOC 0
 
 	LDLOC 0

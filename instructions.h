@@ -40,5 +40,8 @@ Instruction makeInstruction(OpCodes opCode);
 //Creates a new instruction with an int as value
 Instruction makeInstWithInt(OpCodes opCode, int value);
 
+//Creates a new instruction with a string as the value
+Instruction makeInstWithStr(OpCodes opCode, std::string value);
+
 //Creates a new call instruction
 Instruction makeCall(std::string funcName);

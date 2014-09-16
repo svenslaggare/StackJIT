@@ -59,7 +59,7 @@ The returned value from the main function will be the output for the program.
 * `BGE <target>`: Pops two operands, compares them and jump to target if greater or equal than.
 * `BLT <target>`: Pops two operands, compares them and jump to target if less than.
 * `BLE <target>`: Pops two operands, compares them and jump to target if less or equal than.
-* `NEWARR`: Pops the size of the array and creates a new array and pushes the reference on the stack.
+* `NEWARR <type>`: Pops the size of the array and creates a new array of the given type and pushes the reference on the stack.
 * `STELEM`: Pops the value, index and array reference from the stack and stores the value in the array.
 * `LDELEM`: Pops the index and array reference from the stack and loads the given element from the array.
 * `LDLEN`: Pops the array reference from the stack and pushes the length of the array.

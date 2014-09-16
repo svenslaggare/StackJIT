@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
     //Free objects
     for (auto obj : vmState.Objects) {
         if (ENABLE_DEBUG) {
-            std::cout << "Freed object at 0x" << std::hex << (long)(obj.getHandle()) << std::endl;
+            std::cout << "Freed object at 0x" << std::hex << (long)(obj.getHandle()) << std::dec << std::endl;
         }
 
         obj.deleteHandle();
