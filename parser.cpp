@@ -8,6 +8,7 @@
 #include "codegenerator.h"
 #include "program.h"
 #include "typechecker.h"
+#include "type.h"
 
 std::vector<std::string> Parser::tokenize(std::istream& stream) {
     std::vector<std::string> tokens;
@@ -89,12 +90,12 @@ std::unordered_map<std::string, OpCodes> branchInstructions
     { "ble", OpCodes::BLE }
 };
 
-void Parser::parseTokens(const std::vector<std::string>& tokens, Program& program) {
+void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmState, Program& program) {
     bool isFuncBody = false;
     bool isFuncDef = false;
     std::string funcName;
     bool isFuncParams = false;
-    std::vector<Types> funcParams {};
+    std::vector<Type*> funcParams {};
     bool localsSet = false;
 
     Function* currentFunc = nullptr;
@@ -191,7 +192,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Program& progra
                 if (isFuncParams) {
                     if (currentToLower == ")") {     
                         assertTokenCount(tokens, i, 1);                   
-                        auto returnType = TypeChecker::stringToType(tokens[i + 1]);
+                        auto returnType = TypeChecker::stringToType(vmState, tokens[i + 1]);
                         int numArgs = funcParams.size();
 
                         if (numArgs >= 0 && numArgs <= 4) {
@@ -217,7 +218,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Program& progra
                         funcName = "";
                         localsSet = false;
                     } else {
-                        funcParams.push_back(TypeChecker::stringToType(currentToLower));
+                        funcParams.push_back(TypeChecker::stringToType(vmState, current));
                     }
                 }
 
@@ -236,7 +237,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Program& progra
     if (program.Functions.count("main") > 0) {
         auto mainFunc = program.Functions["main"];
 
-        if (mainFunc->Arguments.size() != 0 || mainFunc->ReturnType != Types::Int) {
+        if (mainFunc->Arguments.size() != 0 || !TypeSystem::isPrimitiveType(mainFunc->ReturnType, PrimitiveTypes::Integer)) {
            throw std::runtime_error("The main function must have the following signature: 'func main() Int'"); 
         }
     } else {

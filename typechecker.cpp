@@ -7,39 +7,29 @@
 #include "codegenerator.h"
 #include "program.h"
 #include "instructions.h"
+#include "type.h"
 
-Types TypeChecker::popType(std::stack<Types>& stack) {
+Type* TypeChecker::popType(std::stack<Type*>& stack) {
     auto value = stack.top();
     stack.pop();
     return value;
 }
 
-std::string TypeChecker::typeToString(Types type) {
-    switch (type) {
-        case Types::Untyped:
-            return "Untyped";
-        case Types::Void:
-            return "Void";
-        case Types::Int:
-            return "Int";
-        case Types::ArrayRef:
-            return "ArrayRef";
-        case Types::StructRef:
-            return "StructRef";
+std::string TypeChecker::typeToString(Type* type) {
+    if (type == nullptr) {
+        return "Untyped";
     }
+
+    return type->name();
 }
 
-Types TypeChecker::stringToType(std::string typeStr) {
-    if (typeStr == "int" || typeStr == "Int") {
-        return Types::Int;
-    } else if (typeStr == "arrayref" || typeStr == "ArrayRef") {
-        return Types::ArrayRef;
-    } else if (typeStr == "structref" || typeStr == "StructRef") {
-        return Types::StructRef; 
-    } else if (typeStr == "void" || typeStr == "Void") {
-        return Types::Void;
+Type* TypeChecker::stringToType(VMState& vmState, std::string typeName) {
+    if (typeName == "int" || typeName == "Int") {
+        return vmState.getType("Primitive.Integer");
+    } else if (typeName == "void" || typeName == "Void") {
+        return vmState.getType("Primitive.Void");
     } else {
-        return Types::Untyped;
+        return vmState.getType(typeName);
     }
 }
 
@@ -47,14 +37,14 @@ void typeError(int instIndex, std::string errorMessage) {
     throw std::runtime_error(std::to_string(instIndex) + ": " + errorMessage);
 }
 
-void assertOperandCount(int index, const std::stack<Types>& stack, int count) {
+void assertOperandCount(int index, const std::stack<Type*>& stack, int count) {
     if (stack.size() < count) {
         typeError(index, "Expected " + std::to_string(count) + " operand(s) on the stack.");
     }
 }
 
-std::string checkType(Types expectedType, Types actualType) {
-    if (expectedType == actualType || expectedType == Types::Untyped) {
+std::string checkType(Type* expectedType, Type* actualType) {
+    if (expectedType == nullptr || *expectedType == *actualType) {
         return "";
     } else {
         return "Expected type '" + TypeChecker::typeToString(expectedType) + "' but got type '" + TypeChecker::typeToString(actualType) + "'.";
@@ -64,17 +54,17 @@ std::string checkType(Types expectedType, Types actualType) {
 struct BranchCheck {
     int Source;
     int Target;
-    std::stack<Types> BranchTypes;
+    std::stack<Type*> BranchTypes;
 
-    BranchCheck(int source, int target, std::stack<Types> branchTypes)
+    BranchCheck(int source, int target, std::stack<Type*> branchTypes)
         : Source(source), Target(target), BranchTypes(branchTypes)
     {
 
     }
 };
 
-void TypeChecker::typeCheckFunction(FunctionCompilationData& function, const VMState& vmState, bool showDebug) {
-    std::stack<Types> operandStack;
+void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& vmState, bool showDebug) {
+    std::stack<Type*> operandStack;
 
     auto numInsts = function.Function.Instructions.size();
     auto& func = function.Function;
@@ -82,7 +72,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, const VMS
     std::vector<InstructionTypes> instructionsOperandTypes;
     instructionsOperandTypes.reserve(numInsts);
 
-    std::vector<Types> locals(function.Function.NumLocals);
+    std::vector<Type*> locals(function.Function.NumLocals);
     std::vector<BranchCheck> branches;
 
     int index = 1;
@@ -92,12 +82,12 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, const VMS
     }
 
     //Check the function definition
-    if (func.ReturnType == Types::Untyped) {
+    if (func.ReturnType == nullptr) {
         throw std::runtime_error("The function cannot return type 'Untyped'.");
     }
 
     for (auto arg : func.Arguments) {
-        if (arg == Types::Untyped || arg == Types::Void) {
+        if (arg == nullptr || TypeSystem::isPrimitiveType(arg, PrimitiveTypes::Void)) {
             throw std::runtime_error("The argument cannot be of type '" + typeToString(arg) + "'.");
         }
     }
@@ -107,7 +97,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, const VMS
 
         switch (inst.OpCode) {
         case OpCodes::PUSH_INT:
-            operandStack.push(Types::Int);
+            operandStack.push(vmState.getType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer)));
             break;
         case OpCodes::POP:
             assertOperandCount(index, operandStack, 1);
@@ -123,8 +113,8 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, const VMS
                 auto op1 = popType(operandStack);
                 auto op2 = popType(operandStack);
     
-                if (op1 == Types::Int && op2 == Types::Int) {
-                    operandStack.push(Types::Int);
+                if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Integer) && TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
+                    operandStack.push(vmState.getType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer)));
                 } else {
                     typeError(index, "Expected 2 int operands on the stack.");
                 }
@@ -135,7 +125,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, const VMS
                 auto localIndex = inst.Value;
                 auto localType = locals[localIndex];
 
-                if (localType != Types::Untyped) {
+                if (localType != nullptr) {
                     operandStack.push(localType);
                 } else {
                     typeError(index, "Cannot load untyped local.");
@@ -176,7 +166,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, const VMS
                 }
 
                 //Return type
-                if (calledFunc.ReturnType != Types::Void) {
+                if (!TypeSystem::isPrimitiveType(calledFunc.ReturnType, PrimitiveTypes::Void)) {
                     operandStack.push(calledFunc.ReturnType);
                 }
             }
@@ -185,7 +175,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, const VMS
             {
                 int returnCount = 1;
 
-                if (func.ReturnType == Types::Void) {
+                if (TypeSystem::isPrimitiveType(func.ReturnType, PrimitiveTypes::Void)) {
                     returnCount = 0;
                 }
 
@@ -193,7 +183,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, const VMS
                     if (returnCount > 0) {
                         auto returnType = popType(operandStack);
 
-                        if (returnType != func.ReturnType) {
+                        if (*returnType != *func.ReturnType) {
                             throw std::runtime_error("Expected '" + TypeChecker::typeToString(func.ReturnType) + "' as return type.");
                         }
                     }
@@ -224,7 +214,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, const VMS
                 auto op1 = popType(operandStack);
                 auto op2 = popType(operandStack);
     
-                if (op1 == Types::Int && op2 == Types::Int) {
+                if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Integer) && TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
                     branches.push_back({ index, inst.Value, operandStack });
                 } else {
                     typeError(index, "Expected 2 int operands on the stack.");
@@ -243,13 +233,13 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, const VMS
             {
                 assertOperandCount(index, operandStack, 1);
 
-                auto error = checkType(Types::Int, popType(operandStack));
+                auto error = checkType(vmState.getType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer)), popType(operandStack));
 
                 if (error != "") {
                     typeError(index, error);
                 }
 
-                operandStack.push(Types::ArrayRef);
+                operandStack.push(vmState.getType("Ref.Array[Primitive.Integer]"));
             }
             break;
         case OpCodes::STORE_ELEMENT:
@@ -260,15 +250,15 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, const VMS
                 auto indexType = popType(operandStack);
                 auto arrayRefType = popType(operandStack);
 
-                if (arrayRefType != Types::ArrayRef) {
+                if (!TypeSystem::isArray(arrayRefType)) {
                     typeError(index, "Expected first operand to be ArrayRef.");
                 }
 
-                if (indexType != Types::Int) {
+                if (!TypeSystem::isPrimitiveType(indexType, PrimitiveTypes::Integer)) {
                     typeError(index, "Expected second operand to be Int.");
                 }
 
-                if (valueType != Types::Int) {
+                if (!TypeSystem::isPrimitiveType(valueType, PrimitiveTypes::Integer)) {
                     typeError(index, "Expected third operand to be Int.");
                 }
             }
@@ -280,15 +270,15 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, const VMS
                 auto indexType = popType(operandStack);
                 auto arrayRefType = popType(operandStack);
 
-                if (arrayRefType != Types::ArrayRef) {
+                if (!TypeSystem::isArray(arrayRefType)) {
                     typeError(index, "Expected first operand to be ArrayRef.");
                 }
 
-                if (indexType != Types::Int) {
+                if (!TypeSystem::isPrimitiveType(indexType, PrimitiveTypes::Integer)) {
                     typeError(index, "Expected second operand to be Int.");
                 }
 
-                operandStack.push(Types::Int);
+                operandStack.push(vmState.getType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer)));
             }
             break;
         case OpCodes::LOAD_ARRAY_LENGTH:
@@ -296,11 +286,11 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, const VMS
                 assertOperandCount(index, operandStack, 1);
                 auto arrayRefType = popType(operandStack);
 
-                if (arrayRefType != Types::ArrayRef) {
+                if (!TypeSystem::isArray(arrayRefType)) {
                     typeError(index, "Expected operand to be ArrayRef.");
                 }
 
-                operandStack.push(Types::Int);
+                operandStack.push(vmState.getType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer)));
             }
             break;
         }

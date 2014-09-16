@@ -2,7 +2,7 @@
 #include <map>
 #include <string>
 
-struct VMState;
+class VMState;
 
 int std_abs(int x);
 void std_print(int x);

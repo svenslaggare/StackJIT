@@ -1,11 +1,13 @@
 #pragma once
 #include <string>
 #include <map>
+#include <unordered_map>
 #include <vector>
 
 struct Function;
 enum Types : unsigned char;
 class ArrayHandle;
+class Type;
 
 //Indicates if debugging is enabled
 const bool ENABLE_DEBUG = true;
@@ -21,8 +23,8 @@ const bool OUTPUT_GENERATED_CODE = false;
 
 //Represents a function definition
 struct FunctionDefinition {
-	std::vector<Types> Arguments;
-	Types ReturnType;
+	std::vector<Type*> Arguments;
+	Type* ReturnType;
 
 	long EntryPoint;
 	int FunctionSize;
@@ -30,14 +32,14 @@ struct FunctionDefinition {
 	bool IsManaged; //Indicates if the function is implemented in managed code
 
 	//Creates a new managed function definition
-	FunctionDefinition(std::vector<Types> arguments, Types returnType, long entryPoint, int funcSize)
+	FunctionDefinition(std::vector<Type*> arguments, Type* returnType, long entryPoint, int funcSize)
 		: Arguments(arguments), ReturnType(returnType), EntryPoint(entryPoint), FunctionSize(funcSize), IsManaged(true)
 	{
 
 	}
 
 	//Creates a new external function definition
-	FunctionDefinition(std::vector<Types> arguments, Types returnType, long entryPoint)
+	FunctionDefinition(std::vector<Type*> arguments, Type* returnType, long entryPoint)
 		: Arguments(arguments), ReturnType(returnType), EntryPoint(entryPoint), IsManaged(false)
 	{
 
@@ -54,10 +56,18 @@ struct FunctionDefinition {
 	}
 };
 
-//Represents the state for the VM
-struct VMState {
+//Represents the state of the VM
+class VMState {
+private:
+	std::unordered_map<std::string, Type*> types;
+public:
+	~VMState();
+
     std::map<std::string, FunctionDefinition> FunctionTable;
     std::vector<ArrayHandle> Objects;
+
+    //Returns the given type
+    Type* getType(std::string name);
 };
 
 //Prints the given stack frame

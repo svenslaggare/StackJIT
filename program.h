@@ -4,15 +4,15 @@
 #include <vector>
 
 struct Instruction;
-enum Types : unsigned char;
+class Type;
 
 //Represents an user defined function
 struct Function {
 	std::string Name;
 
 	int NumArgs;
-	std::vector<Types> Arguments;
-	Types ReturnType;
+	std::vector<Type*> Arguments;
+	Type* ReturnType;
 
 	int NumLocals;
 

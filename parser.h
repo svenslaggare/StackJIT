@@ -6,6 +6,7 @@
 struct Instruction;
 struct Function;
 struct Program;
+class VMState;
 
 //The parser
 namespace Parser {
@@ -13,5 +14,5 @@ namespace Parser {
 	std::vector<std::string> tokenize(std::istream& stream);
 	
 	//Parses the given tokens
-	void parseTokens(const std::vector<std::string>& tokens, Program& program);
+	void parseTokens(const std::vector<std::string>& tokens, VMState& vmState, Program& program);
 }

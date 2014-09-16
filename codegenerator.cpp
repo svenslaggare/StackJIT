@@ -8,6 +8,7 @@
 
 #include "codegenerator.h"
 #include "typechecker.h"
+#include "type.h"
 #include "stackjit.h"
 #include "program.h"
 #include "instructions.h"
@@ -104,7 +105,7 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
     return (JitFunction)vmState.FunctionTable["main"].EntryPoint;
 }
 
-JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionData, const VMState& vmState) {
+JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionData, VMState& vmState) {
     TypeChecker::typeCheckFunction(functionData, vmState, ENABLE_DEBUG && PRINT_TYPE_CHECKING);
 
     auto& function = functionData.Function;
@@ -383,7 +384,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::RET:
         {
-            if (function.ReturnType != Types::Void) {
+            if (TypeSystem::isPrimitiveType(function.ReturnType, PrimitiveTypes::Void)) {
                 //Pop the return value
                 Amd64Backend::popReg(generatedCode, Registers::AX); //pop eax
             }

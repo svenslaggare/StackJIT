@@ -3,29 +3,30 @@
 #include <string>
 
 struct FunctionCompilationData;
-struct VMState;
+class VMState;
+class Type;
 
-//The types
-enum Types : unsigned char {
-    Untyped,
-    Void,
-    Int,
-    ArrayRef,
-    StructRef
-};
+// //The types
+// enum Types : unsigned char {
+//     Untyped,
+//     Void,
+//     Int,
+//     ArrayRef,
+//     StructRef
+// };
 
-typedef std::stack<Types> InstructionTypes;
+typedef std::stack<Type*> InstructionTypes;
 
 namespace TypeChecker {
 	//Pops a type from the given stack
-	Types popType(std::stack<Types>& stack);
+	Type* popType(std::stack<Type*>& stack);
 
 	//Converts the given type to a string
-	std::string typeToString(Types type);
+	std::string typeToString(Type* type);
 
 	//Converts the given string into a type
-	Types stringToType(std::string);
+	Type* stringToType(VMState&, std::string);
 
 	//Type checks the given function
-	void typeCheckFunction(FunctionCompilationData& function, const VMState& vmState, bool showDebug = false);
+	void typeCheckFunction(FunctionCompilationData& function, VMState& vmState, bool showDebug = false);
 }

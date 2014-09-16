@@ -11,6 +11,7 @@
 #include "standardlibrary.h"
 #include "codegenerator.h"
 #include "objects.h"
+#include "type.h"
 
 VMState vmState;
 
@@ -23,7 +24,7 @@ int main(int argc, char* argv[]) {
     auto tokens = Parser::tokenize(std::cin);
 
     //Parse it
-    Parser::parseTokens(tokens, program);
+    Parser::parseTokens(tokens, vmState, program);
 
     //Generate a function for the instructions
     int (*programPtr)() = CodeGenerator::generateProgram(program, vmState);
@@ -61,6 +62,22 @@ int main(int argc, char* argv[]) {
     }
 
     return 0;
+}
+
+VMState::~VMState() {
+    for (auto type : types) {
+        delete type.second;
+    }
+}
+
+Type* VMState::getType(std::string name) {
+    if (types.count(name) > 0) {
+        return types[name];
+    } else {
+        Type* type = TypeSystem::makeTypeFromString(name);
+        types.insert({ name, type });
+        return type;
+    }
 }
 
 void rt_printStackFrame(long* basePtr, Function* func) {

@@ -13,6 +13,9 @@ public:
 
 	//Compares if two types are equal
 	bool operator==(const Type& type) const;
+
+	//Compares if two types are not equal
+	bool operator!=(const Type& type) const;
 };
 
 //Represents a reference type
@@ -45,6 +48,15 @@ enum PrimitiveTypes : unsigned char {
 };
 
 namespace TypeSystem {
-	//Creates a new primitive type
-	Type* makePrimitiveType(PrimitiveTypes primitiveType);
+	//Returns the name of the given primitive type
+	std::string getPrimitiveTypeName(PrimitiveTypes primitiveType);
+
+	//Creates a new type from the given string
+	Type* makeTypeFromString(std::string typeName);
+
+	//Indicates if the given type is of the given primitive type
+	bool isPrimitiveType(Type* type, PrimitiveTypes primitiveType);
+
+	//Indicates if the given type is an array
+	bool isArray(Type* type);
 }

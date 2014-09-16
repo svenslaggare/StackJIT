@@ -1,11 +1,11 @@
-func newArray(int) arrayref
+func newArray(int) Ref.Array[Primitive.Integer]
 {
 	LDARG 0
 	NEWARR
 	RET
 }
 
-func getElement(arrayref int) int
+func getElement(Ref.Array[Primitive.Integer] int) int
 {
 	LDARG 0
 	LDARG 1
