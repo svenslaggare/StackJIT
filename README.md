@@ -11,7 +11,9 @@ Only branches within the current function is supported.
 ###Types###
 The VM supports the given types: Array references (ArrayRef) and 32bits integers (Int).
 It also supports the special type 'Void' which is only allowed as return type which indicates no return value.
-The type names are case insensitive, but this may be changed in the future.
+Two types of reference types are supported, arrays and structures.
+* Ref.Array[<Element type>].
+* Ref.Struct.<Struct name>.
 
 ###Locals###
 The VM supports per stack-frame locals. The locals are typed, but not explicitly typed. The type
@@ -60,8 +62,8 @@ The returned value from the main function will be the output for the program.
 * `BLT <target>`: Pops two operands, compares them and jump to target if less than.
 * `BLE <target>`: Pops two operands, compares them and jump to target if less or equal than.
 * `NEWARR <type>`: Pops the size of the array and creates a new array of the given type and pushes the reference on the stack.
-* `STELEM`: Pops the value, index and array reference from the stack and stores the value in the array.
-* `LDELEM`: Pops the index and array reference from the stack and loads the given element from the array.
+* `STELEM <type>`: Pops the value, index and array reference from the stack and stores the value in the array.
+* `LDELEM <type>`: Pops the index and array reference from the stack and loads the given element from the array.
 * `LDLEN`: Pops the array reference from the stack and pushes the length of the array.
 
 ##Platforms##

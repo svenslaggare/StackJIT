@@ -23,16 +23,6 @@ std::string TypeChecker::typeToString(Type* type) {
     return type->name();
 }
 
-Type* TypeChecker::stringToType(VMState& vmState, std::string typeName) {
-    if (typeName == "int" || typeName == "Int") {
-        return vmState.getType("Primitive.Integer");
-    } else if (typeName == "void" || typeName == "Void") {
-        return vmState.getType("Primitive.Void");
-    } else {
-        return vmState.getType(typeName);
-    }
-}
-
 void typeError(int instIndex, std::string errorMessage) {
     throw std::runtime_error(std::to_string(instIndex) + ": " + errorMessage);
 }
@@ -86,10 +76,13 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
         throw std::runtime_error("The function cannot return type 'Untyped'.");
     }
 
+    int i = 0;
     for (auto arg : func.Arguments) {
         if (arg == nullptr || TypeSystem::isPrimitiveType(arg, PrimitiveTypes::Void)) {
-            throw std::runtime_error("The argument cannot be of type '" + typeToString(arg) + "'.");
+            throw std::runtime_error("The argument: " + std::to_string(i) + " in function '" + func.Name + "' cannot be of type '" + typeToString(arg) + "'.");
         }
+
+        i++;
     }
 
     for (auto inst : func.Instructions) {
@@ -239,7 +232,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
                     typeError(index, error);
                 }
 
-                operandStack.push(vmState.getType("Ref.Array[Primitive.Integer]"));
+                operandStack.push(vmState.getType("Ref.Array[" + inst.StrValue + "]"));
             }
             break;
         case OpCodes::STORE_ELEMENT:
@@ -258,8 +251,10 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
                     typeError(index, "Expected second operand to be Int.");
                 }
 
-                if (!TypeSystem::isPrimitiveType(valueType, PrimitiveTypes::Integer)) {
-                    typeError(index, "Expected third operand to be Int.");
+                auto elemType = vmState.getType(inst.StrValue);
+
+                if (*valueType != *elemType) {
+                    typeError(index, "Expected third operand to be " + elemType->name() + ".");
                 }
             }
             break;
@@ -278,7 +273,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
                     typeError(index, "Expected second operand to be Int.");
                 }
 
-                operandStack.push(vmState.getType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer)));
+                operandStack.push(vmState.getType(inst.StrValue));
             }
             break;
         case OpCodes::LOAD_ARRAY_LENGTH:

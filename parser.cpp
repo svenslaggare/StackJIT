@@ -9,6 +9,7 @@
 #include "program.h"
 #include "typechecker.h"
 #include "type.h"
+#include "stackjit.h"
 
 std::vector<std::string> Parser::tokenize(std::istream& stream) {
     std::vector<std::string> tokens;
@@ -73,8 +74,6 @@ std::unordered_map<std::string, OpCodes> noOperandsInstructions
     { "sub", OpCodes::SUB },
     { "mul", OpCodes::MUL },
     { "div", OpCodes::DIV },
-    { "stelem", OpCodes::STORE_ELEMENT },
-    { "ldelem", OpCodes::LOAD_ELEMENT },
     { "ldlen", OpCodes::LOAD_ARRAY_LENGTH },
     { "ret", OpCodes::RET }
 };
@@ -87,6 +86,13 @@ std::unordered_map<std::string, OpCodes> branchInstructions
     { "bge", OpCodes::BGE },
     { "blt", OpCodes::BLT },
     { "ble", OpCodes::BLE }
+};
+
+std::unordered_map<std::string, OpCodes> strOperandInstructions
+{
+    { "newarr", OpCodes::NEW_ARRAY },
+    { "stelem", OpCodes::STORE_ELEMENT },
+    { "ldelem", OpCodes::LOAD_ELEMENT }
 };
 
 void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmState, Program& program) {
@@ -112,6 +118,12 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
 
             if (noOperandsInstructions.count(currentToLower) > 0) {
                 currentFunc->Instructions.push_back(makeInstruction(noOperandsInstructions[currentToLower]));
+            }
+
+            if (strOperandInstructions.count(currentToLower) > 0) {
+                assertTokenCount(tokens, i, 1);
+                std::string value = tokens[i + 1];
+                currentFunc->Instructions.push_back(makeInstWithStr(strOperandInstructions[currentToLower], value));
             }
 
             if (currentToLower == ".locals") {
@@ -164,12 +176,6 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                 }
             }
 
-            if (currentToLower == "newarr") {
-                assertTokenCount(tokens, i, 1);
-                std::string elementType = tokens[i + 1];
-                currentFunc->Instructions.push_back(makeInstWithStr(OpCodes::NEW_ARRAY, elementType));
-            }
-
             if (currentToLower == "br") {
                 assertTokenCount(tokens, i, 1);
                 int target = stoi(tokens[i + 1]);
@@ -197,7 +203,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                 if (isFuncParams) {
                     if (currentToLower == ")") {     
                         assertTokenCount(tokens, i, 1);                   
-                        auto returnType = TypeChecker::stringToType(vmState, tokens[i + 1]);
+                        auto returnType = vmState.getType(tokens[i + 1]);
                         int numArgs = funcParams.size();
 
                         if (numArgs >= 0 && numArgs <= 4) {
@@ -223,7 +229,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                         funcName = "";
                         localsSet = false;
                     } else {
-                        funcParams.push_back(TypeChecker::stringToType(vmState, current));
+                        funcParams.push_back(vmState.getType(current));
                     }
                 }
 

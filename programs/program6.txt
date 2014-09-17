@@ -1,4 +1,4 @@
-func int_push(int) int
+func int_push(Int) Int
 {
 	.locals 2
 
@@ -8,7 +8,7 @@ func int_push(int) int
 	RET
 }
 
-func main() int
+func main() Int
 {
 	.locals 2
 	

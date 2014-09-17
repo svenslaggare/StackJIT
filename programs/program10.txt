@@ -1,26 +1,26 @@
-func newArray(int) Ref.Array[Primitive.Integer]
+func newArray(Int) Ref.Array[Int]
 {
 	LDARG 0
-	NEWARR int
+	NEWARR Int
 	RET
 }
 
-func getElement(Ref.Array[Primitive.Integer] int) int
+func getElement(Ref.Array[Int] Int) Int
 {
 	LDARG 0
 	LDARG 1
-	LDELEM
+	LDELEM Int
 	RET
 }
 
-func printLine(int) void
+func printLine(Int) Void
 {
 	LDARG 0
 	CALL println
 	RET
 }
 
-func main() int
+func main() Int
 {
 	.locals 1
 	
@@ -31,7 +31,7 @@ func main() int
 	LDLOC 0
 	PUSH 0
 	PUSH 1337
-	STELEM
+	STELEM Int
 
 	LDLOC 0
 	LDLEN

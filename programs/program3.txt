@@ -1,4 +1,4 @@
-func int_add(int int int) int
+func int_add(Int Int Int) Int
 {
 	LDARG 0
 	LDARG 1
@@ -8,7 +8,7 @@ func int_add(int int int) int
 	RET
 }
 
-func int_mul(int int int) int
+func int_mul(Int Int Int) Int
 {
 	LDARG 0
 	LDARG 1
@@ -18,7 +18,7 @@ func int_mul(int int int) int
 	RET
 }
 
-func main() int
+func main() Int
 {
 	PUSH 4
 	PUSH 6

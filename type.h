@@ -1,4 +1,7 @@
+#pragma once
 #include <string>
+#include <functional>
+#include <unordered_map>
 
 //Represents a type
 class Type {

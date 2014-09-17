@@ -1,7 +1,10 @@
 #include "type.h"
+
 #include <vector>
 #include <regex>
 #include <iostream>
+#include <unordered_map>
+#include <functional>
 
 Type::Type(std::string name) : mName(name) {
 
@@ -42,13 +45,18 @@ StructType::StructType(std::string name): ReferenceType("Struct." + name) {
 std::string TypeSystem::getPrimitiveTypeName(PrimitiveTypes primitiveType) {
 	switch (primitiveType) {
 		case PrimitiveTypes::Void:
-			return "Primitive.Void";
+			return "Void";
 		case PrimitiveTypes::Integer:
-			return "Primitive.Integer";
+			return "Int";
 	}
 
 	return "";
 }
+
+std::unordered_map<std::string, std::function<Type*()>> primitiveTypeNames {
+	{ "Int", []() -> Type* { return new Type("Int"); } },
+	{ "Void", []() -> Type* { return new Type("Void"); } }
+};
 
 Type* TypeSystem::makeTypeFromString(std::string typeName) {
 	//Split the type name
@@ -80,17 +88,8 @@ Type* TypeSystem::makeTypeFromString(std::string typeName) {
 	std::string arrayPattern = "Array.(.*).";
 	std::regex arrayRegex(arrayPattern, std::regex_constants::extended);
 
-	//Check if primitive or reference
-	if (typeParts[0] == "Primitive") {
-		if (typeParts.size() == 2) {
-			std::string primType = typeParts[1];
-
-			if (primType == "Integer") {
-				return new Type(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer));
-			} else if (primType == "Void") {
-				return new Type(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Void));
-			}
-		}
+	if (primitiveTypeNames.count(typeParts[0]) > 0) {
+		return primitiveTypeNames[typeParts[0]]();
 	} else if (typeParts[0] == "Ref") {
 		std::smatch match;
 		bool foundArray = std::regex_match(typeParts[1], match, arrayRegex);
@@ -106,6 +105,36 @@ Type* TypeSystem::makeTypeFromString(std::string typeName) {
 		}
 	}
 
+	// if (typeParts[0] == "Int") {
+	// 	return new Type(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer));
+	// } else (typeParts)
+
+	// //Check if primitive or reference
+	// if (typeParts[0] == "Primitive") {
+	// 	if (typeParts.size() == 2) {
+	// 		std::string primType = typeParts[1];
+
+	// 		if (primType == "Integer") {
+	// 			return new Type(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer));
+	// 		} else if (primType == "Void") {
+	// 			return new Type(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Void));
+	// 		}
+	// 	}
+	// } else if (typeParts[0] == "Ref") {
+	// 	std::smatch match;
+	// 	bool foundArray = std::regex_match(typeParts[1], match, arrayRegex);
+
+	// 	if (foundArray) {
+	// 		std::string elementType = match[1].str();
+	// 		elementType = elementType.substr(1, elementType.length() - 2);
+	// 		return new ArrayType(makeTypeFromString(elementType));
+	// 	} else if (typeParts[1] == "Struct") {
+	// 		if (typeParts.size() == 3) {
+	// 			return new StructType(typeParts[2]);
+	// 		}
+	// 	}
+	// }
+
 	return nullptr;
 }
 
@@ -113,9 +142,9 @@ bool TypeSystem::isPrimitiveType(Type* type, PrimitiveTypes primitiveType) {
 	if (type != nullptr) {
 		switch (primitiveType) {
 			case PrimitiveTypes::Integer:
-				return type->name().compare("Primitive.Integer") == 0;
+				return type->name().compare("Int") == 0;
 			case PrimitiveTypes::Void:
-				return type->name().compare("Primitive.Void") == 0;
+				return type->name().compare("Void") == 0;
 		}
 	}
 

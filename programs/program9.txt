@@ -1,18 +1,18 @@
-func main() int
+func main() Int
 {
 	.locals 1
 	
 	PUSH 4
-	NEWARR int
+	NEWARR Int
 	STLOC 0
 
 	LDLOC 0
 	PUSH 0
 	PUSH 1337
-	STELEM
+	STELEM Int
 
 	LDLOC 0
 	PUSH 0
-	LDELEM
+	LDELEM Int
 	RET
 }

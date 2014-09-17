@@ -1,4 +1,4 @@
-func main() int
+func main() Int
 {
 	.locals 1
 	
