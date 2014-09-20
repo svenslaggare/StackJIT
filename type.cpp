@@ -159,3 +159,22 @@ bool TypeSystem::isArray(Type* type) {
 	auto typeName = type->name();
 	return typeName.find("Array.", 0, typeName.length());
 }
+
+std::size_t TypeSystem::getSize(PrimitiveTypes primitiveType) {
+	switch (primitiveType) {
+	case PrimitiveTypes::Integer:
+		return 4;
+	case PrimitiveTypes::Void:
+		return 0;
+	}
+}
+
+std::size_t TypeSystem::sizeOfType(Type* type) {
+	auto typeName = type->name();
+
+	if (typeName == "Int") {
+		return sizeof(int);
+	}
+
+	return 0;
+}

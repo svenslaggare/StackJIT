@@ -179,8 +179,10 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
     }
 
     //Generate the native instructions for the program
+    int i = 0;
     for (auto current : function.instructions) {
-        generateInstruction(functionData, vmState, current);
+        generateInstruction(functionData, vmState, current, i);
+        i++;
     }
 
     //Patch branches with the native targets
@@ -208,7 +210,7 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
     int length = function.generatedCode.size();
 
     if (ENABLE_DEBUG) {
-        std::string argsStr {""};
+        std::string argsStr = "";
         bool isFirst = true;
 
         for (auto param : function.arguments) {
@@ -227,6 +229,7 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
             << std::endl;
     }
 
+    //Indicates if to output the generated code to a file
     if (OUTPUT_GENERATED_CODE) {
         std::ofstream asmFile (functionData.Function.name + ".jit", std::ios::binary);
 
@@ -254,7 +257,7 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
     return (JitFunction)mem;
 }
 
-void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, const VMState& vmState, const Instruction& inst) {
+void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, const VMState& vmState, const Instruction& inst, int instIndex) {
     auto& function = functionData.Function;
     auto& generatedCode = function.generatedCode;
     int stackOffset = 1; //The offset for variables allocated on the stack
@@ -465,8 +468,14 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::NEW_ARRAY:
         {
-            //Pop the size as the first arg
-            Amd64Backend::popReg(generatedCode, Registers::DI); //pop rdi
+            auto opTypes = functionData.InstructionOperandTypes[instIndex];
+            Type* elemType = opTypes[0];
+
+            //The pointer to the type as the first arg
+            Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)elemType); //mov rdi, <addr of type pointer>
+
+            //Pop the size as the second arg
+            Amd64Backend::popReg(generatedCode, Registers::SI); //pop rsi
 
             //Call the newArray runtime function
             Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&rt_newArray);

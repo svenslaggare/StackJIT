@@ -14,6 +14,9 @@
 #include "type.h"
 #include "vmstate.h"
 
+//The global state for the VM
+VMState vmState;
+
 int main(int argc, char* argv[]) {
     Program program;
 

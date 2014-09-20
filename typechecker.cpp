@@ -41,6 +41,17 @@ std::string checkType(Type* expectedType, Type* actualType) {
     }
 }
 
+std::deque<Type*> asVector(std::stack<Type*> types) {
+    std::deque<Type*> typesList;
+
+    while (!types.empty()) {
+        typesList.push_back(types.top());
+        types.pop();
+    }
+
+    return typesList;
+}
+
 struct BranchCheck {
     int Source;
     int Target;
@@ -339,5 +350,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
     }
 
     //Save the operand types
-    function.InstructionOperandTypes = instructionsOperandTypes;
+    for (auto instTypes : instructionsOperandTypes) {
+        function.InstructionOperandTypes.push_back(asVector(instTypes));
+    }
 }

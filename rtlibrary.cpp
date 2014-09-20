@@ -7,6 +7,9 @@
 #include "objects.h"
 #include "vmstate.h"
 #include "program.h"
+#include "type.h"
+
+extern VMState vmState;
 
 void rt_printStackFrame(long* basePtr, Function* func) {
     int numArgs = func->numArgs();
@@ -38,13 +41,15 @@ void rt_printStackFrame(long* basePtr, Function* func) {
     std::cout << "----End StackFrame----" << std::endl;
 }
 
-long rt_newArray(int size) {
-    int memSize = (size + 1) * sizeof(int);
+long rt_newArray(Type* type, int size) {
+    auto elemSize = TypeSystem::sizeOfType(type);
+
+    int memSize = sizeof(int) + size * elemSize;
     unsigned char* arrayPtr = new unsigned char[memSize];
     memset(arrayPtr, 0, memSize);
 
     //Add the array to the list of objects
-    vmState.Objects.push_back(ArrayHandle(size, (int*)(arrayPtr + 4)));
+    vmState.Objects.push_back(ArrayHandle(size, (int*)(arrayPtr + sizeof(int))));
 
     //Set the size of the array
     IntToBytes converter;

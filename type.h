@@ -63,4 +63,10 @@ namespace TypeSystem {
 
 	//Indicates if the given type is an array
 	bool isArray(Type* type);
+
+	//Returns the size (in bytes) for the given primitive type
+	std::size_t getSize(PrimitiveTypes primitiveType);
+
+	//Returns the size (in bytes) for the given type
+	std::size_t sizeOfType(Type* type);
 }

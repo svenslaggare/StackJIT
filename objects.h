@@ -8,9 +8,9 @@ class Type;
 class ArrayHandle {
 private:
 	unsigned char* handle;
+	int* elements;
 public:
 	const int size;
-	int* const elements;
 
 	ArrayHandle(int size, int* elements);
 	ArrayHandle();

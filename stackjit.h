@@ -1,9 +1,6 @@
 #pragma once
 #include "vmstate.h"
 
-//The global state for the VM
-static VMState vmState;
-
 //Indicates if debugging is enabled
 const bool ENABLE_DEBUG = true;
 
