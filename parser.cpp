@@ -9,7 +9,7 @@
 #include "program.h"
 #include "typechecker.h"
 #include "type.h"
-#include "stackjit.h"
+#include "vmstate.h"
 
 std::vector<std::string> Parser::tokenize(std::istream& stream) {
     std::vector<std::string> tokens;
@@ -113,17 +113,17 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
             if (currentToLower == "push") {
                 assertTokenCount(tokens, i, 1);
                 int value = stoi(tokens[i + 1]);
-                currentFunc->Instructions.push_back(makeInstWithInt(OpCodes::PUSH_INT, value));
+                currentFunc->instructions.push_back(makeInstWithInt(OpCodes::PUSH_INT, value));
             }
 
             if (noOperandsInstructions.count(currentToLower) > 0) {
-                currentFunc->Instructions.push_back(makeInstruction(noOperandsInstructions[currentToLower]));
+                currentFunc->instructions.push_back(makeInstruction(noOperandsInstructions[currentToLower]));
             }
 
             if (strOperandInstructions.count(currentToLower) > 0) {
                 assertTokenCount(tokens, i, 1);
                 std::string value = tokens[i + 1];
-                currentFunc->Instructions.push_back(makeInstWithStr(strOperandInstructions[currentToLower], value));
+                currentFunc->instructions.push_back(makeInstWithStr(strOperandInstructions[currentToLower], value));
             }
 
             if (currentToLower == ".locals") {
@@ -133,7 +133,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
 
                     if (localsCount >= 0) {
                         localsSet = true;
-                        currentFunc->NumLocals = localsCount;
+                        currentFunc->numLocals = localsCount;
                     } else {
                         throw std::runtime_error("The number of locals must be >= 0.");
                     }
@@ -152,8 +152,8 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                 int local = stoi(tokens[i + 1]);
                 auto opCode = currentToLower == "ldloc" ? OpCodes::LOAD_LOCAL : OpCodes::STORE_LOCAL;
 
-                if (local >= 0 && local < currentFunc->NumLocals) {
-                    currentFunc->Instructions.push_back(makeInstWithInt(opCode, local));
+                if (local >= 0 && local < currentFunc->numLocals) {
+                    currentFunc->instructions.push_back(makeInstWithInt(opCode, local));
                 } else {
                     throw std::runtime_error("The local index is out of range.");
                 }
@@ -162,15 +162,15 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
             if (currentToLower == "call") {
                 assertTokenCount(tokens, i, 1);
                 std::string funcName = tokens[i + 1];
-                currentFunc->Instructions.push_back(makeCall(funcName));
+                currentFunc->instructions.push_back(makeCall(funcName));
             }
 
             if (currentToLower == "ldarg") {
                 assertTokenCount(tokens, i, 1);
                 int argNum = stoi(tokens[i + 1]);
 
-                if (argNum >= 0 && argNum < currentFunc->NumArgs) {
-                    currentFunc->Instructions.push_back(makeInstWithInt(OpCodes::LOAD_ARG, argNum));
+                if (argNum >= 0 && argNum < currentFunc->numArgs()) {
+                    currentFunc->instructions.push_back(makeInstWithInt(OpCodes::LOAD_ARG, argNum));
                 } else {
                     throw std::runtime_error("The argument index is out of range.");
                 }
@@ -179,13 +179,13 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
             if (currentToLower == "br") {
                 assertTokenCount(tokens, i, 1);
                 int target = stoi(tokens[i + 1]);
-                currentFunc->Instructions.push_back(makeInstWithInt(OpCodes::BR, target));
+                currentFunc->instructions.push_back(makeInstWithInt(OpCodes::BR, target));
             }
 
             if (branchInstructions.count(currentToLower) > 0) {
                 assertTokenCount(tokens, i, 1);
                 int target = stoi(tokens[i + 1]);
-                currentFunc->Instructions.push_back(makeInstWithInt(branchInstructions[currentToLower], target));
+                currentFunc->instructions.push_back(makeInstWithInt(branchInstructions[currentToLower], target));
             }
         }
 
@@ -203,19 +203,13 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                 if (isFuncParams) {
                     if (currentToLower == ")") {     
                         assertTokenCount(tokens, i, 1);                   
-                        auto returnType = vmState.getType(tokens[i + 1]);
+                        auto returnType = vmState.findType(tokens[i + 1]);
                         int numArgs = funcParams.size();
 
                         if (numArgs >= 0 && numArgs <= 4) {
                             //Create a new function        
-                            Function* newFunc = new Function;
-                            newFunc->Name = funcName;
-
-                            newFunc->NumArgs = numArgs;
-                            newFunc->Arguments = funcParams;
-                            newFunc->ReturnType = returnType;
-
-                            newFunc->NumLocals = 0;
+                            Function* newFunc = new Function(funcName, funcParams, returnType);
+                            newFunc->numLocals = 0;
                             program.Functions[funcName] = newFunc;
 
                             currentFunc = newFunc;
@@ -229,7 +223,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                         funcName = "";
                         localsSet = false;
                     } else {
-                        funcParams.push_back(vmState.getType(current));
+                        funcParams.push_back(vmState.findType(current));
                     }
                 }
 
@@ -248,7 +242,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
     if (program.Functions.count("main") > 0) {
         auto mainFunc = program.Functions["main"];
 
-        if (mainFunc->Arguments.size() != 0 || !TypeSystem::isPrimitiveType(mainFunc->ReturnType, PrimitiveTypes::Integer)) {
+        if (mainFunc->arguments.size() != 0 || !TypeSystem::isPrimitiveType(mainFunc->returnType, PrimitiveTypes::Integer)) {
            throw std::runtime_error("The main function must have the following signature: 'func main() Int'"); 
         }
     } else {

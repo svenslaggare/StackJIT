@@ -8,16 +8,20 @@ class Type;
 
 //Represents an user defined function
 struct Function {
-	std::string Name;
+	const std::string name;
 
-	int NumArgs;
-	std::vector<Type*> Arguments;
-	Type* ReturnType;
+	const std::vector<Type*> arguments;
+	Type* const returnType;
 
-	int NumLocals;
+	int numLocals;
 
-	std::vector<Instruction> Instructions;
-	std::vector<unsigned char> GeneratedCode;
+	std::vector<Instruction> instructions;
+	std::vector<unsigned char> generatedCode;
+
+	//Creates a new function
+	Function(std::string name, std::vector<Type*> arguments, Type* returnType);
+
+	int numArgs() const;
 };
 
 //Represents a program

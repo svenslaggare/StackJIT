@@ -12,8 +12,7 @@
 #include "codegenerator.h"
 #include "objects.h"
 #include "type.h"
-
-VMState vmState;
+#include "vmstate.h"
 
 int main(int argc, char* argv[]) {
     Program program;
@@ -51,88 +50,15 @@ int main(int argc, char* argv[]) {
         obj.deleteHandle();
     }
 
-    //Unmap func memory
+    //Unmap function code memory
     for (auto funcEntry : vmState.FunctionTable) {
         auto func = funcEntry.second;
 
         //Defined function have size > 0
-        if (func.FunctionSize > 0) {
-            munmap((unsigned char*)func.EntryPoint, func.FunctionSize);
+        if (func.functionSize() > 0) {
+            munmap((unsigned char*)func.entryPoint(), func.functionSize());
         }
     }
 
     return 0;
-}
-
-VMState::~VMState() {
-    for (auto type : types) {
-        delete type.second;
-    }
-}
-
-Type* VMState::getType(std::string name) {
-    if (types.count(name) > 0) {
-        return types[name];
-    } else {
-        Type* type = TypeSystem::makeTypeFromString(name);
-        types.insert({ name, type });
-        return type;
-    }
-}
-
-void rt_printStackFrame(long* basePtr, Function* func) {
-    int numArgs = func->NumArgs;
-    int numLocals = func->NumLocals;
-
-    std::cout << "----Start StackFrame----" << std::endl;
-    std::cout << "Func: " << func->Name << std::endl;
-    std::cout << "Num args: " << numArgs << std::endl;
-    std::cout << "Num locals: " << numLocals << std::endl;
-
-    long* argsStart = basePtr - 1;
-    long* localsStart = basePtr - 1 - numArgs;
-
-    if (numArgs > 0) {
-        std::cout << std::endl;
-        std::cout << "Args: " << std::endl;
-        for (int i = 0; i < numArgs; i++) {
-            std::cout << i << ": " << argsStart[-i] << std::endl;
-        }
-    }
-
-    std::cout << std::endl;
-
-    std::cout << "Locals: " << std::endl;
-    for (int i = 0; i < numLocals; i++) {
-        std::cout << i << ": " << localsStart[-i] << std::endl;
-    }
-    
-    std::cout << "----End StackFrame----" << std::endl;
-}
-
-long rt_newArray(int size) {
-    int memSize = (size + 1) * sizeof(int);
-    unsigned char* arrayPtr = new unsigned char[memSize];
-    memset(arrayPtr, 0, memSize);
-
-    //Add the array to the list of objects
-    vmState.Objects.push_back(ArrayHandle(size, (int*)(arrayPtr + 4)));
-
-    //Set the size of the array
-    IntToBytes converter;
-    converter.IntValue = size;
-    arrayPtr[0] = converter.ByteValues[0];
-    arrayPtr[1] = converter.ByteValues[1];
-    arrayPtr[2] = converter.ByteValues[2];
-    arrayPtr[3] = converter.ByteValues[3];
-
-    return (long)arrayPtr;
-}
-
-void rt_runtimeError(std::string errorMessage) {
-    throw std::runtime_error(errorMessage);
-}
-
-void rt_arrayOutOfBoundsError() {
-    rt_runtimeError("Array index is out of bounds.");
 }

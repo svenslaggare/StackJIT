@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "standardlibrary.h"
-#include "stackjit.h"
+#include "vmstate.h"
 #include "typechecker.h"
 #include "type.h"
 
@@ -22,8 +22,8 @@ void std_println(int x) {
 }
 
 void addStandardLibrary(VMState& vmState) {
-	auto intType = vmState.getType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer));
-	auto voidType = vmState.getType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Void));
+	auto intType = vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer));
+	auto voidType = vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Void));
 
 	vmState.FunctionTable["abs"] = FunctionDefinition({ intType }, intType, (long)(&std_abs));
 	vmState.FunctionTable["print"] = FunctionDefinition({ intType }, voidType, (long)(&std_print));

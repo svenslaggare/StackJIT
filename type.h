@@ -10,6 +10,7 @@ private:
 public:
 	Type(std::string name);
 	virtual ~Type();
+	Type(const Type&) = delete;
 
 	//Returns the name of the type
 	std::string name();
