@@ -12,8 +12,8 @@ Only branches within the current function is supported.
 The VM supports the given types: Array references (ArrayRef) and 32bits integers (Int).
 It also supports the special type 'Void' which is only allowed as return type which indicates no return value.
 Two types of reference types are supported, arrays and structures.
-* Ref.Array[<Element type>].
-* Ref.Struct.<Struct name>.
+* `Ref.Array[<Element type>]`.
+* `Ref.Struct.<Struct name>`.
 
 ###Locals###
 The VM supports per stack-frame locals. The locals are typed, but not explicitly typed. The type
