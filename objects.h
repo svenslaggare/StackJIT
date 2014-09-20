@@ -8,11 +8,11 @@ class Type;
 class ArrayHandle {
 private:
 	unsigned char* handle;
-	int* elements;
 public:
 	const int size;
+	Type* const type;
 
-	ArrayHandle(int size, int* elements);
+	ArrayHandle(int size, Type* type, unsigned char* handle);
 	ArrayHandle();
 	
 	//Deletes the underlying handle

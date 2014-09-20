@@ -2,7 +2,6 @@
 #include <string.h>
 
 #include "rtlibrary.h"
-#include "stackjit.h"
 #include "amd64.h"
 #include "objects.h"
 #include "vmstate.h"
@@ -49,7 +48,7 @@ long rt_newArray(Type* type, int size) {
     memset(arrayPtr, 0, memSize);
 
     //Add the array to the list of objects
-    vmState.Objects.push_back(ArrayHandle(size, (int*)(arrayPtr + sizeof(int))));
+    vmState.Objects.push_back(ArrayHandle(size, type, arrayPtr));
 
     //Set the size of the array
     IntToBytes converter;

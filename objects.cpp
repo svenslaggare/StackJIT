@@ -1,12 +1,11 @@
 #include "objects.h"
 
-ArrayHandle::ArrayHandle(int size, int* elements)
-	: size(size), elements(elements) {
-	handle = ((unsigned char*)elements) - 4;
+ArrayHandle::ArrayHandle(int size, Type* type, unsigned char* handle)
+	: size(size), type(type), handle(handle) {
+
 }
 
-ArrayHandle::ArrayHandle() : size(0), elements(nullptr)
-{
+ArrayHandle::ArrayHandle() : size(0), type(nullptr), handle(nullptr) {
 
 }
 
