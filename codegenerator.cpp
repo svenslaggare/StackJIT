@@ -468,8 +468,9 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::NEW_ARRAY:
         {
-            auto opTypes = functionData.InstructionOperandTypes[instIndex];
-            Type* elemType = opTypes[0];
+            // auto opTypes = functionData.InstructionOperandTypes[instIndex];
+            // Type* elemType = opTypes[0];
+            Type* elemType = vmState.getType(inst.StrValue);
 
             //The pointer to the type as the first arg
             Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)elemType); //mov rdi, <addr of type pointer>
@@ -527,6 +528,70 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
         //Push the size
         Amd64Backend::pushReg(generatedCode, Registers::AX); //push eax
+        break;
+    case OpCodes::NEW_OBJECT:
+        {
+            Type* structType = vmState.getType(inst.StrValue);
+
+            //The pointer to the type as the first arg
+            Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)structType); //mov rdi, <addr of type pointer>
+
+            //Call the newObject runtime function
+            Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&rt_newObject);
+            Amd64Backend::callInReg(generatedCode, Registers::AX);
+
+            //Push the returned pointer
+            Amd64Backend::pushReg(generatedCode, Registers::AX);
+        }
+        break;
+    case OpCodes::LOAD_FIELD:
+        {
+            //Get the field
+            int fieldSepPos = inst.StrValue.find("::");
+
+            auto structName = inst.StrValue.substr(0, fieldSepPos);
+            auto fieldName = inst.StrValue.substr(fieldSepPos + 2);
+
+            auto structMetadata = vmState.getStructMetadata(structName);
+
+            int fieldOffset = structMetadata->getFieldOffset(fieldName);
+
+            //Pop the operand
+            Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the object
+
+            //Type check
+            //generateTypeCheck(generatedCode, structMetadata);
+
+            //Compute the address of the field
+            Amd64Backend::addByteToReg(generatedCode, Registers::AX, fieldOffset); //add rax, 4
+
+            //Load the field
+            Amd64Backend::moveMemoryByRegToReg(generatedCode, Registers::CX, Registers::AX); //mov rcx, [rax]
+            Amd64Backend::pushReg(generatedCode, Registers::CX); //pop rcx
+        }
+        break;
+    case OpCodes::STORE_FIELD:
+        {
+            //Get the field
+            int fieldSepPos = inst.StrValue.find("::");
+
+            auto structName = inst.StrValue.substr(0, fieldSepPos);
+            auto fieldName = inst.StrValue.substr(fieldSepPos + 2);
+
+            auto structMetadata = vmState.getStructMetadata(structName);
+
+            int fieldOffset = structMetadata->getFieldOffset(fieldName);
+
+            //Pop the operand
+            Amd64Backend::popReg(generatedCode, Registers::DX); //The value to store
+            Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the object
+
+            //Type check
+            //generateTypeCheck(generatedCode, structMetadata);
+
+            //Store the field
+            Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::AX, fieldOffset, Registers::DX); //mov [rax+<fieldOffset>], rdx
+        }
         break;
     default:
         break;

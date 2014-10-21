@@ -1,30 +1,6 @@
 #include "vmstate.h"
 #include "type.h"
 
-VMState::~VMState() {
-    for (auto type : types) {
-        delete type.second;
-    }
-}
-
-Type* VMState::findType(std::string name) {
-    if (types.count(name) > 0) {
-        return types[name];
-    } else {
-        Type* type = TypeSystem::makeTypeFromString(name);
-        types.insert({ name, type });
-        return type;
-    }
-}
-
-Type* VMState::getType(std::string name) const {
-    if (types.count(name) > 0) {
-        return types.at(name);
-    } else {
-        return nullptr;
-    }
-}
-
 FunctionDefinition::FunctionDefinition(std::vector<Type*> arguments, Type* returnType, long entryPoint, int funcSize)
     : Arguments(arguments), ReturnType(returnType), mEntryPoint(entryPoint), mFunctionSize(funcSize), mIsManaged(true) {
 
@@ -54,4 +30,42 @@ long FunctionDefinition::entryPoint() const {
 
 int FunctionDefinition::functionSize() const {
     return mFunctionSize;
+}
+
+VMState::~VMState() {
+    for (auto type : types) {
+        delete type.second;
+    }
+}
+
+Type* VMState::findType(std::string name) {
+    if (types.count(name) > 0) {
+        return types[name];
+    } else {
+        Type* type = TypeSystem::makeTypeFromString(name);
+        types.insert({ name, type });
+        return type;
+    }
+}
+
+Type* VMState::getType(std::string name) const {
+    if (types.count(name) > 0) {
+        return types.at(name);
+    } else {
+        return nullptr;
+    }
+}
+
+void VMState::addStructMetadata(std::string structName, StructMetadata structMetadata) {
+    if (structsMetadata.count(structName) == 0) {
+        structsMetadata[structName] = structMetadata;
+    }
+}
+
+const StructMetadata* const VMState::getStructMetadata(std::string structName) const {
+    if (structsMetadata.count(structName) > 0) {
+        return &structsMetadata.at(structName);
+    } else {
+        return nullptr;
+    }
 }

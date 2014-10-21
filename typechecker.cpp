@@ -8,6 +8,7 @@
 #include "program.h"
 #include "instructions.h"
 #include "type.h"
+#include "structmetadata.h"
 
 Type* TypeChecker::popType(std::stack<Type*>& stack) {
     auto value = stack.top();
@@ -75,6 +76,8 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
 
     std::vector<Type*> locals(function.Function.numLocals);
     std::vector<BranchCheck> branches;
+
+    auto intType = vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer));
 
     int index = 1;
 
@@ -299,11 +302,99 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
                 operandStack.push(vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer)));
             }
             break;
+        case OpCodes::NEW_OBJECT:
+            {
+                auto structType = vmState.findType(inst.StrValue);
+
+                if (!TypeSystem::isReferenceType(structType)) {
+                    typeError(index, "'" + structType->name() + "' is not a struct type.");
+                }
+
+                std::string structName = static_cast<StructType*>(structType)->structName();
+
+                if (vmState.getStructMetadata(structName) == nullptr) {
+                    typeError(index, "'" + structName + "' is not a defined struct.");
+                }
+
+                operandStack.push(structType);
+            }
+            break;
+        case OpCodes::LOAD_FIELD:
+            {
+                assertOperandCount(index, operandStack, 1);
+
+                auto structRefType = popType(operandStack);
+
+                if (!TypeSystem::isStruct(structRefType)) {
+                    typeError(index, "Expected first operand to be StructRef.");
+                }
+
+                int fieldSepPos = inst.StrValue.find("::");
+
+                if (fieldSepPos != -1) {
+                    auto structName = inst.StrValue.substr(0, fieldSepPos);
+                    auto fieldName = inst.StrValue.substr(fieldSepPos + 2);
+
+                    auto structMetadata = vmState.getStructMetadata(structName);
+
+                    if (structMetadata == nullptr) {
+                        typeError(index, "'" + structName + "' is not a struct type.");
+                    }
+
+                    auto fieldType = structMetadata->getField(fieldName);
+
+                    if (fieldType == nullptr) {
+                        typeError(index, "There exists no '" + fieldName + "' field in the '" + structName + "' struct.");
+                    }
+
+                    operandStack.push(fieldType);
+                } else {
+                    typeError(index, "Invalid field reference.");
+                }
+            }
+            break;
+        case OpCodes::STORE_FIELD:
+             {
+                assertOperandCount(index, operandStack, 2);
+
+                auto valueType = popType(operandStack);
+                auto structRefType = popType(operandStack);
+
+                if (!TypeSystem::isStruct(structRefType)) {
+                    typeError(index, "Expected first operand to be StructRef.");
+                }
+
+                int fieldSepPos = inst.StrValue.find("::");
+
+                if (fieldSepPos != -1) {
+                    auto structName = inst.StrValue.substr(0, fieldSepPos);
+                    auto fieldName = inst.StrValue.substr(fieldSepPos + 2);
+
+                    auto structMetadata = vmState.getStructMetadata(structName);
+
+                    if (structMetadata == nullptr) {
+                        typeError(index, "'" + structName + "' is not a struct type.");
+                    }
+
+                    auto fieldType = structMetadata->getField(fieldName);
+
+                    if (fieldType == nullptr) {
+                        typeError(index, "There exists no '" + fieldName + "' field in the '" + structName + "' struct.");
+                    }
+
+                    if (*valueType != *fieldType) {
+                        typeError(index, "Expected second operand to be " + fieldType->name() + ".");
+                    }
+                } else {
+                    typeError(index, "Invalid field reference.");
+                }
+            }
+            break;
         }
 
         if (index == numInsts) {
             if (inst.OpCode != OpCodes::RET) {
-                typeError(index, "Function must end with 'RET' instruction.");
+                typeError(index, "Functions must end with a 'RET' instruction.");
             }
         }
 

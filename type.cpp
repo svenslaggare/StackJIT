@@ -38,8 +38,12 @@ ArrayType::~ArrayType() {
 	delete mElementType;
 }
 
-StructType::StructType(std::string name): ReferenceType("Struct." + name) {
+StructType::StructType(std::string name): ReferenceType("Struct." + name), mStructName(name) {
 
+}
+
+std::string StructType::structName() const {
+	return mStructName;
 }
 
 std::string TypeSystem::getPrimitiveTypeName(PrimitiveTypes primitiveType) {
@@ -105,36 +109,6 @@ Type* TypeSystem::makeTypeFromString(std::string typeName) {
 		}
 	}
 
-	// if (typeParts[0] == "Int") {
-	// 	return new Type(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer));
-	// } else (typeParts)
-
-	// //Check if primitive or reference
-	// if (typeParts[0] == "Primitive") {
-	// 	if (typeParts.size() == 2) {
-	// 		std::string primType = typeParts[1];
-
-	// 		if (primType == "Integer") {
-	// 			return new Type(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer));
-	// 		} else if (primType == "Void") {
-	// 			return new Type(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Void));
-	// 		}
-	// 	}
-	// } else if (typeParts[0] == "Ref") {
-	// 	std::smatch match;
-	// 	bool foundArray = std::regex_match(typeParts[1], match, arrayRegex);
-
-	// 	if (foundArray) {
-	// 		std::string elementType = match[1].str();
-	// 		elementType = elementType.substr(1, elementType.length() - 2);
-	// 		return new ArrayType(makeTypeFromString(elementType));
-	// 	} else if (typeParts[1] == "Struct") {
-	// 		if (typeParts.size() == 3) {
-	// 			return new StructType(typeParts[2]);
-	// 		}
-	// 	}
-	// }
-
 	return nullptr;
 }
 
@@ -151,6 +125,15 @@ bool TypeSystem::isPrimitiveType(Type* type, PrimitiveTypes primitiveType) {
 	return false;
 }
 
+bool TypeSystem::isReferenceType(Type* type) {
+	if (type == nullptr) {
+		return false;
+	}
+
+	auto typeName = type->name();
+	return typeName.find("Ref.", 0, typeName.length());
+}
+
 bool TypeSystem::isArray(Type* type) {
 	if (type == nullptr) {
 		return false;
@@ -158,6 +141,15 @@ bool TypeSystem::isArray(Type* type) {
 
 	auto typeName = type->name();
 	return typeName.find("Array.", 0, typeName.length());
+}
+
+bool TypeSystem::isStruct(Type* type) {
+	if (type == nullptr) {
+		return false;
+	}
+
+	auto typeName = type->name();
+	return typeName.find("Struct.", 0, typeName.length());
 }
 
 std::size_t TypeSystem::getSize(PrimitiveTypes primitiveType) {
@@ -173,7 +165,11 @@ std::size_t TypeSystem::sizeOfType(Type* type) {
 	auto typeName = type->name();
 
 	if (typeName == "Int") {
-		return sizeof(int);
+		return TypeSystem::getSize(PrimitiveTypes::Integer);
+	}
+
+	if (TypeSystem::isReferenceType(type)) {
+		return sizeof(long);
 	}
 
 	return 0;

@@ -4,38 +4,43 @@
 
 class Type;
 
-//Represents an array handle
-class ArrayHandle {
+//Represents an object handle
+class ObjectHandle {
 private:
 	unsigned char* handle;
-public:
-	const int size;
-	Type* const type;
+	std::size_t objSize;
+	Type* type;
+public:	
+	ObjectHandle(unsigned char* handle, std::size_t objSize, Type* type);
 
-	ArrayHandle(int size, Type* type, unsigned char* handle);
-	ArrayHandle();
-	
 	//Deletes the underlying handle
 	void deleteHandle();
+
+	//Returns the size of the handled object
+	std::size_t getSize() const;
+
+	//Returns the type of the handled object
+	const Type* const getType() const;
 
 	//Returns the handle
 	const unsigned char* getHandle() const;
 };
 
-//Represents a struct handle
-class StructHandle {
+//Represents an array handle
+class ArrayHandle : public ObjectHandle {
 private:
-	unsigned char* handle;
-	const std::unordered_map<std::string, Type*> fields;
+	int length;
 public:
-	StructHandle(std::unordered_map<std::string, Type*> fields);
+	ArrayHandle(unsigned char* handle, std::size_t objSize, Type* type, int length);
+	ArrayHandle();
 
-	//Returns the type for the given field
-	Type* getType(std::string fieldName) const;
+	//Returns the length of the handled array
+	int getLength() const;
+};
 
-	//Deletes the underlying handle
-	void deleteHandle();
-
-	//Returns the handle
-	const unsigned char* getHandle() const;
+//Represents a struct handle
+class StructHandle : public ObjectHandle  {
+public:
+	StructHandle(unsigned char* handle, std::size_t objSize, Type* type);
+	StructHandle();
 };

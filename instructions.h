@@ -24,7 +24,10 @@ enum OpCodes {
     NEW_ARRAY,
     LOAD_ELEMENT,
     STORE_ELEMENT,
-    LOAD_ARRAY_LENGTH
+    LOAD_ARRAY_LENGTH,
+    NEW_OBJECT,
+    LOAD_FIELD,
+    STORE_FIELD
 };
 
 //Represents an instruction

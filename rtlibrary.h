@@ -10,6 +10,9 @@ void rt_printStackFrame(long*, Function*);
 //Creates a new array of the given size
 long rt_newArray(Type* type, int size);
 
+//Creates a new struct
+long rt_newObject(Type* type);
+
 //Stops the execution
 void rt_runtimeError(std::string);
 

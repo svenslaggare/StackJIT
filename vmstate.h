@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include "objects.h"
+#include "structmetadata.h"
 
 class Type;
 
@@ -33,20 +34,26 @@ public:
 	int functionSize() const;
 };
 
-
 //Represents the state of the VM
 class VMState {
 private:
 	std::unordered_map<std::string, Type*> types;
+	std::unordered_map<std::string, StructMetadata> structsMetadata;
 public:
 	~VMState();
 
     std::unordered_map<std::string, FunctionDefinition> FunctionTable;
-    std::vector<ArrayHandle> Objects;
+    std::vector<ObjectHandle*> Objects;
 
     //Finds the type object for the given type name
     Type* findType(std::string name);
 
     //Returns the given type (nullptr if not found)
     Type* getType(std::string name) const;
+
+    //Adds metadata for the given struct
+    void addStructMetadata(std::string structName, StructMetadata structMetadata);
+
+    //Returns the metadata for the given struct
+    const StructMetadata* const getStructMetadata(std::string structName) const;
 };

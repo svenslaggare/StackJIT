@@ -48,7 +48,7 @@ long rt_newArray(Type* type, int size) {
     memset(arrayPtr, 0, memSize);
 
     //Add the array to the list of objects
-    vmState.Objects.push_back(ArrayHandle(size, type, arrayPtr));
+    vmState.Objects.push_back(new ArrayHandle(arrayPtr, memSize, type, size));
 
     //Set the size of the array
     IntToBytes converter;
@@ -59,6 +59,20 @@ long rt_newArray(Type* type, int size) {
     arrayPtr[3] = converter.ByteValues[3];
 
     return (long)arrayPtr;
+}
+
+long rt_newObject(Type* type) {
+    //std::cout << "Created object of type: " << type->name() << std::endl;
+    auto structType = static_cast<StructType*>(type);
+
+    int memSize = vmState.getStructMetadata(structType->structName())->getSize();
+    unsigned char* structPtr = new unsigned char[memSize];
+    memset(structPtr, 0, memSize);
+
+    //Add the struct to the list of objects
+    vmState.Objects.push_back(new StructHandle(structPtr, memSize, type));
+
+    return (long)structPtr;
 }
 
 void rt_runtimeError(std::string errorMessage) {

@@ -1,18 +1,44 @@
 #include "objects.h"
 
-ArrayHandle::ArrayHandle(int size, Type* type, unsigned char* handle)
-	: size(size), type(type), handle(handle) {
+ObjectHandle::ObjectHandle(unsigned char* handle, std::size_t objSize, Type* type)
+	: handle(handle), objSize(objSize), type(type) {
 
 }
 
-ArrayHandle::ArrayHandle() : size(0), type(nullptr), handle(nullptr) {
-
-}
-
-void ArrayHandle::deleteHandle() {
+void ObjectHandle::deleteHandle() {
 	delete[] handle;
 }
 
-const unsigned char* ArrayHandle::getHandle() const {
+std::size_t ObjectHandle::getSize() const {
+	return objSize;
+}
+
+const Type* const ObjectHandle::getType() const {
+	return type;
+}
+
+const unsigned char* ObjectHandle::getHandle() const {
 	return handle;
+}
+
+ArrayHandle::ArrayHandle(unsigned char* handle, std::size_t objSize, Type* type, int length)
+	: ObjectHandle(handle, objSize, type), length(length) {
+
+}
+
+ArrayHandle::ArrayHandle(): ObjectHandle(nullptr, 0, nullptr), length(0) {
+
+}
+
+int ArrayHandle::getLength() const {
+	return length;
+}
+
+StructHandle::StructHandle(unsigned char* handle, std::size_t objSize, Type* type)
+	: ObjectHandle(handle, objSize, type) {
+
+}
+
+StructHandle::StructHandle(): ObjectHandle(nullptr, 0, nullptr) {
+
 }

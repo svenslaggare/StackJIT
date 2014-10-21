@@ -24,7 +24,7 @@ std::vector<std::string> Parser::tokenize(std::istream& stream) {
             newToken = true;
         }
 
-        if (c == ':' || c == '(' || c == ')') {
+        if (c == '(' || c == ')') {
             newToken = true;
             newIdentifier = true;
         }
@@ -92,7 +92,10 @@ std::unordered_map<std::string, OpCodes> strOperandInstructions
 {
     { "newarr", OpCodes::NEW_ARRAY },
     { "stelem", OpCodes::STORE_ELEMENT },
-    { "ldelem", OpCodes::LOAD_ELEMENT }
+    { "ldelem", OpCodes::LOAD_ELEMENT },
+    { "newobj", OpCodes::NEW_OBJECT },
+    { "stfield", OpCodes::STORE_FIELD },
+    { "ldfield", OpCodes::LOAD_FIELD }
 };
 
 void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmState, Program& program) {

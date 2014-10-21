@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <functional>
-#include <unordered_map>
+#include <map>
 
 //Represents a type
 class Type {
@@ -36,13 +36,19 @@ public:
 	ArrayType(Type* elementType);
 	~ArrayType();
 
+	//Returns the type of the element
 	const Type* elementType() const;
 };
 
-//Representa a stuct type
+//Representa a struct type
 class StructType : public ReferenceType {
+private:
+	std::string mStructName;
 public:
 	StructType(std::string name);
+
+	//Returns the name of the struct
+	std::string structName() const;
 };
 
 //The primitive types
@@ -61,8 +67,14 @@ namespace TypeSystem {
 	//Indicates if the given type is of the given primitive type
 	bool isPrimitiveType(Type* type, PrimitiveTypes primitiveType);
 
+	//Indicates if the given type is a reference type
+	bool isReferenceType(Type* type);
+
 	//Indicates if the given type is an array
 	bool isArray(Type* type);
+
+	//Indicates if the given type is a struct
+	bool isStruct(Type* type);
 
 	//Returns the size (in bytes) for the given primitive type
 	std::size_t getSize(PrimitiveTypes primitiveType);

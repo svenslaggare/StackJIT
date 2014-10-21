@@ -28,6 +28,8 @@ int main(int argc, char* argv[]) {
     //Parse it
     Parser::parseTokens(tokens, vmState, program);
 
+    vmState.addStructMetadata("Point", StructMetadata({ { "x", vmState.findType("Int") }, { "y", vmState.findType("Int") } }));
+
     //Generate a function for the instructions
     int (*programPtr)() = CodeGenerator::generateProgram(program, vmState);
 
@@ -47,10 +49,11 @@ int main(int argc, char* argv[]) {
     //Free objects
     for (auto obj : vmState.Objects) {
         if (ENABLE_DEBUG) {
-            std::cout << "Freed object at 0x" << std::hex << (long)(obj.getHandle()) << std::dec << std::endl;
+            std::cout << "Freed object (" << obj->getSize() << " bytes) at 0x" << std::hex << (long)(obj->getHandle()) << std::dec << std::endl;
         }
 
-        obj.deleteHandle();
+        obj->deleteHandle();
+        delete obj;
     }
 
     //Unmap function code memory
