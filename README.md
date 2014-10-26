@@ -39,8 +39,8 @@ If not, the program will not be executed.
 There must be a function called 'main' which will be the entry point for the program.
 
 ###Structs###
-The VM supports structures, but atm there is no syntax for defining them.
-A struct can only be manipulated via references. The fields are referenced in the following way: `Ref.Struct.<strict name>.<field name>`. Example: "`Ref.Struct.Point.x`".
+The VM supports structures, but atm there is no syntax for defining them. A structure is a reference type and can only
+be manipulated via references. The fields are referenced in the following way: `Ref.Struct.<struct name>::<field name>`. Example: "`Ref.Struct.Point::x`".
 
 ###Null ref###
 Atm there is no defined behaviour for "null references" and dereferencing not
