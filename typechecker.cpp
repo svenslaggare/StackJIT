@@ -54,12 +54,12 @@ std::deque<Type*> asVector(std::stack<Type*> types) {
 }
 
 struct BranchCheck {
-    int Source;
-    int Target;
-    std::stack<Type*> BranchTypes;
+    const int source;
+    const int target;
+    const std::stack<Type*> branchTypes;
 
     BranchCheck(int source, int target, std::stack<Type*> branchTypes)
-        : Source(source), Target(target), BranchTypes(branchTypes)
+        : source(source), target(target), branchTypes(branchTypes)
     {
 
     }
@@ -68,8 +68,8 @@ struct BranchCheck {
 void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& vmState, bool showDebug) {
     std::stack<Type*> operandStack;
 
-    auto numInsts = function.Function.instructions.size();
-    auto& func = function.Function;
+    const auto numInsts = function.Function.instructions.size();
+    const auto& func = function.Function;
 
     std::vector<InstructionTypes> instructionsOperandTypes;
     instructionsOperandTypes.reserve(numInsts);
@@ -77,7 +77,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
     std::vector<Type*> locals(function.Function.numLocals);
     std::vector<BranchCheck> branches;
 
-    auto intType = vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer));
+    const auto intType = vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer));
 
     int index = 1;
 
@@ -104,7 +104,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
 
         switch (inst.OpCode) {
         case OpCodes::PUSH_INT:
-            operandStack.push(vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer)));
+            operandStack.push(intType);
             break;
         case OpCodes::POP:
             assertOperandCount(index, operandStack, 1);
@@ -121,7 +121,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
                 auto op2 = popType(operandStack);
     
                 if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Integer) && TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
-                    operandStack.push(vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer)));
+                    operandStack.push(intType);
                 } else {
                     typeError(index, "Expected 2 operands of type Int on the stack.");
                 }
@@ -240,7 +240,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
             {
                 assertOperandCount(index, operandStack, 1);
 
-                auto error = checkType(vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer)), popType(operandStack));
+                auto error = checkType(intType, popType(operandStack));
 
                 if (error != "") {
                     typeError(index, error);
@@ -309,7 +309,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
                     typeError(index, "Expected operand to be of type ArrayRef.");
                 }
 
-                operandStack.push(vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer)));
+                operandStack.push(intType);
             }
             break;
         case OpCodes::NEW_OBJECT:
@@ -413,8 +413,8 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
 
     //Check that the branches are valid
     for (auto branch : branches) {
-        auto postSourceTypes = branch.BranchTypes;
-        auto preTargetTypes = instructionsOperandTypes[branch.Target];
+        auto postSourceTypes = branch.branchTypes;
+        auto preTargetTypes = instructionsOperandTypes[branch.target];
 
         if (postSourceTypes.size() == preTargetTypes.size()) {
             for (int i = 0; i < postSourceTypes.size(); i++) {
@@ -427,7 +427,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
                 }
             }
         } else {
-            typeError(branch.Source, "Expected the number of types before and after branch to be the same.");
+            typeError(branch.source, "Expected the number of types before and after branch to be the same.");
         }
     }
 
