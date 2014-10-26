@@ -9,9 +9,9 @@ The JIT part is based on a blog entry by [Josh Haberman](http://blog.reverberate
 Only branches within the current function is supported.
 
 ###Types###
-The VM supports the given types: Array references (ArrayRef) and 32bits integers (Int).
+The VM supports the given types: Array references, struct references and 32bits integers (Int).
 It also supports the special type 'Void' which is only allowed as return type which indicates no return value.
-Two types of reference types are supported, arrays and structures.
+The reference type are named in the following way:
 * `Ref.Array[<Element type>]`.
 * `Ref.Struct.<Struct name>`.
 
@@ -37,6 +37,14 @@ func <name>(<arg type 1> <arg type 2> ...) <return type>
 When a function returns, there must be only _one_ (zero if void) operands on the evalutation stack.
 If not, the program will not be executed.
 There must be a function called 'main' which will be the entry point for the program.
+
+###Structs###
+The VM supports structures, but atm there is no syntax for defining them.
+A struct can only be manipulated via references. The fields are referenced in the following way: `Ref.Struct.<strict name>.<field name>`. Example: "`Ref.Struct.Point.x`".
+
+###Null ref###
+Atm there is no defined behaviour for "null references" and dereferencing not
+initalized references will probably result in a seg fault.
 
 ####Main function####
 The main function must have the following signature: `func main() Int`.
@@ -65,6 +73,9 @@ The returned value from the main function will be the output for the program.
 * `STELEM <type>`: Pops the value, index and array reference from the stack and stores the value in the array.
 * `LDELEM <type>`: Pops the index and array reference from the stack and loads the given element from the array.
 * `LDLEN`: Pops the array reference from the stack and pushes the length of the array.
+* `NEWOBJ <type>` Creates a new object of the given type and pushes the reference to the stack.
+* `LDFIELD <fieldRef>` Pops a struct ref from the stack and loads a value from the given field pushing unto the stack.
+* `STFIELD <fieldRef>` Pops a struct ref from the stack, a value and stores the a value at the given field.
 
 ##Platforms##
 Supports Linux x64.
