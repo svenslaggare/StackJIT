@@ -26,6 +26,6 @@ struct Function {
 
 //Represents a program
 struct Program {
-    std::map<std::string, Function*> Functions;
+    std::map<std::string, Function*> functions;
     ~Program();
 };

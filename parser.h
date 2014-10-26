@@ -3,8 +3,6 @@
 #include <map>
 #include <string>
 
-struct Instruction;
-struct Function;
 struct Program;
 class VMState;
 

@@ -123,7 +123,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
                 if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Integer) && TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
                     operandStack.push(vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer)));
                 } else {
-                    typeError(index, "Expected 2 int operands on the stack.");
+                    typeError(index, "Expected 2 operands of type Int on the stack.");
                 }
             }
             break;
@@ -158,14 +158,14 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
             break;
         case OpCodes::CALL:
             {
-                auto calledFunc = vmState.FunctionTable.at(inst.StrValue);
-                int calledFuncNumArgs = calledFunc.Arguments.size();
+                auto calledFunc = vmState.functionTable.at(inst.StrValue);
+                int calledFuncNumArgs = calledFunc.arguments().size();
                 assertOperandCount(index, operandStack, calledFuncNumArgs);
 
                 //Check the arguments
                 for (int i = calledFuncNumArgs - 1; i >= 0; i--) {
                     auto argType = popType(operandStack);
-                    auto error = checkType(calledFunc.Arguments[i], argType);
+                    auto error = checkType(calledFunc.arguments()[i], argType);
 
                     if (error != "") {
                         typeError(index, error);
@@ -173,8 +173,8 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
                 }
 
                 //Return type
-                if (!TypeSystem::isPrimitiveType(calledFunc.ReturnType, PrimitiveTypes::Void)) {
-                    operandStack.push(calledFunc.ReturnType);
+                if (!TypeSystem::isPrimitiveType(calledFunc.returnType(), PrimitiveTypes::Void)) {
+                    operandStack.push(calledFunc.returnType());
                 }
             }
             break;
@@ -224,7 +224,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
                 if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Integer) && TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
                     branches.push_back({ index, inst.Value, operandStack });
                 } else {
-                    typeError(index, "Expected 2 int operands on the stack.");
+                    typeError(index, "Expected 2 operands of type Int on the stack.");
                 }
             }
             break;
@@ -258,17 +258,21 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
                 auto arrayRefType = popType(operandStack);
 
                 if (!TypeSystem::isArray(arrayRefType)) {
-                    typeError(index, "Expected first operand to be ArrayRef.");
+                    typeError(index, "Expected first operand to be of type ArrayRef.");
                 }
 
                 if (!TypeSystem::isPrimitiveType(indexType, PrimitiveTypes::Integer)) {
-                    typeError(index, "Expected second operand to be Int.");
+                    typeError(index, "Expected second operand to be of type Int.");
                 }
 
                 auto elemType = vmState.findType(inst.StrValue);
 
+                if (elemType == nullptr) {
+                    typeError(index, "There exists no type '" + inst.StrValue + "'.");
+                }
+ 
                 if (*valueType != *elemType) {
-                    typeError(index, "Expected third operand to be " + elemType->name() + ".");
+                    typeError(index, "Expected third operand to be of type " + elemType->name() + ".");
                 }
             }
             break;
@@ -280,14 +284,20 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
                 auto arrayRefType = popType(operandStack);
 
                 if (!TypeSystem::isArray(arrayRefType)) {
-                    typeError(index, "Expected first operand to be ArrayRef.");
+                    typeError(index, "Expected first operand to be of type ArrayRef.");
                 }
 
                 if (!TypeSystem::isPrimitiveType(indexType, PrimitiveTypes::Integer)) {
-                    typeError(index, "Expected second operand to be Int.");
+                    typeError(index, "Expected second operand to be of type Int.");
                 }
 
-                operandStack.push(vmState.findType(inst.StrValue));
+                auto elemType = vmState.findType(inst.StrValue);
+
+                if (elemType == nullptr) {
+                    typeError(index, "There exists no type '" + inst.StrValue + "'.");
+                }
+
+                operandStack.push(elemType);
             }
             break;
         case OpCodes::LOAD_ARRAY_LENGTH:
@@ -296,7 +306,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
                 auto arrayRefType = popType(operandStack);
 
                 if (!TypeSystem::isArray(arrayRefType)) {
-                    typeError(index, "Expected operand to be ArrayRef.");
+                    typeError(index, "Expected operand to be of type ArrayRef.");
                 }
 
                 operandStack.push(vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer)));
@@ -326,7 +336,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
                 auto structRefType = popType(operandStack);
 
                 if (!TypeSystem::isStruct(structRefType)) {
-                    typeError(index, "Expected first operand to be StructRef.");
+                    typeError(index, "Expected first operand to be of type StructRef.");
                 }
 
                 int fieldSepPos = inst.StrValue.find("::");
@@ -361,7 +371,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
                 auto structRefType = popType(operandStack);
 
                 if (!TypeSystem::isStruct(structRefType)) {
-                    typeError(index, "Expected first operand to be StructRef.");
+                    typeError(index, "Expected first operand to be of type StructRef.");
                 }
 
                 int fieldSepPos = inst.StrValue.find("::");

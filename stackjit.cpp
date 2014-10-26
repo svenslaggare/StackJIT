@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
     std::cout << res << std::endl;
 
     //Free objects
-    for (auto obj : vmState.Objects) {
+    for (auto obj : vmState.getObjects()) {
         if (ENABLE_DEBUG) {
             std::cout << "Freed object (" << obj->getSize() << " bytes) at 0x" << std::hex << (long)(obj->getHandle()) << std::dec << std::endl;
         }
@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
     }
 
     //Unmap function code memory
-    for (auto funcEntry : vmState.FunctionTable) {
+    for (auto funcEntry : vmState.functionTable) {
         auto func = funcEntry.second;
 
         //Defined function have size > 0

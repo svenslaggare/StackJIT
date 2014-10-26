@@ -1,0 +1,35 @@
+func main() Int
+{
+	.locals 1
+	
+	PUSH 2
+	NEWARR Ref.Struct.Point
+	STLOC 0
+
+	LDLOC 0
+	PUSH 0
+	NEWOBJ Ref.Struct.Point
+	STELEM Ref.Struct.Point
+
+	LDLOC 0
+	PUSH 1
+	NEWOBJ Ref.Struct.Point
+	STELEM Ref.Struct.Point
+
+	LDLOC 0
+	PUSH 0
+	LDELEM Ref.Struct.Point
+	PUSH 4711
+	STFIELD Point::x
+
+	LDLOC 0
+	LDLEN
+	call println
+
+	LDLOC 0
+	PUSH 0
+	LDELEM Ref.Struct.Point
+	LDFIELD Point::x
+
+	RET
+}

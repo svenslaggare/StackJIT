@@ -213,7 +213,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                             //Create a new function        
                             Function* newFunc = new Function(funcName, funcParams, returnType);
                             newFunc->numLocals = 0;
-                            program.Functions[funcName] = newFunc;
+                            program.functions[funcName] = newFunc;
 
                             currentFunc = newFunc;
                         } else {
@@ -242,8 +242,8 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
         }
     }
 
-    if (program.Functions.count("main") > 0) {
-        auto mainFunc = program.Functions["main"];
+    if (program.functions.count("main") > 0) {
+        auto mainFunc = program.functions["main"];
 
         if (mainFunc->arguments.size() != 0 || !TypeSystem::isPrimitiveType(mainFunc->returnType, PrimitiveTypes::Integer)) {
            throw std::runtime_error("The main function must have the following signature: 'func main() Int'"); 

@@ -25,7 +25,7 @@ void addStandardLibrary(VMState& vmState) {
 	auto intType = vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer));
 	auto voidType = vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Void));
 
-	vmState.FunctionTable["abs"] = FunctionDefinition({ intType }, intType, (long)(&std_abs));
-	vmState.FunctionTable["print"] = FunctionDefinition({ intType }, voidType, (long)(&std_print));
-	vmState.FunctionTable["println"] = FunctionDefinition({ intType }, voidType, (long)(&std_println));
+	vmState.functionTable["abs"] = FunctionDefinition({ intType }, intType, (long)(&std_abs));
+	vmState.functionTable["print"] = FunctionDefinition({ intType }, voidType, (long)(&std_print));
+	vmState.functionTable["println"] = FunctionDefinition({ intType }, voidType, (long)(&std_println));
 }

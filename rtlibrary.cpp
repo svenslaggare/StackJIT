@@ -48,7 +48,7 @@ long rt_newArray(Type* type, int size) {
     memset(arrayPtr, 0, memSize);
 
     //Add the array to the list of objects
-    vmState.Objects.push_back(new ArrayHandle(arrayPtr, memSize, type, size));
+    vmState.newObject(new ArrayHandle(arrayPtr, memSize, type, size));
 
     //Set the size of the array
     IntToBytes converter;
@@ -62,7 +62,6 @@ long rt_newArray(Type* type, int size) {
 }
 
 long rt_newObject(Type* type) {
-    //std::cout << "Created object of type: " << type->name() << std::endl;
     auto structType = static_cast<StructType*>(type);
 
     int memSize = vmState.getStructMetadata(structType->structName())->getSize();
@@ -70,7 +69,7 @@ long rt_newObject(Type* type) {
     memset(structPtr, 0, memSize);
 
     //Add the struct to the list of objects
-    vmState.Objects.push_back(new StructHandle(structPtr, memSize, type));
+    vmState.newObject(new StructHandle(structPtr, memSize, type));
 
     return (long)structPtr;
 }

@@ -2,12 +2,12 @@
 #include "type.h"
 
 FunctionDefinition::FunctionDefinition(std::vector<Type*> arguments, Type* returnType, long entryPoint, int funcSize)
-    : Arguments(arguments), ReturnType(returnType), mEntryPoint(entryPoint), mFunctionSize(funcSize), mIsManaged(true) {
+    : mArguments(arguments), mReturnType(returnType), mEntryPoint(entryPoint), mFunctionSize(funcSize), mIsManaged(true) {
 
 }
 
 FunctionDefinition::FunctionDefinition(std::vector<Type*> arguments, Type* returnType, long entryPoint)
-    : Arguments(arguments), ReturnType(returnType), mEntryPoint(entryPoint), mIsManaged(false) {
+    : mArguments(arguments), mReturnType(returnType), mEntryPoint(entryPoint), mIsManaged(false) {
 
 }
 
@@ -18,6 +18,14 @@ void FunctionDefinition::setFunctionBody(long entryPoint, int functionSize) {
         mEntryPoint = entryPoint;
         mFunctionSize = functionSize;
     }
+}
+
+Type* const FunctionDefinition::returnType() const {
+    return mReturnType;
+}
+
+const std::vector<Type*>& FunctionDefinition::arguments() const {
+    return mArguments;
 }
 
 bool FunctionDefinition::isManaged() const {
@@ -36,6 +44,14 @@ VMState::~VMState() {
     for (auto type : types) {
         delete type.second;
     }
+}
+
+const std::vector<ObjectHandle*>& VMState::getObjects() const {
+    return mObjects;
+}
+
+void VMState::newObject(ObjectHandle* handle) {
+    mObjects.push_back(handle);
 }
 
 Type* VMState::findType(std::string name) {

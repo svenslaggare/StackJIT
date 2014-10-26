@@ -1,0 +1,25 @@
+func main() Int
+{
+	.locals 1
+	
+	PUSH 4
+	NEWARR Int
+	STLOC 0
+
+	LDLOC 0
+	PUSH 0
+	PUSH 1337
+	STELEM Int
+
+	LDLOC 0
+	PUSH 0
+	LDELEM Int
+	call println
+
+	LDLOC 0
+	LDLEN
+	call println
+
+	PUSH 0
+	RET
+}

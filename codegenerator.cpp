@@ -42,13 +42,13 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
     std::map<FunctionCall, std::string> callTable;
 
     //Add the functions to the func table
-    for (auto currentFunc : program.Functions) {
+    for (auto currentFunc : program.functions) {
         auto func = currentFunc.second;
-        vmState.FunctionTable[func->name] = FunctionDefinition(func->arguments, func->returnType, 0, 0);
+        vmState.functionTable[func->name] = FunctionDefinition(func->arguments, func->returnType, 0, 0);
     }
 
     //Generate instructions for all functions
-    for (auto currentFunc : program.Functions) {
+    for (auto currentFunc : program.functions) {
         auto func = currentFunc.second;
         FunctionCompilationData funcData { *func };
 
@@ -64,7 +64,7 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
         }
 
         //Set the entry point & size for the function
-        vmState.FunctionTable[func->name].setFunctionBody((long)funcPtr, func->generatedCode.size());
+        vmState.functionTable[func->name].setFunctionBody((long)funcPtr, func->generatedCode.size());
     }
 
     //Fix unresolved calls
@@ -74,10 +74,10 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
         auto calledFunc = call.second;
 
         //Check if defined
-        if (vmState.FunctionTable.count(calledFunc) > 0) {
+        if (vmState.functionTable.count(calledFunc) > 0) {
             //Get a pointer to the functions instructions
-            long calledFuncAddr = vmState.FunctionTable[calledFunc].entryPoint();
-            unsigned char* funcCode = (unsigned char*)(vmState.FunctionTable[funcName].entryPoint());
+            long calledFuncAddr = vmState.functionTable[calledFunc].entryPoint();
+            unsigned char* funcCode = (unsigned char*)(vmState.functionTable[funcName].entryPoint());
 
             //Update the call target
             LongToBytes converter;
@@ -93,10 +93,10 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
     }
 
     //Make the functions memory executable, but not writable.
-    for (auto currentFunc : program.Functions) {
+    for (auto currentFunc : program.functions) {
         auto func = currentFunc.second;
 
-        void* mem = (void*)vmState.FunctionTable[func->name].entryPoint();
+        void* mem = (void*)vmState.functionTable[func->name].entryPoint();
         int length = func->generatedCode.size();
 
         int success = mprotect(mem, length, PROT_EXEC | PROT_READ);
@@ -104,7 +104,7 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
     }
 
     //Return the main func as entry point
-    return (JitFunction)vmState.FunctionTable["main"].entryPoint();
+    return (JitFunction)vmState.functionTable["main"].entryPoint();
 }
 
 JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionData, VMState& vmState) {
@@ -334,8 +334,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             //Get the address of the function to call
             long funcAddr = 0;
 
-            auto funcToCall = vmState.FunctionTable.at(inst.StrValue);
-            int numArgs = funcToCall.Arguments.size();
+            auto funcToCall = vmState.functionTable.at(inst.StrValue);
+            int numArgs = funcToCall.arguments().size();
 
             //Check if the function entry point is defined yet
             if (funcToCall.entryPoint() != 0) {
@@ -487,37 +487,45 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         }
         break;
     case OpCodes::STORE_ELEMENT:
-        //Pop the operands
-        Amd64Backend::popReg(generatedCode, Registers::DX); //The value to store
-        Amd64Backend::popReg(generatedCode, Registers::CX); //The index of the element
-        Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the array
+        {
+            auto elemType = vmState.getType(inst.StrValue);
 
-        //Bounds check
-        generateArrayBoundsCheck(generatedCode);
+            //Pop the operands
+            Amd64Backend::popReg(generatedCode, Registers::DX); //The value to store
+            Amd64Backend::popReg(generatedCode, Registers::CX); //The index of the element
+            Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the array
 
-        //Compute the address of the element
-        pushArray(generatedCode, { 0x48, 0x6B, 0xC9, 0x04 }); //imul rcx, 4
-        Amd64Backend::addRegToReg(generatedCode, Registers::AX, Registers::CX); //add rax, rcx
+            //Bounds check
+            generateArrayBoundsCheck(generatedCode);
 
-        //Store the element
-        Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::AX, 4, Registers::DX); //mov [rax+4], rdx
+            //Compute the address of the element
+            pushArray(generatedCode, { 0x48, 0x6B, 0xC9, (unsigned char)TypeSystem::sizeOfType(elemType) }); //imul rcx, <size of type>
+            Amd64Backend::addRegToReg(generatedCode, Registers::AX, Registers::CX); //add rax, rcx
+
+            //Store the element
+            Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::AX, 4, Registers::DX); //mov [rax+4], rdx
+        }
         break;
     case OpCodes::LOAD_ELEMENT:
-        //Pop the operands
-        Amd64Backend::popReg(generatedCode, Registers::CX); //The index of the element
-        Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the array
+        {
+            auto elemType = vmState.getType(inst.StrValue);
 
-        //Bounds check
-        generateArrayBoundsCheck(generatedCode);
+            //Pop the operands
+            Amd64Backend::popReg(generatedCode, Registers::CX); //The index of the element
+            Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the array
 
-        //Compute the address of the element
-        pushArray(generatedCode, { 0x48, 0x6B, 0xC9, 0x04 }); //imul rcx, 4
-        Amd64Backend::addRegToReg(generatedCode, Registers::AX, Registers::CX); //add rax, rcx
-        Amd64Backend::addByteToReg(generatedCode, Registers::AX, 4); //add rax, 4
+            //Bounds check
+            generateArrayBoundsCheck(generatedCode);
 
-        //Load the element
-        Amd64Backend::moveMemoryByRegToReg(generatedCode, Registers::CX, Registers::AX); //mov rcx, [rax]
-        Amd64Backend::pushReg(generatedCode, Registers::CX); //pop rcx
+            //Compute the address of the element
+            pushArray(generatedCode, { 0x48, 0x6B, 0xC9, (unsigned char)TypeSystem::sizeOfType(elemType) }); //imul rcx, <size of type>
+            Amd64Backend::addRegToReg(generatedCode, Registers::AX, Registers::CX); //add rax, rcx
+            Amd64Backend::addByteToReg(generatedCode, Registers::AX, 4); //add rax, 4
+
+            //Load the element
+            Amd64Backend::moveMemoryByRegToReg(generatedCode, Registers::CX, Registers::AX); //mov rcx, [rax]
+            Amd64Backend::pushReg(generatedCode, Registers::CX); //pop rcx
+        }
         break;
     case OpCodes::LOAD_ARRAY_LENGTH:
         //Pop the array ref
@@ -545,31 +553,6 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         }
         break;
     case OpCodes::LOAD_FIELD:
-        {
-            //Get the field
-            int fieldSepPos = inst.StrValue.find("::");
-
-            auto structName = inst.StrValue.substr(0, fieldSepPos);
-            auto fieldName = inst.StrValue.substr(fieldSepPos + 2);
-
-            auto structMetadata = vmState.getStructMetadata(structName);
-
-            int fieldOffset = structMetadata->getFieldOffset(fieldName);
-
-            //Pop the operand
-            Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the object
-
-            //Type check
-            //generateTypeCheck(generatedCode, structMetadata);
-
-            //Compute the address of the field
-            Amd64Backend::addByteToReg(generatedCode, Registers::AX, fieldOffset); //add rax, 4
-
-            //Load the field
-            Amd64Backend::moveMemoryByRegToReg(generatedCode, Registers::CX, Registers::AX); //mov rcx, [rax]
-            Amd64Backend::pushReg(generatedCode, Registers::CX); //pop rcx
-        }
-        break;
     case OpCodes::STORE_FIELD:
         {
             //Get the field
@@ -582,15 +565,30 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
             int fieldOffset = structMetadata->getFieldOffset(fieldName);
 
-            //Pop the operand
-            Amd64Backend::popReg(generatedCode, Registers::DX); //The value to store
-            Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the object
+            if (inst.OpCode == OpCodes::LOAD_FIELD) {
+                //Pop the operand
+                Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the object
 
-            //Type check
-            //generateTypeCheck(generatedCode, structMetadata);
+                //Type check
+                //generateTypeCheck(generatedCode, structMetadata);
 
-            //Store the field
-            Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::AX, fieldOffset, Registers::DX); //mov [rax+<fieldOffset>], rdx
+                //Compute the address of the field
+                Amd64Backend::addByteToReg(generatedCode, Registers::AX, fieldOffset); //add rax, 4
+
+                //Load the field
+                Amd64Backend::moveMemoryByRegToReg(generatedCode, Registers::CX, Registers::AX); //mov rcx, [rax]
+                Amd64Backend::pushReg(generatedCode, Registers::CX); //pop rcx
+            } else {
+                //Pop the operand
+                Amd64Backend::popReg(generatedCode, Registers::DX); //The value to store
+                Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the object
+
+                //Type check
+                //generateTypeCheck(generatedCode, structMetadata);
+
+                //Store the field
+                Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::AX, fieldOffset, Registers::DX); //mov [rax+<fieldOffset>], rdx
+            }
         }
         break;
     default:

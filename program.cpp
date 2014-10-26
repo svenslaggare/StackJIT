@@ -13,7 +13,7 @@ int Function::numArgs() const {
 
 Program::~Program() {
     //Free the functions
-    for (auto func : Functions) {
+    for (auto func : functions) {
         delete func.second;
     }
 }
