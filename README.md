@@ -74,8 +74,8 @@ The returned value from the main function will be the output for the program.
 * `LDELEM <type>`: Pops the index and array reference from the stack and loads the given element from the array.
 * `LDLEN`: Pops the array reference from the stack and pushes the length of the array.
 * `NEWOBJ <type>` Creates a new object of the given type and pushes the reference to the stack.
-* `LDFIELD <fieldRef>` Pops a struct ref from the stack and loads a value from the given field pushing unto the stack.
-* `STFIELD <fieldRef>` Pops a struct ref from the stack, a value and stores the a value at the given field.
+* `LDFIELD <field>` Pops a struct ref from the stack and loads a value from the given field pushing unto the stack.
+* `STFIELD <field>` Pops a struct ref from the stack, a value and stores the value at the given field.
 
 ##Platforms##
 Supports Linux x64.
