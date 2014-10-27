@@ -34,7 +34,7 @@ func <name>(<arg type 1> <arg type 2> ...) <return type>
     <function body>
 }
 ```
-When a function returns, there must be only _one_ (zero if void) operands on the evalutation stack.
+When a function returns, there must be only _one_ (zero if void) operand on the evalutation stack.
 If not, the program will not be executed.
 There must be a function called 'main' which will be the entry point for the program.
 
