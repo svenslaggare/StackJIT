@@ -9,7 +9,6 @@
 #include "codegenerator.h"
 #include "typechecker.h"
 #include "type.h"
-#include "stackjit.h"
 #include "vmstate.h"
 #include "rtlibrary.h"
 #include "program.h"
@@ -67,7 +66,7 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
 
         auto funcPtr = generateFunction(funcData, vmState);
 
-        if (ENABLE_DEBUG) {
+        if (vmState.enableDebug) {
             std::cout << "Defined function '" << func->name() << "' at 0x" << std::hex << (long)funcPtr << std::dec << "." << std::endl;
         }
 
@@ -121,7 +120,7 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
 }
 
 JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionData, VMState& vmState) {
-    TypeChecker::typeCheckFunction(functionData, vmState, ENABLE_DEBUG && PRINT_TYPE_CHECKING);
+    TypeChecker::typeCheckFunction(functionData, vmState, vmState.enableDebug && vmState.printTypeChecking);
 
     auto& function = functionData.function;
 
@@ -222,7 +221,7 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
     unsigned char* code = function.generatedCode.data();
     int length = function.generatedCode.size();
 
-    if (ENABLE_DEBUG) {
+    if (vmState.enableDebug) {
         std::string argsStr = "";
         bool isFirst = true;
 
@@ -243,7 +242,7 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
     }
 
     //Indicates if to output the generated code to a file
-    if (OUTPUT_GENERATED_CODE) {
+    if (vmState.outputGeneratedCode) {
         std::ofstream asmFile (functionData.function.name() + ".jit", std::ios::binary);
 
         if (asmFile.is_open()) {
@@ -358,7 +357,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 functionData.callTable[make_pair(function.name(), generatedCode.size())] = inst.StrValue;
             }
 
-            if (ENABLE_DEBUG) {
+            if (vmState.enableDebug) {
                 //Only print external functions
                 if (!funcToCall.isManaged()) {
                     std::cout << "Calling '" << inst.StrValue + "' at 0x" << std::hex << funcAddr << std::dec << "." << std::endl;
@@ -394,8 +393,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::RET:
         {
-            //If debug is enabled, print the stack frame before return (maybe add when called also?)
-            if (ENABLE_DEBUG && PRINT_STACK_FRAME) {
+            //If debug is enabled, print the stack frame before return
+            if (vmState.enableDebug && vmState.printStackFrame) {
                 Amd64Backend::moveLongToReg(function.generatedCode, Registers::AX, (long)&rt_printStackFrame);
                 Amd64Backend::moveRegToReg(function.generatedCode, Registers::DI, Registers::BP); //BP as the first argument
                 Amd64Backend::moveLongToReg(function.generatedCode, Registers::SI, (long)&function); //Address of the function as second argument

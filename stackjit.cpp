@@ -4,14 +4,11 @@
 #include <sys/mman.h>
 
 #include "amd64.h"
-#include "stackjit.h"
 #include "program.h"
 #include "instructions.h"
 #include "parser.h"
 #include "standardlibrary.h"
 #include "codegenerator.h"
-#include "objects.h"
-#include "type.h"
 #include "vmstate.h"
 
 //The global state for the VM
@@ -19,6 +16,30 @@ VMState vmState;
 
 int main(int argc, char* argv[]) {
     Program program;
+
+    for (int i = 1; i < argc; i++) {
+        std::string switchStr = argv[i];
+
+        if (switchStr == "-d" || switchStr == "-debug") {
+            vmState.enableDebug = true;
+        }
+
+        if (switchStr == "-nd") {
+            vmState.enableDebug = false;
+        }
+
+        if (switchStr == "-ptc") {
+            vmState.printTypeChecking = true;
+        }
+
+        if (switchStr == "-psf") {
+            vmState.printStackFrame = true;
+        }
+
+        if (switchStr == "-ogc") {
+            vmState.outputGeneratedCode = true;
+        }
+    }
 
     addStandardLibrary(vmState);
 
@@ -28,30 +49,17 @@ int main(int argc, char* argv[]) {
     //Parse it
     Parser::parseTokens(tokens, vmState, program);
 
-    vmState.addStructMetadata("Point", StructMetadata(
-    {
-        { "x", vmState.findType("Int") },
-        { "y", vmState.findType("Int") }
-    }));
-
-    vmState.addStructMetadata("Point3D", StructMetadata(
-    {
-        { "x", vmState.findType("Int") },
-        { "y", vmState.findType("Int") },
-        { "z", vmState.findType("Int") },
-    }));
-
     //Generate a function for the instructions
     int (*programPtr)() = CodeGenerator::generateProgram(program, vmState);
 
-    if (ENABLE_DEBUG) {
+    if (vmState.enableDebug) {
         std::cout << "Program output:" << std::endl;
     }
 
     //Execute the program
     int res = programPtr();
 
-    if (ENABLE_DEBUG) {
+    if (vmState.enableDebug) {
         std::cout << "Return value: " << std::endl;
     }
 
@@ -59,7 +67,7 @@ int main(int argc, char* argv[]) {
 
     //Free objects
     for (auto obj : vmState.getObjects()) {
-        if (ENABLE_DEBUG) {
+        if (vmState.enableDebug) {
             std::cout << "Freed object (" << obj->getSize() << " bytes) at 0x" << std::hex << (long)(obj->getHandle()) << std::dec << std::endl;
         }
 

@@ -88,6 +88,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
     std::vector<BranchCheck> branches;
 
     const auto intType = vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer));
+    const auto voidType = vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Void));
     const auto nullType = vmState.findType("Ref.Null");
 
     int index = 1;
@@ -262,6 +263,16 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
 
                 if (error != "") {
                     typeError(index, error);
+                }
+
+                auto elemType = vmState.findType(inst.StrValue);
+
+                if (elemType == nullptr) {
+                    typeError(index, "'" + inst.StrValue + "' is not a valid type.");
+                }
+
+                if (*elemType == *voidType) {
+                    typeError(index, "Arrays of Voids are not allowed");
                 }
 
                 operandStack.push(vmState.findType("Ref.Array[" + inst.StrValue + "]"));

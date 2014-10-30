@@ -1,3 +1,16 @@
+struct Point
+{
+	x Int
+	y Int
+}
+
+struct Point3D
+{
+	x Int
+	y Int
+	z Int
+}
+
 func main() Int
 {
 	.locals 1

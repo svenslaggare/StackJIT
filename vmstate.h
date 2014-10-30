@@ -50,6 +50,18 @@ private:
 	std::unordered_map<std::string, StructMetadata> structsMetadata;
 	std::vector<ObjectHandle*> mObjects;
 public:
+	//Indicates if debugging is enabled
+	bool enableDebug = true;
+
+	//Prints type checking if debug is enabled
+	bool printTypeChecking = false;
+
+	//Prints the info about the stack frame if debug is enabled
+	bool printStackFrame = false;
+
+	//Indicates if the generated code is outputed as a file
+	bool outputGeneratedCode = false;
+
 	~VMState();
 
     std::unordered_map<std::string, FunctionDefinition> functionTable;

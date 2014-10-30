@@ -141,7 +141,7 @@ bool TypeSystem::isReferenceType(Type* type) {
 	}
 
 	auto typeName = type->name();
-	return typeName.find("Ref.", 0, typeName.length());
+	return typeName.find("Ref.") != std::string::npos;
 }
 
 bool TypeSystem::isArray(Type* type) {

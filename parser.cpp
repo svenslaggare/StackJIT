@@ -113,6 +113,7 @@ std::unordered_map<std::string, OpCodes> strOperandInstructions
 };
 
 void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmState, Program& program) {
+    bool isFunc = false;
     bool isFuncBody = false;
     bool isFuncDef = false;
     std::string funcName;
@@ -121,6 +122,11 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
     bool localsSet = false;
 
     Function* currentFunc = nullptr;
+
+    bool isStruct = false;
+    bool isStructBody = false;
+    std::string structName;
+    std::map<std::string, Type*> structFields;
 
     for (int i = 0; i < tokens.size(); i++) {
         std::string current = tokens[i];
@@ -226,52 +232,86 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
             }
         }
 
-        if (!isFuncBody) {
-            if (!isFuncDef) {
-                if (currentToLower == "func") {
-                    assertTokenCount(tokens, i, 1);
-
-                    isFuncDef = true;
-                    funcName = tokens[i + 1];
-                } else if (currentToLower == "{") {
-                    isFuncBody = true;
-                }
-            } else {
-                if (isFuncParams) {
-                    if (currentToLower == ")") {     
-                        assertTokenCount(tokens, i, 1);                   
-                        auto returnType = vmState.findType(tokens[i + 1]);
-                        int numArgs = funcParams.size();
-
-                        if (numArgs >= 0 && numArgs <= 4) {
-                            //Create a new function        
-                            Function* newFunc = new Function(funcName, funcParams, returnType);
-                            program.functions[funcName] = newFunc;
-
-                            currentFunc = newFunc;
-                        } else {
-                            throw std::runtime_error("Maximum four arguments are supported.");
-                        }
-
-                        isFuncParams = false;
-                        isFuncDef = false;
-                        funcParams = {};
-                        funcName = "";
-                        localsSet = false;
-                    } else {
-                        funcParams.push_back(vmState.findType(current));
-                    }
-                }
-
-                if (currentToLower == "(") {
-                    isFuncParams = true;
-                }
-            }
-        } else {
+        if (isStructBody) {
             if (currentToLower == "}") {
-                isFuncBody = false;
-                currentFunc = nullptr;
+                vmState.addStructMetadata(structName, StructMetadata(structFields));
+                structFields.clear();
+
+                isStruct = false;
+                isStructBody = false;
+                continue;
             }
+
+            assertTokenCount(tokens, i, 1);
+            auto fieldName = tokens[i];
+            auto fieldType = vmState.findType(tokens[++i]);
+
+            if (fieldType == nullptr) {
+                throw std::runtime_error("'" + tokens[i + 1] + "' is not a valid type.");
+            }
+
+            structFields.insert({ fieldName, fieldType });
+        }
+
+        if (!isFunc && !isStruct) {
+            if (currentToLower == "func") {
+                assertTokenCount(tokens, i, 1);
+                isFuncDef = true;
+                funcName = tokens[i + 1];
+                isFunc = true;
+            } else if (currentToLower == "struct") {
+                assertTokenCount(tokens, i, 1);
+                structName = tokens[i + 1];
+                isStruct = true;
+            } else {
+                throw std::runtime_error("Invalid identifier '" + current + "'");
+            }
+        }
+
+        if (isFunc && !isFuncDef && currentToLower == "{") {
+            isFuncBody = true;
+        }
+
+        if (isStruct && currentToLower == "{") {
+            isStructBody = true;
+        }
+
+        if (isFuncDef) {
+            if (isFuncParams) {
+                if (currentToLower == ")") {     
+                    assertTokenCount(tokens, i, 1);                   
+                    auto returnType = vmState.findType(tokens[i + 1]);
+                    int numArgs = funcParams.size();
+
+                    if (numArgs >= 0 && numArgs <= 4) {
+                        //Create a new function        
+                        Function* newFunc = new Function(funcName, funcParams, returnType);
+                        program.functions[funcName] = newFunc;
+
+                        currentFunc = newFunc;
+                    } else {
+                        throw std::runtime_error("Maximum four arguments are supported.");
+                    }
+
+                    isFuncParams = false;
+                    isFuncDef = false;
+                    funcParams = {};
+                    funcName = "";
+                    localsSet = false;
+                } else {
+                    funcParams.push_back(vmState.findType(current));
+                }
+            }
+
+            if (currentToLower == "(") {
+                isFuncParams = true;
+            }
+        }
+
+        if (isFuncBody && currentToLower == "}") {
+            isFuncBody = false;
+            isFunc = false;
+            currentFunc = nullptr;
         }
     }
 
