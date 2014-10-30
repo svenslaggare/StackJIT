@@ -38,13 +38,15 @@ When a function returns, there must be only _one_ (zero if void) operand on the 
 If not, the program will not be executed.
 There must be a function called 'main' which will be the entry point for the program.
 
+###Arrays###
+The VM supports arrays of both Int's and other reference types. When, created the elements are default initalized to zero for Int's and null for reference types.
+
 ###Structs###
 The VM supports structures, but atm there is no syntax for defining them. A structure is a reference type and can only
-be manipulated via references. The fields are referenced in the following way: `Ref.Struct.<struct name>::<field name>`. Example: "`Ref.Struct.Point::x`".
+be manipulated via references. The fields are referenced in the following way: `<struct name>::<field name>`.
 
 ###Null ref###
-Atm there is no defined behaviour for "null references" and dereferencing not
-initalized references will probably result in a seg fault.
+Dereferencing a null reference will result in a null reference error. Both array and object instructions can result in a null reference error.
 
 ####Main function####
 The main function must have the following signature: `func main() Int`.
@@ -69,6 +71,7 @@ The returned value from the main function will be the output for the program.
 * `BGE <target>`: Pops two operands, compares them and jump to target if greater or equal than.
 * `BLT <target>`: Pops two operands, compares them and jump to target if less than.
 * `BLE <target>`: Pops two operands, compares them and jump to target if less or equal than.
+* `PUSHNULL`: Pushes a null reference unto the operand stack.
 * `NEWARR <type>`: Pops the size of the array and creates a new array of the given type and pushes the reference on the stack.
 * `STELEM <type>`: Pops the value, index and array reference from the stack and stores the value in the array.
 * `LDELEM <type>`: Pops the index and array reference from the stack and loads the given element from the array.

@@ -14,33 +14,46 @@
 std::vector<std::string> Parser::tokenize(std::istream& stream) {
     std::vector<std::string> tokens;
     std::string token;
+    bool isComment = false;
 
     char c;
     while (stream.get(c)) {
         bool newToken = false;
         bool newIdentifier = false;
 
-        if (isspace(c)) {
-            newToken = true;
+        if (!isComment && c == '#') {
+            isComment = true;
+            continue;
         }
 
-        if (c == '(' || c == ')') {
-            newToken = true;
-            newIdentifier = true;
+        if (isComment && c == '\n') {
+            isComment = false;
+            continue;
         }
 
-        if (newToken) {
-            if (token != "") {
-                tokens.push_back(token);
+        if (!isComment) {
+            if (isspace(c)) {
+                newToken = true;
             }
 
-            token = "";
-        } else {
-            token += c;
-        }
+            if (c == '(' || c == ')') {
+                newToken = true;
+                newIdentifier = true;
+            }
 
-        if (newIdentifier) {
-            tokens.push_back(std::string{ c });
+            if (newToken) {
+                if (token != "") {
+                    tokens.push_back(token);
+                }
+
+                token = "";
+            } else {
+                token += c;
+            }
+
+            if (newIdentifier) {
+                tokens.push_back(std::string{ c });
+            }
         }
     }
 
@@ -75,7 +88,8 @@ std::unordered_map<std::string, OpCodes> noOperandsInstructions
     { "mul", OpCodes::MUL },
     { "div", OpCodes::DIV },
     { "ldlen", OpCodes::LOAD_ARRAY_LENGTH },
-    { "ret", OpCodes::RET }
+    { "ret", OpCodes::RET },
+    { "pushnull", OpCodes::PUSH_NULL }
 };
 
 std::unordered_map<std::string, OpCodes> branchInstructions
@@ -136,12 +150,32 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
 
                     if (localsCount >= 0) {
                         localsSet = true;
-                        currentFunc->numLocals = localsCount;
+                        currentFunc->setNumLocals(localsCount);
                     } else {
                         throw std::runtime_error("The number of locals must be >= 0.");
                     }
                 } else {
                     throw std::runtime_error("The locals has already been set.");
+                }
+            }
+
+            if (currentToLower == ".local") {
+                if (localsSet) {
+                    assertTokenCount(tokens, i, 2);
+                    int localIndex = stoi(tokens[i + 1]);
+                    auto localType = vmState.findType(tokens[i + 2]);
+
+                    if (localType == nullptr) {
+                        throw std::runtime_error("'" + tokens[i + 2] + "' is not a type");
+                    }
+
+                    if (localIndex >= 0 && localIndex < currentFunc->numLocals()) {
+                        currentFunc->setLocal(localIndex, localType);
+                    } else {
+                        throw std::runtime_error("Invalid local index.");
+                    }
+                } else {
+                    throw std::runtime_error("The locals must been set.");
                 }
             }
 
@@ -155,7 +189,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                 int local = stoi(tokens[i + 1]);
                 auto opCode = currentToLower == "ldloc" ? OpCodes::LOAD_LOCAL : OpCodes::STORE_LOCAL;
 
-                if (local >= 0 && local < currentFunc->numLocals) {
+                if (local >= 0 && local < currentFunc->numLocals()) {
                     currentFunc->instructions.push_back(makeInstWithInt(opCode, local));
                 } else {
                     throw std::runtime_error("The local index is out of range.");
@@ -212,7 +246,6 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                         if (numArgs >= 0 && numArgs <= 4) {
                             //Create a new function        
                             Function* newFunc = new Function(funcName, funcParams, returnType);
-                            newFunc->numLocals = 0;
                             program.functions[funcName] = newFunc;
 
                             currentFunc = newFunc;

@@ -18,3 +18,6 @@ void rt_runtimeError(std::string);
 
 //Signals that an inavlid array access has been made
 void rt_arrayOutOfBoundsError();
+
+//Signals that a null reference has been made
+void rt_nullReferenceError();

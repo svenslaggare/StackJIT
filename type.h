@@ -28,16 +28,22 @@ public:
 	ReferenceType(std::string name);
 };
 
+//Represents a null reference
+class NullReferenceType : public ReferenceType {
+public:
+	NullReferenceType();
+};
+
 //Represents an array type
 class ArrayType : public ReferenceType {
 private:
-	const Type* mElementType;
+	Type* mElementType;
 public:
 	ArrayType(Type* elementType);
 	~ArrayType();
 
 	//Returns the type of the element
-	const Type* elementType() const;
+	Type* elementType() const;
 };
 
 //Representa a struct type
@@ -81,4 +87,7 @@ namespace TypeSystem {
 
 	//Returns the size (in bytes) for the given type
 	std::size_t sizeOfType(Type* type);
+
+	//Gets the struct and field from the given string
+	bool getStructAndField(std::string str, std::pair<std::string, std::string>& res);
 }

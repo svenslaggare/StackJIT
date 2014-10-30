@@ -21,6 +21,7 @@ enum OpCodes {
     BGE,
     BLT,
     BLE,
+    PUSH_NULL,
     NEW_ARRAY,
     LOAD_ELEMENT,
     STORE_ELEMENT,

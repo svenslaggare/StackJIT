@@ -12,7 +12,7 @@ extern VMState vmState;
 
 void rt_printStackFrame(long* basePtr, Function* func) {
     int numArgs = func->numArgs();
-    int numLocals = func->numLocals;
+    int numLocals = func->numLocals();
 
     std::cout << "----Start StackFrame----" << std::endl;
     std::cout << "Func: " << func->name << std::endl;
@@ -80,4 +80,8 @@ void rt_runtimeError(std::string errorMessage) {
 
 void rt_arrayOutOfBoundsError() {
     rt_runtimeError("Array index is out of bounds.");
+}
+
+void rt_nullReferenceError() {
+    rt_runtimeError("Null reference error.");
 }

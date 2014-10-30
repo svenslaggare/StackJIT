@@ -35,7 +35,7 @@ void assertOperandCount(int index, const std::stack<Type*>& stack, int count) {
 }
 
 std::string checkType(Type* expectedType, Type* actualType) {
-    if (expectedType == nullptr || *expectedType == *actualType) {
+    if (expectedType == nullptr || *expectedType == *actualType || actualType->name() == "Ref.Null") {
         return "";
     } else {
         return "Expected type '" + TypeChecker::typeToString(expectedType) + "' but got type '" + TypeChecker::typeToString(actualType) + "'.";
@@ -74,10 +74,21 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
     std::vector<InstructionTypes> instructionsOperandTypes;
     instructionsOperandTypes.reserve(numInsts);
 
-    std::vector<Type*> locals(function.Function.numLocals);
+    //Set the local type if set
+    std::vector<Type*> locals(function.Function.numLocals());
+
+    for (int i = 0; i < locals.size(); i++) {
+        auto localType = func.getLocal(i);
+
+        if (localType != nullptr) {
+            locals[i] = localType;
+        }
+    }
+
     std::vector<BranchCheck> branches;
 
     const auto intType = vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer));
+    const auto nullType = vmState.findType("Ref.Null");
 
     int index = 1;
 
@@ -150,7 +161,9 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
                 auto error = checkType(localType, valueType);
 
                 if (error == "") {
-                    locals[localsIndex] = valueType;
+                    if (locals[localsIndex] == nullptr) {
+                        locals[localsIndex] = valueType;
+                    }
                 } else {
                     typeError(index, error);
                 }
@@ -236,6 +249,11 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
 
             branches.push_back({ index, inst.Value, operandStack });
             break;
+        case OpCodes::PUSH_NULL:
+            {
+                operandStack.push(nullType);
+            }
+            break;
         case OpCodes::NEW_ARRAY:
             {
                 assertOperandCount(index, operandStack, 1);
@@ -257,7 +275,9 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
                 auto indexType = popType(operandStack);
                 auto arrayRefType = popType(operandStack);
 
-                if (!TypeSystem::isArray(arrayRefType)) {
+                bool isNull = arrayRefType == nullType;
+
+                if (!TypeSystem::isArray(arrayRefType) && !isNull) {
                     typeError(index, "Expected first operand to be of type ArrayRef.");
                 }
 
@@ -266,6 +286,16 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
                 }
 
                 auto elemType = vmState.findType(inst.StrValue);
+
+                if (!isNull) {
+                    auto arrayElemType = dynamic_cast<ArrayType*>(arrayRefType)->elementType();
+
+                    auto error = checkType(arrayElemType, elemType);
+
+                    if (error != "") {
+                        typeError(index, error);
+                    }
+                }
 
                 if (elemType == nullptr) {
                     typeError(index, "There exists no type '" + inst.StrValue + "'.");
@@ -283,7 +313,9 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
                 auto indexType = popType(operandStack);
                 auto arrayRefType = popType(operandStack);
 
-                if (!TypeSystem::isArray(arrayRefType)) {
+                bool isNull = arrayRefType == nullType;
+
+                if (!TypeSystem::isArray(arrayRefType) && !isNull) {
                     typeError(index, "Expected first operand to be of type ArrayRef.");
                 }
 
@@ -292,6 +324,16 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
                 }
 
                 auto elemType = vmState.findType(inst.StrValue);
+
+                if (!isNull) {
+                    auto arrayElemType = dynamic_cast<ArrayType*>(arrayRefType)->elementType();
+
+                    auto error = checkType(arrayElemType, elemType);
+
+                    if (error != "") {
+                        typeError(index, error);
+                    }
+                }
 
                 if (elemType == nullptr) {
                     typeError(index, "There exists no type '" + inst.StrValue + "'.");
@@ -305,7 +347,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
                 assertOperandCount(index, operandStack, 1);
                 auto arrayRefType = popType(operandStack);
 
-                if (!TypeSystem::isArray(arrayRefType)) {
+                if (!TypeSystem::isArray(arrayRefType) && arrayRefType != nullType) {
                     typeError(index, "Expected operand to be of type ArrayRef.");
                 }
 
@@ -320,7 +362,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
                     typeError(index, "'" + structType->name() + "' is not a struct type.");
                 }
 
-                std::string structName = static_cast<StructType*>(structType)->structName();
+                std::string structName = dynamic_cast<StructType*>(structType)->structName();
 
                 if (vmState.getStructMetadata(structName) == nullptr) {
                     typeError(index, "'" + structName + "' is not a defined struct.");
@@ -334,21 +376,32 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
                 assertOperandCount(index, operandStack, 1);
 
                 auto structRefType = popType(operandStack);
+                bool isNull = structRefType == nullType;
 
-                if (!TypeSystem::isStruct(structRefType)) {
+                if (!TypeSystem::isStruct(structRefType) && !isNull) {
                     typeError(index, "Expected first operand to be of type StructRef.");
                 }
 
-                int fieldSepPos = inst.StrValue.find("::");
+                std::pair<std::string, std::string> structAndField;
 
-                if (fieldSepPos != -1) {
-                    auto structName = inst.StrValue.substr(0, fieldSepPos);
-                    auto fieldName = inst.StrValue.substr(fieldSepPos + 2);
+                if (TypeSystem::getStructAndField(inst.StrValue, structAndField)) {
+                    auto structName = structAndField.first;
+                    auto fieldName = structAndField.second;
 
                     auto structMetadata = vmState.getStructMetadata(structName);
 
                     if (structMetadata == nullptr) {
                         typeError(index, "'" + structName + "' is not a struct type.");
+                    }
+
+                    auto structType = vmState.findType("Ref.Struct." + structName);
+
+                    if (!isNull) {
+                        auto error = checkType(structType, structRefType);
+
+                        if (error != "") {
+                            typeError(index, error);
+                        }
                     }
 
                     auto fieldType = structMetadata->getField(fieldName);
@@ -369,16 +422,17 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
 
                 auto valueType = popType(operandStack);
                 auto structRefType = popType(operandStack);
+                bool isNull = structRefType == nullType;
 
-                if (!TypeSystem::isStruct(structRefType)) {
+                if (!TypeSystem::isStruct(structRefType) && !isNull) {
                     typeError(index, "Expected first operand to be of type StructRef.");
                 }
 
-                int fieldSepPos = inst.StrValue.find("::");
+                std::pair<std::string, std::string> structAndField;
 
-                if (fieldSepPos != -1) {
-                    auto structName = inst.StrValue.substr(0, fieldSepPos);
-                    auto fieldName = inst.StrValue.substr(fieldSepPos + 2);
+                if (TypeSystem::getStructAndField(inst.StrValue, structAndField)) {
+                    auto structName = structAndField.first;
+                    auto fieldName = structAndField.second;
 
                     auto structMetadata = vmState.getStructMetadata(structName);
 
@@ -390,6 +444,16 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
 
                     if (fieldType == nullptr) {
                         typeError(index, "There exists no '" + fieldName + "' field in the '" + structName + "' struct.");
+                    }
+
+                    auto structType = vmState.findType("Ref.Struct." + structName);
+
+                    if (!isNull) {
+                        auto error = checkType(structType, structRefType);
+
+                        if (error != "") {
+                            typeError(index, error);
+                        }
                     }
 
                     if (*valueType != *fieldType) {

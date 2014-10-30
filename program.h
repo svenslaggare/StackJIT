@@ -7,13 +7,14 @@ struct Instruction;
 class Type;
 
 //Represents an user defined function
-struct Function {
+class Function {
+private:
+	std::vector<Type*> localTypes;
+public:
 	const std::string name;
 
 	const std::vector<Type*> arguments;
 	Type* const returnType;
-
-	int numLocals;
 
 	std::vector<Instruction> instructions;
 	std::vector<unsigned char> generatedCode;
@@ -22,6 +23,11 @@ struct Function {
 	Function(std::string name, std::vector<Type*> arguments, Type* returnType);
 
 	int numArgs() const;
+
+	int numLocals() const;
+	void setNumLocals(int count);
+	Type* getLocal(int index) const;
+	void setLocal(int index, Type* type);
 };
 
 //Represents a program

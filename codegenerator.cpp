@@ -38,6 +38,19 @@ void generateArrayBoundsCheck(CodeGen& codeGen) {
     Amd64Backend::callInReg(codeGen, Registers::DI); //call rdi
 }
 
+//Generates null check
+void generateNullCheck(CodeGen& codeGen) {
+    //Compare the reference with null
+    Amd64Backend::moveIntToReg(codeGen, Registers::SI, 0); //mov rsi, 0
+    Amd64Backend::compareRegToReg(codeGen, Registers::AX, Registers::SI); //cmp rcx, rsi
+
+    pushArray(codeGen, { 0x75, 10 + 2 }); //jnz <after call>
+
+    //If null, call the error func
+    Amd64Backend::moveLongToReg(codeGen, Registers::DI, (long)&rt_nullReferenceError); //mov rdi, <addr of func>
+    Amd64Backend::callInReg(codeGen, Registers::DI); //call rdi
+}
+
 JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
     std::map<FunctionCall, std::string> callTable;
 
@@ -117,7 +130,7 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
     Amd64Backend::moveRegToReg(function.generatedCode, Registers::BP, Registers::SP); //mov rbp, rbp
 
     //Calculate the size of the stack
-    int stackSize = (function.numArgs() + function.numLocals) * Amd64Backend::REG_SIZE;
+    int stackSize = (function.numArgs() + function.numLocals()) * Amd64Backend::REG_SIZE;
 
     if (stackSize > 0) {
         //Make room for the variables on the stack
@@ -149,7 +162,7 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
     }
 
     //Zero the locals
-    if (function.numLocals > 0) {
+    if (function.numLocals() > 0) {
         //This method should be faster? but makes the generated code larger
         // Amd64Backend::moveIntToReg(function.generatedCode, Registers::AX, 0); //mov rax, 0
 
@@ -166,7 +179,7 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
         Amd64Backend::addByteToReg(function.generatedCode, Registers::DI, (function.numArgs() + 1) * -Amd64Backend::REG_SIZE); //add rdi, <locals offset>
 
         //Set the number of locals
-        Amd64Backend::moveIntToReg(function.generatedCode, Registers::CX, function.numLocals); //mov rcx, <num locals>
+        Amd64Backend::moveIntToReg(function.generatedCode, Registers::CX, function.numLocals()); //mov rcx, <num locals>
 
         //Zero eax
         pushArray(function.generatedCode, { 0x31, 0xC0 }); //xor eax, eax
@@ -466,6 +479,9 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             functionData.BranchTable[generatedCode.size() - 6] = std::make_pair(inst.Value, 6);
         }
         break;
+    case OpCodes::PUSH_NULL:
+        Amd64Backend::pushInt(generatedCode, 0); //push 0
+        break;
     case OpCodes::NEW_ARRAY:
         {
             // auto opTypes = functionData.InstructionOperandTypes[instIndex];
@@ -495,6 +511,9 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             Amd64Backend::popReg(generatedCode, Registers::CX); //The index of the element
             Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the array
 
+            //Null check
+            generateNullCheck(generatedCode);
+
             //Bounds check
             generateArrayBoundsCheck(generatedCode);
 
@@ -514,6 +533,9 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             Amd64Backend::popReg(generatedCode, Registers::CX); //The index of the element
             Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the array
 
+            //Null check
+            generateNullCheck(generatedCode);
+
             //Bounds check
             generateArrayBoundsCheck(generatedCode);
 
@@ -530,6 +552,9 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::LOAD_ARRAY_LENGTH:
         //Pop the array ref
         Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+
+        //Null check
+        generateNullCheck(generatedCode);
 
         //Get the size of the array (an int)
         Amd64Backend::moveMemoryByRegToReg(generatedCode, Registers::AX, Registers::AX, true); //mov eax, [rax]
@@ -556,21 +581,18 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::STORE_FIELD:
         {
             //Get the field
-            int fieldSepPos = inst.StrValue.find("::");
+            std::pair<std::string, std::string> structAndField;
+            TypeSystem::getStructAndField(inst.StrValue, structAndField);
 
-            auto structName = inst.StrValue.substr(0, fieldSepPos);
-            auto fieldName = inst.StrValue.substr(fieldSepPos + 2);
-
-            auto structMetadata = vmState.getStructMetadata(structName);
-
-            int fieldOffset = structMetadata->getFieldOffset(fieldName);
+            auto structMetadata = vmState.getStructMetadata(structAndField.first);
+            int fieldOffset = structMetadata->getFieldOffset(structAndField.second);
 
             if (inst.OpCode == OpCodes::LOAD_FIELD) {
                 //Pop the operand
                 Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the object
 
-                //Type check
-                //generateTypeCheck(generatedCode, structMetadata);
+                //Null check
+                generateNullCheck(generatedCode);
 
                 //Compute the address of the field
                 Amd64Backend::addByteToReg(generatedCode, Registers::AX, fieldOffset); //add rax, 4
@@ -583,15 +605,13 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 Amd64Backend::popReg(generatedCode, Registers::DX); //The value to store
                 Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the object
 
-                //Type check
-                //generateTypeCheck(generatedCode, structMetadata);
+                //Null check
+                generateNullCheck(generatedCode);
 
                 //Store the field
                 Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::AX, fieldOffset, Registers::DX); //mov [rax+<fieldOffset>], rdx
             }
         }
-        break;
-    default:
         break;
     }
 }

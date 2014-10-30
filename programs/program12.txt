@@ -2,7 +2,7 @@ func main() Int
 {
 	.locals 1
 	
-	PUSH 2
+	PUSH 4
 	NEWARR Ref.Struct.Point
 	STLOC 0
 

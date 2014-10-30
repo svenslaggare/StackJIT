@@ -1,0 +1,28 @@
+func main() Int
+{
+	.locals 1
+
+	#PUSHNULL
+
+	#PUSH 2
+	#NEWARR Int
+
+	NEWOBJ Ref.Struct.Point3D
+	#NEWOBJ Ref.Struct.Point
+
+	LDFIELD Point3D::z
+
+	#PUSH 0
+	#STFIELD Point::x
+	#PUSH 0
+
+	#PUSH 0
+	#LDELEM Int
+
+	#PUSH 0
+	#PUSH 0
+	#STELEM Int
+	#PUSH 0
+
+	RET
+}

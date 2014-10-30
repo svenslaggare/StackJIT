@@ -30,8 +30,16 @@ ReferenceType::ReferenceType(std::string name): Type("Ref." + name) {
 
 }
 
+NullReferenceType::NullReferenceType(): ReferenceType("Null") {
+
+}
+
 ArrayType::ArrayType(Type* elementType): ReferenceType("Array[" + elementType->name() + "]"), mElementType(elementType) {
 
+}
+
+Type* ArrayType::elementType() const {
+	return mElementType;
 }
 
 ArrayType::~ArrayType() {
@@ -106,6 +114,8 @@ Type* TypeSystem::makeTypeFromString(std::string typeName) {
 			if (typeParts.size() == 3) {
 				return new StructType(typeParts[2]);
 			}
+		} else if (typeParts[1] == "Null") {
+			return new NullReferenceType();
 		}
 	}
 
@@ -140,7 +150,7 @@ bool TypeSystem::isArray(Type* type) {
 	}
 
 	auto typeName = type->name();
-	return typeName.find("Array.", 0, typeName.length());
+	return typeName.find("Ref.Array") != std::string::npos;
 }
 
 bool TypeSystem::isStruct(Type* type) {
@@ -149,7 +159,7 @@ bool TypeSystem::isStruct(Type* type) {
 	}
 
 	auto typeName = type->name();
-	return typeName.find("Struct.", 0, typeName.length());
+	return typeName.find("Ref.Struct.") != std::string::npos;
 }
 
 std::size_t TypeSystem::getSize(PrimitiveTypes primitiveType) {
@@ -173,4 +183,20 @@ std::size_t TypeSystem::sizeOfType(Type* type) {
 	}
 
 	return 0;
+}
+
+bool TypeSystem::getStructAndField(std::string str, std::pair<std::string, std::string>& res) {
+    int fieldSepPos = str.find("::");
+
+    if (fieldSepPos != std::string::npos) {
+        auto structName = str.substr(0, fieldSepPos);
+        auto fieldName = str.substr(fieldSepPos + 2);
+
+        res.first = structName;
+        res.second = fieldName;
+
+        return true;
+    } else {
+    	return false;
+    }
 }

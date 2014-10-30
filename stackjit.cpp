@@ -28,7 +28,18 @@ int main(int argc, char* argv[]) {
     //Parse it
     Parser::parseTokens(tokens, vmState, program);
 
-    vmState.addStructMetadata("Point", StructMetadata({ { "x", vmState.findType("Int") }, { "y", vmState.findType("Int") } }));
+    vmState.addStructMetadata("Point", StructMetadata(
+    {
+        { "x", vmState.findType("Int") },
+        { "y", vmState.findType("Int") }
+    }));
+
+    vmState.addStructMetadata("Point3D", StructMetadata(
+    {
+        { "x", vmState.findType("Int") },
+        { "y", vmState.findType("Int") },
+        { "z", vmState.findType("Int") },
+    }));
 
     //Generate a function for the instructions
     int (*programPtr)() = CodeGenerator::generateProgram(program, vmState);

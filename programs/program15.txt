@@ -1,0 +1,16 @@
+func main() Int
+{
+	.locals 1
+	.local 0 Ref.Struct.Point
+
+	PUSHNULL
+	STLOC 0
+
+	NEWOBJ Ref.Struct.Point
+	STLOC 0
+
+	LDLOC 0
+	LDFIELD Point::x
+
+	RET
+}
