@@ -57,7 +57,7 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
     //Add the functions to the func table
     for (auto currentFunc : program.functions) {
         auto func = currentFunc.second;
-        vmState.functionTable[func->name] = FunctionDefinition(func->arguments, func->returnType, 0, 0);
+        vmState.functionTable[func->name()] = FunctionDefinition(func->arguments(), func->returnType(), 0, 0);
     }
 
     //Generate instructions for all functions
@@ -68,16 +68,16 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
         auto funcPtr = generateFunction(funcData, vmState);
 
         if (ENABLE_DEBUG) {
-            std::cout << "Defined function '" << func->name << "' at 0x" << std::hex << (long)funcPtr << std::dec << "." << std::endl;
+            std::cout << "Defined function '" << func->name() << "' at 0x" << std::hex << (long)funcPtr << std::dec << "." << std::endl;
         }
 
         //Add the unresolved call to the program call table
-        for (auto call : funcData.CallTable) {
+        for (auto call : funcData.callTable) {
             callTable[call.first] = call.second;
         }
 
         //Set the entry point & size for the function
-        vmState.functionTable[func->name].setFunctionBody((long)funcPtr, func->generatedCode.size());
+        vmState.functionTable[func->name()].setFunctionBody((long)funcPtr, func->generatedCode.size());
     }
 
     //Fix unresolved calls
@@ -109,7 +109,7 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
     for (auto currentFunc : program.functions) {
         auto func = currentFunc.second;
 
-        void* mem = (void*)vmState.functionTable[func->name].entryPoint();
+        void* mem = (void*)vmState.functionTable[func->name()].entryPoint();
         int length = func->generatedCode.size();
 
         int success = mprotect(mem, length, PROT_EXEC | PROT_READ);
@@ -123,7 +123,7 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
 JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionData, VMState& vmState) {
     TypeChecker::typeCheckFunction(functionData, vmState, ENABLE_DEBUG && PRINT_TYPE_CHECKING);
 
-    auto& function = functionData.Function;
+    auto& function = functionData.function;
 
     //Save the base pointer
     Amd64Backend::pushReg(function.generatedCode, Registers::BP); //push rbp
@@ -199,12 +199,12 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
     }
 
     //Patch branches with the native targets
-    for (auto branch : functionData.BranchTable) {
+    for (auto branch : functionData.branchTable) {
         unsigned int source = branch.first;
         unsigned int target = branch.second.first;
         unsigned int instSize = branch.second.second;
 
-        unsigned int nativeTarget = functionData.InstructionNumMapping[target];
+        unsigned int nativeTarget = functionData.instructionNumMapping[target];
 
         //Calculate the native jump location
         IntToBytes converter;
@@ -226,7 +226,7 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
         std::string argsStr = "";
         bool isFirst = true;
 
-        for (auto param : function.arguments) {
+        for (auto param : function.arguments()) {
             if (isFirst) {
                 isFirst = false;
             } else {
@@ -237,14 +237,14 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
         }
 
         std::cout
-            << "Generated function '" << function.name << "(" + argsStr + ") " << TypeChecker::typeToString(function.returnType)
+            << "Generated function '" << function.name() << "(" + argsStr + ") " << TypeChecker::typeToString(function.returnType())
             << "' of size: " << length << " bytes."
             << std::endl;
     }
 
     //Indicates if to output the generated code to a file
     if (OUTPUT_GENERATED_CODE) {
-        std::ofstream asmFile (functionData.Function.name + ".jit", std::ios::binary);
+        std::ofstream asmFile (functionData.function.name() + ".jit", std::ios::binary);
 
         if (asmFile.is_open()) {
             asmFile.write((char*)code, length);
@@ -271,12 +271,12 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
 }
 
 void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, const VMState& vmState, const Instruction& inst, int instIndex) {
-    auto& function = functionData.Function;
+    auto& function = functionData.function;
     auto& generatedCode = function.generatedCode;
     int stackOffset = 1; //The offset for variables allocated on the stack
 
     //Make the mapping
-    functionData.InstructionNumMapping.push_back(generatedCode.size());
+    functionData.instructionNumMapping.push_back(generatedCode.size());
 
     switch (inst.OpCode) {
     case OpCodes::PUSH_INT:
@@ -355,7 +355,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 funcAddr = funcToCall.entryPoint();
             } else {
                 //Mark that the function call needs to be patched with the entry point later
-                functionData.CallTable[make_pair(function.name, generatedCode.size())] = inst.StrValue;
+                functionData.callTable[make_pair(function.name(), generatedCode.size())] = inst.StrValue;
             }
 
             if (ENABLE_DEBUG) {
@@ -402,7 +402,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 Amd64Backend::callInReg(function.generatedCode, Registers::AX);
             }
 
-            if (!TypeSystem::isPrimitiveType(function.returnType, PrimitiveTypes::Void)) {
+            if (!TypeSystem::isPrimitiveType(function.returnType(), PrimitiveTypes::Void)) {
                 //Pop the return value
                 Amd64Backend::popReg(generatedCode, Registers::AX); //pop eax
             }
@@ -435,7 +435,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             Amd64Backend::jump(generatedCode, 0); //jmp <target>
 
             //As the exact target in native instructions isn't known, defer to later.
-            functionData.BranchTable[generatedCode.size() - 5] = std::make_pair(inst.Value, 5);
+            functionData.branchTable[generatedCode.size() - 5] = std::make_pair(inst.Value, 5);
         }
         break;
     case OpCodes::BEQ:
@@ -476,7 +476,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             }
 
             //As the exact target in native instructions isn't known, defer to later.
-            functionData.BranchTable[generatedCode.size() - 6] = std::make_pair(inst.Value, 6);
+            functionData.branchTable[generatedCode.size() - 6] = std::make_pair(inst.Value, 6);
         }
         break;
     case OpCodes::PUSH_NULL:

@@ -4,32 +4,40 @@
 #include <stdexcept>
 
 Function::Function(std::string name, std::vector<Type*> arguments, Type* returnType)
-: name(name), arguments(arguments), returnType(returnType) {
+	: mName(name), mArguments(arguments), mReturnType(returnType) {
 
+}
+
+std::string Function::name() const {
+	return mName;
+}
+
+const std::vector<Type*>& Function::arguments() const {
+	return mArguments;
 }
 
 int Function::numArgs() const {
-	return arguments.size();
+	return mArguments.size();
+}
+
+Type* Function::returnType() const {
+	return mReturnType;
 }
 
 int Function::numLocals() const {
-	return localTypes.size();
+	return mLocalTypes.size();
 }
 
 void Function::setNumLocals(int count) {
-	localTypes.resize(count);
+	mLocalTypes.resize(count);
 }
 
 Type* Function::getLocal(int index) const {
-	return localTypes.at(index);
+	return mLocalTypes.at(index);
 }
 
 void Function::setLocal(int index, Type* type) {
-	if (index >= 0 && index < localTypes.size()) {
-		localTypes[index] = type;
-	} else {
-		throw std::out_of_range("index");
-	}
+	mLocalTypes.at(index) = type;
 }
 
 Program::~Program() {

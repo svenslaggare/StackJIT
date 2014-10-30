@@ -15,7 +15,7 @@ void rt_printStackFrame(long* basePtr, Function* func) {
     int numLocals = func->numLocals();
 
     std::cout << "----Start StackFrame----" << std::endl;
-    std::cout << "Func: " << func->name << std::endl;
+    std::cout << "Func: " << func->name() << std::endl;
     std::cout << "Num args: " << numArgs << std::endl;
     std::cout << "Num locals: " << numLocals << std::endl;
 

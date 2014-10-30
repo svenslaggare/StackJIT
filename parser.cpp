@@ -278,7 +278,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
     if (program.functions.count("main") > 0) {
         auto mainFunc = program.functions["main"];
 
-        if (mainFunc->arguments.size() != 0 || !TypeSystem::isPrimitiveType(mainFunc->returnType, PrimitiveTypes::Integer)) {
+        if (mainFunc->arguments().size() != 0 || !TypeSystem::isPrimitiveType(mainFunc->returnType(), PrimitiveTypes::Integer)) {
            throw std::runtime_error("The main function must have the following signature: 'func main() Int'"); 
         }
     } else {

@@ -9,20 +9,25 @@ class Type;
 //Represents an user defined function
 class Function {
 private:
-	std::vector<Type*> localTypes;
+	std::string mName;
+
+	std::vector<Type*> mArguments;
+	Type* mReturnType;
+
+	std::vector<Type*> mLocalTypes;
 public:
-	const std::string name;
-
-	const std::vector<Type*> arguments;
-	Type* const returnType;
-
 	std::vector<Instruction> instructions;
 	std::vector<unsigned char> generatedCode;
 
 	//Creates a new function
 	Function(std::string name, std::vector<Type*> arguments, Type* returnType);
 
+	std::string name() const;
+
+	const std::vector<Type*>& arguments() const;
 	int numArgs() const;
+
+	Type* returnType() const;
 
 	int numLocals() const;
 	void setNumLocals(int count);

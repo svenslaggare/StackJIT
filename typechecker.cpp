@@ -68,14 +68,14 @@ struct BranchCheck {
 void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& vmState, bool showDebug) {
     std::stack<Type*> operandStack;
 
-    const auto numInsts = function.Function.instructions.size();
-    const auto& func = function.Function;
+    const auto& func = function.function;
+    const auto numInsts = func.instructions.size();
 
     std::vector<InstructionTypes> instructionsOperandTypes;
     instructionsOperandTypes.reserve(numInsts);
 
     //Set the local type if set
-    std::vector<Type*> locals(function.Function.numLocals());
+    std::vector<Type*> locals(func.numLocals());
 
     for (int i = 0; i < locals.size(); i++) {
         auto localType = func.getLocal(i);
@@ -93,18 +93,18 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
     int index = 1;
 
     if (showDebug) {
-    	std::cout << "----Type checking: " <<  func.name << "----" << std::endl;
+    	std::cout << "----Type checking: " <<  func.name() << "----" << std::endl;
     }
 
     //Check the function definition
-    if (func.returnType == nullptr) {
+    if (func.returnType() == nullptr) {
         throw std::runtime_error("The function cannot return type 'Untyped'.");
     }
 
     int i = 0;
-    for (auto arg : func.arguments) {
+    for (auto arg : func.arguments()) {
         if (arg == nullptr || TypeSystem::isPrimitiveType(arg, PrimitiveTypes::Void)) {
-            throw std::runtime_error("The argument: " + std::to_string(i) + " in function '" + func.name + "' cannot be of type '" + typeToString(arg) + "'.");
+            throw std::runtime_error("The argument: " + std::to_string(i) + " in function '" + func.name() + "' cannot be of type '" + typeToString(arg) + "'.");
         }
 
         i++;
@@ -195,7 +195,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
             {
                 int returnCount = 1;
 
-                if (TypeSystem::isPrimitiveType(func.returnType, PrimitiveTypes::Void)) {
+                if (TypeSystem::isPrimitiveType(func.returnType(), PrimitiveTypes::Void)) {
                     returnCount = 0;
                 }
 
@@ -203,8 +203,8 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
                     if (returnCount > 0) {
                         auto returnType = popType(operandStack);
 
-                        if (*returnType != *func.returnType) {
-                            throw std::runtime_error("Expected '" + TypeChecker::typeToString(func.returnType) + "' as return type.");
+                        if (*returnType != *func.returnType()) {
+                            throw std::runtime_error("Expected '" + TypeChecker::typeToString(func.returnType()) + "' as return type.");
                         }
                     }
                 } else {
@@ -215,7 +215,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
             }
             break;
         case OpCodes::LOAD_ARG:
-            operandStack.push(func.arguments[inst.Value]);
+            operandStack.push(func.arguments()[inst.Value]);
             break;
         case OpCodes::BEQ:
         case OpCodes::BNE:
@@ -516,6 +516,6 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
 
     //Save the operand types
     for (auto instTypes : instructionsOperandTypes) {
-        function.InstructionOperandTypes.push_back(asVector(instTypes));
+        function.instructionOperandTypes.push_back(asVector(instTypes));
     }
 }
