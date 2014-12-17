@@ -57,7 +57,10 @@ std::vector<std::string> Parser::tokenize(std::istream& stream) {
         }
     }
 
-    tokens.push_back(token);
+    if (token != "") {
+        tokens.push_back(token);
+    }
+   
     return tokens;
 }
 
