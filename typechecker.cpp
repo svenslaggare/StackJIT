@@ -115,6 +115,8 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
     	instructionsOperandTypes.push_back(operandStack);
 
         switch (inst.OpCode) {
+        case OpCodes::NOP:
+            break;
         case OpCodes::PUSH_INT:
             operandStack.push(intType);
             break;
@@ -488,6 +490,10 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
 
     //Check that the branches are valid
     for (auto branch : branches) {
+        // if (branch.source == branch.target) {
+        //     typeError(index, "Source and target cannot be the same for a branch.");
+        // }
+
         auto postSourceTypes = branch.branchTypes;
         auto preTargetTypes = instructionsOperandTypes[branch.target];
 

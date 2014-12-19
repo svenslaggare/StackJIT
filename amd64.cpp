@@ -198,7 +198,7 @@ void Amd64Backend::divRegFromReg(CodeGen& codeGen, Registers dest, Registers src
 void Amd64Backend::compareRegToReg(CodeGen& codeGen, Registers reg1, Registers reg2) {
 	codeGen.push_back(0x48);
 	codeGen.push_back(0x39);
-	codeGen.push_back(0xc0| reg1 | (reg2 << 3));
+	codeGen.push_back(0xc0 | reg1 | (reg2 << 3));
 }
 
 //Jumps to the target

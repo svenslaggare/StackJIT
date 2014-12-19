@@ -85,6 +85,7 @@ void assertTokenCount(const std::vector<std::string>& tokens, int index, int cou
 
 std::unordered_map<std::string, OpCodes> noOperandsInstructions
 {
+    { "nop", OpCodes::NOP },
     { "pop", OpCodes::POP },
     { "add", OpCodes::ADD },
     { "sub", OpCodes::SUB },

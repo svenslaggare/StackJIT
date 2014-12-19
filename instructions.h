@@ -3,6 +3,7 @@
 
 //The OP codes for the instuctios
 enum OpCodes {
+    NOP,
     PUSH_INT,
     POP,
     ADD,

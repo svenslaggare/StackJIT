@@ -278,6 +278,9 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     functionData.instructionNumMapping.push_back(generatedCode.size());
 
     switch (inst.OpCode) {
+    case OpCodes::NOP:
+        generatedCode.push_back(0x90); //nop
+        break;
     case OpCodes::PUSH_INT:
         //Push the value
         Amd64Backend::pushInt(generatedCode, inst.Value); //push <value>
@@ -290,30 +293,33 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::SUB:
     case OpCodes::MUL:
     case OpCodes::DIV:
-        //Pop 2 operands
-        Amd64Backend::popReg(generatedCode, Registers::CX); //pop ecx
-        Amd64Backend::popReg(generatedCode, Registers::AX); //pop eax
+        {
+            //Pop 2 operands
+            Amd64Backend::popReg(generatedCode, Registers::CX); //pop ecx
+            Amd64Backend::popReg(generatedCode, Registers::AX); //pop eax
+            bool is32bits = false;
 
-        //Apply the operator
-        switch (inst.OpCode) {
-            case OpCodes::ADD:
-                Amd64Backend::addRegToReg(generatedCode, Registers::AX, Registers::CX, true); //add eax, ecx
-                break;
-            case OpCodes::SUB:
-                Amd64Backend::subRegFromReg(generatedCode, Registers::AX, Registers::CX, true); //sub eax, ecx
-                break;
-            case OpCodes::MUL:
-                Amd64Backend::multRegToReg(generatedCode, Registers::AX, Registers::CX, true); //imul eax, ecx
-                break;
-            case OpCodes::DIV:
-                Amd64Backend::divRegFromReg(generatedCode, Registers::AX, Registers::CX, true); //idiv eax, ecx
-                break;
-            default:
-                break;
+            //Apply the operator
+            switch (inst.OpCode) {
+                case OpCodes::ADD:
+                    Amd64Backend::addRegToReg(generatedCode, Registers::AX, Registers::CX, is32bits); //add eax, ecx
+                    break;
+                case OpCodes::SUB:
+                    Amd64Backend::subRegFromReg(generatedCode, Registers::AX, Registers::CX, is32bits); //sub eax, ecx
+                    break;
+                case OpCodes::MUL:
+                    Amd64Backend::multRegToReg(generatedCode, Registers::AX, Registers::CX, is32bits); //imul eax, ecx
+                    break;
+                case OpCodes::DIV:
+                    Amd64Backend::divRegFromReg(generatedCode, Registers::AX, Registers::CX, is32bits); //idiv eax, ecx
+                    break;
+                default:
+                    break;
+            }
+
+            //Push the result
+            Amd64Backend::pushReg(generatedCode, Registers::AX); //push eax
         }
-
-        //Push the result
-        Amd64Backend::pushReg(generatedCode, Registers::AX); //push eax
         break;
     case OpCodes::LOAD_LOCAL:
         {
@@ -449,8 +455,9 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             Amd64Backend::popReg(generatedCode, Registers::AX); //pop eax
 
             //Compare and jump
-            Amd64Backend::compareRegToReg(generatedCode, Registers::AX, Registers::CX); //cmp rax, rcx
-            
+            //Amd64Backend::compareRegToReg(generatedCode, Registers::AX, Registers::CX); //cmp rax, rcx
+            Amd64Backend::compareRegToReg(generatedCode, Registers::CX, Registers::AX); //cmp rcx, rax
+
             switch (inst.OpCode) {
                 case OpCodes::BEQ:
                     Amd64Backend::jumpEqual(generatedCode, 0); //je <target>
