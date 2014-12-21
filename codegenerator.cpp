@@ -123,13 +123,14 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
     TypeChecker::typeCheckFunction(functionData, vmState, vmState.enableDebug && vmState.printTypeChecking);
 
     auto& function = functionData.function;
+    function.instructionOperandTypes = functionData.instructionOperandTypes;
 
     //Save the base pointer
     Amd64Backend::pushReg(function.generatedCode, Registers::BP); //push rbp
     Amd64Backend::moveRegToReg(function.generatedCode, Registers::BP, Registers::SP); //mov rbp, rbp
 
     //Calculate the size of the stack
-    int stackSize = (function.numArgs() + function.numLocals()) * Amd64Backend::REG_SIZE;
+    int stackSize = (function.numArgs() + function.numLocals() + functionData.operandStackSize) * Amd64Backend::REG_SIZE;
 
     if (stackSize > 0) {
         //Make room for the variables on the stack
@@ -349,6 +350,12 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::CALL:
         {
+            //Call the pushFunc runtime function
+            Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&rt_pushFunc);
+            Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)&function); //Address of the func handle as the target as first arg
+            Amd64Backend::moveLongToReg(generatedCode, Registers::SI, instIndex); //Current inst index as second arg
+            Amd64Backend::callInReg(generatedCode, Registers::AX);
+
             //Get the address of the function to call
             long funcAddr = 0;
 
@@ -401,10 +408,16 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         {
             //If debug is enabled, print the stack frame before return
             if (vmState.enableDebug && vmState.printStackFrame) {
-                Amd64Backend::moveLongToReg(function.generatedCode, Registers::AX, (long)&rt_printStackFrame);
-                Amd64Backend::moveRegToReg(function.generatedCode, Registers::DI, Registers::BP); //BP as the first argument
-                Amd64Backend::moveLongToReg(function.generatedCode, Registers::SI, (long)&function); //Address of the function as second argument
-                Amd64Backend::callInReg(function.generatedCode, Registers::AX);
+                Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&rt_printStackFrame);
+                Amd64Backend::moveRegToReg(generatedCode, Registers::DI, Registers::BP); //BP as the first argument
+                Amd64Backend::moveLongToReg(generatedCode, Registers::SI, (long)&function); //Address of the function as second argument
+                Amd64Backend::callInReg(generatedCode, Registers::AX);
+            }
+
+            //Call the popFunc runtime function
+            if (function.name() != "main") {
+                Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&rt_popFunc);
+                Amd64Backend::callInReg(generatedCode, Registers::AX);
             }
 
             if (!TypeSystem::isPrimitiveType(function.returnType(), PrimitiveTypes::Void)) {
@@ -455,7 +468,6 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             Amd64Backend::popReg(generatedCode, Registers::AX); //pop eax
 
             //Compare and jump
-            //Amd64Backend::compareRegToReg(generatedCode, Registers::AX, Registers::CX); //cmp rax, rcx
             Amd64Backend::compareRegToReg(generatedCode, Registers::CX, Registers::AX); //cmp rcx, rax
 
             switch (inst.OpCode) {
@@ -490,9 +502,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::NEW_ARRAY:
         {
-            // auto opTypes = functionData.InstructionOperandTypes[instIndex];
-            // Type* elemType = opTypes[0];
-            Type* elemType = vmState.getType(inst.StrValue);
+            auto elemType = vmState.getType(inst.StrValue);
 
             //The pointer to the type as the first arg
             Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)elemType); //mov rdi, <addr of type pointer>
@@ -570,13 +580,18 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::NEW_OBJECT:
         {
-            Type* structType = vmState.getType(inst.StrValue);
+            auto structType = vmState.getType(inst.StrValue);
 
-            //The pointer to the type as the first arg
-            Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)structType); //mov rdi, <addr of type pointer>
+            //Call the garbageCollect runtime function
+            Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&rt_garbageCollect);
+            Amd64Backend::moveRegToReg(generatedCode, Registers::DI, Registers::BP); //BP as the first argument
+            Amd64Backend::moveLongToReg(generatedCode, Registers::SI, (long)&function); //Address of the function as second argument
+            Amd64Backend::moveLongToReg(generatedCode, Registers::DX, instIndex); //Current inst index as third argument
+            Amd64Backend::callInReg(generatedCode, Registers::AX);
 
             //Call the newObject runtime function
             Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&rt_newObject);
+            Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)structType); //The pointer to the type as the first arg
             Amd64Backend::callInReg(generatedCode, Registers::AX);
 
             //Push the returned pointer

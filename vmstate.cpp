@@ -1,5 +1,6 @@
 #include "vmstate.h"
 #include "type.h"
+#include "program.h"
 
 FunctionDefinition::FunctionDefinition(std::vector<Type*> arguments, Type* returnType, long entryPoint, int funcSize)
     : mArguments(arguments), mReturnType(returnType), mEntryPoint(entryPoint), mFunctionSize(funcSize), mIsManaged(true) {
@@ -7,7 +8,7 @@ FunctionDefinition::FunctionDefinition(std::vector<Type*> arguments, Type* retur
 }
 
 FunctionDefinition::FunctionDefinition(std::vector<Type*> arguments, Type* returnType, long entryPoint)
-    : mArguments(arguments), mReturnType(returnType), mEntryPoint(entryPoint), mIsManaged(false) {
+    : mArguments(arguments), mReturnType(returnType), mEntryPoint(entryPoint), mFunctionSize(0), mIsManaged(false) {
 
 }
 
@@ -52,6 +53,21 @@ const std::vector<ObjectHandle*>& VMState::getObjects() const {
 
 void VMState::newObject(ObjectHandle* handle) {
     mObjects.push_back(handle);
+}
+
+const std::deque<CallStackEntry>& VMState::callStack() const {
+    return mCallStack;
+}
+
+CallStackEntry VMState::popFunc() {
+    auto top = std::make_pair(mCallStack.front().first, mCallStack.front().second);
+    mCallStack.pop_front();
+    return top;
+}
+
+void VMState::pushFunc(Function* func, int instIndex) {
+    auto newEntry = std::make_pair(func, instIndex);
+    mCallStack.push_front(newEntry);
 }
 
 Type* VMState::findType(std::string name) {

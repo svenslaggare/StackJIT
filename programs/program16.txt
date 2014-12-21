@@ -19,20 +19,6 @@ func abs(Int) Int
    RET
 }
 
-func main2() Int
-{
-   PUSH 0
-   PUSH 5
-   SUB
-   CALL abs
-   CALL println
-   PUSH 5
-   CALL abs
-   CALL println
-   PUSH 0
-   RET
-}
-
 func main() Int
 {
    .locals 1

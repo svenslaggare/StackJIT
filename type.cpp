@@ -6,7 +6,8 @@
 #include <unordered_map>
 #include <functional>
 
-Type::Type(std::string name) : mName(name) {
+Type::Type(std::string name)
+	: mName(name) {
 
 }
 
@@ -14,7 +15,7 @@ Type::~Type() {
 
 }
 
-std::string Type::name() {
+std::string Type::name() const {
 	return mName;
 }
 
@@ -100,11 +101,11 @@ Type* TypeSystem::makeTypeFromString(std::string typeName) {
 	std::string arrayPattern = "Array.(.*).";
 	std::regex arrayRegex(arrayPattern, std::regex_constants::extended);
 
-	if (primitiveTypeNames.count(typeParts[0]) > 0) {
-		return primitiveTypeNames[typeParts[0]]();
-	} else if (typeParts[0] == "Ref") {
+	if (primitiveTypeNames.count(typeParts.at(0)) > 0) {
+		return primitiveTypeNames[typeParts.at(0)]();
+	} else if (typeParts.at(0) == "Ref") {
 		std::smatch match;
-		bool foundArray = std::regex_match(typeParts[1], match, arrayRegex);
+		bool foundArray = std::regex_match(typeParts.at(1), match, arrayRegex);
 
 		if (foundArray) {
 			std::string elementType = match[1].str();
@@ -112,9 +113,9 @@ Type* TypeSystem::makeTypeFromString(std::string typeName) {
 			return new ArrayType(makeTypeFromString(elementType));
 		} else if (typeParts[1] == "Struct") {
 			if (typeParts.size() == 3) {
-				return new StructType(typeParts[2]);
+				return new StructType(typeParts.at(2));
 			}
-		} else if (typeParts[1] == "Null") {
+		} else if (typeParts.at(1) == "Null") {
 			return new NullReferenceType();
 		}
 	}
@@ -140,8 +141,7 @@ bool TypeSystem::isReferenceType(Type* type) {
 		return false;
 	}
 
-	auto typeName = type->name();
-	return typeName.find("Ref.") != std::string::npos;
+	return type->name().find("Ref.") != std::string::npos;
 }
 
 bool TypeSystem::isArray(Type* type) {
@@ -149,8 +149,7 @@ bool TypeSystem::isArray(Type* type) {
 		return false;
 	}
 
-	auto typeName = type->name();
-	return typeName.find("Ref.Array") != std::string::npos;
+	return type->name().find("Ref.Array") != std::string::npos;
 }
 
 bool TypeSystem::isStruct(Type* type) {
@@ -158,8 +157,7 @@ bool TypeSystem::isStruct(Type* type) {
 		return false;
 	}
 
-	auto typeName = type->name();
-	return typeName.find("Ref.Struct.") != std::string::npos;
+	return type->name().find("Ref.Struct.") != std::string::npos;
 }
 
 std::size_t TypeSystem::getSize(PrimitiveTypes primitiveType) {

@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
     //Free objects
     for (auto obj : vmState.getObjects()) {
         if (vmState.enableDebug) {
-            std::cout << "Freed object (" << obj->getSize() << " bytes) at 0x" << std::hex << (long)(obj->getHandle()) << std::dec << std::endl;
+            //std::cout << "Freed object (" << obj->getSize() << " bytes) at 0x" << std::hex << (long)(obj->getHandle()) << std::dec << std::endl;
         }
 
         obj->deleteHandle();

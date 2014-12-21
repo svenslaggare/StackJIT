@@ -2,6 +2,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <deque>
 
 struct Instruction;
 class Type;
@@ -18,6 +19,7 @@ private:
 public:
 	std::vector<Instruction> instructions;
 	std::vector<unsigned char> generatedCode;
+	std::vector<std::deque<Type*>> instructionOperandTypes;	
 
 	//Creates a new function
 	Function(std::string name, std::vector<Type*> arguments, Type* returnType);

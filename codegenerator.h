@@ -20,9 +20,10 @@ struct FunctionCompilationData {
 	std::vector<unsigned int> instructionNumMapping;									 //Mapping from instruction num to native instruction
 	std::map<FunctionCall, std::string> callTable;										 //The called functions
 	std::vector<std::deque<Type*>> instructionOperandTypes;							 	 //The types of the operands for the instruction
+	int operandStackSize;																 //The size of the operand stack
 
 	FunctionCompilationData(struct Function& function)
-		: function(function)
+		: function(function), operandStackSize(0)
 	{
 
 	}

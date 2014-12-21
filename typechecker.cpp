@@ -65,10 +65,10 @@ struct BranchCheck {
     }
 };
 
-void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& vmState, bool showDebug) {
+void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& vmState, bool showDebug) {
     std::stack<Type*> operandStack;
 
-    const auto& func = function.function;
+    auto& func = funcData.function;
     const auto numInsts = func.instructions.size();
 
     std::vector<InstructionTypes> instructionsOperandTypes;
@@ -166,6 +166,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
                 if (error == "") {
                     if (locals[localsIndex] == nullptr) {
                         locals[localsIndex] = valueType;
+                        func.setLocal(localsIndex, valueType);
                     }
                 } else {
                     typeError(index, error);
@@ -531,8 +532,18 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& function, VMState& 
     	std::cout << "----End type checking----" << std::endl;
     }
 
+    for (int i = 0; i < func.numLocals(); i++) {
+        if (func.getLocal(i) == nullptr) {
+            typeError(1, "Local " + std::to_string(i) + " is not typed.");
+        }
+    }
+
     //Save the operand types
     for (auto instTypes : instructionsOperandTypes) {
-        function.instructionOperandTypes.push_back(asVector(instTypes));
+        funcData.instructionOperandTypes.push_back(asVector(instTypes));
+
+        if (instTypes.size() > funcData.operandStackSize) {
+            funcData.operandStackSize = instTypes.size();
+        }
     }
 }

@@ -1,0 +1,101 @@
+struct Point
+{
+	x Int
+	y Int
+}
+
+func main1() Int
+{
+	.locals 3
+	
+	PUSH 256
+	STLOC 1
+
+	PUSH 0
+	STLOC 2
+
+	LDLOC 1
+	NEWARR Ref.Struct.Point
+	STLOC 0
+
+	LDLOC 2
+	LDLOC 1
+	BLE 19
+
+	LDLOC 0
+	LDLOC 2
+	NEWOBJ Ref.Struct.Point
+	STELEM Ref.Struct.Point
+
+	LDLOC 2
+	PUSH 1
+	ADD
+	STLOC 2
+	BR 7
+
+	PUSH 0
+	RET
+}
+
+func main2() Int
+{
+	.locals 2
+	
+	PUSH 1337
+
+	PUSH 8
+	STLOC 0
+
+	LDLOC 0
+	PUSH 0
+	BGE 13
+
+	NEWOBJ Ref.Struct.Point
+	STLOC 1
+
+	LDLOC 0
+	PUSH 1
+	SUB
+	STLOC 0
+	BR 3
+
+	RET
+}
+
+func createObj() Ref.Struct.Point
+{
+	.locals 0
+
+	NEWOBJ Ref.Struct.Point
+	RET
+}
+
+func main3(Ref.Struct.Point) Int
+{
+	.locals 1
+	.local 0 Ref.Struct.Point
+
+	PUSH 1337
+	PUSH 4711
+
+	#NEWOBJ Ref.Struct.Point
+	CALL createObj
+	STLOC 0
+
+	ADD
+	RET
+}
+
+func main() Int
+{
+	.locals 1
+	.local 0 Ref.Struct.Point
+
+	NEWOBJ Ref.Struct.Point
+	STLOC 0
+
+	NEWOBJ Ref.Struct.Point
+	CALL main3
+
+	RET
+}

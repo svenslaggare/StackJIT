@@ -6,14 +6,14 @@
 //Represents a type
 class Type {
 private:
-	const std::string mName;
+	std::string mName;
 public:
 	Type(std::string name);
 	virtual ~Type();
 	Type(const Type&) = delete;
 
 	//Returns the name of the type
-	std::string name();
+	std::string name() const;
 
 	//Compares if two types are equal
 	bool operator==(const Type& type) const;
@@ -40,7 +40,7 @@ private:
 	Type* mElementType;
 public:
 	ArrayType(Type* elementType);
-	~ArrayType();
+	virtual ~ArrayType();
 
 	//Returns the type of the element
 	Type* elementType() const;
