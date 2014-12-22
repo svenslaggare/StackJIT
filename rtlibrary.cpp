@@ -11,7 +11,7 @@
 
 extern VMState vmState;
 
-void rt_printStackFrame(long* basePtr, Function* func) {
+void Runtime::printStackFrame(long* basePtr, Function* func) {
     int numArgs = func->numArgs();
     int numLocals = func->numLocals();
 
@@ -46,21 +46,21 @@ void rt_printStackFrame(long* basePtr, Function* func) {
     std::cout << "----End StackFrame----" << std::endl;
 }
 
-void rt_pushFunc(Function* func, int instIndex) {
+void Runtime::pushFunc(Function* func, int instIndex) {
     vmState.pushFunc(func, instIndex);
 }
 
-void rt_popFunc() {
+void Runtime::popFunc() {
     vmState.popFunc();
 }
 
-void rt_printStackTrace(long* basePtr, int level) {
+void printStackTrace(long* basePtr, int level) {
     if (level > 50 || basePtr == nullptr) {
         return;
     }
 
     std::cout << basePtr << " from " << "0x" << std::hex << *basePtr << std::dec << std::endl;
-    rt_printStackTrace((long*)*basePtr, level + 1);
+    printStackTrace((long*)*basePtr, level + 1);
 }
 
 void printTimes(char c, int times) {
@@ -81,7 +81,7 @@ long* findBasePtr(long* basePtr, int currentIndex, int index) {
     return findBasePtr((long*)*basePtr, currentIndex + 1, index);
 }
 
-void rt_printAliveObjects(long* basePtr, Function* func, int instIndex, std::string indentation = "") {
+void Runtime::printAliveObjects(long* basePtr, Function* func, int instIndex, std::string indentation) {
     int numArgs = func->numArgs();
     int numLocals = func->numLocals();
     auto operandTypes = func->instructionOperandTypes.at(instIndex);
@@ -92,6 +92,11 @@ void rt_printAliveObjects(long* basePtr, Function* func, int instIndex, std::str
     //long* stackStart = basePtr - numArgs - numLocals - (func->stackSize() / 8);
     //long* stackStart = basePtr - 1 - numArgs - numLocals - (func->stackSize() / 8) + stackSize;
     long* stackStart = basePtr - 1 - (func->stackSize() / 8);
+
+    // long* stackStart2 = basePtr - 1;
+    // for (int i = 0; i < 10; i++) {
+    //     std::cout << stackStart2[-i] << std::endl;
+    // }
 
     if (numArgs > 0) {
         std::cout << indentation << "Args: " << std::endl;
@@ -123,7 +128,7 @@ void printObject(ObjectHandle* handle) {
     std::cout << (long)handle->getHandle() << ": " << handle->getSize() << " bytes (" << handle->getType()->name() << ")" << std::endl;
 }
 
-void rt_markObject(ObjectHandle* handle) {
+void Runtime::markObject(ObjectHandle* handle) {
     if (!handle->isMarked()) {
         if (TypeSystem::isArray(handle->getType())) {
             handle->mark();
@@ -133,15 +138,15 @@ void rt_markObject(ObjectHandle* handle) {
     }
 }
 
-void rt_markValue(long value, Type* type) {
+void Runtime::markValue(long value, Type* type) {
     unsigned char* objPtr = (unsigned char*)value;
 
     if (TypeSystem::isReferenceType(type) && vmState.getObjects().count(objPtr) > 0) {
-        rt_markObject(vmState.getObjects().at(objPtr));
+        Runtime::markObject(vmState.getObjects().at(objPtr));
     }
 }
 
-void rt_markObjects(long* basePtr, Function* func, int instIndex) {
+void Runtime::markObjects(long* basePtr, Function* func, int instIndex) {
     int numArgs = func->numArgs();
     int numLocals = func->numLocals();
     auto operandTypes = func->instructionOperandTypes.at(instIndex);
@@ -153,24 +158,24 @@ void rt_markObjects(long* basePtr, Function* func, int instIndex) {
 
     if (numArgs > 0) {
         for (int i = 0; i < numArgs; i++) {
-            rt_markValue(argsStart[-i], func->arguments()[i]);
+            Runtime::markValue(argsStart[-i], func->arguments()[i]);
         }
     }
 
     if (numLocals > 0) {
         for (int i = 0; i < numLocals; i++) {
-            rt_markValue(localsStart[-i], func->getLocal(i));
+            Runtime::markValue(localsStart[-i], func->getLocal(i));
         }
     }
 
     if (stackSize > 0) {
         for (int i = 0; i < stackSize; i++) {
-            rt_markValue(stackStart[-i], operandTypes[i]);
+            Runtime::markValue(stackStart[-i], operandTypes[i]);
         }
     }
 }
 
-void rt_sweepObjects() {
+void Runtime::sweepObjects() {
     std::vector<ObjectHandle*> objectsToRemove;
 
     for (auto objEntry : vmState.getObjects()) {
@@ -190,7 +195,7 @@ void rt_sweepObjects() {
     }
 }
 
-void rt_garbageCollect(long* basePtr, Function* func, int instIndex) {
+void Runtime::garbageCollect(long* basePtr, Function* func, int instIndex) {
     auto startStr = "-----Start GC in func " + func->name() + " (" + std::to_string(instIndex) + ")-----";
     std::cout << startStr << std::endl;
 
@@ -203,8 +208,8 @@ void rt_garbageCollect(long* basePtr, Function* func, int instIndex) {
     std::cout << "Stack trace: " << std::endl;
 
     std::cout << func->name() << " (" << instIndex << ")" << std::endl;
-    rt_printAliveObjects(basePtr, func, instIndex, "\t");
-    rt_markObjects(basePtr, func, instIndex);
+    Runtime::printAliveObjects(basePtr, func, instIndex, "\t");
+    // Runtime::markObjects(basePtr, func, instIndex);
 
     int topFuncIndex = 0;
     for (auto callEntry : vmState.callStack()) {
@@ -213,13 +218,13 @@ void rt_garbageCollect(long* basePtr, Function* func, int instIndex) {
         auto callBasePtr = findBasePtr(basePtr, 0, topFuncIndex);
 
         std::cout << topFunc->name() << " (" << callPoint << ")" << std::endl;
-        rt_printAliveObjects(callBasePtr, topFunc, callPoint, "\t");
-        rt_markObjects(callBasePtr, topFunc, callPoint);
+        Runtime::printAliveObjects(callBasePtr, topFunc, callPoint, "\t");
+        // Runtime::markObjects(callBasePtr, topFunc, callPoint);
 
         topFuncIndex++;
     }
 
-    rt_sweepObjects();
+    //Runtime::sweepObjects();
 
     printTimes('-', startStr.length() / 2 - 3);
     std::cout << "End GC";
@@ -227,7 +232,7 @@ void rt_garbageCollect(long* basePtr, Function* func, int instIndex) {
     std::cout << std::endl;
 }
 
-long rt_newArray(Type* type, int size) {
+long Runtime::newArray(Type* type, int size) {
     auto elemSize = TypeSystem::sizeOfType(type);
 
     int memSize = sizeof(int) + size * elemSize;
@@ -248,7 +253,7 @@ long rt_newArray(Type* type, int size) {
     return (long)arrayPtr;
 }
 
-long rt_newObject(Type* type) {
+long Runtime::newObject(Type* type) {
     auto structType = static_cast<StructType*>(type);
 
     int memSize = vmState.getStructMetadata(structType->structName())->getSize();
@@ -258,17 +263,19 @@ long rt_newObject(Type* type) {
     //Add the struct to the list of objects
     vmState.newObject(new StructHandle(structPtr, memSize, type));
 
+    // std::cout << "Allocted object (" << memSize << " bytes) at " << (long)structPtr << std::endl;
+
     return (long)structPtr;
 }
 
-void rt_runtimeError(std::string errorMessage) {
+void Runtime::runtimeError(std::string errorMessage) {
     throw std::runtime_error(errorMessage);
 }
 
-void rt_arrayOutOfBoundsError() {
-    rt_runtimeError("Array index is out of bounds.");
+void Runtime::arrayOutOfBoundsError() {
+    Runtime::runtimeError("Array index is out of bounds.");
 }
 
-void rt_nullReferenceError() {
-    rt_runtimeError("Null reference error.");
+void Runtime::nullReferenceError() {
+    Runtime::runtimeError("Null reference error.");
 }

@@ -195,6 +195,33 @@ void Amd64Backend::divRegFromReg(CodeGen& codeGen, Registers dest, Registers src
     codeGen.push_back(0xf8 | src | (dest << 3));
 }
 
+void Amd64Backend::andRegToReg(CodeGen& codeGen, Registers dest, Registers src, bool is32bits) {
+    if (!is32bits) {
+        codeGen.push_back(0x48);
+    }
+
+    codeGen.push_back(0x21);
+    codeGen.push_back(0xc0 | dest | (src << 3));
+}
+
+void Amd64Backend::orRegToReg(CodeGen& codeGen, Registers dest, Registers src, bool is32bits) {
+	if (!is32bits) {
+        codeGen.push_back(0x48);
+    }
+
+    codeGen.push_back(0x09);
+    codeGen.push_back(0xc0 | dest | (src << 3));
+}
+
+void Amd64Backend::notReg(CodeGen& codeGen, Registers reg, bool is32bits) {
+	if (!is32bits) {
+        codeGen.push_back(0x48);
+    }
+
+    codeGen.push_back(0xf7);
+    codeGen.push_back(0xd0 | reg);
+}
+
 void Amd64Backend::compareRegToReg(CodeGen& codeGen, Registers reg1, Registers reg2) {
 	codeGen.push_back(0x48);
 	codeGen.push_back(0x39);

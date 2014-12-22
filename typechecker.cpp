@@ -91,6 +91,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
     std::vector<BranchCheck> branches;
 
     const auto intType = vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer));
+    const auto boolType = vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Bool));
     const auto voidType = vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Void));
     const auto nullType = vmState.findType("Ref.Null");
 
@@ -141,6 +142,59 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
                     operandStack.push(intType);
                 } else {
                     typeError(index, "Expected 2 operands of type Int on the stack.");
+                }
+            }
+            break;
+        case OpCodes::PUSH_TRUE:
+        case OpCodes::PUSH_FALSE:
+            {
+                operandStack.push(boolType);
+            }
+            break;
+        case OpCodes::AND:
+        case OpCodes::OR:
+            {
+                assertOperandCount(index, operandStack, 2);
+            
+                auto op1 = popType(operandStack);
+                auto op2 = popType(operandStack);
+    
+                if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Bool) && TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Bool)) {
+                    operandStack.push(boolType);
+                } else {
+                    typeError(index, "Expected 2 operands of type Bool on the stack.");
+                }
+            }
+            break;
+        case OpCodes::CMPEQ:
+        case OpCodes::CMPNE:
+        case OpCodes::CMPGT:
+        case OpCodes::CMPGE:
+        case OpCodes::CMPLT:
+        case OpCodes::CMPLE:
+            {
+                assertOperandCount(index, operandStack, 2);
+            
+                auto op1 = popType(operandStack);
+                auto op2 = popType(operandStack);
+    
+                if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Integer) && TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
+                    operandStack.push(boolType);
+                } else {
+                    typeError(index, "Expected 2 operands of type Int on the stack.");
+                }
+            }
+            break;
+        case OpCodes::NOT:
+            {
+                assertOperandCount(index, operandStack, 1);
+            
+                auto op = popType(operandStack);
+    
+                if (TypeSystem::isPrimitiveType(op, PrimitiveTypes::Bool)) {
+                    operandStack.push(boolType);
+                } else {
+                    typeError(index, "Expected 1 operand of type Bool on the stack.");
                 }
             }
             break;
@@ -241,10 +295,20 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
                 auto op1 = popType(operandStack);
                 auto op2 = popType(operandStack);
     
-                if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Integer) && TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
-                    branches.push_back({ index, inst.Value, operandStack });
+                if (*op1 == *intType) {               
+                    if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
+                        branches.push_back({ index, inst.Value, operandStack });
+                    } else {
+                        typeError(index, "Expected 2 operands of type Int on the stack.");
+                    }
+                } else if (*op1 == *boolType) {
+                    if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Bool)) {
+                        branches.push_back({ index, inst.Value, operandStack });
+                    } else {
+                        typeError(index, "Expected 2 operands of type Int on the stack.");
+                    }
                 } else {
-                    typeError(index, "Expected 2 operands of type Int on the stack.");
+                    typeError(index, "Expected 2 operands of type Int or Bool on the stack.");  
                 }
             }
             break;

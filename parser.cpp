@@ -91,9 +91,20 @@ std::unordered_map<std::string, OpCodes> noOperandsInstructions
     { "sub", OpCodes::SUB },
     { "mul", OpCodes::MUL },
     { "div", OpCodes::DIV },
+    { "pushtrue", OpCodes::PUSH_TRUE },
+    { "pushfalse", OpCodes::PUSH_FALSE },
+    { "and", OpCodes::AND },
+    { "or", OpCodes::OR },
+    { "not", OpCodes::NOT },
+    { "cmpeq", OpCodes::CMPEQ },
+    { "cmpne", OpCodes::CMPNE },
+    { "cmpgt", OpCodes::CMPGT },
+    { "cmpge", OpCodes::CMPGE },
+    { "cmplt", OpCodes::CMPLT },
+    { "cmple", OpCodes::CMPLE },
+    { "pushnull", OpCodes::PUSH_NULL },
     { "ldlen", OpCodes::LOAD_ARRAY_LENGTH },
     { "ret", OpCodes::RET },
-    { "pushnull", OpCodes::PUSH_NULL }
 };
 
 std::unordered_map<std::string, OpCodes> branchInstructions

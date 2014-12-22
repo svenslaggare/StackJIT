@@ -61,6 +61,8 @@ std::string TypeSystem::getPrimitiveTypeName(PrimitiveTypes primitiveType) {
 			return "Void";
 		case PrimitiveTypes::Integer:
 			return "Int";
+		case PrimitiveTypes::Bool:
+			return "Bool";
 	}
 
 	return "";
@@ -68,6 +70,7 @@ std::string TypeSystem::getPrimitiveTypeName(PrimitiveTypes primitiveType) {
 
 std::unordered_map<std::string, std::function<Type*()>> primitiveTypeNames {
 	{ "Int", []() -> Type* { return new Type("Int"); } },
+	{ "Bool", []() -> Type* { return new Type("Bool"); } },
 	{ "Void", []() -> Type* { return new Type("Void"); } }
 };
 
@@ -128,6 +131,8 @@ bool TypeSystem::isPrimitiveType(const Type* type, PrimitiveTypes primitiveType)
 		switch (primitiveType) {
 			case PrimitiveTypes::Integer:
 				return type->name().compare("Int") == 0;
+			case PrimitiveTypes::Bool:
+				return type->name().compare("Bool") == 0;
 			case PrimitiveTypes::Void:
 				return type->name().compare("Void") == 0;
 		}
@@ -164,6 +169,8 @@ std::size_t TypeSystem::getSize(PrimitiveTypes primitiveType) {
 	switch (primitiveType) {
 	case PrimitiveTypes::Integer:
 		return 4;
+	case PrimitiveTypes::Bool:
+		return 1;
 	case PrimitiveTypes::Void:
 		return 0;
 	}

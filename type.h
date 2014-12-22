@@ -60,7 +60,8 @@ public:
 //The primitive types
 enum PrimitiveTypes : unsigned char {
 	Void,
-	Integer
+	Integer,
+	Bool
 };
 
 namespace TypeSystem {

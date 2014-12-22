@@ -1,0 +1,17 @@
+func main() Int
+{
+   .locals 1
+   
+   PUSHTRUE
+   PUSHFALSE
+   OR
+   PUSHTRUE
+   BNE 8
+   PUSH 5
+   STLOC 0
+   BR 10
+   PUSH 7
+   STLOC 0
+   LDLOC 0
+   RET
+}

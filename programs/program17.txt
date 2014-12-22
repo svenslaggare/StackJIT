@@ -110,7 +110,28 @@ func main() Int
 	STLOC 1
 
 	STLOC 0
+	#PUSH 5670
+	#STFIELD Point::x
 
 	LDLOC 1
+	RET
+}
+
+func main4() Int
+{
+	.locals 1
+	.local 0 Ref.Struct.Point
+
+	CALL allocObj()
+
+	NEWOBJ Ref.Struct.Point
+
+	NEWOBJ Ref.Struct.Point
+	CALL main3
+	POP
+
+	STLOC 0
+
+	PUSH 0
 	RET
 }

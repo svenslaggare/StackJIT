@@ -395,6 +395,101 @@ void testDivRegFromReg() {
 	generatedCode.clear();
 }
 
+//Tests the andRegToReg generator
+void testAndRegToReg() {
+	std::vector<unsigned char> generatedCode;
+	Amd64Backend::andRegToReg(generatedCode, Registers::AX, Registers::AX);
+	arrayAssert(generatedCode, { 0x48, 0x21, 0xC0 });
+	generatedCode.clear();
+
+	Amd64Backend::andRegToReg(generatedCode, Registers::AX, Registers::BX);
+	arrayAssert(generatedCode, { 0x48, 0x21, 0xD8 });
+	generatedCode.clear();
+
+	Amd64Backend::andRegToReg(generatedCode, Registers::BX, Registers::AX);
+	arrayAssert(generatedCode, { 0x48, 0x21, 0xC3 });
+	generatedCode.clear();
+
+	Amd64Backend::andRegToReg(generatedCode, Registers::BX, Registers::BX);
+	arrayAssert(generatedCode, { 0x48, 0x21, 0xDB });
+	generatedCode.clear();
+
+	//32 bits
+	Amd64Backend::andRegToReg(generatedCode, Registers::AX, Registers::AX, true);
+	arrayAssert(generatedCode, { 0x21, 0xC0 });
+	generatedCode.clear();
+
+	Amd64Backend::andRegToReg(generatedCode, Registers::AX, Registers::BX, true);
+	arrayAssert(generatedCode, { 0x21, 0xD8 });
+	generatedCode.clear();
+
+	Amd64Backend::andRegToReg(generatedCode, Registers::BX, Registers::AX, true);
+	arrayAssert(generatedCode, { 0x21, 0xC3 });
+	generatedCode.clear();
+
+	Amd64Backend::andRegToReg(generatedCode, Registers::BX, Registers::BX, true);
+	arrayAssert(generatedCode, { 0x21, 0xDB });
+	generatedCode.clear();
+}
+
+//Tests the orRegToReg generator
+void testOrRegToReg() {
+	std::vector<unsigned char> generatedCode;
+	Amd64Backend::orRegToReg(generatedCode, Registers::AX, Registers::AX);
+	arrayAssert(generatedCode, { 0x48, 0x09, 0xC0 });
+	generatedCode.clear();
+
+	Amd64Backend::orRegToReg(generatedCode, Registers::AX, Registers::BX);
+	arrayAssert(generatedCode, { 0x48, 0x09, 0xD8 });
+	generatedCode.clear();
+
+	Amd64Backend::orRegToReg(generatedCode, Registers::BX, Registers::AX);
+	arrayAssert(generatedCode, { 0x48, 0x09, 0xC3 });
+	generatedCode.clear();
+
+	Amd64Backend::orRegToReg(generatedCode, Registers::BX, Registers::BX);
+	arrayAssert(generatedCode, { 0x48, 0x09, 0xDB });
+	generatedCode.clear();
+
+	//32 bits
+	Amd64Backend::orRegToReg(generatedCode, Registers::AX, Registers::AX, true);
+	arrayAssert(generatedCode, { 0x09, 0xC0 });
+	generatedCode.clear();
+
+	Amd64Backend::orRegToReg(generatedCode, Registers::AX, Registers::BX, true);
+	arrayAssert(generatedCode, { 0x09, 0xD8 });
+	generatedCode.clear();
+
+	Amd64Backend::orRegToReg(generatedCode, Registers::BX, Registers::AX, true);
+	arrayAssert(generatedCode, { 0x09, 0xC3 });
+	generatedCode.clear();
+
+	Amd64Backend::orRegToReg(generatedCode, Registers::BX, Registers::BX, true);
+	arrayAssert(generatedCode, { 0x09, 0xDB });
+	generatedCode.clear();
+}
+
+//Tests the notReg generator
+void testNotReg() {
+	std::vector<unsigned char> generatedCode;
+	Amd64Backend::notReg(generatedCode, Registers::AX);
+	arrayAssert(generatedCode, { 0x48, 0xF7, 0xD0 });
+	generatedCode.clear();
+
+	Amd64Backend::notReg(generatedCode, Registers::BX);
+	arrayAssert(generatedCode, { 0x48, 0xF7, 0xD3 } );
+	generatedCode.clear();
+
+	//32 bits
+	Amd64Backend::notReg(generatedCode, Registers::AX, true);
+	arrayAssert(generatedCode, { 0xF7, 0xD0 });
+	generatedCode.clear();
+
+	Amd64Backend::notReg(generatedCode, Registers::BX, true);
+	arrayAssert(generatedCode, { 0xF7, 0xD3 });
+	generatedCode.clear();
+}
+
 //Tests the compareRegToReg generator
 void testCompareRegToReg() {
 	std::vector<unsigned char> generatedCode;
@@ -436,6 +531,8 @@ int main() {
 	testSubIntFromReg();
 	testMultRegToReg();
 	testDivRegFromReg();
+	testAndRegToReg();
+	testOrRegToReg();
 	testCompareRegToReg();
 	std::cout << "All tests passed." << std::endl;
 	return 0;

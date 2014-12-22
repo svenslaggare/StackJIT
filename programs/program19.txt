@@ -1,0 +1,27 @@
+func bool_to_int(Bool) Int
+{
+   .locals 1
+
+   LDARG 0
+   PUSHTRUE
+   BNE 6
+
+   PUSH 1
+   STLOC 0
+   BR 8
+
+   PUSH 0
+   STLOC 0
+
+   LDLOC 0
+   RET
+}
+
+func main() Int
+{
+   PUSH 1337
+   PUSH 4711
+   CMPGE
+   CALL bool_to_int
+   RET
+}

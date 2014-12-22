@@ -90,6 +90,15 @@ namespace Amd64Backend {
 	//Divides the second register from the first
 	void divRegFromReg(CodeGen&, Registers, Registers, bool is32bits = false);
 
+	//AND's the second register to the first
+	void andRegToReg(CodeGen&, Registers, Registers, bool is32bits = false);
+
+	//OR's the second register to the first
+	void orRegToReg(CodeGen&, Registers, Registers, bool is32bits = false);
+
+	//NOT's the register
+	void notReg(CodeGen&, Registers, bool is32bits = false);
+
 	//Compares the two registers
 	void compareRegToReg(CodeGen&, Registers, Registers);
 

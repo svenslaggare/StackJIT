@@ -33,7 +33,7 @@ void generateArrayBoundsCheck(CodeGen& codeGen) {
     pushArray(codeGen, { 0x72, 10 + 2 }); //jb <after call>. By using an unsigned comparison, we only need one check.
 
     //If out of bounds, call the error func
-    Amd64Backend::moveLongToReg(codeGen, Registers::DI, (long)&rt_arrayOutOfBoundsError); //mov rdi, <addr of func>
+    Amd64Backend::moveLongToReg(codeGen, Registers::DI, (long)&Runtime::arrayOutOfBoundsError); //mov rdi, <addr of func>
     Amd64Backend::callInReg(codeGen, Registers::DI); //call rdi
 }
 
@@ -46,7 +46,7 @@ void generateNullCheck(CodeGen& codeGen) {
     pushArray(codeGen, { 0x75, 10 + 2 }); //jnz <after call>
 
     //If null, call the error func
-    Amd64Backend::moveLongToReg(codeGen, Registers::DI, (long)&rt_nullReferenceError); //mov rdi, <addr of func>
+    Amd64Backend::moveLongToReg(codeGen, Registers::DI, (long)&Runtime::nullReferenceError); //mov rdi, <addr of func>
     Amd64Backend::callInReg(codeGen, Registers::DI); //call rdi
 }
 
@@ -294,7 +294,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::POP:
         //Pop the value
-        Amd64Backend::popReg(generatedCode, Registers::AX); //pop eax
+        Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
         break;
     case OpCodes::ADD:
     case OpCodes::SUB:
@@ -302,8 +302,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::DIV:
         {
             //Pop 2 operands
-            Amd64Backend::popReg(generatedCode, Registers::CX); //pop ecx
-            Amd64Backend::popReg(generatedCode, Registers::AX); //pop eax
+            Amd64Backend::popReg(generatedCode, Registers::CX); //pop rcx
+            Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
             bool is32bits = false;
 
             //Apply the operator
@@ -325,7 +325,98 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             }
 
             //Push the result
-            Amd64Backend::pushReg(generatedCode, Registers::AX); //push eax
+            Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
+        }
+        break;
+    case OpCodes::PUSH_TRUE:
+        //Push the value
+        Amd64Backend::pushInt(generatedCode, 1); //push 1
+        break;
+    case OpCodes::PUSH_FALSE:
+        //Push the value
+        Amd64Backend::pushInt(generatedCode, 0); //push 0
+        break;
+    case OpCodes::AND:
+    case OpCodes::OR:
+        {
+            //Pop 2 operands
+            Amd64Backend::popReg(generatedCode, Registers::CX); //pop rcx
+            Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+            bool is32bits = false;
+
+            //Apply the operator
+            switch (inst.OpCode) {
+                case OpCodes::AND:
+                    Amd64Backend::andRegToReg(generatedCode, Registers::AX, Registers::CX, is32bits); //and eax, ecx
+                    break;
+                case OpCodes::OR:
+                    Amd64Backend::orRegToReg(generatedCode, Registers::AX, Registers::CX, is32bits); //or eax, ecx
+                    break;
+                default:
+                    break;
+            }
+
+            //Push the result
+            Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
+        }
+        break;
+    case OpCodes::NOT:
+        //Pop 1 operand
+        Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+
+        //NOT the value
+        Amd64Backend::notReg(generatedCode, Registers::AX); //not rax
+
+        //Push the result
+        Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
+        break;
+    case OpCodes::CMPEQ:
+    case OpCodes::CMPNE:
+    case OpCodes::CMPGT:
+    case OpCodes::CMPGE:
+    case OpCodes::CMPLT:
+    case OpCodes::CMPLE:
+        {
+            //Pop 2 operands
+            Amd64Backend::popReg(generatedCode, Registers::CX); //pop rcx
+            Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+
+            //Compare
+            Amd64Backend::compareRegToReg(generatedCode, Registers::AX, Registers::CX); //cmp rax, rcx
+
+            //Jump
+            int target = 5 + 5;
+            int start = generatedCode.size();
+
+            switch (inst.OpCode) {
+                case OpCodes::CMPEQ:
+                    Amd64Backend::jumpEqual(generatedCode, target);
+                    break;
+                case OpCodes::CMPNE:
+                    Amd64Backend::jumpNotEqual(generatedCode, target);
+                    break;
+                case OpCodes::CMPGT:
+                    Amd64Backend::jumpGreaterThan(generatedCode, target);
+                    break;
+                case OpCodes::CMPGE:
+                    Amd64Backend::jumpGreaterThanOrEqual(generatedCode, target);
+                    break;
+                case OpCodes::CMPLT:
+                    Amd64Backend::jumpLessThan(generatedCode, target);
+                    break;
+                case OpCodes::CMPLE:
+                    Amd64Backend::jumpLessThanOrEqual(generatedCode, target);
+                    break;
+                default:
+                    break;
+            }
+
+            //False
+            Amd64Backend::pushInt(generatedCode, 0);
+            Amd64Backend::jump(generatedCode, 5);
+
+            //True
+            Amd64Backend::pushInt(generatedCode, 1);
         }
         break;
     case OpCodes::LOAD_LOCAL:
@@ -355,9 +446,9 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         }
         break;
     case OpCodes::CALL:
-        {
+        {   
             //Call the pushFunc runtime function
-            Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&rt_pushFunc);
+            Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&Runtime::pushFunc);
             Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)&function); //Address of the func handle as the target as first arg
             Amd64Backend::moveLongToReg(generatedCode, Registers::SI, instIndex); //Current inst index as second arg
             Amd64Backend::callInReg(generatedCode, Registers::AX);
@@ -367,6 +458,23 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
             auto funcToCall = vmState.functionTable.at(inst.StrValue);
             int numArgs = funcToCall.arguments().size();
+
+            //Set the function arguments
+            if (numArgs >= 4) {
+                Amd64Backend::popReg(generatedCode, Registers::CX); //pop rcx
+            }
+
+            if (numArgs >= 3) {
+                Amd64Backend::popReg(generatedCode, Registers::DX); //pop rdx
+            }
+
+            if (numArgs >= 2) {
+                Amd64Backend::popReg(generatedCode, Registers::SI); //pop rsi
+            }
+
+            if (numArgs >= 1) {
+                Amd64Backend::popReg(generatedCode, Registers::DI); //pop rdi
+            }
 
             //Check if the function entry point is defined yet
             if (funcToCall.entryPoint() != 0) {
@@ -386,23 +494,6 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             //Move the address of the call to rax
             Amd64Backend::moveLongToReg(generatedCode, Registers::AX, funcAddr); //mov rax, <addr>
 
-            //Set the function arguments
-            if (numArgs >= 4) {
-                Amd64Backend::popReg(generatedCode, Registers::CX); //pop rcx
-            }
-
-            if (numArgs >= 3) {
-                Amd64Backend::popReg(generatedCode, Registers::DX); //pop rdx
-            }
-
-            if (numArgs >= 2) {
-                Amd64Backend::popReg(generatedCode, Registers::SI); //pop rsi
-            }
-
-            if (numArgs >= 1) {
-                Amd64Backend::popReg(generatedCode, Registers::DI); //pop rdi
-            }
-
             //Make the call
             Amd64Backend::callInReg(generatedCode, Registers::AX); //call rax
 
@@ -414,7 +505,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         {
             //If debug is enabled, print the stack frame before return
             if (vmState.enableDebug && vmState.printStackFrame) {
-                Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&rt_printStackFrame);
+                Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&Runtime::printStackFrame);
                 Amd64Backend::moveRegToReg(generatedCode, Registers::DI, Registers::BP); //BP as the first argument
                 Amd64Backend::moveLongToReg(generatedCode, Registers::SI, (long)&function); //Address of the function as second argument
                 Amd64Backend::callInReg(generatedCode, Registers::AX);
@@ -422,7 +513,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
             //Call the popFunc runtime function
             if (function.name() != "main") {
-                Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&rt_popFunc);
+                Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&Runtime::popFunc);
                 Amd64Backend::callInReg(generatedCode, Registers::AX);
             }
 
@@ -517,7 +608,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             Amd64Backend::popReg(generatedCode, Registers::SI); //pop rsi
 
             //Call the newArray runtime function
-            Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&rt_newArray);
+            Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&Runtime::newArray);
             Amd64Backend::callInReg(generatedCode, Registers::AX);
 
             //Push the returned pointer
@@ -582,21 +673,21 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         Amd64Backend::moveMemoryByRegToReg(generatedCode, Registers::AX, Registers::AX, true); //mov eax, [rax]
 
         //Push the size
-        Amd64Backend::pushReg(generatedCode, Registers::AX); //push eax
+        Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
         break;
     case OpCodes::NEW_OBJECT:
         {
             auto structType = vmState.getType(inst.StrValue);
 
             //Call the garbageCollect runtime function
-            Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&rt_garbageCollect);
-            Amd64Backend::moveRegToReg(generatedCode, Registers::DI, Registers::BP); //BP as the first argument
-            Amd64Backend::moveLongToReg(generatedCode, Registers::SI, (long)&function); //Address of the function as second argument
-            Amd64Backend::moveLongToReg(generatedCode, Registers::DX, instIndex); //Current inst index as third argument
-            Amd64Backend::callInReg(generatedCode, Registers::AX);
+            // Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&Runtime::garbageCollect);
+            // Amd64Backend::moveRegToReg(generatedCode, Registers::DI, Registers::BP); //BP as the first argument
+            // Amd64Backend::moveLongToReg(generatedCode, Registers::SI, (long)&function); //Address of the function as second argument
+            // Amd64Backend::moveLongToReg(generatedCode, Registers::DX, instIndex); //Current inst index as third argument
+            // Amd64Backend::callInReg(generatedCode, Registers::AX);
 
             //Call the newObject runtime function
-            Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&rt_newObject);
+            Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&Runtime::newObject);
             Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)structType); //The pointer to the type as the first arg
             Amd64Backend::callInReg(generatedCode, Registers::AX);
 
