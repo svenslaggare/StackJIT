@@ -124,13 +124,19 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
 
     auto& function = functionData.function;
     function.instructionOperandTypes = functionData.instructionOperandTypes;
+    function.postInstructionOperandTypes = functionData.postInstructionOperandTypes;
 
     //Save the base pointer
     Amd64Backend::pushReg(function.generatedCode, Registers::BP); //push rbp
     Amd64Backend::moveRegToReg(function.generatedCode, Registers::BP, Registers::SP); //mov rbp, rbp
 
-    //Calculate the size of the stack
-    int stackSize = (function.numArgs() + function.numLocals() + functionData.operandStackSize) * Amd64Backend::REG_SIZE;
+    //Calculate the size of the stack aligned to 16 bytes
+    int neededStackSize = (function.numArgs() + function.numLocals() + functionData.operandStackSize) * Amd64Backend::REG_SIZE;
+    int stackSize = ((neededStackSize + 15) / 16) * 16;
+
+    //std::cout << neededStackSize << "/" << stackSize << std::endl;
+
+    function.setStackSize(stackSize);
 
     if (stackSize > 0) {
         //Make room for the variables on the stack

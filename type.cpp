@@ -123,7 +123,7 @@ Type* TypeSystem::makeTypeFromString(std::string typeName) {
 	return nullptr;
 }
 
-bool TypeSystem::isPrimitiveType(Type* type, PrimitiveTypes primitiveType) {
+bool TypeSystem::isPrimitiveType(const Type* type, PrimitiveTypes primitiveType) {
 	if (type != nullptr) {
 		switch (primitiveType) {
 			case PrimitiveTypes::Integer:
@@ -136,7 +136,7 @@ bool TypeSystem::isPrimitiveType(Type* type, PrimitiveTypes primitiveType) {
 	return false;
 }
 
-bool TypeSystem::isReferenceType(Type* type) {
+bool TypeSystem::isReferenceType(const Type* type) {
 	if (type == nullptr) {
 		return false;
 	}
@@ -144,7 +144,7 @@ bool TypeSystem::isReferenceType(Type* type) {
 	return type->name().find("Ref.") != std::string::npos;
 }
 
-bool TypeSystem::isArray(Type* type) {
+bool TypeSystem::isArray(const Type* type) {
 	if (type == nullptr) {
 		return false;
 	}
@@ -152,7 +152,7 @@ bool TypeSystem::isArray(Type* type) {
 	return type->name().find("Ref.Array") != std::string::npos;
 }
 
-bool TypeSystem::isStruct(Type* type) {
+bool TypeSystem::isStruct(const Type* type) {
 	if (type == nullptr) {
 		return false;
 	}

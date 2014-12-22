@@ -74,6 +74,9 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
     std::vector<InstructionTypes> instructionsOperandTypes;
     instructionsOperandTypes.reserve(numInsts);
 
+    std::vector<InstructionTypes> postInstructionsOperandTypes;
+    postInstructionsOperandTypes.reserve(numInsts);
+
     //Set the local type if set
     std::vector<Type*> locals(func.numLocals());
 
@@ -486,6 +489,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
             }
         }
 
+        postInstructionsOperandTypes.push_back(operandStack);
         index++;
     }
 
@@ -545,5 +549,9 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
         if (instTypes.size() > funcData.operandStackSize) {
             funcData.operandStackSize = instTypes.size();
         }
+    }
+
+    for (auto instTypes : postInstructionsOperandTypes) {
+        funcData.postInstructionOperandTypes.push_back(asVector(instTypes));
     }
 }

@@ -10,6 +10,7 @@ private:
 	unsigned char* handle;
 	std::size_t objSize;
 	Type* type;
+	bool mIsMarked = false;
 public:	
 	ObjectHandle(unsigned char* handle, std::size_t objSize, Type* type);
 
@@ -24,6 +25,15 @@ public:
 
 	//Returns the handle
 	const unsigned char* getHandle() const;
+
+	//Indicates if the object is marked
+	bool isMarked() const;
+
+	//Marks the current object
+	void mark();
+
+	//Unmarks the current object
+	void unmark();
 };
 
 //Represents an array handle

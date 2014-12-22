@@ -16,10 +16,13 @@ private:
 	Type* mReturnType;
 
 	std::vector<Type*> mLocalTypes;
+
+	int mStackSize;
 public:
 	std::vector<Instruction> instructions;
 	std::vector<unsigned char> generatedCode;
 	std::vector<std::deque<Type*>> instructionOperandTypes;	
+	std::vector<std::deque<Type*>> postInstructionOperandTypes;	
 
 	//Creates a new function
 	Function(std::string name, std::vector<Type*> arguments, Type* returnType);
@@ -35,6 +38,9 @@ public:
 	void setNumLocals(int count);
 	Type* getLocal(int index) const;
 	void setLocal(int index, Type* type);
+
+	int stackSize() const;
+	void setStackSize(int size);
 };
 
 //Represents a program

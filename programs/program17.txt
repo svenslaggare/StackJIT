@@ -78,24 +78,39 @@ func main3(Ref.Struct.Point) Int
 	PUSH 1337
 	PUSH 4711
 
-	#NEWOBJ Ref.Struct.Point
-	CALL createObj
+	NEWOBJ Ref.Struct.Point
+	#CALL createObj
 	STLOC 0
 
 	ADD
 	RET
 }
 
-func main() Int
-{
+func allocObj() Void {
 	.locals 1
 	.local 0 Ref.Struct.Point
 
 	NEWOBJ Ref.Struct.Point
 	STLOC 0
+	RET
+}
+
+func main() Int
+{
+	.locals 2
+	.local 0 Ref.Struct.Point
+	.local 1 Int
+
+	CALL allocObj()
+
+	NEWOBJ Ref.Struct.Point
 
 	NEWOBJ Ref.Struct.Point
 	CALL main3
+	STLOC 1
 
+	STLOC 0
+
+	LDLOC 1
 	RET
 }

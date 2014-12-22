@@ -71,16 +71,16 @@ namespace TypeSystem {
 	Type* makeTypeFromString(std::string typeName);
 
 	//Indicates if the given type is of the given primitive type
-	bool isPrimitiveType(Type* type, PrimitiveTypes primitiveType);
+	bool isPrimitiveType(const Type* type, PrimitiveTypes primitiveType);
 
 	//Indicates if the given type is a reference type
-	bool isReferenceType(Type* type);
+	bool isReferenceType(const Type* type);
 
 	//Indicates if the given type is an array
-	bool isArray(Type* type);
+	bool isArray(const Type* type);
 
 	//Indicates if the given type is a struct
-	bool isStruct(Type* type);
+	bool isStruct(const Type* type);
 
 	//Returns the size (in bytes) for the given primitive type
 	std::size_t getSize(PrimitiveTypes primitiveType);

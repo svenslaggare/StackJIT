@@ -66,11 +66,12 @@ int main(int argc, char* argv[]) {
     std::cout << res << std::endl;
 
     //Free objects
-    for (auto obj : vmState.getObjects()) {
+    for (auto objEntry : vmState.getObjects()) {
         if (vmState.enableDebug) {
             //std::cout << "Freed object (" << obj->getSize() << " bytes) at 0x" << std::hex << (long)(obj->getHandle()) << std::dec << std::endl;
         }
 
+        auto obj = objEntry.second;
         obj->deleteHandle();
         delete obj;
     }

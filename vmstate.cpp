@@ -47,12 +47,18 @@ VMState::~VMState() {
     }
 }
 
-const std::vector<ObjectHandle*>& VMState::getObjects() const {
+const std::unordered_map<const unsigned char*, ObjectHandle*>& VMState::getObjects() const {
     return mObjects;
 }
 
 void VMState::newObject(ObjectHandle* handle) {
-    mObjects.push_back(handle);
+    mObjects.insert({ handle->getHandle(), handle });
+}
+
+void VMState::deleteObject(ObjectHandle* handle) {
+    mObjects.erase(handle->getHandle());
+    handle->deleteHandle();
+    delete handle;
 }
 
 const std::deque<CallStackEntry>& VMState::callStack() const {

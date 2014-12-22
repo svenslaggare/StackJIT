@@ -12,14 +12,16 @@ class Type;
 
 typedef int (*JitFunction)();
 typedef std::pair<std::string, unsigned int> FunctionCall;
+typedef std::pair<unsigned int, unsigned int> BranchTarget;
 
 //Contains compilation data for a function
 struct FunctionCompilationData {
 	struct Function& function; 															 //The function being jitted
-	std::unordered_map<unsigned int, std::pair<unsigned int, unsigned int>> branchTable; //Branch sources and inst targets
+	std::unordered_map<unsigned int, BranchTarget> branchTable; 						 //Branch sources and inst targets
 	std::vector<unsigned int> instructionNumMapping;									 //Mapping from instruction num to native instruction
 	std::map<FunctionCall, std::string> callTable;										 //The called functions
 	std::vector<std::deque<Type*>> instructionOperandTypes;							 	 //The types of the operands for the instruction
+	std::vector<std::deque<Type*>> postInstructionOperandTypes;							 //The types of the operands after an instruction has been executed
 	int operandStackSize;																 //The size of the operand stack
 
 	FunctionCompilationData(struct Function& function)

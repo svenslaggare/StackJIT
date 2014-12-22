@@ -51,7 +51,7 @@ class VMState {
 private:
 	std::unordered_map<std::string, Type*> types;
 	std::unordered_map<std::string, StructMetadata> structsMetadata;
-	std::vector<ObjectHandle*> mObjects;
+	std::unordered_map<const unsigned char*, ObjectHandle*> mObjects;
 	std::deque<CallStackEntry> mCallStack;
 public:
 	//Indicates if debugging is enabled
@@ -71,10 +71,13 @@ public:
 	~VMState();
 
     //Returns the handles for the allocated objects
-    const std::vector<ObjectHandle*>& getObjects() const;
+    const std::unordered_map<const unsigned char*, ObjectHandle*>& getObjects() const;
 
     //Adds the given handle to the list of objects
     void newObject(ObjectHandle* handle);
+
+    //Deletes the given object
+    void deleteObject(ObjectHandle* handle);
 
     //Returns the call stack
     const std::deque<CallStackEntry>& callStack() const;

@@ -22,6 +22,18 @@ const unsigned char* ObjectHandle::getHandle() const {
 	return handle;
 }
 
+bool ObjectHandle::isMarked() const {
+	return mIsMarked;
+}
+
+void ObjectHandle::mark() {
+	mIsMarked = true;
+}
+
+void ObjectHandle::unmark() {
+	mIsMarked = false;
+}
+
 ArrayHandle::ArrayHandle(unsigned char* handle, std::size_t objSize, Type* type, int length)
 	: ObjectHandle(handle, objSize, type), length(length) {
 
