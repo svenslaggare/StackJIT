@@ -176,14 +176,14 @@ std::size_t TypeSystem::getSize(PrimitiveTypes primitiveType) {
 	}
 }
 
-std::size_t TypeSystem::sizeOfType(Type* type) {
+std::size_t TypeSystem::sizeOfType(const Type* type) {
 	auto typeName = type->name();
 
 	if (typeName == "Int") {
 		return TypeSystem::getSize(PrimitiveTypes::Integer);
-	}
-
-	if (TypeSystem::isReferenceType(type)) {
+	} else if (typeName == "Bool") {
+		return TypeSystem::getSize(PrimitiveTypes::Bool);
+	} else if (TypeSystem::isReferenceType(type)) {
 		return sizeof(long);
 	}
 

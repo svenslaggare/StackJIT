@@ -7,6 +7,7 @@
 #include "instructions.h"
 #include "codegenerator.h"
 #include "program.h"
+#include "function.h"
 #include "typechecker.h"
 #include "type.h"
 #include "vmstate.h"
@@ -299,11 +300,15 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                     int numArgs = funcParams.size();
 
                     if (numArgs >= 0 && numArgs <= 4) {
-                        //Create a new function        
-                        Function* newFunc = new Function(funcName, funcParams, returnType);
-                        program.functions[funcName] = newFunc;
+                        if (program.functions.count(funcName) == 0 && vmState.functionTable.count(funcName) == 0) {
+                            //Create a new function        
+                            Function* newFunc = new Function(funcName, funcParams, returnType);
+                            program.functions[funcName] = newFunc;
 
-                        currentFunc = newFunc;
+                            currentFunc = newFunc;
+                        } else {
+                            throw std::runtime_error("The function '" + funcName + "' is already defined.");
+                        }
                     } else {
                         throw std::runtime_error("Maximum four arguments are supported.");
                     }

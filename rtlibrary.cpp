@@ -5,7 +5,7 @@
 #include "amd64.h"
 #include "objects.h"
 #include "vmstate.h"
-#include "program.h"
+#include "function.h"
 #include "type.h"
 #include "codegenerator.h"
 

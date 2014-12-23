@@ -1,7 +1,7 @@
 CC=clang++
 CFLAGS=-c -std=c++11
 LDFLAGS=
-SOURCES=stackjit.cpp vmstate.cpp rtlibrary.cpp instructions.cpp program.cpp parser.cpp standardlibrary.cpp codegenerator.cpp type.cpp typechecker.cpp amd64.cpp objects.cpp structmetadata.cpp
+SOURCES=stackjit.cpp vmstate.cpp rtlibrary.cpp instructions.cpp program.cpp function.cpp parser.cpp standardlibrary.cpp codegenerator.cpp type.cpp typechecker.cpp amd64.cpp objects.cpp structmetadata.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 HEADERS=$(SOURCES:.cpp=.h)
 EXECUTABLE=stackjit

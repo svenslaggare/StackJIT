@@ -1,6 +1,7 @@
 #include "vmstate.h"
 #include "type.h"
 #include "program.h"
+#include <sys/mman.h>
 
 FunctionDefinition::FunctionDefinition(std::vector<Type*> arguments, Type* returnType, long entryPoint, int funcSize)
     : mArguments(arguments), mReturnType(returnType), mEntryPoint(entryPoint), mFunctionSize(funcSize), mIsManaged(true) {
@@ -12,7 +13,10 @@ FunctionDefinition::FunctionDefinition(std::vector<Type*> arguments, Type* retur
 
 }
 
-FunctionDefinition::FunctionDefinition() {}
+FunctionDefinition::FunctionDefinition()
+    : mEntryPoint(0), mFunctionSize(0), mIsManaged(false), mReturnType(nullptr) {
+
+}
 
 void FunctionDefinition::setFunctionBody(long entryPoint, int functionSize) {
     if (mIsManaged) {
@@ -21,7 +25,7 @@ void FunctionDefinition::setFunctionBody(long entryPoint, int functionSize) {
     }
 }
 
-Type* const FunctionDefinition::returnType() const {
+Type* FunctionDefinition::returnType() const {
     return mReturnType;
 }
 
@@ -39,6 +43,12 @@ long FunctionDefinition::entryPoint() const {
 
 int FunctionDefinition::functionSize() const {
     return mFunctionSize;
+}
+
+void FunctionDefinition::deleteFunction() {
+    if (functionSize() > 0) {
+        munmap((unsigned char*)entryPoint(), functionSize());
+    }
 }
 
 VMState::~VMState() {
@@ -100,7 +110,7 @@ void VMState::addStructMetadata(std::string structName, StructMetadata structMet
     }
 }
 
-const StructMetadata* const VMState::getStructMetadata(std::string structName) const {
+const StructMetadata* VMState::getStructMetadata(std::string structName) const {
     if (structsMetadata.count(structName) > 0) {
         return &structsMetadata.at(structName);
     } else {

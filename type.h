@@ -87,7 +87,7 @@ namespace TypeSystem {
 	std::size_t getSize(PrimitiveTypes primitiveType);
 
 	//Returns the size (in bytes) for the given type
-	std::size_t sizeOfType(Type* type);
+	std::size_t sizeOfType(const Type* type);
 
 	//Gets the struct and field from the given string
 	bool getStructAndField(std::string str, std::pair<std::string, std::string>& res);

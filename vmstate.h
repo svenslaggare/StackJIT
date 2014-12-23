@@ -29,7 +29,7 @@ public:
 	FunctionDefinition();
 
 	//Returns the type of the return value
-	Type* const returnType() const;
+	Type* returnType() const;
 
 	//Returns the types of the arguments
 	const std::vector<Type*>& arguments() const;
@@ -40,8 +40,14 @@ public:
 	//Indicates if the function is implemented in managed code
 	bool isManaged() const;
 
+	//The entry point
 	long entryPoint() const;
+
+	//The size of the function
 	int functionSize() const;
+
+	//Frees the allocted memory for the function (if mananaged)
+	void deleteFunction();
 };
 
 //Represents the state of the VM
@@ -98,5 +104,5 @@ public:
     void addStructMetadata(std::string structName, StructMetadata structMetadata);
 
     //Returns the metadata for the given struct
-    const StructMetadata* const getStructMetadata(std::string structName) const;
+    const StructMetadata* getStructMetadata(std::string structName) const;
 };

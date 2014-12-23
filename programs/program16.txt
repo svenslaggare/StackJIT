@@ -1,30 +1,10 @@
-func abs(Int) Int
-{
-   .locals 1
-   .local 0 Int
-
-   PUSH 0
-   STLOC 0
-   PUSH 0
-   LDARG 0
-   BGE 10
-   PUSH 0
-   LDARG 0
-   SUB
-   STLOC 0
-   BR 12
-   LDARG 0
-   STLOC 0
-   LDLOC 0
-   RET
-}
-
 func main() Int
 {
    .locals 1
    PUSH 0
    PUSH 5
    SUB
+   CALL abs
    STLOC 0
 
    LDLOC 0

@@ -12,10 +12,16 @@
 #include "vmstate.h"
 #include "rtlibrary.h"
 #include "program.h"
+#include "function.h"
 #include "instructions.h"
 #include "parser.h"
 #include "standardlibrary.h"
 #include "amd64.h"
+
+FunctionCompilationData::FunctionCompilationData(Function& function)
+    : function(function), operandStackSize(0) {
+
+}
 
 void pushArray(std::vector<unsigned char>& dest, const std::vector<unsigned char>& values) {
     for (auto current : values) {

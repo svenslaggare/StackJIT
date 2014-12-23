@@ -6,7 +6,7 @@
 
 class VMState;
 struct Program;
-struct Function;
+class Function;
 struct Instruction;
 class Type;
 
@@ -16,7 +16,7 @@ typedef std::pair<unsigned int, unsigned int> BranchTarget;
 
 //Contains compilation data for a function
 struct FunctionCompilationData {
-	struct Function& function; 															 //The function being jitted
+	Function& function; 															 	 //The function being jitted
 	std::unordered_map<unsigned int, BranchTarget> branchTable; 						 //Branch sources and inst targets
 	std::vector<unsigned int> instructionNumMapping;									 //Mapping from instruction num to native instruction
 	std::map<FunctionCall, std::string> callTable;										 //The called functions
@@ -24,11 +24,8 @@ struct FunctionCompilationData {
 	std::vector<std::deque<Type*>> postInstructionOperandTypes;							 //The types of the operands after an instruction has been executed
 	int operandStackSize;																 //The size of the operand stack
 
-	FunctionCompilationData(struct Function& function)
-		: function(function), operandStackSize(0)
-	{
-
-	}
+	//Holds compilation data for the given function
+	FunctionCompilationData(Function& function);
 };
 
 //The code generator

@@ -4,9 +4,18 @@
 
 class VMState;
 
-int std_abs(int x);
-void std_print(int x);
-void std_println(int x);
+namespace StandardLibrary {
+	int abs(int x);
 
-//Adds the standard library to the given VM state
-void addStandardLibrary(VMState& vmState);
+	//Prints the given integer
+	void print(int x);
+
+	//Prints the given integer followed by a line break
+	void println(int x);
+
+	//Prints the given char
+	void printchar(int x);
+
+	//Adds the standard library to the given VM state
+	void add(VMState& vmState);
+}

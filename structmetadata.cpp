@@ -10,7 +10,7 @@ StructMetadata::StructMetadata() {
 
 }
 
-Type* const StructMetadata::getField(std::string fieldName) const {
+Type* StructMetadata::getField(std::string fieldName) const {
 	if (fields.count(fieldName) > 0) {
 		return fields.at(fieldName);
 	} else {

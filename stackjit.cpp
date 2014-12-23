@@ -1,7 +1,6 @@
 #include <iostream>
 #include <vector>
 #include <string.h>
-#include <sys/mman.h>
 
 #include "amd64.h"
 #include "program.h"
@@ -41,7 +40,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    addStandardLibrary(vmState);
+    StandardLibrary::add(vmState);
 
     //Tokenize the input
     auto tokens = Parser::tokenize(std::cin);
@@ -79,11 +78,7 @@ int main(int argc, char* argv[]) {
     //Unmap function code memory
     for (auto funcEntry : vmState.functionTable) {
         auto func = funcEntry.second;
-
-        //Defined function have size > 0
-        if (func.functionSize() > 0) {
-            munmap((unsigned char*)func.entryPoint(), func.functionSize());
-        }
+        func.deleteFunction();
     }
 
     return 0;

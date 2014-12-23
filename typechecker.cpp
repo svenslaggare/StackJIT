@@ -6,6 +6,7 @@
 #include "vmstate.h"
 #include "codegenerator.h"
 #include "program.h"
+#include "function.h"
 #include "instructions.h"
 #include "type.h"
 #include "structmetadata.h"
@@ -559,10 +560,6 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
 
     //Check that the branches are valid
     for (auto branch : branches) {
-        // if (branch.source == branch.target) {
-        //     typeError(index, "Source and target cannot be the same for a branch.");
-        // }
-
         auto postSourceTypes = branch.branchTypes;
         auto preTargetTypes = instructionsOperandTypes[branch.target];
 
