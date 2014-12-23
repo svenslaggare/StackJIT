@@ -9,6 +9,7 @@
 #include "standardlibrary.h"
 #include "codegenerator.h"
 #include "vmstate.h"
+#include "objects.h"
 
 //The global state for the VM
 VMState vmState;
@@ -16,6 +17,7 @@ VMState vmState;
 int main(int argc, char* argv[]) {
     Program program;
 
+    //Switches
     for (int i = 1; i < argc; i++) {
         std::string switchStr = argv[i];
 
@@ -78,7 +80,7 @@ int main(int argc, char* argv[]) {
     //Unmap function code memory
     for (auto funcEntry : vmState.functionTable) {
         auto func = funcEntry.second;
-        func.deleteFunction();
+        func.deleteCodeMemory();
     }
 
     return 0;

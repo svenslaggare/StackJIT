@@ -376,12 +376,12 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         //Push the result
         Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
         break;
-    case OpCodes::CMPEQ:
-    case OpCodes::CMPNE:
-    case OpCodes::CMPGT:
-    case OpCodes::CMPGE:
-    case OpCodes::CMPLT:
-    case OpCodes::CMPLE:
+    case OpCodes::COMPARE_EQUAL:
+    case OpCodes::COMPARE_NOT_EQUAL:
+    case OpCodes::COMPARE_GREATER_THAN:
+    case OpCodes::COMPARE_GREATER_THAN_OR_EQUAL:
+    case OpCodes::COMPARE_LESS_THAN:
+    case OpCodes::COMPARE_LESS_THAN_OR_EQUAL:
         {
             //Pop 2 operands
             Amd64Backend::popReg(generatedCode, Registers::CX); //pop rcx
@@ -395,22 +395,22 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             int start = generatedCode.size();
 
             switch (inst.OpCode) {
-                case OpCodes::CMPEQ:
+                case OpCodes::COMPARE_EQUAL:
                     Amd64Backend::jumpEqual(generatedCode, target);
                     break;
-                case OpCodes::CMPNE:
+                case OpCodes::COMPARE_NOT_EQUAL:
                     Amd64Backend::jumpNotEqual(generatedCode, target);
                     break;
-                case OpCodes::CMPGT:
+                case OpCodes::COMPARE_GREATER_THAN:
                     Amd64Backend::jumpGreaterThan(generatedCode, target);
                     break;
-                case OpCodes::CMPGE:
+                case OpCodes::COMPARE_GREATER_THAN_OR_EQUAL:
                     Amd64Backend::jumpGreaterThanOrEqual(generatedCode, target);
                     break;
-                case OpCodes::CMPLT:
+                case OpCodes::COMPARE_LESS_THAN:
                     Amd64Backend::jumpLessThan(generatedCode, target);
                     break;
-                case OpCodes::CMPLE:
+                case OpCodes::COMPARE_LESS_THAN_OR_EQUAL:
                     Amd64Backend::jumpLessThanOrEqual(generatedCode, target);
                     break;
                 default:

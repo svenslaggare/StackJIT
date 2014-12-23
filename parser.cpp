@@ -97,12 +97,12 @@ std::unordered_map<std::string, OpCodes> noOperandsInstructions
     { "and", OpCodes::AND },
     { "or", OpCodes::OR },
     { "not", OpCodes::NOT },
-    { "cmpeq", OpCodes::CMPEQ },
-    { "cmpne", OpCodes::CMPNE },
-    { "cmpgt", OpCodes::CMPGT },
-    { "cmpge", OpCodes::CMPGE },
-    { "cmplt", OpCodes::CMPLT },
-    { "cmple", OpCodes::CMPLE },
+    { "cmpeq", OpCodes::COMPARE_EQUAL },
+    { "cmpne", OpCodes::COMPARE_NOT_EQUAL },
+    { "cmpgt", OpCodes::COMPARE_GREATER_THAN },
+    { "cmpge", OpCodes::COMPARE_GREATER_THAN_OR_EQUAL },
+    { "cmplt", OpCodes::COMPARE_LESS_THAN },
+    { "cmple", OpCodes::COMPARE_LESS_THAN_OR_EQUAL },
     { "pushnull", OpCodes::PUSH_NULL },
     { "ldlen", OpCodes::LOAD_ARRAY_LENGTH },
     { "ret", OpCodes::RET },
@@ -134,7 +134,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
     bool isFuncDef = false;
     std::string funcName;
     bool isFuncParams = false;
-    std::vector<Type*> funcParams {};
+    std::vector<const Type*> funcParams {};
     bool localsSet = false;
 
     Function* currentFunc = nullptr;
@@ -142,7 +142,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
     bool isStruct = false;
     bool isStructBody = false;
     std::string structName;
-    std::map<std::string, Type*> structFields;
+    std::map<std::string, const Type*> structFields;
 
     for (int i = 0; i < tokens.size(); i++) {
         std::string current = tokens[i];
@@ -152,17 +152,17 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
             if (currentToLower == "push") {
                 assertTokenCount(tokens, i, 1);
                 int value = stoi(tokens[i + 1]);
-                currentFunc->instructions.push_back(makeInstWithInt(OpCodes::PUSH_INT, value));
+                currentFunc->instructions.push_back(Instructions::makeWithInt(OpCodes::PUSH_INT, value));
             }
 
             if (noOperandsInstructions.count(currentToLower) > 0) {
-                currentFunc->instructions.push_back(makeInstruction(noOperandsInstructions[currentToLower]));
+                currentFunc->instructions.push_back(Instructions::make(noOperandsInstructions[currentToLower]));
             }
 
             if (strOperandInstructions.count(currentToLower) > 0) {
                 assertTokenCount(tokens, i, 1);
                 std::string value = tokens[i + 1];
-                currentFunc->instructions.push_back(makeInstWithStr(strOperandInstructions[currentToLower], value));
+                currentFunc->instructions.push_back(Instructions::makeWithStr(strOperandInstructions[currentToLower], value));
             }
 
             if (currentToLower == ".locals") {
@@ -212,7 +212,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                 auto opCode = currentToLower == "ldloc" ? OpCodes::LOAD_LOCAL : OpCodes::STORE_LOCAL;
 
                 if (local >= 0 && local < currentFunc->numLocals()) {
-                    currentFunc->instructions.push_back(makeInstWithInt(opCode, local));
+                    currentFunc->instructions.push_back(Instructions::makeWithInt(opCode, local));
                 } else {
                     throw std::runtime_error("The local index is out of range.");
                 }
@@ -221,7 +221,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
             if (currentToLower == "call") {
                 assertTokenCount(tokens, i, 1);
                 std::string funcName = tokens[i + 1];
-                currentFunc->instructions.push_back(makeCall(funcName));
+                currentFunc->instructions.push_back(Instructions::makeCall(funcName));
             }
 
             if (currentToLower == "ldarg") {
@@ -229,7 +229,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                 int argNum = stoi(tokens[i + 1]);
 
                 if (argNum >= 0 && argNum < currentFunc->numArgs()) {
-                    currentFunc->instructions.push_back(makeInstWithInt(OpCodes::LOAD_ARG, argNum));
+                    currentFunc->instructions.push_back(Instructions::makeWithInt(OpCodes::LOAD_ARG, argNum));
                 } else {
                     throw std::runtime_error("The argument index is out of range.");
                 }
@@ -238,13 +238,13 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
             if (currentToLower == "br") {
                 assertTokenCount(tokens, i, 1);
                 int target = stoi(tokens[i + 1]);
-                currentFunc->instructions.push_back(makeInstWithInt(OpCodes::BR, target));
+                currentFunc->instructions.push_back(Instructions::makeWithInt(OpCodes::BR, target));
             }
 
             if (branchInstructions.count(currentToLower) > 0) {
                 assertTokenCount(tokens, i, 1);
                 int target = stoi(tokens[i + 1]);
-                currentFunc->instructions.push_back(makeInstWithInt(branchInstructions[currentToLower], target));
+                currentFunc->instructions.push_back(Instructions::makeWithInt(branchInstructions[currentToLower], target));
             }
         }
 

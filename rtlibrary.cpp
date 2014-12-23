@@ -125,20 +125,20 @@ void Runtime::printAliveObjects(long* basePtr, Function* func, int instIndex, st
 }
 
 void printObject(ObjectHandle* handle) {
-    std::cout << (long)handle->getHandle() << ": " << handle->getSize() << " bytes (" << handle->getType()->name() << ")" << std::endl;
+    std::cout << (long)handle->handle() << ": " << handle->size() << " bytes (" << handle->type()->name() << ")" << std::endl;
 }
 
 void Runtime::markObject(ObjectHandle* handle) {
     if (!handle->isMarked()) {
-        if (TypeSystem::isArray(handle->getType())) {
+        if (TypeSystem::isArray(handle->type())) {
             handle->mark();
-        } else if (TypeSystem::isStruct(handle->getType())) {
+        } else if (TypeSystem::isStruct(handle->type())) {
             handle->mark();
         }
     }
 }
 
-void Runtime::markValue(long value, Type* type) {
+void Runtime::markValue(long value, const Type* type) {
     unsigned char* objPtr = (unsigned char*)value;
 
     if (TypeSystem::isReferenceType(type) && vmState.getObjects().count(objPtr) > 0) {

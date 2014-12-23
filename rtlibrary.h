@@ -23,7 +23,7 @@ namespace Runtime {
 	void markObject(ObjectHandle* handle);
 
 	//Marks the given value
-	void markValue(long value, Type* type);
+	void markValue(long value, const Type* type);
 
 	//Marks all the objects
 	void markObjects(long* basePtr, Function* func, int instIndex);

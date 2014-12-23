@@ -1,25 +1,28 @@
 #include "objects.h"
 
-ObjectHandle::ObjectHandle(unsigned char* handle, std::size_t objSize, Type* type)
-	: handle(handle), objSize(objSize), type(type) {
-
+ObjectHandle::ObjectHandle(unsigned char* handle, std::size_t objSize, const Type* type)
+	: mHandle(handle), mObjSize(objSize), mType(type) {
+	if (handle == nullptr) {
+		throw std::invalid_argument("handle");
+	}
 }
 
 void ObjectHandle::deleteHandle() {
-	delete[] handle;
-	handle = nullptr;
+	delete[] mHandle;
+	mHandle = nullptr;
+	mObjSize = 0;
 }
 
-std::size_t ObjectHandle::getSize() const {
-	return objSize;
+std::size_t ObjectHandle::size() const {
+	return mObjSize;
 }
 
-const Type* const ObjectHandle::getType() const {
-	return type;
+const Type* ObjectHandle::type() const {
+	return mType;
 }
 
-const unsigned char* ObjectHandle::getHandle() const {
-	return handle;
+const unsigned char* ObjectHandle::handle() const {
+	return mHandle;
 }
 
 bool ObjectHandle::isMarked() const {
@@ -34,20 +37,20 @@ void ObjectHandle::unmark() {
 	mIsMarked = false;
 }
 
-ArrayHandle::ArrayHandle(unsigned char* handle, std::size_t objSize, Type* type, int length)
-	: ObjectHandle(handle, objSize, type), length(length) {
+ArrayHandle::ArrayHandle(unsigned char* handle, std::size_t objSize, const Type* type, int length)
+	: ObjectHandle(handle, objSize, type), mLength(length) {
 
 }
 
-ArrayHandle::ArrayHandle(): ObjectHandle(nullptr, 0, nullptr), length(0) {
+ArrayHandle::ArrayHandle(): ObjectHandle(nullptr, 0, nullptr), mLength(0) {
 
 }
 
-int ArrayHandle::getLength() const {
-	return length;
+int ArrayHandle::length() const {
+	return mLength;
 }
 
-StructHandle::StructHandle(unsigned char* handle, std::size_t objSize, Type* type)
+StructHandle::StructHandle(unsigned char* handle, std::size_t objSize, const Type* type)
 	: ObjectHandle(handle, objSize, type) {
 
 }

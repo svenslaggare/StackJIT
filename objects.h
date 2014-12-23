@@ -7,24 +7,25 @@ class Type;
 //Represents an object handle
 class ObjectHandle {
 private:
-	unsigned char* handle;
-	std::size_t objSize;
-	Type* type;
+	unsigned char* mHandle;
+	std::size_t mObjSize;
+	const Type* mType;
 	bool mIsMarked = false;
 public:	
-	ObjectHandle(unsigned char* handle, std::size_t objSize, Type* type);
+	//Creates a new object handle
+	ObjectHandle(unsigned char* handle, std::size_t objSize, const Type* type);
 
 	//Deletes the underlying handle
 	void deleteHandle();
 
 	//Returns the size of the handled object
-	std::size_t getSize() const;
+	std::size_t size() const;
 
 	//Returns the type of the handled object
-	const Type* const getType() const;
+	const Type* type() const;
 
-	//Returns the handle
-	const unsigned char* getHandle() const;
+	//Returns the handle. Nullptr if deleted.
+	const unsigned char* handle() const;
 
 	//Indicates if the object is marked
 	bool isMarked() const;
@@ -39,18 +40,20 @@ public:
 //Represents an array handle
 class ArrayHandle : public ObjectHandle {
 private:
-	int length;
+	int mLength;
 public:
-	ArrayHandle(unsigned char* handle, std::size_t objSize, Type* type, int length);
+	//Creates a new array handle
+	ArrayHandle(unsigned char* handle, std::size_t objSize, const Type* type, int length);
 	ArrayHandle();
 
 	//Returns the length of the handled array
-	int getLength() const;
+	int length() const;
 };
 
 //Represents a struct handle
 class StructHandle : public ObjectHandle  {
 public:
-	StructHandle(unsigned char* handle, std::size_t objSize, Type* type);
+	//Creates a new sturct handle
+	StructHandle(unsigned char* handle, std::size_t objSize, const Type* type);
 	StructHandle();
 };

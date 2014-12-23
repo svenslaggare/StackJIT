@@ -20,6 +20,10 @@ std::string Type::name() const {
 }
 
 bool Type::operator==(const Type& type) const {
+	if (this == &type) {
+		return true;
+	}
+	
 	return mName.compare(type.mName) == 0;
 }
 
@@ -35,11 +39,11 @@ NullReferenceType::NullReferenceType(): ReferenceType("Null") {
 
 }
 
-ArrayType::ArrayType(Type* elementType): ReferenceType("Array[" + elementType->name() + "]"), mElementType(elementType) {
+ArrayType::ArrayType(const Type* elementType): ReferenceType("Array[" + elementType->name() + "]"), mElementType(elementType) {
 
 }
 
-Type* ArrayType::elementType() const {
+const Type* ArrayType::elementType() const {
 	return mElementType;
 }
 

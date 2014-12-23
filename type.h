@@ -6,11 +6,13 @@
 //Represents a type
 class Type {
 private:
-	std::string mName;
+	const std::string mName;
 public:
 	Type(std::string name);
 	virtual ~Type();
+
 	Type(const Type&) = delete;
+	Type& operator=(const Type&) = delete;
 
 	//Returns the name of the type
 	std::string name() const;
@@ -37,20 +39,22 @@ public:
 //Represents an array type
 class ArrayType : public ReferenceType {
 private:
-	Type* mElementType;
+	const Type* mElementType;
 public:
-	ArrayType(Type* elementType);
+	//Creates a new array type
+	ArrayType(const Type* elementType);
 	virtual ~ArrayType();
 
 	//Returns the type of the element
-	Type* elementType() const;
+	const Type* elementType() const;
 };
 
 //Representa a struct type
 class StructType : public ReferenceType {
 private:
-	std::string mStructName;
+	const std::string mStructName;
 public:
+	//Creates a new struct type
 	StructType(std::string name);
 
 	//Returns the name of the struct

@@ -6,13 +6,13 @@ class Type;
 //Contains metadata for a struct
 class StructMetadata {
 private:
-	std::map<std::string, Type*> fields;
+	std::map<std::string, const Type*> fields;
 public:
-	StructMetadata(std::map<std::string, Type*> fields);
+	StructMetadata(std::map<std::string, const Type*> fields);
 	StructMetadata();
 
 	//Returns the given field
-	Type* getField(std::string fieldName) const;
+	const Type* getField(std::string fieldName) const;
 
 	//Returns the offset for the given field
 	std::size_t getFieldOffset(std::string fieldName) const;

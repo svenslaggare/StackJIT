@@ -6,14 +6,14 @@ struct FunctionCompilationData;
 class VMState;
 class Type;
 
-typedef std::stack<Type*> InstructionTypes;
+typedef std::stack<const Type*> InstructionTypes;
 
 namespace TypeChecker {
 	//Pops a type from the given stack
-	Type* popType(std::stack<Type*>& stack);
+	const Type* popType(InstructionTypes& stack);
 
 	//Converts the given type to a string
-	std::string typeToString(Type* type);
+	std::string typeToString(const Type* type);
 
 	//Type checks the given function
 	void typeCheckFunction(FunctionCompilationData& function, VMState& vmState, bool showDebug = false);

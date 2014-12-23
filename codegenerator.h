@@ -20,8 +20,8 @@ struct FunctionCompilationData {
 	std::unordered_map<unsigned int, BranchTarget> branchTable; 						 //Branch sources and inst targets
 	std::vector<unsigned int> instructionNumMapping;									 //Mapping from instruction num to native instruction
 	std::map<FunctionCall, std::string> callTable;										 //The called functions
-	std::vector<std::deque<Type*>> instructionOperandTypes;							 	 //The types of the operands for the instruction
-	std::vector<std::deque<Type*>> postInstructionOperandTypes;							 //The types of the operands after an instruction has been executed
+	std::vector<std::deque<const Type*>> instructionOperandTypes;						 //The types of the operands for the instruction
+	std::vector<std::deque<const Type*>> postInstructionOperandTypes;					 //The types of the operands after an instruction has been executed
 	int operandStackSize;																 //The size of the operand stack
 
 	//Holds compilation data for the given function

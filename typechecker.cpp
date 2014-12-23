@@ -11,13 +11,13 @@
 #include "type.h"
 #include "structmetadata.h"
 
-Type* TypeChecker::popType(std::stack<Type*>& stack) {
+const Type* TypeChecker::popType(InstructionTypes& stack) {
     auto value = stack.top();
     stack.pop();
     return value;
 }
 
-std::string TypeChecker::typeToString(Type* type) {
+std::string TypeChecker::typeToString(const Type* type) {
     if (type == nullptr) {
         return "Untyped";
     }
@@ -29,13 +29,13 @@ void typeError(int instIndex, std::string errorMessage) {
     throw std::runtime_error(std::to_string(instIndex) + ": " + errorMessage);
 }
 
-void assertOperandCount(int index, const std::stack<Type*>& stack, int count) {
+void assertOperandCount(int index, const InstructionTypes& stack, int count) {
     if (stack.size() < count) {
         typeError(index, "Expected " + std::to_string(count) + " operand(s) on the stack.");
     }
 }
 
-std::string checkType(Type* expectedType, Type* actualType) {
+std::string checkType(const Type* expectedType, const Type* actualType) {
     if (expectedType == nullptr || *expectedType == *actualType || actualType->name() == "Ref.Null") {
         return "";
     } else {
@@ -43,8 +43,8 @@ std::string checkType(Type* expectedType, Type* actualType) {
     }
 }
 
-std::deque<Type*> asVector(std::stack<Type*> types) {
-    std::deque<Type*> typesList;
+std::deque<const Type*> asVector(InstructionTypes types) {
+    std::deque<const Type*> typesList;
 
     while (!types.empty()) {
         typesList.push_back(types.top());
@@ -57,17 +57,16 @@ std::deque<Type*> asVector(std::stack<Type*> types) {
 struct BranchCheck {
     const int source;
     const int target;
-    const std::stack<Type*> branchTypes;
+    const InstructionTypes branchTypes;
 
-    BranchCheck(int source, int target, std::stack<Type*> branchTypes)
-        : source(source), target(target), branchTypes(branchTypes)
-    {
+    BranchCheck(int source, int target, InstructionTypes branchTypes)
+        : source(source), target(target), branchTypes(branchTypes) {
 
     }
 };
 
 void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& vmState, bool showDebug) {
-    std::stack<Type*> operandStack;
+    InstructionTypes operandStack;
 
     auto& func = funcData.function;
     const auto numInsts = func.instructions.size();
@@ -79,7 +78,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
     postInstructionsOperandTypes.reserve(numInsts);
 
     //Set the local type if set
-    std::vector<Type*> locals(func.numLocals());
+    std::vector<const Type*> locals(func.numLocals());
 
     for (int i = 0; i < locals.size(); i++) {
         auto localType = func.getLocal(i);
@@ -167,12 +166,12 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
                 }
             }
             break;
-        case OpCodes::CMPEQ:
-        case OpCodes::CMPNE:
-        case OpCodes::CMPGT:
-        case OpCodes::CMPGE:
-        case OpCodes::CMPLT:
-        case OpCodes::CMPLE:
+        case OpCodes::COMPARE_EQUAL:
+        case OpCodes::COMPARE_NOT_EQUAL:
+        case OpCodes::COMPARE_GREATER_THAN:
+        case OpCodes::COMPARE_GREATER_THAN_OR_EQUAL:
+        case OpCodes::COMPARE_LESS_THAN:
+        case OpCodes::COMPARE_LESS_THAN_OR_EQUAL:
             {
                 assertOperandCount(index, operandStack, 2);
             
@@ -370,7 +369,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
                 auto elemType = vmState.findType(inst.StrValue);
 
                 if (!isNull) {
-                    auto arrayElemType = dynamic_cast<ArrayType*>(arrayRefType)->elementType();
+                    auto arrayElemType = dynamic_cast<const ArrayType*>(arrayRefType)->elementType();
 
                     auto error = checkType(arrayElemType, elemType);
 
@@ -408,7 +407,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
                 auto elemType = vmState.findType(inst.StrValue);
 
                 if (!isNull) {
-                    auto arrayElemType = dynamic_cast<ArrayType*>(arrayRefType)->elementType();
+                    auto arrayElemType = dynamic_cast<const ArrayType*>(arrayRefType)->elementType();
 
                     auto error = checkType(arrayElemType, elemType);
 
@@ -444,7 +443,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
                     typeError(index, "'" + structType->name() + "' is not a struct type.");
                 }
 
-                std::string structName = dynamic_cast<StructType*>(structType)->structName();
+                std::string structName = dynamic_cast<const StructType*>(structType)->structName();
 
                 if (vmState.getStructMetadata(structName) == nullptr) {
                     typeError(index, "'" + structName + "' is not a defined struct.");

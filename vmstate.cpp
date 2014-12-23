@@ -1,55 +1,6 @@
 #include "vmstate.h"
 #include "type.h"
-#include "program.h"
-#include <sys/mman.h>
-
-FunctionDefinition::FunctionDefinition(std::vector<Type*> arguments, Type* returnType, long entryPoint, int funcSize)
-    : mArguments(arguments), mReturnType(returnType), mEntryPoint(entryPoint), mFunctionSize(funcSize), mIsManaged(true) {
-
-}
-
-FunctionDefinition::FunctionDefinition(std::vector<Type*> arguments, Type* returnType, long entryPoint)
-    : mArguments(arguments), mReturnType(returnType), mEntryPoint(entryPoint), mFunctionSize(0), mIsManaged(false) {
-
-}
-
-FunctionDefinition::FunctionDefinition()
-    : mEntryPoint(0), mFunctionSize(0), mIsManaged(false), mReturnType(nullptr) {
-
-}
-
-void FunctionDefinition::setFunctionBody(long entryPoint, int functionSize) {
-    if (mIsManaged) {
-        mEntryPoint = entryPoint;
-        mFunctionSize = functionSize;
-    }
-}
-
-Type* FunctionDefinition::returnType() const {
-    return mReturnType;
-}
-
-const std::vector<Type*>& FunctionDefinition::arguments() const {
-    return mArguments;
-}
-
-bool FunctionDefinition::isManaged() const {
-    return mIsManaged;
-}
-
-long FunctionDefinition::entryPoint() const {
-    return mEntryPoint;
-}
-
-int FunctionDefinition::functionSize() const {
-    return mFunctionSize;
-}
-
-void FunctionDefinition::deleteFunction() {
-    if (functionSize() > 0) {
-        munmap((unsigned char*)entryPoint(), functionSize());
-    }
-}
+#include "objects.h"
 
 VMState::~VMState() {
     for (auto type : types) {
@@ -62,11 +13,11 @@ const std::unordered_map<const unsigned char*, ObjectHandle*>& VMState::getObjec
 }
 
 void VMState::newObject(ObjectHandle* handle) {
-    mObjects.insert({ handle->getHandle(), handle });
+    mObjects.insert({ handle->handle(), handle });
 }
 
 void VMState::deleteObject(ObjectHandle* handle) {
-    mObjects.erase(handle->getHandle());
+    mObjects.erase(handle->handle());
     handle->deleteHandle();
     delete handle;
 }

@@ -15,12 +15,12 @@ enum OpCodes {
     AND,
     OR,
     NOT,
-    CMPEQ,
-    CMPNE,
-    CMPGT,
-    CMPGE,
-    CMPLT,
-    CMPLE,
+    COMPARE_EQUAL,
+    COMPARE_NOT_EQUAL,
+    COMPARE_GREATER_THAN,
+    COMPARE_GREATER_THAN_OR_EQUAL,
+    COMPARE_LESS_THAN,
+    COMPARE_LESS_THAN_OR_EQUAL,
     LOAD_LOCAL,
     STORE_LOCAL, 
     CALL,
@@ -50,14 +50,16 @@ struct Instruction {
     std::string StrValue;
 };
 
-//Creates a new instruction with the given op code
-Instruction makeInstruction(OpCodes opCode);
+namespace Instructions {
+    //Creates a new instruction with the given op code
+    Instruction make(OpCodes opCode);
 
-//Creates a new instruction with an int as value
-Instruction makeInstWithInt(OpCodes opCode, int value);
+    //Creates a new instruction with an int as value
+    Instruction makeWithInt(OpCodes opCode, int value);
 
-//Creates a new instruction with a string as the value
-Instruction makeInstWithStr(OpCodes opCode, std::string value);
+    //Creates a new instruction with a string as the value
+    Instruction makeWithStr(OpCodes opCode, std::string value);
 
-//Creates a new call instruction
-Instruction makeCall(std::string funcName);
+    //Creates a new call instruction
+    Instruction makeCall(std::string funcName);
+}

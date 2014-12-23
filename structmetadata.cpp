@@ -1,7 +1,7 @@
 #include "structmetadata.h"
 #include "type.h"
 
-StructMetadata::StructMetadata(std::map<std::string, Type*> fields)
+StructMetadata::StructMetadata(std::map<std::string, const Type*> fields)
 	: fields(fields) {
 
 }
@@ -10,7 +10,7 @@ StructMetadata::StructMetadata() {
 
 }
 
-Type* StructMetadata::getField(std::string fieldName) const {
+const Type* StructMetadata::getField(std::string fieldName) const {
 	if (fields.count(fieldName) > 0) {
 		return fields.at(fieldName);
 	} else {
