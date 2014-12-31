@@ -56,6 +56,16 @@ void generateNullCheck(CodeGen& codeGen) {
     Amd64Backend::callInReg(codeGen, Registers::DI); //call rdi
 }
 
+void println_long(long value) {
+    std::cout << value << std::endl;
+} 
+
+//Generates a call to the given function
+void generateCall(CodeGen& codeGen, long funcPtr) {
+    Amd64Backend::moveLongToReg(codeGen, Registers::AX, funcPtr);
+    Amd64Backend::callInReg(codeGen, Registers::AX);
+}
+
 JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
     std::map<FunctionCall, std::string> callTable;
 
@@ -132,17 +142,15 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
     function.instructionOperandTypes = functionData.instructionOperandTypes;
     function.postInstructionOperandTypes = functionData.postInstructionOperandTypes;
 
-    //Save the base pointer
-    Amd64Backend::pushReg(function.generatedCode, Registers::BP); //push rbp
-    Amd64Backend::moveRegToReg(function.generatedCode, Registers::BP, Registers::SP); //mov rbp, rbp
-
     //Calculate the size of the stack aligned to 16 bytes
     int neededStackSize = (function.numArgs() + function.numLocals() + functionData.operandStackSize) * Amd64Backend::REG_SIZE;
     int stackSize = ((neededStackSize + 15) / 16) * 16;
 
-    //std::cout << neededStackSize << "/" << stackSize << std::endl;
-
     function.setStackSize(stackSize);
+
+    //Save the base pointer
+    Amd64Backend::pushReg(function.generatedCode, Registers::BP); //push rbp
+    Amd64Backend::moveRegToReg(function.generatedCode, Registers::BP, Registers::SP); //mov rbp, rsp
 
     if (stackSize > 0) {
         //Make room for the variables on the stack
@@ -153,19 +161,23 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
         }
     }
 
+    // ShortToBytes shortConverter;
+    // shortConverter.ShortValue = stackSize;
+    // pushArray(function.generatedCode, { 0xC8, shortConverter.ByteValues[0], shortConverter.ByteValues[1], 0x00 }); //enter <stack size>, 0
+
     //Move function arguments from registers to the stack
     if (function.numArgs() > 0) {
         //Move the arguments from the registers to the stack
         if (function.numArgs() >= 4) {
-            Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -Amd64Backend::REG_SIZE*4, Registers::CX); //mov [rbp-4*REG_SIZE], rcx
+            Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -Amd64Backend::REG_SIZE * 4, Registers::CX); //mov [rbp-4*REG_SIZE], rcx
         }
 
         if (function.numArgs() >= 3) {
-            Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -Amd64Backend::REG_SIZE*3, Registers::DX); //mov [rbp-3*REG_SIZE], rdx
+            Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -Amd64Backend::REG_SIZE * 3, Registers::DX); //mov [rbp-3*REG_SIZE], rdx
         }
 
         if (function.numArgs() >= 2) {
-            Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -Amd64Backend::REG_SIZE*2, Registers::SI); //mov [rbp-2*REG_SIZE], rsi
+            Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -Amd64Backend::REG_SIZE * 2 , Registers::SI); //mov [rbp-2*REG_SIZE], rsi
         }
 
         if (function.numArgs() >= 1) {
@@ -222,10 +234,10 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
         IntToBytes converter;
         converter.IntValue = nativeTarget - source - instSize;
 
-        unsigned int sourceOffset = instSize - 4;
+        unsigned int sourceOffset = instSize - sizeof(int);
 
         //Update the source with the native target
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < sizeof(int); i++) {
             function.generatedCode[source + sourceOffset + i] = converter.ByteValues[i];
         }
     }
@@ -297,7 +309,21 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::PUSH_INT:
         //Push the value
         Amd64Backend::pushInt(generatedCode, inst.Value); //push <value>
+        //Amd64Backend::moveIntToReg(generatedCode, Registers::AX, inst.Value);
+        //Amd64Backend::pushReg(generatedCode, Registers::AX);
         break;
+    case OpCodes::PUSH_FLOAT:
+        {
+            //Extract the byte pattern for the float
+            const int* floatData = reinterpret_cast<const int*>(&inst.FloatValue);
+
+            //Push the value
+            Amd64Backend::pushInt(generatedCode, *floatData); //push <value>
+
+            //Amd64Backend::moveIntToReg(generatedCode, Registers::AX, *floatData); //mov rax, <value>
+            //Amd64Backend::pushReg(generatedCode, Registers::AX);                  //push rax
+        }
+        break;  
     case OpCodes::POP:
         //Pop the value
         Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
@@ -454,10 +480,10 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::CALL:
         {   
             //Call the pushFunc runtime function
-            Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&Runtime::pushFunc);
-            Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)&function); //Address of the func handle as the target as first arg
-            Amd64Backend::moveLongToReg(generatedCode, Registers::SI, instIndex); //Current inst index as second arg
-            Amd64Backend::callInReg(generatedCode, Registers::AX);
+            // Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&Runtime::pushFunc);
+            // Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)&function); //Address of the func handle as the target as first arg
+            // Amd64Backend::moveLongToReg(generatedCode, Registers::SI, instIndex); //Current inst index as second arg
+            // Amd64Backend::callInReg(generatedCode, Registers::AX);
 
             //Get the address of the function to call
             long funcAddr = 0;
@@ -466,20 +492,46 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             int numArgs = funcToCall.arguments().size();
 
             //Set the function arguments
+            auto opTypes = function.instructionOperandTypes[instIndex];
+
             if (numArgs >= 4) {
-                Amd64Backend::popReg(generatedCode, Registers::CX); //pop rcx
+                auto argType = opTypes.at(numArgs - 4);
+                if (argType->name() == "Float") {
+                    pushArray(generatedCode, { 0xF3, 0x0F, 0x10, 0x1C, 0x24 });                            //movss xmm3, [rsp]
+                    Amd64Backend::subByteFromReg(generatedCode, Registers::SP, Amd64Backend::REG_SIZE);    //sub rsp, <reg size>                  
+                } else {
+                    Amd64Backend::popReg(generatedCode, Registers::CX); //pop rcx
+                }
             }
 
             if (numArgs >= 3) {
-                Amd64Backend::popReg(generatedCode, Registers::DX); //pop rdx
+                auto argType = opTypes.at(numArgs - 3);
+                if (argType->name() == "Float") {
+                    pushArray(generatedCode, { 0xF3, 0x0F, 0x10, 0x14, 0x24 });                            //movss xmm2, [rsp]
+                    Amd64Backend::subByteFromReg(generatedCode, Registers::SP, Amd64Backend::REG_SIZE);    //sub rsp, <reg size>                
+                } else {
+                    Amd64Backend::popReg(generatedCode, Registers::DX); //pop rdx
+                }
             }
 
             if (numArgs >= 2) {
-                Amd64Backend::popReg(generatedCode, Registers::SI); //pop rsi
+                auto argType = opTypes.at(numArgs - 2);
+                if (argType->name() == "Float") {
+                    pushArray(generatedCode, { 0xF3, 0x0F, 0x10, 0x0C, 0x24 });                            //movss xmm1, [rsp]
+                    Amd64Backend::subByteFromReg(generatedCode, Registers::SP, Amd64Backend::REG_SIZE);    //sub rsp, <reg size>                  
+                } else {
+                    Amd64Backend::popReg(generatedCode, Registers::SI); //pop rsi
+                }
             }
 
             if (numArgs >= 1) {
-                Amd64Backend::popReg(generatedCode, Registers::DI); //pop rdi
+                auto argType = opTypes.at(numArgs - 1);
+                if (argType->name() == "Float") {
+                    pushArray(generatedCode, { 0xF3, 0x0F, 0x10, 0x04, 0x24 });                              //movss xmm0, [rsp]
+                    Amd64Backend::subByteFromReg(generatedCode, Registers::SP, Amd64Backend::REG_SIZE);      //sub rsp, <reg size>              
+                } else {
+                    Amd64Backend::popReg(generatedCode, Registers::DI); //pop rdi
+                }
             }
 
             //Check if the function entry point is defined yet
@@ -504,7 +556,20 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             Amd64Backend::callInReg(generatedCode, Registers::AX); //call rax
 
             //Push the result
-            Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
+            if (funcToCall.returnType()->name() != "Void") {
+                if (funcToCall.returnType()->name() == "Float") {
+                    Amd64Backend::addByteToReg(generatedCode, Registers::SP, Amd64Backend::REG_SIZE); //add rsp, <reg size>
+                    pushArray(generatedCode, { 0xF3, 0x0F, 0x11, 0x04, 0x24 });                       //movss [rsp], xmm0
+                } else {
+                    Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
+                }
+            }
+
+            //Call the popFunc runtime function
+            // if (function.name() != "main") {
+            //     Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&Runtime::popFunc);
+            //     Amd64Backend::callInReg(generatedCode, Registers::AX);
+            // }
         }
         break;
     case OpCodes::RET:
@@ -517,12 +582,6 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 Amd64Backend::callInReg(generatedCode, Registers::AX);
             }
 
-            //Call the popFunc runtime function
-            if (function.name() != "main") {
-                Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&Runtime::popFunc);
-                Amd64Backend::callInReg(generatedCode, Registers::AX);
-            }
-
             if (!TypeSystem::isPrimitiveType(function.returnType(), PrimitiveTypes::Void)) {
                 //Pop the return value
                 Amd64Backend::popReg(generatedCode, Registers::AX); //pop eax
@@ -531,6 +590,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             //Restore the base pointer
             Amd64Backend::moveRegToReg(generatedCode, Registers::SP, Registers::BP); //mov rsp, rbp
             Amd64Backend::popReg(generatedCode, Registers::BP); //pop rbp
+            //pushArray(generatedCode, { 0xC9 }); //leave
 
             //Make the return
             Amd64Backend::ret(generatedCode); //ret

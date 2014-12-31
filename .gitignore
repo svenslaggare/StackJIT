@@ -2,3 +2,4 @@
 stackjit
 test
 *.jit
+*.s

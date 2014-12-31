@@ -153,6 +153,18 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                 assertTokenCount(tokens, i, 1);
                 int value = stoi(tokens[i + 1]);
                 currentFunc->instructions.push_back(Instructions::makeWithInt(OpCodes::PUSH_INT, value));
+
+                i++;
+                continue;
+            }
+
+            if (currentToLower == "pushfloat") {
+                assertTokenCount(tokens, i, 1);
+                float value = stof(tokens[i + 1]);
+                currentFunc->instructions.push_back(Instructions::makeWithFloat(OpCodes::PUSH_FLOAT, value));
+
+                i++;
+                continue;
             }
 
             if (noOperandsInstructions.count(currentToLower) > 0) {
@@ -163,6 +175,9 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                 assertTokenCount(tokens, i, 1);
                 std::string value = tokens[i + 1];
                 currentFunc->instructions.push_back(Instructions::makeWithStr(strOperandInstructions[currentToLower], value));
+
+                i++;
+                continue;
             }
 
             if (currentToLower == ".locals") {
@@ -176,6 +191,9 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                     } else {
                         throw std::runtime_error("The number of locals must be >= 0.");
                     }
+
+                    i++;
+                    continue;
                 } else {
                     throw std::runtime_error("The locals has already been set.");
                 }
@@ -196,6 +214,9 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                     } else {
                         throw std::runtime_error("Invalid local index.");
                     }
+
+                    i += 2;
+                    continue;
                 } else {
                     throw std::runtime_error("The locals must been set.");
                 }
@@ -216,12 +237,18 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                 } else {
                     throw std::runtime_error("The local index is out of range.");
                 }
+
+                i++;
+                continue;
             }
 
             if (currentToLower == "call") {
                 assertTokenCount(tokens, i, 1);
                 std::string funcName = tokens[i + 1];
                 currentFunc->instructions.push_back(Instructions::makeCall(funcName));
+
+                i++;
+                continue;
             }
 
             if (currentToLower == "ldarg") {
@@ -233,18 +260,27 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                 } else {
                     throw std::runtime_error("The argument index is out of range.");
                 }
+
+                i++;
+                continue;
             }
 
             if (currentToLower == "br") {
                 assertTokenCount(tokens, i, 1);
                 int target = stoi(tokens[i + 1]);
                 currentFunc->instructions.push_back(Instructions::makeWithInt(OpCodes::BR, target));
+
+                i++;
+                continue;
             }
 
             if (branchInstructions.count(currentToLower) > 0) {
                 assertTokenCount(tokens, i, 1);
                 int target = stoi(tokens[i + 1]);
                 currentFunc->instructions.push_back(Instructions::makeWithInt(branchInstructions[currentToLower], target));
+
+                i++;
+                continue;
             }
         }
 

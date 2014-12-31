@@ -65,6 +65,7 @@ public:
 enum PrimitiveTypes : unsigned char {
 	Void,
 	Integer,
+	Float,
 	Bool
 };
 

@@ -5,6 +5,7 @@
 enum OpCodes {
     NOP,
     PUSH_INT,
+    PUSH_FLOAT,
     POP,
     ADD,
     SUB,
@@ -47,6 +48,7 @@ enum OpCodes {
 struct Instruction {
     OpCodes OpCode;
     int Value;
+    float FloatValue;
     std::string StrValue;
 };
 
@@ -56,6 +58,9 @@ namespace Instructions {
 
     //Creates a new instruction with an int as value
     Instruction makeWithInt(OpCodes opCode, int value);
+
+    //Creates a new instruction with a float as value
+    Instruction makeWithFloat(OpCodes opCode, float value);
 
     //Creates a new instruction with a string as the value
     Instruction makeWithStr(OpCodes opCode, std::string value);

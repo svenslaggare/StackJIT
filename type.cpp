@@ -65,6 +65,8 @@ std::string TypeSystem::getPrimitiveTypeName(PrimitiveTypes primitiveType) {
 			return "Void";
 		case PrimitiveTypes::Integer:
 			return "Int";
+		case PrimitiveTypes::Float:
+			return "Float";
 		case PrimitiveTypes::Bool:
 			return "Bool";
 	}
@@ -73,9 +75,10 @@ std::string TypeSystem::getPrimitiveTypeName(PrimitiveTypes primitiveType) {
 }
 
 std::unordered_map<std::string, std::function<Type*()>> primitiveTypeNames {
+	{ "Void", []() -> Type* { return new Type("Void"); } },
 	{ "Int", []() -> Type* { return new Type("Int"); } },
-	{ "Bool", []() -> Type* { return new Type("Bool"); } },
-	{ "Void", []() -> Type* { return new Type("Void"); } }
+	{ "Float", []() -> Type* { return new Type("Float"); } },
+	{ "Bool", []() -> Type* { return new Type("Bool"); } }
 };
 
 Type* TypeSystem::makeTypeFromString(std::string typeName) {
@@ -133,12 +136,14 @@ Type* TypeSystem::makeTypeFromString(std::string typeName) {
 bool TypeSystem::isPrimitiveType(const Type* type, PrimitiveTypes primitiveType) {
 	if (type != nullptr) {
 		switch (primitiveType) {
-			case PrimitiveTypes::Integer:
-				return type->name().compare("Int") == 0;
-			case PrimitiveTypes::Bool:
-				return type->name().compare("Bool") == 0;
 			case PrimitiveTypes::Void:
 				return type->name().compare("Void") == 0;
+			case PrimitiveTypes::Integer:
+				return type->name().compare("Int") == 0;
+			case PrimitiveTypes::Float:
+				return type->name().compare("Float") == 0;
+			case PrimitiveTypes::Bool:
+				return type->name().compare("Bool") == 0;
 		}
 	}
 
@@ -171,12 +176,14 @@ bool TypeSystem::isStruct(const Type* type) {
 
 std::size_t TypeSystem::getSize(PrimitiveTypes primitiveType) {
 	switch (primitiveType) {
+	case PrimitiveTypes::Void:
+		return 0;
 	case PrimitiveTypes::Integer:
+		return 4;
+	case PrimitiveTypes::Float:
 		return 4;
 	case PrimitiveTypes::Bool:
 		return 1;
-	case PrimitiveTypes::Void:
-		return 0;
 	}
 }
 
@@ -185,6 +192,8 @@ std::size_t TypeSystem::sizeOfType(const Type* type) {
 
 	if (typeName == "Int") {
 		return TypeSystem::getSize(PrimitiveTypes::Integer);
+	} else if (typeName == "Float") {
+		return TypeSystem::getSize(PrimitiveTypes::Float);
 	} else if (typeName == "Bool") {
 		return TypeSystem::getSize(PrimitiveTypes::Bool);
 	} else if (TypeSystem::isReferenceType(type)) {

@@ -91,6 +91,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
     std::vector<BranchCheck> branches;
 
     const auto intType = vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer));
+    const auto floatType = vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Float));
     const auto boolType = vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Bool));
     const auto voidType = vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Void));
     const auto nullType = vmState.findType("Ref.Null");
@@ -123,6 +124,9 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
             break;
         case OpCodes::PUSH_INT:
             operandStack.push(intType);
+            break;
+        case OpCodes::PUSH_FLOAT:
+            operandStack.push(floatType);
             break;
         case OpCodes::POP:
             assertOperandCount(index, operandStack, 1);
@@ -232,6 +236,10 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
             break;
         case OpCodes::CALL:
             {
+                if (vmState.functionTable.count(inst.StrValue) == 0) {
+                    typeError(index, "The function '" + inst.StrValue + "' is not defined.");
+                }
+
                 auto calledFunc = vmState.functionTable.at(inst.StrValue);
                 int calledFuncNumArgs = calledFunc.arguments().size();
                 assertOperandCount(index, operandStack, calledFuncNumArgs);

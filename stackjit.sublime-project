@@ -1,0 +1,13 @@
+{
+	"folders":
+	[
+		{
+			"path": "/home/antjans/Code/StackJIT"
+		}
+	],
+	"settings":
+	 {
+	 	"sublimegdb_commandline": "gdb -nx -readnow -fullname --interpreter=mi -args ./stackjit",
+	 	"sublimegdb_workingdir": "${folder:${project_path:stackjit}}"
+	 }
+}

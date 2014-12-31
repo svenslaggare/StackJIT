@@ -1,6 +1,11 @@
 #pragma once
 #include <vector>
 
+union ShortToBytes {
+    short ShortValue;
+    unsigned char ByteValues[sizeof(short)];
+};
+
 union IntToBytes {
     int IntValue;
     unsigned char ByteValues[sizeof(int)];
@@ -22,6 +27,14 @@ enum Registers : unsigned char {
 	SI = 0b110,
 	DI = 0b111
 };
+
+//The register for function arguments
+namespace RegisterCallArguments {
+	const Registers Arg0 = Registers::DI;
+	const Registers Arg1 = Registers::SI;
+	const Registers Arg2 = Registers::DX;
+	const Registers Arg3 = Registers::CX;
+}
 
 typedef std::vector<unsigned char> CodeGen;
 

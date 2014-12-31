@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <string.h>
 
@@ -46,6 +47,8 @@ int main(int argc, char* argv[]) {
 
     //Tokenize the input
     auto tokens = Parser::tokenize(std::cin);
+    //std::ifstream fileStream("programs/program20.txt");
+    //auto tokens = Parser::tokenize(fileStream);
 
     //Parse it
     Parser::parseTokens(tokens, vmState, program);
