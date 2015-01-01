@@ -13,14 +13,10 @@ func main2() Void
 
 func main() Int
 {  
-   #PUSHFLOAT 13.37
-   #CALL printfln
-
-   #PUSHFLOAT 47.11
-   #CALL printfln
    PUSHFLOAT 13.37
    PUSHFLOAT 47.11
-   CALL addFloat
+   ADD
+   #CALL addFloat
    CALL printfln
 
    PUSH 0

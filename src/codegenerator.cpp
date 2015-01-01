@@ -66,6 +66,10 @@ void generateCall(CodeGen& codeGen, long funcPtr) {
     Amd64Backend::callInReg(codeGen, Registers::AX);
 }
 
+void printAliveObjects(long* basePtr, Function* func, int instIndex) {
+    Runtime::printAliveObjects(basePtr, func, instIndex);
+}
+
 JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
     std::map<FunctionCall, std::string> callTable;
 
@@ -333,15 +337,31 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::MUL:
     case OpCodes::DIV:
         {
-            //Pop 2 operands
-            Amd64Backend::popReg(generatedCode, Registers::CX); //pop rcx
-            Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+            auto opType = function.instructionOperandTypes[instIndex][0];
+            bool intOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Integer);
+            bool floatOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Float);
             bool is32bits = false;
+
+            //Pop 2 operands
+            if (intOp) {
+                Amd64Backend::popReg(generatedCode, Registers::CX); //pop rcx
+                Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+            } else if (floatOp) {
+                pushArray(generatedCode, { 0xF3, 0x0F, 0x10, 0x04, 0x24 });                           //movss xmm0, [rsp]
+                Amd64Backend::addByteToReg(generatedCode, Registers::SP, Amd64Backend::REG_SIZE);     //add rsp, <reg size>                  
+
+                pushArray(generatedCode, { 0xF3, 0x0F, 0x10, 0x0C, 0x24 });                           //movss xmm1, [rsp]
+                Amd64Backend::addByteToReg(generatedCode, Registers::SP, Amd64Backend::REG_SIZE);     //add rsp, <reg size>  
+            }
 
             //Apply the operator
             switch (inst.OpCode) {
                 case OpCodes::ADD:
-                    Amd64Backend::addRegToReg(generatedCode, Registers::AX, Registers::CX, is32bits); //add eax, ecx
+                    if (intOp) {
+                        Amd64Backend::addRegToReg(generatedCode, Registers::AX, Registers::CX, is32bits); //add eax, ecx
+                    } else if (floatOp) {
+                        pushArray(generatedCode, { 0xF3, 0x0F, 0x58, 0xC1 }); //addss  xmm0, xmm1  
+                    }
                     break;
                 case OpCodes::SUB:
                     Amd64Backend::subRegFromReg(generatedCode, Registers::AX, Registers::CX, is32bits); //sub eax, ecx
@@ -357,7 +377,12 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             }
 
             //Push the result
-            Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
+            if (intOp) {
+                Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
+            } else if (floatOp) {
+                Amd64Backend::subByteFromReg(generatedCode, Registers::SP, Amd64Backend::REG_SIZE);   //sub rsp, <reg size>  
+                pushArray(generatedCode, { 0xF3, 0x0F, 0x11, 0x04, 0x24 });                           //movss [rsp], xmm0 
+            }
         }
         break;
     case OpCodes::PUSH_TRUE:
@@ -497,8 +522,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             if (numArgs >= 4) {
                 auto argType = opTypes.at(numArgs - 4);
                 if (argType->name() == "Float") {
-                    pushArray(generatedCode, { 0xF3, 0x0F, 0x10, 0x1C, 0x24 });                            //movss xmm3, [rsp]
-                    Amd64Backend::subByteFromReg(generatedCode, Registers::SP, Amd64Backend::REG_SIZE);    //sub rsp, <reg size>                  
+                    pushArray(generatedCode, { 0xF3, 0x0F, 0x10, 0x1C, 0x24 });                           //movss xmm3, [rsp]
+                    Amd64Backend::addByteToReg(generatedCode, Registers::SP, Amd64Backend::REG_SIZE);     //add rsp, <reg size>                  
                 } else {
                     Amd64Backend::popReg(generatedCode, Registers::CX); //pop rcx
                 }
@@ -507,8 +532,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             if (numArgs >= 3) {
                 auto argType = opTypes.at(numArgs - 3);
                 if (argType->name() == "Float") {
-                    pushArray(generatedCode, { 0xF3, 0x0F, 0x10, 0x14, 0x24 });                            //movss xmm2, [rsp]
-                    Amd64Backend::subByteFromReg(generatedCode, Registers::SP, Amd64Backend::REG_SIZE);    //sub rsp, <reg size>                
+                    pushArray(generatedCode, { 0xF3, 0x0F, 0x10, 0x14, 0x24 });                          //movss xmm2, [rsp]
+                    Amd64Backend::addByteToReg(generatedCode, Registers::SP, Amd64Backend::REG_SIZE);    //add rsp, <reg size>                
                 } else {
                     Amd64Backend::popReg(generatedCode, Registers::DX); //pop rdx
                 }
@@ -517,8 +542,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             if (numArgs >= 2) {
                 auto argType = opTypes.at(numArgs - 2);
                 if (argType->name() == "Float") {
-                    pushArray(generatedCode, { 0xF3, 0x0F, 0x10, 0x0C, 0x24 });                            //movss xmm1, [rsp]
-                    Amd64Backend::subByteFromReg(generatedCode, Registers::SP, Amd64Backend::REG_SIZE);    //sub rsp, <reg size>                  
+                    pushArray(generatedCode, { 0xF3, 0x0F, 0x10, 0x0C, 0x24 });                           //movss xmm1, [rsp]
+                    Amd64Backend::addByteToReg(generatedCode, Registers::SP, Amd64Backend::REG_SIZE);     //add rsp, <reg size>                  
                 } else {
                     Amd64Backend::popReg(generatedCode, Registers::SI); //pop rsi
                 }
@@ -527,8 +552,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             if (numArgs >= 1) {
                 auto argType = opTypes.at(numArgs - 1);
                 if (argType->name() == "Float") {
-                    pushArray(generatedCode, { 0xF3, 0x0F, 0x10, 0x04, 0x24 });                              //movss xmm0, [rsp]
-                    Amd64Backend::subByteFromReg(generatedCode, Registers::SP, Amd64Backend::REG_SIZE);      //sub rsp, <reg size>              
+                    pushArray(generatedCode, { 0xF3, 0x0F, 0x10, 0x04, 0x24 });                             //movss xmm0, [rsp]
+                    Amd64Backend::addByteToReg(generatedCode, Registers::SP, Amd64Backend::REG_SIZE);       //add rsp, <reg size>              
                 } else {
                     Amd64Backend::popReg(generatedCode, Registers::DI); //pop rdi
                 }

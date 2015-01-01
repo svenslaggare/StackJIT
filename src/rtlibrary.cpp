@@ -93,11 +93,6 @@ void Runtime::printAliveObjects(long* basePtr, Function* func, int instIndex, st
     //long* stackStart = basePtr - 1 - numArgs - numLocals - (func->stackSize() / 8) + stackSize;
     long* stackStart = basePtr - 1 - (func->stackSize() / 8);
 
-    // long* stackStart2 = basePtr - 1;
-    // for (int i = 0; i < 10; i++) {
-    //     std::cout << stackStart2[-i] << std::endl;
-    // }
-
     if (numArgs > 0) {
         std::cout << indentation << "Args: " << std::endl;
         for (int i = 0; i < numArgs; i++) {
