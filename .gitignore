@@ -1,6 +1,6 @@
 *.o
 stackjit
-test
+amd64-test
 *.jit
 *.s
 *.sublime-workspace
