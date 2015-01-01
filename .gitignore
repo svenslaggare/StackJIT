@@ -3,3 +3,5 @@ stackjit
 test
 *.jit
 *.s
+*.sublime-workspace
+*.sublime-project
