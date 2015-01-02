@@ -22,8 +22,7 @@ __Reference types__
 * Structs: `Ref.Struct.<Struct name>`.
 
 ###Locals###
-The VM supports per stack-frame locals. The locals are typed, but not explicitly typed. The type
-of the local is determined the first time the local is stored (at compile time, not runtime) or explicity: `.local <index> <type>`. Loading
+The VM supports per stack-frame locals. The locals are typed where the type either is determined the first time the local is stored (at compile time, not runtime) or explicity: `.local <index> <type>`. Loading
 a local without type results in an error.
 The number of locals a function has _should_ be defined in the beginning of the body with the following
 syntax: `.locals <count>`. If the number of locals isn't defined, zero is chosen.
