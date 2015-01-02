@@ -75,9 +75,7 @@ int main(int argc, char* argv[]) {
             //std::cout << "Freed object (" << obj->getSize() << " bytes) at 0x" << std::hex << (long)(obj->getHandle()) << std::dec << std::endl;
         }
 
-        auto obj = objEntry.second;
-        obj->deleteHandle();
-        delete obj;
+        delete objEntry.second;
     }
 
     //Unmap function code memory

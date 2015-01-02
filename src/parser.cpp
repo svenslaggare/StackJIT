@@ -110,12 +110,12 @@ std::unordered_map<std::string, OpCodes> noOperandsInstructions
 
 std::unordered_map<std::string, OpCodes> branchInstructions
 {
-    { "beq", OpCodes::BEQ },
-    { "bne", OpCodes::BNE },
-    { "bgt", OpCodes::BGT },
-    { "bge", OpCodes::BGE },
-    { "blt", OpCodes::BLT },
-    { "ble", OpCodes::BLE }
+    { "beq", OpCodes::BRANCH_EQUAL },
+    { "bne", OpCodes::BRANCH_NOT_EQUAL },
+    { "bgt", OpCodes::BRANCH_GREATER_THAN },
+    { "bge", OpCodes::BRANCH_GREATER_THAN_OR_EQUAL },
+    { "blt", OpCodes::BRANCH_LESS_THAN },
+    { "ble", OpCodes::BRANCH_LESS_THAN_OR_EQUAL }
 };
 
 std::unordered_map<std::string, OpCodes> strOperandInstructions
@@ -268,7 +268,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
             if (currentToLower == "br") {
                 assertTokenCount(tokens, i, 1);
                 int target = stoi(tokens[i + 1]);
-                currentFunc->instructions.push_back(Instructions::makeWithInt(OpCodes::BR, target));
+                currentFunc->instructions.push_back(Instructions::makeWithInt(OpCodes::BRANCH, target));
 
                 i++;
                 continue;

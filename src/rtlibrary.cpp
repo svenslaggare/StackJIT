@@ -251,7 +251,7 @@ long Runtime::newArray(Type* type, int size) {
 long Runtime::newObject(Type* type) {
     auto structType = static_cast<StructType*>(type);
 
-    int memSize = vmState.getStructMetadata(structType->structName())->getSize();
+    int memSize = vmState.getStructMetadata(structType->structName()).size();
     unsigned char* structPtr = new unsigned char[memSize];
     memset(structPtr, 0, memSize);
 

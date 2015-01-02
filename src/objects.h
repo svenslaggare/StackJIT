@@ -14,6 +14,7 @@ private:
 public:	
 	//Creates a new object handle
 	ObjectHandle(unsigned char* handle, std::size_t objSize, const Type* type);
+	virtual ~ObjectHandle();
 
 	//Deletes the underlying handle
 	void deleteHandle();

@@ -27,13 +27,13 @@ enum OpCodes {
     CALL,
     RET,
     LOAD_ARG,
-    BR,
-    BEQ,
-    BNE,
-    BGT,
-    BGE,
-    BLT,
-    BLE,
+    BRANCH,
+    BRANCH_EQUAL,
+    BRANCH_NOT_EQUAL,
+    BRANCH_GREATER_THAN,
+    BRANCH_GREATER_THAN_OR_EQUAL,
+    BRANCH_LESS_THAN,
+    BRANCH_LESS_THAN_OR_EQUAL,
     PUSH_NULL,
     NEW_ARRAY,
     LOAD_ELEMENT,
@@ -47,8 +47,12 @@ enum OpCodes {
 //Represents an instruction
 struct Instruction {
     OpCodes OpCode;
-    int Value;
-    float FloatValue;
+
+    union {
+        float Float;
+        int Int;
+    } Value;
+
     std::string StrValue;
 };
 

@@ -26,20 +26,34 @@ public:
 	//Creates a new function
 	Function(std::string name, std::vector<const Type*> arguments, const Type* returnType);
 
+	//The name of the function
 	std::string name() const;
 
+	//The arguments
 	const std::vector<const Type*>& arguments() const;
+
+	//The number of arguments
 	int numArgs() const;
 
+	//The return type
 	const Type* returnType() const;
 
+	//The number of locals
 	int numLocals() const;
+
+	//Sets the number of locals
 	void setNumLocals(int count);
 	
+	//Returns the local at the given index
 	const Type* getLocal(int index) const;
+
+	//Sets the type for the local at the given index
 	void setLocal(int index, const Type* type);
 
+	//The size of the stack
 	int stackSize() const;
+
+	//Sets the size of the stack
 	void setStackSize(int size);
 };
 

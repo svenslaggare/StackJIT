@@ -214,7 +214,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
             break;
         case OpCodes::LOAD_LOCAL:
             {
-                auto localIndex = inst.Value;
+                auto localIndex = inst.Value.Int;
                 auto localType = locals[localIndex];
 
                 if (localType != nullptr) {
@@ -228,7 +228,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
             {
                 assertOperandCount(index, operandStack, 1);
             
-                auto localsIndex = inst.Value;
+                auto localsIndex = inst.Value.Int;
                 auto valueType = popType(operandStack);
                 auto localType = locals[localsIndex];
                 
@@ -294,20 +294,20 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
             }
             break;
         case OpCodes::LOAD_ARG:
-            operandStack.push(func.arguments()[inst.Value]);
+            operandStack.push(func.arguments()[inst.Value.Int]);
             break;
-        case OpCodes::BEQ:
-        case OpCodes::BNE:
-        case OpCodes::BGT:
-        case OpCodes::BGE:
-        case OpCodes::BLT:
-        case OpCodes::BLE:
+        case OpCodes::BRANCH_EQUAL:
+        case OpCodes::BRANCH_NOT_EQUAL:
+        case OpCodes::BRANCH_GREATER_THAN:
+        case OpCodes::BRANCH_GREATER_THAN_OR_EQUAL:
+        case OpCodes::BRANCH_LESS_THAN:
+        case OpCodes::BRANCH_LESS_THAN_OR_EQUAL:
             {
                 assertOperandCount(index, operandStack, 2);
                 
                 //Check if valid target
-                if (!(inst.Value >= 0 && inst.Value < numInsts)) {
-                    typeError(index, "Invalid jump target (" + std::to_string(inst.Value) + ").");
+                if (!(inst.Value.Int >= 0 && inst.Value.Int < numInsts)) {
+                    typeError(index, "Invalid jump target (" + std::to_string(inst.Value.Int) + ").");
                 }
 
                 auto op1 = popType(operandStack);
@@ -315,13 +315,13 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
     
                 if (*op1 == *intType) {               
                     if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
-                        branches.push_back({ index, inst.Value, operandStack });
+                        branches.push_back({ index, inst.Value.Int, operandStack });
                     } else {
                         typeError(index, "Expected 2 operands of type Int on the stack.");
                     }
                 } else if (*op1 == *boolType) {
                     if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Bool)) {
-                        branches.push_back({ index, inst.Value, operandStack });
+                        branches.push_back({ index, inst.Value.Int, operandStack });
                     } else {
                         typeError(index, "Expected 2 operands of type Int on the stack.");
                     }
@@ -330,13 +330,13 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
                 }
             }
             break;
-        case OpCodes::BR:
+        case OpCodes::BRANCH:
             //Check if valid target
-            if (!(inst.Value >= 0 && inst.Value < numInsts)) {
-                typeError(index, "Invalid jump target (" + std::to_string(inst.Value) + ").");
+            if (!(inst.Value.Int >= 0 && inst.Value.Int < numInsts)) {
+                typeError(index, "Invalid jump target (" + std::to_string(inst.Value.Int) + ").");
             }
 
-            branches.push_back({ index, inst.Value, operandStack });
+            branches.push_back({ index, inst.Value.Int, operandStack });
             break;
         case OpCodes::PUSH_NULL:
             {
@@ -377,7 +377,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
                 bool isNull = arrayRefType == nullType;
 
                 if (!TypeSystem::isArray(arrayRefType) && !isNull) {
-                    typeError(index, "Expected first operand to be of type ArrayRef.");
+                    typeError(index, "Expected first operand to be an array reference.");
                 }
 
                 if (!TypeSystem::isPrimitiveType(indexType, PrimitiveTypes::Integer)) {
@@ -415,7 +415,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
                 bool isNull = arrayRefType == nullType;
 
                 if (!TypeSystem::isArray(arrayRefType) && !isNull) {
-                    typeError(index, "Expected first operand to be of type ArrayRef.");
+                    typeError(index, "Expected first operand to be an array reference.");
                 }
 
                 if (!TypeSystem::isPrimitiveType(indexType, PrimitiveTypes::Integer)) {
@@ -447,7 +447,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
                 auto arrayRefType = popType(operandStack);
 
                 if (!TypeSystem::isArray(arrayRefType) && arrayRefType != nullType) {
-                    typeError(index, "Expected operand to be of type ArrayRef.");
+                    typeError(index, "Expected operand to be an array reference.");
                 }
 
                 operandStack.push(intType);
@@ -463,7 +463,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
 
                 std::string structName = dynamic_cast<const StructType*>(structType)->structName();
 
-                if (vmState.getStructMetadata(structName) == nullptr) {
+                if (!vmState.isStructDefined(structName)) {
                     typeError(index, "'" + structName + "' is not a defined struct.");
                 }
 
@@ -478,7 +478,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
                 bool isNull = structRefType == nullType;
 
                 if (!TypeSystem::isStruct(structRefType) && !isNull) {
-                    typeError(index, "Expected first operand to be of type StructRef.");
+                    typeError(index, "Expected first operand to be a struct reference.");
                 }
 
                 std::pair<std::string, std::string> structAndField;
@@ -487,11 +487,11 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
                     auto structName = structAndField.first;
                     auto fieldName = structAndField.second;
 
-                    auto structMetadata = vmState.getStructMetadata(structName);
-
-                    if (structMetadata == nullptr) {
+                    if (!vmState.isStructDefined(structName)) {
                         typeError(index, "'" + structName + "' is not a struct type.");
                     }
+
+                    auto structMetadata = vmState.getStructMetadata(structName);
 
                     auto structType = vmState.findType("Ref.Struct." + structName);
 
@@ -503,7 +503,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
                         }
                     }
 
-                    auto fieldType = structMetadata->getField(fieldName);
+                    auto fieldType = structMetadata.getField(fieldName);
 
                     if (fieldType == nullptr) {
                         typeError(index, "There exists no '" + fieldName + "' field in the '" + structName + "' struct.");
@@ -524,7 +524,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
                 bool isNull = structRefType == nullType;
 
                 if (!TypeSystem::isStruct(structRefType) && !isNull) {
-                    typeError(index, "Expected first operand to be of type StructRef.");
+                    typeError(index, "Expected first operand to be a struct reference.");
                 }
 
                 std::pair<std::string, std::string> structAndField;
@@ -533,13 +533,12 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
                     auto structName = structAndField.first;
                     auto fieldName = structAndField.second;
 
-                    auto structMetadata = vmState.getStructMetadata(structName);
-
-                    if (structMetadata == nullptr) {
+                    if (!vmState.isStructDefined(structName)) {
                         typeError(index, "'" + structName + "' is not a struct type.");
                     }
 
-                    auto fieldType = structMetadata->getField(fieldName);
+                    auto structMetadata = vmState.getStructMetadata(structName);
+                    auto fieldType = structMetadata.getField(fieldName);
 
                     if (fieldType == nullptr) {
                         typeError(index, "There exists no '" + fieldName + "' field in the '" + structName + "' struct.");

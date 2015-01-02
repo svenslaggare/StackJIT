@@ -2,8 +2,12 @@
 #include "type.h"
 #include "objects.h"
 
+VMState::VMState() {
+
+}
+
 VMState::~VMState() {
-    for (auto type : types) {
+    for (auto type : mTypes) {
         delete type.second;
     }
 }
@@ -37,34 +41,38 @@ void VMState::pushFunc(Function* func, int instIndex) {
     mCallStack.push_front(newEntry);
 }
 
-Type* VMState::findType(std::string name) {
-    if (types.count(name) > 0) {
-        return types[name];
+const Type* VMState::findType(std::string name) {
+    if (mTypes.count(name) > 0) {
+        return mTypes[name];
     } else {
-        Type* type = TypeSystem::makeTypeFromString(name);
-        types.insert({ name, type });
+        auto type = TypeSystem::makeTypeFromString(name);
+        mTypes.insert({ name, type });
         return type;
     }
 }
 
-Type* VMState::getType(std::string name) const {
-    if (types.count(name) > 0) {
-        return types.at(name);
+const Type* VMState::getType(std::string name) const {
+    if (mTypes.count(name) > 0) {
+        return mTypes.at(name);
     } else {
         return nullptr;
     }
 }
 
 void VMState::addStructMetadata(std::string structName, StructMetadata structMetadata) {
-    if (structsMetadata.count(structName) == 0) {
-        structsMetadata[structName] = structMetadata;
+    if (mStructsMetadata.count(structName) == 0) {
+        mStructsMetadata[structName] = structMetadata;
     }
 }
 
-const StructMetadata* VMState::getStructMetadata(std::string structName) const {
-    if (structsMetadata.count(structName) > 0) {
-        return &structsMetadata.at(structName);
+bool VMState::isStructDefined(std::string structName) const {
+    return mStructsMetadata.count(structName) > 0;
+}
+
+const StructMetadata& VMState::getStructMetadata(std::string structName) const {
+    if (mStructsMetadata.count(structName) > 0) {
+        return mStructsMetadata.at(structName);
     } else {
-        return nullptr;
+        throw std::out_of_range("The struct isn't defined.");
     }
 }

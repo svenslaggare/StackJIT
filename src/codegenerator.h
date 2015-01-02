@@ -14,7 +14,7 @@ typedef int (*JitFunction)();
 typedef std::pair<std::string, unsigned int> FunctionCall;
 typedef std::pair<unsigned int, unsigned int> BranchTarget;
 
-//Contains compilation data for a function
+//Holds compilation data for a function
 struct FunctionCompilationData {
 	Function& function; 															 	 //The function being jitted
 	std::unordered_map<unsigned int, BranchTarget> branchTable; 						 //Branch sources and inst targets

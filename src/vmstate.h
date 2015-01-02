@@ -9,13 +9,13 @@
 class Type;
 class ObjectHandle;
 
-//Represents the state of the VM
 using CallStackEntry = std::pair<Function*, int>;
 
+//Represents the state of the VM
 class VMState {
 private:
-	std::unordered_map<std::string, Type*> types;
-	std::unordered_map<std::string, StructMetadata> structsMetadata;
+	std::unordered_map<std::string, Type*> mTypes;
+	std::unordered_map<std::string, StructMetadata> mStructsMetadata;
 	std::unordered_map<const unsigned char*, ObjectHandle*> mObjects;
 	std::deque<CallStackEntry> mCallStack;
 public:
@@ -33,7 +33,12 @@ public:
 
 	std::unordered_map<std::string, FunctionDefinition> functionTable;
 
+    //Creates a new VM State
+    VMState();
 	~VMState();
+
+    VMState(const VMState&) = delete;
+    VMState& operator=(const VMState&) = delete;
 
     //Returns the handles for the allocated objects
     const std::unordered_map<const unsigned char*, ObjectHandle*>& getObjects() const;
@@ -54,14 +59,17 @@ public:
     void pushFunc(Function* func, int instIndex);
 
     //Finds the type object for the given type name
-    Type* findType(std::string name);
+    const Type* findType(std::string name);
 
     //Returns the given type (nullptr if not found)
-    Type* getType(std::string name) const;
+    const Type* getType(std::string name) const;
 
     //Adds metadata for the given struct
     void addStructMetadata(std::string structName, StructMetadata structMetadata);
 
+    //Indicates if the stuct is defined
+    bool isStructDefined(std::string structName) const;
+
     //Returns the metadata for the given struct
-    const StructMetadata* getStructMetadata(std::string structName) const;
+    const StructMetadata& getStructMetadata(std::string structName) const;
 };

@@ -8,14 +8,14 @@ Instruction Instructions::make(OpCodes opCode) {
 
 Instruction Instructions::makeWithInt(OpCodes opCode, int value) {
     Instruction inst;
-    inst.Value = value;
+    inst.Value.Int = value;
     inst.OpCode = opCode;
     return inst;
 }
 
 Instruction Instructions::makeWithFloat(OpCodes opCode, float value) {
     Instruction inst;
-    inst.FloatValue = value;
+    inst.Value.Float = value;
     inst.OpCode = opCode;
     return inst;
 }

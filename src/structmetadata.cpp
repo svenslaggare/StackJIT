@@ -1,43 +1,40 @@
 #include "structmetadata.h"
 #include "type.h"
 
-StructMetadata::StructMetadata(std::map<std::string, const Type*> fields)
-	: fields(fields) {
+Field::Field(const Type* type, std::size_t offset)
+	: type(type), offset(offset) {
 
 }
 
-StructMetadata::StructMetadata() {
+StructMetadata::StructMetadata(std::map<std::string, const Type*> fields)
+	: mSize(0) {
+	for (auto field : fields) {
+		mFields.insert({ field.first, Field(field.second, mSize) });
+		mSize += TypeSystem::sizeOfType(field.second);
+	}
+}
+
+StructMetadata::StructMetadata()
+	: mSize(0) {
 
 }
 
 const Type* StructMetadata::getField(std::string fieldName) const {
-	if (fields.count(fieldName) > 0) {
-		return fields.at(fieldName);
+	if (mFields.count(fieldName) > 0) {
+		return mFields.at(fieldName).type;
 	} else {
 		return nullptr;
 	}
 }
 
-std::size_t StructMetadata::getFieldOffset(std::string fieldName) const {
-	std::size_t offset = 0;
-
-	for (auto field : fields) {
-		if (field.first == fieldName) {
-			return offset;
-		}
-
-		offset += TypeSystem::sizeOfType(field.second);
+std::size_t StructMetadata::fieldOffset(std::string fieldName) const {
+	if (mFields.count(fieldName) > 0) {
+		return mFields.at(fieldName).offset;
+	} else {
+		throw std::out_of_range("The given field doesn't exist in the current type.");
 	}
-
-	return offset;
 }
 
-std::size_t StructMetadata::getSize() const {
-	std::size_t size = 0;
-
-	for (auto field : fields) {
-		size += TypeSystem::sizeOfType(field.second);
-	}
-
-	return size;
+std::size_t StructMetadata::size() const {
+	return mSize;
 }
