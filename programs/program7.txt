@@ -2,13 +2,13 @@ func main() Int
 {
 	.locals 1
 	
-	PUSH 1
-	PUSH 1
+	PUSHINT 1
+	PUSHINT 1
 	BNE 6
-	PUSH 5
+	PUSHINT 5
 	STLOC 0
 	BR 8
-	PUSH 7
+	PUSHINT 7
 	STLOC 0
 	LDLOC 0
 	RET

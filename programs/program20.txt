@@ -1,13 +1,13 @@
-func main2() Void
+func addFloat(Float Float) Float
 {
-   PUSHFLOAT 13.37
-   CALL printfln
+   .locals 1
+   .local 0 Float
 
-   PUSH 0
-   POP
-
-   PUSHFLOAT 47.11
-   CALL printfln
+   LDARG 0
+   LDARG 1
+   ADD
+   STLOC 0
+   LDLOC 0
    RET
 }
 
@@ -15,10 +15,10 @@ func main() Int
 {  
    PUSHFLOAT 13.37
    PUSHFLOAT 47.11
-   ADD
-   #CALL addFloat
+   #ADD
+   CALL addFloat
    CALL printfln
 
-   PUSH 0
+   PUSHINT 0
    RET
 }

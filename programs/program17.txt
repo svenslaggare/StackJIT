@@ -8,10 +8,10 @@ func main1() Int
 {
 	.locals 3
 	
-	PUSH 256
+	PUSHINT 256
 	STLOC 1
 
-	PUSH 0
+	PUSHINT 0
 	STLOC 2
 
 	LDLOC 1
@@ -28,12 +28,12 @@ func main1() Int
 	STELEM Ref.Struct.Point
 
 	LDLOC 2
-	PUSH 1
+	PUSHINT 1
 	ADD
 	STLOC 2
 	BR 7
 
-	PUSH 0
+	PUSHINT 0
 	RET
 }
 
@@ -41,20 +41,20 @@ func main2() Int
 {
 	.locals 2
 	
-	PUSH 1337
+	PUSHINT 1337
 
-	PUSH 8
+	PUSHINT 8
 	STLOC 0
 
 	LDLOC 0
-	PUSH 0
+	PUSHINT 0
 	BGE 13
 
 	NEWOBJ Ref.Struct.Point
 	STLOC 1
 
 	LDLOC 0
-	PUSH 1
+	PUSHINT 1
 	SUB
 	STLOC 0
 	BR 3
@@ -75,8 +75,8 @@ func main3(Ref.Struct.Point) Int
 	.locals 1
 	.local 0 Ref.Struct.Point
 
-	PUSH 1337
-	PUSH 4711
+	PUSHINT 1337
+	PUSHINT 4711
 
 	NEWOBJ Ref.Struct.Point
 	#CALL createObj
@@ -110,7 +110,7 @@ func main() Int
 	STLOC 1
 
 	STLOC 0
-	#PUSH 5670
+	#PUSHINT 5670
 	#STFIELD Point::x
 
 	LDLOC 1
@@ -132,6 +132,6 @@ func main4() Int
 
 	STLOC 0
 
-	PUSH 0
+	PUSHINT 0
 	RET
 }

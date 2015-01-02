@@ -2,15 +2,15 @@ func main() Int
 {
    .locals 1
    
-   PUSHTRUE
-   PUSHFALSE
+   PUSHINTTRUE
+   PUSHINTFALSE
    OR
-   PUSHTRUE
+   PUSHINTTRUE
    BNE 8
-   PUSH 5
+   PUSHINT 5
    STLOC 0
    BR 10
-   PUSH 7
+   PUSHINT 7
    STLOC 0
    LDLOC 0
    RET

@@ -23,8 +23,8 @@ $(EXECUTABLE): $(OBJECTS)
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(HEADERS)
 	$(CC) $(CFLAGS) $< -o $@	
 
-runtest: test/amd64-test.cpp src/amd64.cpp src/amd64.h
-	$(CC) -std=c++11 test/amd64-test.cpp src/amd64.cpp -o amd64-test
+test: tests/amd64-test.cpp src/amd64.cpp src/amd64.h
+	$(CC) -std=c++11 tests/amd64-test.cpp src/amd64.cpp -o amd64-test
 	./amd64-test
 
 clean:

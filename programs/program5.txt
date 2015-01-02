@@ -1,11 +1,11 @@
 func main() Int
 {
-	PUSH 6
-	PUSH 3
+	PUSHINT 6
+	PUSHINT 3
 	SUB
-	PUSH 4
+	PUSHINT 4
 	MUL
-	PUSH 3
+	PUSHINT 3
 	DIV
 	RET
 }

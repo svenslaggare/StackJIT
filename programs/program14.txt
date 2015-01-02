@@ -15,9 +15,9 @@ func main() Int
 {
 	.locals 0
 
-	#PUSHNULL
+	#PUSHINTNULL
 
-	#PUSH 2
+	#PUSHINT 2
 	#NEWARR Int
 
 	NEWOBJ Ref.Struct.Point3D
@@ -25,17 +25,17 @@ func main() Int
 
 	LDFIELD Point3D::z
 
-	#PUSH 0
+	#PUSHINT 0
 	#STFIELD Point::x
-	#PUSH 0
+	#PUSHINT 0
 
-	#PUSH 0
+	#PUSHINT 0
 	#LDELEM Int
 
-	#PUSH 0
-	#PUSH 0
+	#PUSHINT 0
+	#PUSHINT 0
 	#STELEM Int
-	#PUSH 0
+	#PUSHINT 0
 
 	RET
 }

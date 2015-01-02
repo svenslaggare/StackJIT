@@ -6,6 +6,11 @@ void Amd64Backend::pushReg(CodeGen& codeGen, Registers reg) {
 	codeGen.push_back(0x50 | reg);
 }
 
+void Amd64Backend::pushReg(CodeGen& codeGen, FloatRegisters reg) {
+	Amd64Backend::subByteFromReg(codeGen, Registers::SP, Amd64Backend::REG_SIZE);   //sub rsp, <reg size>  
+	Amd64Backend::moveRegToMemoryRegWithOffset(codeGen, Registers::SP, 0, reg);     //movss [rsp+0], xmm0 
+}
+
 void Amd64Backend::pushInt(CodeGen& codeGen, int value) {
 	codeGen.push_back(0x68);
 
@@ -19,6 +24,11 @@ void Amd64Backend::pushInt(CodeGen& codeGen, int value) {
 
 void Amd64Backend::popReg(CodeGen& codeGen, Registers reg) {
 	codeGen.push_back(0x58 | reg);
+}
+
+void Amd64Backend::popReg(CodeGen& codeGen, FloatRegisters reg) {
+    Amd64Backend::moveMemoryByRegToReg(codeGen, reg, Registers::SP); 			   //movss <reg>, [rsp]
+	Amd64Backend::addByteToReg(codeGen, Registers::SP, Amd64Backend::REG_SIZE);   //add rsp, <reg size> 
 }
 
 void Amd64Backend::moveRegToReg(CodeGen& codeGen, Registers dest, Registers src) {
@@ -91,6 +101,41 @@ void Amd64Backend::moveLongToReg(CodeGen& codeGen, Registers dest, long value) {
 
 	for (int i = 0; i < sizeof(long); i++) {
 		codeGen.push_back(converter.ByteValues[i]);
+	}
+}
+
+void Amd64Backend::moveMemoryByRegToReg(CodeGen& codeGen, FloatRegisters dest, Registers srcMemReg) {
+	codeGen.push_back(0xf3);
+	codeGen.push_back(0x0f);
+	codeGen.push_back(0x10);
+
+	switch (srcMemReg) {
+	case Registers::SP:
+		codeGen.push_back(0x04 | (dest << 3));
+		codeGen.push_back(0x24);
+		break;
+	case Registers::BP:
+		codeGen.push_back(0x45 | (dest << 3));
+		codeGen.push_back(0x00);
+		break;
+	default:
+		codeGen.push_back(srcMemReg | (dest << 3));
+		break;
+	}
+}
+
+void Amd64Backend::moveRegToMemoryRegWithOffset(CodeGen& codeGen, Registers destMemReg, char offset, FloatRegisters src) {
+	codeGen.push_back(0xf3);
+	codeGen.push_back(0x0f);
+	codeGen.push_back(0x11);
+
+	if (destMemReg != Registers::SP) {
+		codeGen.push_back(0x40 | destMemReg | (src << 3));
+		codeGen.push_back(offset);
+	} else {
+		codeGen.push_back(0x44 | (src << 3));
+		codeGen.push_back(0x24);
+		codeGen.push_back(offset);
 	}
 }
 

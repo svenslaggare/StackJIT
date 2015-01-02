@@ -161,6 +161,98 @@ void testMoveLongToReg() {
 	generatedCode.clear();
 }
 
+//Tests the moveMemoryByRegToReg generator
+void testMoveMemoryByRegToRegFloat() {
+	std::vector<unsigned char> generatedCode;
+	Amd64Backend::moveMemoryByRegToReg(generatedCode, FloatRegisters::XMM0, Registers::AX);
+	arrayAssert(generatedCode, { 0xF3, 0x0F, 0x10, 0x00 });
+	generatedCode.clear();
+
+	Amd64Backend::moveMemoryByRegToReg(generatedCode, FloatRegisters::XMM1, Registers::AX);
+	arrayAssert(generatedCode, { 0xF3, 0x0F, 0x10, 0x08 });
+	generatedCode.clear();
+
+	Amd64Backend::moveMemoryByRegToReg(generatedCode, FloatRegisters::XMM0, Registers::CX);
+	arrayAssert(generatedCode, { 0xF3, 0x0F, 0x10, 0x01 });
+	generatedCode.clear();
+
+	Amd64Backend::moveMemoryByRegToReg(generatedCode, FloatRegisters::XMM1, Registers::CX);
+	arrayAssert(generatedCode, { 0xF3, 0x0F, 0x10, 0x09 });
+	generatedCode.clear();
+
+	Amd64Backend::moveMemoryByRegToReg(generatedCode, FloatRegisters::XMM0, Registers::BP);
+	arrayAssert(generatedCode, { 0xF3, 0x0F, 0x10, 0x45, 0x00 });
+	generatedCode.clear();
+
+	Amd64Backend::moveMemoryByRegToReg(generatedCode, FloatRegisters::XMM1, Registers::BP);
+	arrayAssert(generatedCode, { 0xF3, 0x0F, 0x10, 0x4D, 0x00 });
+	generatedCode.clear();
+
+	Amd64Backend::moveMemoryByRegToReg(generatedCode, FloatRegisters::XMM0, Registers::SP);
+	arrayAssert(generatedCode, { 0xF3, 0x0F, 0x10, 0x04, 0x24 });
+	generatedCode.clear();
+
+	Amd64Backend::moveMemoryByRegToReg(generatedCode, FloatRegisters::XMM1, Registers::SP);
+	arrayAssert(generatedCode, { 0xF3, 0x0F, 0x10, 0x0C, 0x24 });
+	generatedCode.clear();
+
+	Amd64Backend::moveMemoryByRegToReg(generatedCode, FloatRegisters::XMM2, Registers::SP);
+	arrayAssert(generatedCode, { 0xF3, 0x0F, 0x10, 0x14, 0x24 });
+	generatedCode.clear();
+
+	Amd64Backend::moveMemoryByRegToReg(generatedCode, FloatRegisters::XMM3, Registers::SP);
+	arrayAssert(generatedCode, { 0xF3, 0x0F, 0x10, 0x1C, 0x24 });
+	generatedCode.clear();
+}
+
+//Tests the moveRegToMemoryRegWithOffset generator
+void testMoveRegToMemoryRegWithOffsetFloat() {
+	std::vector<unsigned char> generatedCode;
+	Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::AX, 0, FloatRegisters::XMM0);
+	arrayAssert(generatedCode, { 0xF3, 0x0F, 0x11, 0x40, 0x00 });
+	generatedCode.clear();
+
+	Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::AX, 0, FloatRegisters::XMM1);
+	arrayAssert(generatedCode, { 0xF3, 0x0F, 0x11, 0x48, 0x00 });
+	generatedCode.clear();
+
+	Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::AX, 0, FloatRegisters::XMM3);
+	arrayAssert(generatedCode, { 0xF3, 0x0F, 0x11, 0x58, 0x00 });
+	generatedCode.clear();
+
+	Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::CX, 0, FloatRegisters::XMM0);
+	arrayAssert(generatedCode, { 0xF3, 0x0F, 0x11, 0x41, 0x00 });
+	generatedCode.clear();
+
+	Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::CX, 0, FloatRegisters::XMM1);
+	arrayAssert(generatedCode, { 0xF3, 0x0F, 0x11, 0x49, 0x00 });
+	generatedCode.clear();
+
+	Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::CX, 0, FloatRegisters::XMM2);
+	arrayAssert(generatedCode, { 0xF3, 0x0F, 0x11, 0x51, 0x00 });
+	generatedCode.clear();
+
+	Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::BP, 0, FloatRegisters::XMM2);
+	arrayAssert(generatedCode, { 0xF3, 0x0F, 0x11, 0x55, 0x00 });
+	generatedCode.clear();
+
+	Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::SP, 0, FloatRegisters::XMM0);
+	arrayAssert(generatedCode, { 0xF3, 0x0F, 0x11, 0x44, 0x24, 0x0 });
+	generatedCode.clear();
+
+	Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::SP, 0, FloatRegisters::XMM1);
+	arrayAssert(generatedCode, { 0xF3, 0x0F, 0x11, 0x4C, 0x24, 0x00 });
+	generatedCode.clear();
+
+	Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::SP, 0, FloatRegisters::XMM2);
+	arrayAssert(generatedCode, { 0xF3, 0x0F, 0x11, 0x54, 0x24, 0x00 });
+	generatedCode.clear();
+
+	Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::SP, 0, FloatRegisters::XMM3);
+	arrayAssert(generatedCode, { 0xF3, 0x0F, 0x11, 0x5C, 0x24, 0x00 });
+	generatedCode.clear();
+}
+
 //Tests the callInReg generator
 void testCallInReg() {
 	std::vector<unsigned char> generatedCode;
@@ -515,6 +607,7 @@ int main() {
 	testPush();
 	testPushInt();
 	testPop();
+
 	testMoveRegToReg();
 	testMoveRegToMemory();
 	testMoveMemoryToReg();
@@ -522,8 +615,13 @@ int main() {
 	testMoveRegToMemoryRegWithOffset();
 	testMoveIntToReg();
 	testMoveLongToReg();
+
+	testMoveMemoryByRegToRegFloat();
+	testMoveRegToMemoryRegWithOffsetFloat();
+
 	testCallInReg();
 	testRet();
+
 	testAddRegToReg();
 	testAddByteToReg();
 	testSubRegFromReg();
@@ -534,6 +632,7 @@ int main() {
 	testAndRegToReg();
 	testOrRegToReg();
 	testCompareRegToReg();
+
 	std::cout << "All tests passed." << std::endl;
 	return 0;
 }

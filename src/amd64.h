@@ -28,6 +28,18 @@ enum Registers : unsigned char {
 	DI = 0b111
 };
 
+//The floating point registers
+enum FloatRegisters : unsigned char {
+	XMM0 = 0b000,
+	XMM1 = 0b001,
+	XMM2 = 0b010,
+	XMM3 = 0b011,
+	XMM4 = 0b100,
+	XMM5 = 0b101,
+	XMM6 = 0b110,
+	XMM7 = 0b111,
+};
+
 //The register for function arguments
 namespace RegisterCallArguments {
 	const Registers Arg0 = Registers::DI;
@@ -46,11 +58,17 @@ namespace Amd64Backend {
 	//Pushes the given register to the stack
 	void pushReg(CodeGen&, Registers);
 
+	//Pushes the given register to the stack
+	void pushReg(CodeGen&, FloatRegisters);
+
 	//Pushes the given integer to the stack
 	void pushInt(CodeGen&, int);
 
 	//Pops from the stack to the given register
 	void popReg(CodeGen&, Registers);
+
+	//Pops from the stack to the given register
+	void popReg(CodeGen&, FloatRegisters);
 
 	//Moves the content from the second register to the first register
 	void moveRegToReg(CodeGen&, Registers, Registers);
@@ -72,6 +90,12 @@ namespace Amd64Backend {
 
 	//Moves the given long (64-bits) to the given register
 	void moveLongToReg(CodeGen&, Registers, long);
+
+	//Moves the content from memory where the address is in the second register to the first register
+	void moveMemoryByRegToReg(CodeGen&, FloatRegisters, Registers);
+
+	//Moves the content from a register to memory where the address is in a register + offset
+	void moveRegToMemoryRegWithOffset(CodeGen&, Registers, char, FloatRegisters);
 
 	//Calls the given function where the entry points is in a register
 	void callInReg(CodeGen&, Registers);

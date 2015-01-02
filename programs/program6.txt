@@ -1,4 +1,4 @@
-func int_push(Int) Int
+func int_PUSHINT(Int) Int
 {
 	.locals 2
 	.local 0 Int
@@ -13,10 +13,10 @@ func main() Int
 {
 	.locals 2
 	
-	PUSH 15
+	PUSHINT 15
 	STLOC 1
-	PUSH 5
-	CALL int_push
+	PUSHINT 5
+	CALL int_PUSHINT
 	STLOC 0
 	LDLOC 1
 	RET

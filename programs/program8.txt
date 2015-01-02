@@ -2,21 +2,21 @@ func main() Int
 {
 	.locals 1
 	
-	PUSH 10
+	PUSHINT 10
 	STLOC 0
 
 	LDLOC 0
 	call println
 
 	LDLOC 0
-	PUSH 1
+	PUSHINT 1
 	SUB
 	STLOC 0
 
 	LDLOC 0
-	PUSH 0
+	PUSHINT 0
 	BNE 2
 
-	PUSH 0
+	PUSHINT 0
 	RET
 }

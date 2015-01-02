@@ -1,7 +1,7 @@
 func main() Int
 {
-	PUSH -5
-	PUSH 2
+	PUSHINT -5
+	PUSHINT 2
 	ADD
 	CALL abs
 	RET

@@ -149,7 +149,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
         std::string currentToLower = toLower(current);
 
         if (isFuncBody) {
-            if (currentToLower == "push") {
+            if (currentToLower == "pushint") {
                 assertTokenCount(tokens, i, 1);
                 int value = stoi(tokens[i + 1]);
                 currentFunc->instructions.push_back(Instructions::makeWithInt(OpCodes::PUSH_INT, value));
