@@ -1,0 +1,11 @@
+func main() Int
+{  
+	.locals 1
+	.local 0 Float
+
+	PUSHFLOAT 13.37
+	STLOC 0
+
+	PUSHINT 0
+	RET
+}

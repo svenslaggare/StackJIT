@@ -92,6 +92,6 @@ func main4() Int
 
 func main() Int
 {
-	CALL main3
+	CALL main1
 	RET
 }

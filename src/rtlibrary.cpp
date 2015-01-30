@@ -20,28 +20,9 @@ void Runtime::printStackFrame(long* basePtr, Function* func) {
     std::cout << "Num args: " << numArgs << std::endl;
     std::cout << "Num locals: " << numLocals << std::endl;
 
-    long* argsStart = basePtr - 1;
-    long* localsStart = basePtr - 1 - numArgs;
-
-    if (numArgs > 0) {
-        std::cout << "Args: " << std::endl;
-        for (int i = 0; i < numArgs; i++) {
-            std::cout << i << ": " << argsStart[-i] << std::endl;
-            //std::cout << i << ": " << argsStart[-i] << " (" << func->arguments()[i]->name() << ")" << std::endl;
-        }
-
-        std::cout << std::endl;
-    }
-
-    if (numLocals > 0) {
-        std::cout << "Locals: " << std::endl;
-        for (int i = 0; i < numLocals; i++) {
-            std::cout << i << ": " << localsStart[-i] << std::endl;
-            //std::cout << i << ": " << localsStart[-i] << " (" << func->getLocal(i)->name() << ")" << std::endl;
-        }
-
-        std::cout << std::endl;
-    }
+    std::cout << std::endl;
+    std::cout << "Values:" << std::endl;
+    printAliveObjects(basePtr, func, func->instructions.size() - 1, "\t");
     
     std::cout << "----End StackFrame----" << std::endl;
 }
@@ -81,6 +62,33 @@ long* findBasePtr(long* basePtr, int currentIndex, int index) {
     return findBasePtr((long*)*basePtr, currentIndex + 1, index);
 }
 
+union IntFloatConverter {
+    int IntValue;
+    float FloatValue;
+};
+
+void printValue(long value, const Type* type) {
+    // auto valueStr = std::to_string(value);
+    //std::string valueStr = "";
+
+    if (TypeSystem::isReferenceType(type)) {
+        if (value == 0) {
+            std::cout << "nullref";
+        } else {
+            std::cout << "0x" << std::hex << value << std::dec;
+        }
+    } else if (type->name() == "Float") {
+        //int floatPattern = 1096149893;
+        //float floatValue = *(reinterpret_cast<float*>(&floatPattern));
+
+        std::cout << value;
+    } else {
+        std::cout << value;
+    }
+
+    std::cout << " (" + type->name() + ")";
+}
+
 void Runtime::printAliveObjects(long* basePtr, Function* func, int instIndex, std::string indentation) {
     int numArgs = func->numArgs();
     int numLocals = func->numLocals();
@@ -96,7 +104,10 @@ void Runtime::printAliveObjects(long* basePtr, Function* func, int instIndex, st
     if (numArgs > 0) {
         std::cout << indentation << "Args: " << std::endl;
         for (int i = 0; i < numArgs; i++) {
-            std::cout << indentation << i << ": " << argsStart[-i] << " (" << func->arguments()[i]->name() << ")" << std::endl;
+            //std::cout << indentation << i << ": " << argsStart[-i] << " (" << func->arguments()[i]->name() << ")" << std::endl;
+            std::cout << indentation << i << ": ";
+            printValue(argsStart[-i], func->arguments()[i]);
+            std::cout << std::endl;
         }
 
         std::cout << std::endl;
@@ -105,7 +116,10 @@ void Runtime::printAliveObjects(long* basePtr, Function* func, int instIndex, st
     if (numLocals > 0) {
         std::cout << indentation << "Locals: " << std::endl;
         for (int i = 0; i < numLocals; i++) {
-            std::cout << indentation << i << ": " << localsStart[-i] << " (" << func->getLocal(i)->name() << ")" << std::endl;
+            //std::cout << indentation << i << ": " << localsStart[-i] << " (" << func->getLocal(i)->name() << ")" << std::endl;
+            std::cout << indentation << i << ": ";
+            printValue(localsStart[-i], func->getLocal(i));
+            std::cout << std::endl;
         }
 
         std::cout << std::endl;
@@ -114,7 +128,10 @@ void Runtime::printAliveObjects(long* basePtr, Function* func, int instIndex, st
     if (stackSize > 0) {
         std::cout << indentation << "Stack: " << std::endl;
         for (int i = 0; i < stackSize; i++) {
-            std::cout << indentation << i << ": " << stackStart[-i] << " (" << operandTypes[i]->name() << ")" << std::endl;
+            //std::cout << indentation << i << ": " << stackStart[-i] << " (" << operandTypes[i]->name() << ")" << std::endl;
+            std::cout << indentation << i << ": ";
+            printValue(stackStart[-i], operandTypes[i]);
+            std::cout << std::endl;
         }
     }
 }
