@@ -8,12 +8,12 @@ class Type;
 class ObjectHandle {
 private:
 	unsigned char* mHandle;
-	std::size_t mObjSize;
+	std::size_t mSize;
 	const Type* mType;
 	bool mIsMarked = false;
 public:	
 	//Creates a new object handle
-	ObjectHandle(unsigned char* handle, std::size_t objSize, const Type* type);
+	ObjectHandle(unsigned char* handle, std::size_t size, const Type* type);
 	virtual ~ObjectHandle();
 
 	//Deletes the underlying handle
@@ -44,7 +44,7 @@ private:
 	int mLength;
 public:
 	//Creates a new array handle
-	ArrayHandle(unsigned char* handle, std::size_t objSize, const Type* type, int length);
+	ArrayHandle(unsigned char* handle, std::size_t size, const Type* type, int length);
 	ArrayHandle();
 
 	//Returns the length of the handled array

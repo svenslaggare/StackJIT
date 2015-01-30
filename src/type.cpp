@@ -59,7 +59,7 @@ std::string StructType::structName() const {
 	return mStructName;
 }
 
-std::string TypeSystem::getPrimitiveTypeName(PrimitiveTypes primitiveType) {
+std::string TypeSystem::primitiveTypeName(PrimitiveTypes primitiveType) {
 	switch (primitiveType) {
 		case PrimitiveTypes::Void:
 			return "Void";
@@ -178,7 +178,7 @@ std::string TypeSystem::arrayTypeName(const Type* type) {
 	return "Ref.Array[" + type->name() +  "]";
 }
 
-std::size_t TypeSystem::getSize(PrimitiveTypes primitiveType) {
+std::size_t TypeSystem::sizeOfType(PrimitiveTypes primitiveType) {
 	switch (primitiveType) {
 	case PrimitiveTypes::Void:
 		return 0;
@@ -189,17 +189,19 @@ std::size_t TypeSystem::getSize(PrimitiveTypes primitiveType) {
 	case PrimitiveTypes::Bool:
 		return 1;
 	}
+
+	return 0;
 }
 
 std::size_t TypeSystem::sizeOfType(const Type* type) {
 	auto typeName = type->name();
 
 	if (typeName == "Int") {
-		return TypeSystem::getSize(PrimitiveTypes::Integer);
+		return TypeSystem::sizeOfType(PrimitiveTypes::Integer);
 	} else if (typeName == "Float") {
-		return TypeSystem::getSize(PrimitiveTypes::Float);
+		return TypeSystem::sizeOfType(PrimitiveTypes::Float);
 	} else if (typeName == "Bool") {
-		return TypeSystem::getSize(PrimitiveTypes::Bool);
+		return TypeSystem::sizeOfType(PrimitiveTypes::Bool);
 	} else if (TypeSystem::isReferenceType(type)) {
 		return sizeof(long);
 	}
@@ -208,7 +210,7 @@ std::size_t TypeSystem::sizeOfType(const Type* type) {
 }
 
 bool TypeSystem::getStructAndField(std::string str, std::pair<std::string, std::string>& res) {
-    int fieldSepPos = str.find("::");
+    auto fieldSepPos = str.find("::");
 
     if (fieldSepPos != std::string::npos) {
         auto structName = str.substr(0, fieldSepPos);

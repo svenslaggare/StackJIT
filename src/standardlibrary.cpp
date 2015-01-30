@@ -30,9 +30,9 @@ void StandardLibrary::printchar(int x) {
 }
 
 void StandardLibrary::add(VMState& vmState) {
-	auto intType = vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer));
-	auto floatType = vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Float));
-	auto voidType = vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Void));
+	auto intType = vmState.findType(TypeSystem::primitiveTypeName(PrimitiveTypes::Integer));
+	auto floatType = vmState.findType(TypeSystem::primitiveTypeName(PrimitiveTypes::Float));
+	auto voidType = vmState.findType(TypeSystem::primitiveTypeName(PrimitiveTypes::Void));
 
 	vmState.functionTable["abs"] = FunctionDefinition({ intType }, intType, (long)(&abs));
 	vmState.functionTable["print"] = FunctionDefinition({ intType }, voidType, (long)(&print));

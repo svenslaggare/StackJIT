@@ -1,7 +1,7 @@
 #include "objects.h"
 
-ObjectHandle::ObjectHandle(unsigned char* handle, std::size_t objSize, const Type* type)
-	: mHandle(handle), mObjSize(objSize), mType(type) {
+ObjectHandle::ObjectHandle(unsigned char* handle, std::size_t size, const Type* type)
+	: mHandle(handle), mSize(size), mType(type) {
 	if (handle == nullptr) {
 		throw std::invalid_argument("handle");
 	}
@@ -14,11 +14,11 @@ ObjectHandle::~ObjectHandle() {
 void ObjectHandle::deleteHandle() {
 	delete[] mHandle;
 	mHandle = nullptr;
-	mObjSize = 0;
+	mSize = 0;
 }
 
 std::size_t ObjectHandle::size() const {
-	return mObjSize;
+	return mSize;
 }
 
 const Type* ObjectHandle::type() const {
@@ -41,8 +41,8 @@ void ObjectHandle::unmark() {
 	mIsMarked = false;
 }
 
-ArrayHandle::ArrayHandle(unsigned char* handle, std::size_t objSize, const Type* type, int length)
-	: ObjectHandle(handle, objSize, type), mLength(length) {
+ArrayHandle::ArrayHandle(unsigned char* handle, std::size_t size, const Type* type, int length)
+	: ObjectHandle(handle, size, type), mLength(length) {
 
 }
 

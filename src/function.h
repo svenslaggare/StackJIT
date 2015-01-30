@@ -60,13 +60,13 @@ public:
 //Represents a definition for a function
 class FunctionDefinition {
 private:
+	std::vector<const Type*> mArguments;
+	const Type* mReturnType;
+
 	long mEntryPoint;
 	int mFunctionSize;
 
 	bool mIsManaged;
-
-	const Type* mReturnType;
-	std::vector<const Type*> mArguments;
 public:
 	//Creates a new managed function definition
 	FunctionDefinition(std::vector<const Type*> arguments, const Type* returnType, long entryPoint, int funcSize);

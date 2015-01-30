@@ -71,7 +71,7 @@ enum PrimitiveTypes : unsigned char {
 
 namespace TypeSystem {
 	//Returns the name of the given primitive type
-	std::string getPrimitiveTypeName(PrimitiveTypes primitiveType);
+	std::string primitiveTypeName(PrimitiveTypes primitiveType);
 
 	//Creates a new type from the given string
 	Type* makeTypeFromString(std::string typeName);
@@ -92,7 +92,7 @@ namespace TypeSystem {
 	std::string arrayTypeName(const Type* type);
 
 	//Returns the size (in bytes) for the given primitive type
-	std::size_t getSize(PrimitiveTypes primitiveType);
+	std::size_t sizeOfType(PrimitiveTypes primitiveType);
 
 	//Returns the size (in bytes) for the given type
 	std::size_t sizeOfType(const Type* type);

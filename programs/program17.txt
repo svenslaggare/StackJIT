@@ -73,8 +73,25 @@ func main3() Int
 	RET
 }
 
+func main4() Int
+{
+	.locals 1
+	.local 0 Ref.Struct.Point
+
+	NEWOBJ Ref.Struct.Point
+	NEWOBJ Ref.Struct.Point
+	STLOC 0
+	STLOC 0
+
+	NEWOBJ Ref.Struct.Point
+	STLOC 0 
+
+	PUSHINT 0
+	RET
+}
+
 func main() Int
 {
-	CALL main2
+	CALL main3
 	RET
 }

@@ -90,10 +90,10 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
 
     std::vector<BranchCheck> branches;
 
-    const auto intType = vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Integer));
-    const auto floatType = vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Float));
-    const auto boolType = vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Bool));
-    const auto voidType = vmState.findType(TypeSystem::getPrimitiveTypeName(PrimitiveTypes::Void));
+    const auto intType = vmState.findType(TypeSystem::primitiveTypeName(PrimitiveTypes::Integer));
+    const auto floatType = vmState.findType(TypeSystem::primitiveTypeName(PrimitiveTypes::Float));
+    const auto boolType = vmState.findType(TypeSystem::primitiveTypeName(PrimitiveTypes::Bool));
+    const auto voidType = vmState.findType(TypeSystem::primitiveTypeName(PrimitiveTypes::Void));
     const auto nullType = vmState.findType("Ref.Null");
 
     int index = 1;

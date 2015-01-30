@@ -120,7 +120,9 @@ void Runtime::printAliveObjects(long* basePtr, Function* func, int instIndex, st
 }
 
 void printObject(ObjectHandle* handle) {
-    std::cout << "0x" << std::hex << (long)handle->handle() << std::dec << ": " << handle->size() << " bytes (" << handle->type()->name() << ")" << std::endl;
+    std::cout 
+        << "0x" << std::hex << (long)handle->handle() << std::dec << ": " << handle->size()
+        << " bytes (" << handle->type()->name() << ")" << std::endl;
 }
 
 void Runtime::markObject(ObjectHandle* handle) {
@@ -168,10 +170,12 @@ void Runtime::markValue(long value, const Type* type) {
 
     if (TypeSystem::isReferenceType(type)) {
         if (vmState.getObjects().count(objPtr) > 0) {
-                Runtime::markObject(vmState.getObjects().at(objPtr));
+            Runtime::markObject(vmState.getObjects().at(objPtr));
         } else {
-            //Due to a bug in the root finding, its possible to mark invalid values.
-            std::cout << "Marking invalid object (0x" << std::hex << value << std::dec << ")" << std::endl;
+            if (vmState.enableDebug) {
+                //Due to a bug in the root finding, its possible to mark invalid values.
+                std::cout << "Marking invalid object (0x" << std::hex << value << std::dec << ")" << std::endl;
+            }
         }
     }
 }
@@ -213,8 +217,11 @@ void Runtime::sweepObjects() {
 
         if (!obj->isMarked()) {
             objectsToRemove.push_back(obj);
-            std::cout << "Deleted object: ";
-            printObject(obj);
+
+            if (vmState.enableDebug) {
+                std::cout << "Deleted object: ";
+                printObject(obj);
+            }
         } else {
             obj->unmark();
         }
@@ -226,19 +233,29 @@ void Runtime::sweepObjects() {
 }
 
 void Runtime::garbageCollect(long* basePtr, Function* func, int instIndex) {
-    auto startStr = "-----Start GC in func " + func->name() + " (" + std::to_string(instIndex) + ")-----";
-    std::cout << startStr << std::endl;
+    int startStrLength = 0;
 
-    std::cout << "Alive objects: " << std::endl;
-    for (auto objEntry : vmState.getObjects()) {
-        auto obj = objEntry.second;
-        printObject(obj);
+    if (vmState.enableDebug) {
+        auto startStr = "-----Start GC in func " + func->name() + " (" + std::to_string(instIndex) + ")-----";
+        std::cout << startStr << std::endl;
+        startStrLength = startStr.length();
     }
 
-    std::cout << "Stack trace: " << std::endl;
+    if (vmState.enableDebug) {
+        std::cout << "Alive objects: " << std::endl;
 
-    std::cout << func->name() << " (" << instIndex << ")" << std::endl;
-    Runtime::printAliveObjects(basePtr, func, instIndex, "\t");
+        for (auto objEntry : vmState.getObjects()) {
+            auto obj = objEntry.second;
+            printObject(obj);
+        }
+    }
+    
+    if (vmState.enableDebug) {
+        std::cout << "Stack trace: " << std::endl;
+        std::cout << func->name() << " (" << instIndex << ")" << std::endl;
+        Runtime::printAliveObjects(basePtr, func, instIndex, "\t");
+    }
+
     Runtime::markObjects(basePtr, func, instIndex);
 
     int topFuncIndex = 0;
@@ -247,7 +264,10 @@ void Runtime::garbageCollect(long* basePtr, Function* func, int instIndex) {
         auto callPoint = callEntry.second;
         auto callBasePtr = findBasePtr(basePtr, 0, topFuncIndex);
 
-        std::cout << topFunc->name() << " (" << callPoint << ")" << std::endl;
+        if (vmState.enableDebug) {
+            std::cout << topFunc->name() << " (" << callPoint << ")" << std::endl;
+        }
+
         Runtime::printAliveObjects(callBasePtr, topFunc, callPoint, "\t");
         Runtime::markObjects(callBasePtr, topFunc, callPoint);
 
@@ -256,16 +276,18 @@ void Runtime::garbageCollect(long* basePtr, Function* func, int instIndex) {
 
     Runtime::sweepObjects();
 
-    printTimes('-', startStr.length() / 2 - 3);
-    std::cout << "End GC";
-    printTimes('-', (startStr.length() + 1) / 2 - 3);
-    std::cout << std::endl;
+    if (vmState.enableDebug) {
+        printTimes('-', startStrLength / 2 - 3);
+        std::cout << "End GC";
+        printTimes('-', (startStrLength + 1) / 2 - 3);
+        std::cout << std::endl;
+    }
 }
 
 long Runtime::newArray(Type* elementType, int length) {
     auto elemSize = TypeSystem::sizeOfType(elementType);
 
-    int memSize = sizeof(int) + length * elemSize;
+    std::size_t memSize = sizeof(int) + length * elemSize;
     unsigned char* arrayPtr = new unsigned char[memSize];
     memset(arrayPtr, 0, memSize);
 
@@ -280,10 +302,12 @@ long Runtime::newArray(Type* elementType, int length) {
     arrayPtr[2] = converter.ByteValues[2];
     arrayPtr[3] = converter.ByteValues[3];
 
-    std::cout
-        << "Allocted array (size: " << memSize << " bytes, length: " << length << ", type: " << elementType->name()
-        << ") at " << (long)arrayPtr
-        << std::endl;
+    if (vmState.enableDebug) {
+        std::cout
+            << "Allocted array (size: " << memSize << " bytes, length: " << length << ", type: " << elementType->name()
+            << ") at " << (long)arrayPtr
+            << std::endl;
+    }
 
     return (long)arrayPtr;
 }
@@ -291,17 +315,19 @@ long Runtime::newArray(Type* elementType, int length) {
 long Runtime::newObject(Type* type) {
     auto structType = static_cast<StructType*>(type);
 
-    int memSize = vmState.getStructMetadata(structType->structName()).size();
+    std::size_t memSize = vmState.getStructMetadata(structType->structName()).size();
     unsigned char* structPtr = new unsigned char[memSize];
     memset(structPtr, 0, memSize);
 
     //Add the struct to the list of objects
     vmState.newObject(new StructHandle(structPtr, memSize, type));
 
-    std::cout
-        << "Allocted object (size: " << memSize << " bytes, type: " <<  type->name() 
-        << ") at " << (long)structPtr
-        << std::endl;
+    if (vmState.enableDebug) {
+        std::cout
+            << "Allocted object (size: " << memSize << " bytes, type: " <<  type->name() 
+            << ") at " << (long)structPtr
+            << std::endl;
+    }
 
     return (long)structPtr;
 }
