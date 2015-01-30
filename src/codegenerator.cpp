@@ -698,6 +698,13 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         {
             auto elemType = vmState.getType(inst.StrValue);
 
+            //Call the garbageCollect runtime function
+            // Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&Runtime::garbageCollect);
+            // Amd64Backend::moveRegToReg(generatedCode, Registers::DI, Registers::BP); //BP as the first argument
+            // Amd64Backend::moveLongToReg(generatedCode, Registers::SI, (long)&function); //Address of the function as second argument
+            // Amd64Backend::moveIntToReg(generatedCode, Registers::DX, instIndex); //Current inst index as third argument
+            // Amd64Backend::callInReg(generatedCode, Registers::AX);
+
             //The pointer to the type as the first arg
             Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)elemType); //mov rdi, <addr of type pointer>
 

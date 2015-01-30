@@ -166,13 +166,13 @@ void Runtime::markValue(long value, const Type* type) {
         return;
     }
 
-    //Due to a bug in the root finding, its possible to mark invalid values.
-    if (vmState.getObjects().count(objPtr) > 0) {
-        if (TypeSystem::isReferenceType(type)) {
-            Runtime::markObject(vmState.getObjects().at(objPtr));
+    if (TypeSystem::isReferenceType(type)) {
+        if (vmState.getObjects().count(objPtr) > 0) {
+                Runtime::markObject(vmState.getObjects().at(objPtr));
+        } else {
+            //Due to a bug in the root finding, its possible to mark invalid values.
+            std::cout << "Marking invalid object (0x" << std::hex << value << std::dec << ")" << std::endl;
         }
-    } else {
-        std::cout << "Marking invalid object (0x" << std::hex << value << std::dec << ")" << std::endl;
     }
 }
 

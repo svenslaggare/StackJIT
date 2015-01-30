@@ -75,6 +75,6 @@ func main3() Int
 
 func main() Int
 {
-	CALL main1
+	CALL main2
 	RET
 }
