@@ -7,14 +7,14 @@ class ObjectHandle;
 
 //The runtime library
 namespace Runtime {
-	//Prints the given stack frame
-	void printStackFrame(long* basePtr, Function* func);
-
 	//Pushes the given func to the top of the call stack
 	void pushFunc(Function* func, int instIndex);
 
 	//Pops the top function from the call stack
 	void popFunc();
+
+	//Prints the given stack frame
+	void printStackFrame(long* basePtr, Function* func);
 
 	//Prints the alive objects
 	void printAliveObjects(long* basePtr, Function* func, int instIndex, std::string indentation = "");

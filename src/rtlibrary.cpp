@@ -11,6 +11,14 @@
 
 extern VMState vmState;
 
+void Runtime::pushFunc(Function* func, int instIndex) {
+    vmState.pushFunc(func, instIndex);
+}
+
+void Runtime::popFunc() {
+    vmState.popFunc();
+}
+
 void Runtime::printStackFrame(long* basePtr, Function* func) {
     int numArgs = func->numArgs();
     int numLocals = func->numLocals();
@@ -25,14 +33,6 @@ void Runtime::printStackFrame(long* basePtr, Function* func) {
     printAliveObjects(basePtr, func, func->instructions.size() - 1, "\t");
     
     std::cout << "----End StackFrame----" << std::endl;
-}
-
-void Runtime::pushFunc(Function* func, int instIndex) {
-    vmState.pushFunc(func, instIndex);
-}
-
-void Runtime::popFunc() {
-    vmState.popFunc();
 }
 
 void printStackTrace(long* basePtr, int level) {
@@ -68,9 +68,6 @@ union IntFloatConverter {
 };
 
 void printValue(long value, const Type* type) {
-    // auto valueStr = std::to_string(value);
-    //std::string valueStr = "";
-
     if (TypeSystem::isReferenceType(type)) {
         if (value == 0) {
             std::cout << "nullref";

@@ -8,7 +8,7 @@ void Amd64Backend::pushReg(CodeGen& codeGen, Registers reg) {
 
 void Amd64Backend::pushReg(CodeGen& codeGen, FloatRegisters reg) {
 	Amd64Backend::subByteFromReg(codeGen, Registers::SP, Amd64Backend::REG_SIZE);   //sub rsp, <reg size>  
-	Amd64Backend::moveRegToMemoryRegWithOffset(codeGen, Registers::SP, 0, reg);     //movss [rsp+0], xmm0 
+	Amd64Backend::moveRegToMemoryRegWithOffset(codeGen, Registers::SP, 0, reg);     //movss [rsp+0], <float reg>
 }
 
 void Amd64Backend::pushInt(CodeGen& codeGen, int value) {
@@ -28,7 +28,7 @@ void Amd64Backend::popReg(CodeGen& codeGen, Registers reg) {
 
 void Amd64Backend::popReg(CodeGen& codeGen, FloatRegisters reg) {
     Amd64Backend::moveMemoryByRegToReg(codeGen, reg, Registers::SP); 			   //movss <reg>, [rsp]
-	Amd64Backend::addByteToReg(codeGen, Registers::SP, Amd64Backend::REG_SIZE);   //add rsp, <reg size> 
+	Amd64Backend::addByteToReg(codeGen, Registers::SP, Amd64Backend::REG_SIZE);    //add rsp, <reg size> 
 }
 
 void Amd64Backend::moveRegToReg(CodeGen& codeGen, Registers dest, Registers src) {

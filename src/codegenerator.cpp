@@ -202,7 +202,7 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
         //This method should be faster? but makes the generated code larger
         // Amd64Backend::moveIntToReg(function.generatedCode, Registers::AX, 0); //mov rax, 0
 
-        // for (int i = 0; i < function.numLocals; i++) {
+        // for (int i = 0; i < function.numLocals(); i++) {
         //     int localOffset = (i + function.numArgs() + 1) * -Amd64Backend::REG_SIZE;
         //     Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, localOffset, Registers::AX); //mov [rbp-local], rax
         // }
@@ -333,6 +333,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
             //Push the value
             Amd64Backend::pushInt(generatedCode, *floatData); //push <value>
+            //Amd64Backend::moveLongToReg(generatedCode, Registers::AX, *floatData);
+            //Amd64Backend::pushReg(generatedCode, Registers::AX);
         }
         break;  
     case OpCodes::ADD:
@@ -615,7 +617,11 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
             if (!TypeSystem::isPrimitiveType(function.returnType(), PrimitiveTypes::Void)) {
                 //Pop the return value
-                Amd64Backend::popReg(generatedCode, Registers::AX); //pop eax
+                if (function.returnType()->name() == "Float") {
+                    Amd64Backend::popReg(generatedCode, FloatRegisters::XMM0);
+                } else {
+                    Amd64Backend::popReg(generatedCode, Registers::AX); //pop eax
+                }
             }
 
             //Restore the base pointer

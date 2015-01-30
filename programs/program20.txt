@@ -7,6 +7,7 @@ func addFloat(Float Float) Float
    LDARG 1
    ADD
    STLOC 0
+
    LDLOC 0
    RET
 }
@@ -15,8 +16,25 @@ func main() Int
 {  
    PUSHFLOAT 13.37
    PUSHFLOAT 47.11
-   #ADD
    CALL addFloat
+   
+   CALL printfln
+
+   PUSHINT 0
+   RET
+}
+
+func main1() Int
+{  
+   .locals 1
+   .local 0 Float
+
+   PUSHFLOAT 13.37
+   PUSHFLOAT 47.11
+   ADD
+   STLOC 0
+
+   LDLOC 0
    CALL printfln
 
    PUSHINT 0
