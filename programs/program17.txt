@@ -4,34 +4,23 @@ struct Point
 	y Int
 }
 
+struct Pair
+{
+	first Ref.Struct.Point
+	second Int
+}
+
 func main1() Int
 {
-	.locals 3
-	
-	PUSHINT 256
-	STLOC 1
+	.locals 1
+	.local 0 Ref.Struct.Point
 
-	PUSHINT 0
-	STLOC 2
-
-	LDLOC 1
-	NEWARR Ref.Struct.Point
+	NEWOBJ Ref.Struct.Point
+	NEWOBJ Ref.Struct.Point
+	STLOC 0
 	STLOC 0
 
-	LDLOC 2
-	LDLOC 1
-	BLE 19
-
-	LDLOC 0
-	LDLOC 2
-	NEWOBJ Ref.Struct.Point
-	STELEM Ref.Struct.Point
-
-	LDLOC 2
-	PUSHINT 1
-	ADD
-	STLOC 2
-	BR 7
+	GC
 
 	PUSHINT 0
 	RET
@@ -39,99 +28,53 @@ func main1() Int
 
 func main2() Int
 {
-	.locals 2
-	
-	PUSHINT 1337
+	.locals 1
+	.local 0 Ref.Array[Ref.Struct.Point]
 
-	PUSHINT 8
+	PUSHINT 2
+	NEWARR Ref.Struct.Point
 	STLOC 0
 
 	LDLOC 0
 	PUSHINT 0
-	BGE 13
-
 	NEWOBJ Ref.Struct.Point
-	STLOC 1
+	STELEM Ref.Struct.Point
 
 	LDLOC 0
 	PUSHINT 1
-	SUB
-	STLOC 0
-	BR 3
-
-	RET
-}
-
-func createObj() Ref.Struct.Point
-{
-	.locals 0
-
 	NEWOBJ Ref.Struct.Point
+	STELEM Ref.Struct.Point
+
+	PUSHNULL
+	STLOC 0
+	GC
+
+	PUSHINT 0
 	RET
 }
 
-func main3(Ref.Struct.Point) Int
+func main3() Int
 {
 	.locals 1
-	.local 0 Ref.Struct.Point
+	.local 0 Ref.Struct.Pair
 
-	PUSHINT 1337
-	PUSHINT 4711
-
-	NEWOBJ Ref.Struct.Point
-	#CALL createObj
+	NEWOBJ Ref.Struct.Pair
 	STLOC 0
 
-	ADD
-	RET
-}
-
-func allocObj() Void {
-	.locals 1
-	.local 0 Ref.Struct.Point
-
+	LDLOC 0
 	NEWOBJ Ref.Struct.Point
+	STFIELD Pair::first
+
+	PUSHNULL
 	STLOC 0
+	GC
+
+	PUSHINT 0
 	RET
 }
 
 func main() Int
 {
-	.locals 2
-	.local 0 Ref.Struct.Point
-	.local 1 Int
-
-	CALL allocObj()
-
-	NEWOBJ Ref.Struct.Point
-
-	NEWOBJ Ref.Struct.Point
-	CALL main3
-	STLOC 1
-
-	STLOC 0
-	#PUSHINT 5670
-	#STFIELD Point::x
-
-	LDLOC 1
-	RET
-}
-
-func main4() Int
-{
-	.locals 1
-	.local 0 Ref.Struct.Point
-
-	CALL allocObj()
-
-	NEWOBJ Ref.Struct.Point
-
-	NEWOBJ Ref.Struct.Point
-	CALL main3
-	POP
-
-	STLOC 0
-
-	PUSHINT 0
+	CALL main1
 	RET
 }

@@ -34,10 +34,10 @@ namespace Runtime {
 	//Tries to collect garbage
 	void garbageCollect(long* basePtr, Function* func, int instIndex);
 
-	//Creates a new array of the given size
-	long newArray(Type* type, int size);
+	//Creates a new array of the given type and length
+	long newArray(Type* elementType, int length);
 
-	//Creates a new struct
+	//Creates a new struct of the given type
 	long newObject(Type* type);
 
 	//Stops the execution

@@ -76,3 +76,7 @@ const StructMetadata& VMState::getStructMetadata(std::string structName) const {
         throw std::out_of_range("The struct isn't defined.");
     }
 }
+
+const StructMetadata& VMState::getStructMetadata(const StructType* structType) const {
+    return getStructMetadata(structType->structName());
+}

@@ -7,6 +7,7 @@
 #include "function.h"
 
 class Type;
+class StructType;
 class ObjectHandle;
 
 using CallStackEntry = std::pair<Function*, int>;
@@ -72,4 +73,7 @@ public:
 
     //Returns the metadata for the given struct
     const StructMetadata& getStructMetadata(std::string structName) const;
+
+    //Returns the metadata for the given struct
+    const StructMetadata& getStructMetadata(const StructType* structType) const;
 };

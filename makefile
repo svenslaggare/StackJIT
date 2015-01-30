@@ -1,4 +1,4 @@
-CC=clang++
+CC=g++
 CFLAGS=-c -std=c++11
 LDFLAGS=-std=c++11
 
@@ -30,4 +30,4 @@ test: tests/amd64-test.cpp src/amd64.cpp src/amd64.h
 clean:
 	rm -rf $(OBJDIR)
 	rm $(EXECUTABLE)
-	rm test
+	rm amd64-test

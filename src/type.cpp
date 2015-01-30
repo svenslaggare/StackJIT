@@ -174,6 +174,10 @@ bool TypeSystem::isStruct(const Type* type) {
 	return type->name().find("Ref.Struct.") != std::string::npos;
 }
 
+std::string TypeSystem::arrayTypeName(const Type* type) {
+	return "Ref.Array[" + type->name() +  "]";
+}
+
 std::size_t TypeSystem::getSize(PrimitiveTypes primitiveType) {
 	switch (primitiveType) {
 	case PrimitiveTypes::Void:

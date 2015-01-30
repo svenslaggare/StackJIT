@@ -38,3 +38,7 @@ std::size_t StructMetadata::fieldOffset(std::string fieldName) const {
 std::size_t StructMetadata::size() const {
 	return mSize;
 }
+
+const std::map<std::string, Field>& StructMetadata::fields() const {
+	return mFields;
+}

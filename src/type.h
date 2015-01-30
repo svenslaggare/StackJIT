@@ -88,6 +88,9 @@ namespace TypeSystem {
 	//Indicates if the given type is a struct
 	bool isStruct(const Type* type);
 
+	//Returns the type name for an array of the given type
+	std::string arrayTypeName(const Type* type);
+
 	//Returns the size (in bytes) for the given primitive type
 	std::size_t getSize(PrimitiveTypes primitiveType);
 

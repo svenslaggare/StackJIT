@@ -28,4 +28,7 @@ public:
 
 	//Returns the size of the struct
 	std::size_t size() const;
+
+	//Returns the fields
+	const std::map<std::string, Field>& fields() const;
 };

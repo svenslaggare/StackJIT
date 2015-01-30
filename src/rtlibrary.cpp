@@ -120,15 +120,40 @@ void Runtime::printAliveObjects(long* basePtr, Function* func, int instIndex, st
 }
 
 void printObject(ObjectHandle* handle) {
-    std::cout << (long)handle->handle() << ": " << handle->size() << " bytes (" << handle->type()->name() << ")" << std::endl;
+    std::cout << "0x" << std::hex << (long)handle->handle() << std::dec << ": " << handle->size() << " bytes (" << handle->type()->name() << ")" << std::endl;
 }
 
 void Runtime::markObject(ObjectHandle* handle) {
     if (!handle->isMarked()) {
         if (TypeSystem::isArray(handle->type())) {
+            auto arrayHandle = static_cast<ArrayHandle*>(handle);
+            auto arrayType = static_cast<const ArrayType*>(handle->type());
+
             handle->mark();
+
+            //Mark ref elements
+            if (TypeSystem::isReferenceType(arrayType->elementType())) {
+                long* elemenetsPtr = (long*)(arrayHandle->handle() + 4);
+
+                for (int i = 0; i < arrayHandle->length(); i++) {
+                    markValue(elemenetsPtr[i], arrayType->elementType());
+                }
+            }
         } else if (TypeSystem::isStruct(handle->type())) {
             handle->mark();
+
+            auto structType = static_cast<const StructType*>(handle->type());
+            auto structMetadata = vmState.getStructMetadata(structType);
+
+            //Mark ref fields
+            for (auto fieldEntry : structMetadata.fields()) {
+                auto field = fieldEntry.second;
+
+                if (TypeSystem::isReferenceType(field.type)) {
+                    long fieldValue = *((long*)handle->handle() + field.offset);
+                    markValue(fieldValue, field.type);
+                }
+            }
         }
     }
 }
@@ -136,8 +161,18 @@ void Runtime::markObject(ObjectHandle* handle) {
 void Runtime::markValue(long value, const Type* type) {
     unsigned char* objPtr = (unsigned char*)value;
 
-    if (TypeSystem::isReferenceType(type) && vmState.getObjects().count(objPtr) > 0) {
-        Runtime::markObject(vmState.getObjects().at(objPtr));
+    //Don't mark nulls
+    if (objPtr == nullptr) {
+        return;
+    }
+
+    //Due to a bug in the root finding, its possible to mark invalid values.
+    if (vmState.getObjects().count(objPtr) > 0) {
+        if (TypeSystem::isReferenceType(type)) {
+            Runtime::markObject(vmState.getObjects().at(objPtr));
+        }
+    } else {
+        std::cout << "Marking invalid object (0x" << std::hex << value << std::dec << ")" << std::endl;
     }
 }
 
@@ -204,7 +239,7 @@ void Runtime::garbageCollect(long* basePtr, Function* func, int instIndex) {
 
     std::cout << func->name() << " (" << instIndex << ")" << std::endl;
     Runtime::printAliveObjects(basePtr, func, instIndex, "\t");
-    // Runtime::markObjects(basePtr, func, instIndex);
+    Runtime::markObjects(basePtr, func, instIndex);
 
     int topFuncIndex = 0;
     for (auto callEntry : vmState.callStack()) {
@@ -214,12 +249,12 @@ void Runtime::garbageCollect(long* basePtr, Function* func, int instIndex) {
 
         std::cout << topFunc->name() << " (" << callPoint << ")" << std::endl;
         Runtime::printAliveObjects(callBasePtr, topFunc, callPoint, "\t");
-        // Runtime::markObjects(callBasePtr, topFunc, callPoint);
+        Runtime::markObjects(callBasePtr, topFunc, callPoint);
 
         topFuncIndex++;
     }
 
-    //Runtime::sweepObjects();
+    Runtime::sweepObjects();
 
     printTimes('-', startStr.length() / 2 - 3);
     std::cout << "End GC";
@@ -227,23 +262,28 @@ void Runtime::garbageCollect(long* basePtr, Function* func, int instIndex) {
     std::cout << std::endl;
 }
 
-long Runtime::newArray(Type* type, int size) {
-    auto elemSize = TypeSystem::sizeOfType(type);
+long Runtime::newArray(Type* elementType, int length) {
+    auto elemSize = TypeSystem::sizeOfType(elementType);
 
-    int memSize = sizeof(int) + size * elemSize;
+    int memSize = sizeof(int) + length * elemSize;
     unsigned char* arrayPtr = new unsigned char[memSize];
     memset(arrayPtr, 0, memSize);
 
     //Add the array to the list of objects
-    vmState.newObject(new ArrayHandle(arrayPtr, memSize, type, size));
+    vmState.newObject(new ArrayHandle(arrayPtr, memSize, vmState.getType(TypeSystem::arrayTypeName(elementType)), length));
 
     //Set the size of the array
     IntToBytes converter;
-    converter.IntValue = size;
+    converter.IntValue = length;
     arrayPtr[0] = converter.ByteValues[0];
     arrayPtr[1] = converter.ByteValues[1];
     arrayPtr[2] = converter.ByteValues[2];
     arrayPtr[3] = converter.ByteValues[3];
+
+    std::cout
+        << "Allocted array (size: " << memSize << " bytes, length: " << length << ", type: " << elementType->name()
+        << ") at " << (long)arrayPtr
+        << std::endl;
 
     return (long)arrayPtr;
 }
@@ -258,7 +298,10 @@ long Runtime::newObject(Type* type) {
     //Add the struct to the list of objects
     vmState.newObject(new StructHandle(structPtr, memSize, type));
 
-    // std::cout << "Allocted object (" << memSize << " bytes) at " << (long)structPtr << std::endl;
+    std::cout
+        << "Allocted object (size: " << memSize << " bytes, type: " <<  type->name() 
+        << ") at " << (long)structPtr
+        << std::endl;
 
     return (long)structPtr;
 }

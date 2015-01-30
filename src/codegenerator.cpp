@@ -62,10 +62,6 @@ void generateCall(CodeGen& codeGen, long funcPtr) {
     Amd64Backend::callInReg(codeGen, Registers::AX);
 }
 
-void printAliveObjects(long* basePtr, Function* func, int instIndex) {
-    Runtime::printAliveObjects(basePtr, func, instIndex);
-}
-
 JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
     std::map<FunctionCall, std::string> callTable;
 
@@ -784,7 +780,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             // Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&Runtime::garbageCollect);
             // Amd64Backend::moveRegToReg(generatedCode, Registers::DI, Registers::BP); //BP as the first argument
             // Amd64Backend::moveLongToReg(generatedCode, Registers::SI, (long)&function); //Address of the function as second argument
-            // Amd64Backend::moveLongToReg(generatedCode, Registers::DX, instIndex); //Current inst index as third argument
+            // Amd64Backend::moveIntToReg(generatedCode, Registers::DX, instIndex); //Current inst index as third argument
             // Amd64Backend::callInReg(generatedCode, Registers::AX);
 
             //Call the newObject runtime function
@@ -794,6 +790,16 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
             //Push the returned pointer
             Amd64Backend::pushReg(generatedCode, Registers::AX);
+        }
+        break;
+    case OpCodes::GARBAGE_COLLECT:
+        {
+            //Call the garbageCollect runtime function
+            Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&Runtime::garbageCollect);
+            Amd64Backend::moveRegToReg(generatedCode, Registers::DI, Registers::BP); //BP as the first argument
+            Amd64Backend::moveLongToReg(generatedCode, Registers::SI, (long)&function); //Address of the function as second argument
+            Amd64Backend::moveIntToReg(generatedCode, Registers::DX, instIndex); //Current inst index as third argument
+            Amd64Backend::callInReg(generatedCode, Registers::AX);
         }
         break;
     case OpCodes::LOAD_FIELD:
