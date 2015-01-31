@@ -447,12 +447,25 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::COMPARE_LESS_THAN:
     case OpCodes::COMPARE_LESS_THAN_OR_EQUAL:
         {
-            //Pop 2 operands
-            Amd64Backend::popReg(generatedCode, Registers::CX); //pop rcx
-            Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+            auto opType = function.instructionOperandTypes[instIndex][0];
+            bool intOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Integer);
+            bool floatOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Float);
 
-            //Compare
-            Amd64Backend::compareRegToReg(generatedCode, Registers::AX, Registers::CX); //cmp rax, rcx
+            if (intOp) {
+                //Pop 2 operands
+                Amd64Backend::popReg(generatedCode, Registers::CX); //pop rcx
+                Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+
+                //Compare
+                Amd64Backend::compareRegToReg(generatedCode, Registers::AX, Registers::CX); //cmp rax, rcx
+            } else if (floatOp) {
+                //Pop 2 operands
+                Amd64Backend::popReg(generatedCode, FloatRegisters::XMM1); //pop xmm1
+                Amd64Backend::popReg(generatedCode, FloatRegisters::XMM0); //pop xmm0
+
+                //Compare
+                pushArray(generatedCode, { 0x0F, 0x2E, 0xC1 }); //ucomiss xmm0, xmm1 
+            }
 
             //Jump
             int target = 5 + 5;
@@ -662,13 +675,26 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::BRANCH_GREATER_THAN_OR_EQUAL:
     case OpCodes::BRANCH_LESS_THAN:
     case OpCodes::BRANCH_LESS_THAN_OR_EQUAL:
-        {            
-            //Pop 2 operands
-            Amd64Backend::popReg(generatedCode, Registers::CX); //pop ecx
-            Amd64Backend::popReg(generatedCode, Registers::AX); //pop eax
+        {           
+            auto opType = function.instructionOperandTypes[instIndex][0];
+            bool intOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Integer);
+            bool floatOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Float);
 
-            //Compare and jump
-            Amd64Backend::compareRegToReg(generatedCode, Registers::CX, Registers::AX); //cmp rcx, rax
+            if (intOp) {
+                //Pop 2 operands
+                Amd64Backend::popReg(generatedCode, Registers::CX); //pop rcx
+                Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+
+                //Compare
+                Amd64Backend::compareRegToReg(generatedCode, Registers::CX, Registers::AX); //cmp rcx, rax
+            } else if (floatOp) {
+                //Pop 2 operands
+                Amd64Backend::popReg(generatedCode, FloatRegisters::XMM1); //pop xmm1
+                Amd64Backend::popReg(generatedCode, FloatRegisters::XMM0); //pop xmm0
+
+                //Compare
+                pushArray(generatedCode, { 0x0F, 0x2E, 0xC1 }); //ucomiss xmm0, xmm1 
+            } 
 
             switch (inst.OpCode) {
                 case OpCodes::BRANCH_EQUAL:

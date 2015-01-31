@@ -203,10 +203,16 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
                         if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Bool)) {
                             operandStack.push(boolType);
                         } else {
-                            typeError(index, "Expected 2 operands of type Int on the stack.");
+                            typeError(index, "Expected 2 operands of type Bool on the stack.");
+                        }
+                    } else if (*op1 == *floatType) {
+                        if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Float)) {
+                            operandStack.push(boolType);
+                        } else {
+                            typeError(index, "Expected 2 operands of type Float on the stack.");
                         }
                     } else {
-                        typeError(index, "Expected 2 operands of type Int or Bool on the stack.");  
+                        typeError(index, "Expected 2 operands of comparable type on the stack.");  
                     }
                 } else {
                     if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Integer) && TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
@@ -341,10 +347,16 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
                     if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Bool)) {
                         branches.push_back({ index, inst.Value.Int, operandStack });
                     } else {
-                        typeError(index, "Expected 2 operands of type Int on the stack.");
+                        typeError(index, "Expected 2 operands of type Bool on the stack.");
+                    }
+                } else if (*op1 == *floatType) {
+                    if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Float)) {
+                        branches.push_back({ index, inst.Value.Int, operandStack });
+                    } else {
+                        typeError(index, "Expected 2 operands of type Float on the stack.");
                     }
                 } else {
-                    typeError(index, "Expected 2 operands of type Int or Bool on the stack.");  
+                    typeError(index, "Expected 2 operands of comparable type on the stack.");  
                 }
             }
             break;
