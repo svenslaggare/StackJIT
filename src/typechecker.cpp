@@ -192,10 +192,28 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
                 auto op1 = popType(operandStack);
                 auto op2 = popType(operandStack);
     
-                if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Integer) && TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
-                    operandStack.push(boolType);
+                if (inst.OpCode == OpCodes::COMPARE_EQUAL || inst.OpCode == OpCodes::COMPARE_NOT_EQUAL) {
+                    if (*op1 == *intType) {               
+                        if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
+                            operandStack.push(boolType);
+                        } else {
+                            typeError(index, "Expected 2 operands of type Int on the stack.");
+                        }
+                    } else if (*op1 == *boolType) {
+                        if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Bool)) {
+                            operandStack.push(boolType);
+                        } else {
+                            typeError(index, "Expected 2 operands of type Int on the stack.");
+                        }
+                    } else {
+                        typeError(index, "Expected 2 operands of type Int or Bool on the stack.");  
+                    }
                 } else {
-                    typeError(index, "Expected 2 operands of type Int on the stack.");
+                    if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Integer) && TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
+                        operandStack.push(boolType);
+                    } else {
+                        typeError(index, "Expected 2 operands of type Int on the stack.");
+                    }
                 }
             }
             break;
