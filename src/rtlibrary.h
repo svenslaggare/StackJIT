@@ -43,6 +43,9 @@ namespace Runtime {
 	//Stops the execution
 	void runtimeError(std::string errorMessage);
 
+	//Signals that an invalid array creation has been made
+	void invalidArrayCreation();
+
 	//Signals that an inavlid array access has been made
 	void arrayOutOfBoundsError();
 

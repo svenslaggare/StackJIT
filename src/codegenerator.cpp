@@ -763,6 +763,15 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             //Pop the size as the second arg
             Amd64Backend::popReg(generatedCode, Registers::SI); //pop rsi
 
+            //Check that the size >= 0
+            Amd64Backend::moveIntToReg(generatedCode, Registers::CX, 0); //mov rax, 0
+            Amd64Backend::compareRegToReg(generatedCode, Registers::CX, Registers::SI); //cmp rcx, rsi
+            pushArray(generatedCode, { 0x7E, 10 + 2 }); //jle <after call>.
+
+            //If invalid call the error func
+            Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)&Runtime::invalidArrayCreation); //mov rdi, <addr of func>
+            Amd64Backend::callInReg(generatedCode, Registers::DI); //call rdi
+
             //Call the newArray runtime function
             Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&Runtime::newArray);
             Amd64Backend::callInReg(generatedCode, Registers::AX);

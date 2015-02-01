@@ -350,6 +350,10 @@ void Runtime::runtimeError(std::string errorMessage) {
     throw std::runtime_error(errorMessage);
 }
 
+void Runtime::invalidArrayCreation() {
+    Runtime::runtimeError("The length of the array must be >= 0.");
+}
+
 void Runtime::arrayOutOfBoundsError() {
     Runtime::runtimeError("Array index is out of bounds.");
 }
