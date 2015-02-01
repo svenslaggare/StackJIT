@@ -301,7 +301,7 @@ void Runtime::garbageCollect(long* basePtr, Function* func, int instIndex) {
 long Runtime::newArray(Type* elementType, int length) {
     auto elemSize = TypeSystem::sizeOfType(elementType);
 
-    std::size_t memSize = sizeof(int) + length * elemSize;
+    std::size_t memSize = sizeof(int) + (length * elemSize);
     unsigned char* arrayPtr = new unsigned char[memSize];
     memset(arrayPtr, 0, memSize);
 
@@ -319,7 +319,7 @@ long Runtime::newArray(Type* elementType, int length) {
     if (vmState.enableDebug) {
         std::cout
             << "Allocated array (size: " << memSize << " bytes, length: " << length << ", type: " << elementType->name()
-            << ") at " << (long)arrayPtr
+            << ") at 0x" << std::hex << (long)arrayPtr << std::dec
             << std::endl;
     }
 
@@ -339,7 +339,7 @@ long Runtime::newObject(Type* type) {
     if (vmState.enableDebug) {
         std::cout
             << "Allocated object (size: " << memSize << " bytes, type: " <<  type->name() 
-            << ") at " << (long)structPtr
+            << ") at 0x" << std::hex << (long)structPtr << std::dec
             << std::endl;
     }
 

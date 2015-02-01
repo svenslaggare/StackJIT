@@ -800,7 +800,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             Amd64Backend::addRegToReg(generatedCode, Registers::AX, Registers::CX); //add rax, rcx
 
             //Store the element
-            Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::AX, 4, Registers::DX); //mov [rax+4], rdx
+            bool is32bits = TypeSystem::sizeOfType(elemType) <= 4;
+            Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::AX, 4, Registers::DX, is32bits); //mov [rax+4], r/edx
         }
         break;
     case OpCodes::LOAD_ELEMENT:
@@ -823,7 +824,9 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             Amd64Backend::addByteToReg(generatedCode, Registers::AX, 4); //add rax, 4
 
             //Load the element
-            Amd64Backend::moveMemoryByRegToReg(generatedCode, Registers::CX, Registers::AX); //mov rcx, [rax]
+            bool is32bits = TypeSystem::sizeOfType(elemType) <= 4;
+            Amd64Backend::moveMemoryByRegToReg(generatedCode, Registers::CX, Registers::AX, is32bits); //mov r/ecx, [rax]
+
             Amd64Backend::pushReg(generatedCode, Registers::CX); //pop rcx
         }
         break;
