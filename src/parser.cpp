@@ -97,6 +97,8 @@ std::unordered_map<std::string, OpCodes> noOperandsInstructions
     { "and", OpCodes::AND },
     { "or", OpCodes::OR },
     { "not", OpCodes::NOT },
+    { "convinttofloat", OpCodes::CONVERT_INT_TO_FLOAT },
+    { "convfloattoint", OpCodes::CONVERT_FLOAT_TO_INT },
     { "cmpeq", OpCodes::COMPARE_EQUAL },
     { "cmpne", OpCodes::COMPARE_NOT_EQUAL },
     { "cmpgt", OpCodes::COMPARE_GREATER_THAN },

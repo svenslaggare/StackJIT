@@ -440,6 +440,26 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         //Push the result
         Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
         break;
+    case OpCodes::CONVERT_INT_TO_FLOAT:
+        //Pop 1 operand
+        Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+
+        //Convert it
+        pushArray(generatedCode, { 0xF3, 0x48, 0x0F, 0x2A, 0xC0 }); //cvtsi2ss xmm0,rax 
+
+        //Push it
+        Amd64Backend::pushReg(generatedCode, FloatRegisters::XMM0); //push xmm0
+        break;
+    case OpCodes::CONVERT_FLOAT_TO_INT:
+        //Pop 1 operand
+        Amd64Backend::popReg(generatedCode, FloatRegisters::XMM0); //pop xmm0
+
+        //Convert it
+        pushArray(generatedCode, { 0xF3, 0x48, 0x0F, 0x2C, 0xC0 }); //cvttss2si rax,xmm0
+
+        //Push it
+        Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
+        break;
     case OpCodes::COMPARE_EQUAL:
     case OpCodes::COMPARE_NOT_EQUAL:
     case OpCodes::COMPARE_GREATER_THAN:

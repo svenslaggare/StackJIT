@@ -180,6 +180,32 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
                 }
             }
             break;
+        case OpCodes::CONVERT_INT_TO_FLOAT:
+            {
+                assertOperandCount(index, operandStack, 1);
+            
+                auto op = popType(operandStack);
+
+                if (TypeSystem::isPrimitiveType(op, PrimitiveTypes::Integer)) {
+                    operandStack.push(floatType);
+                } else {
+                    typeError(index, "Expected 1 operand of type Int on the stack.");
+                }
+            }
+            break;
+        case OpCodes::CONVERT_FLOAT_TO_INT:
+            {
+                assertOperandCount(index, operandStack, 1);
+            
+                auto op = popType(operandStack);
+
+                if (TypeSystem::isPrimitiveType(op, PrimitiveTypes::Float)) {
+                    operandStack.push(intType);
+                } else {
+                    typeError(index, "Expected 1 operand of type Float on the stack.");
+                }
+            }
+            break;
         case OpCodes::COMPARE_EQUAL:
         case OpCodes::COMPARE_NOT_EQUAL:
         case OpCodes::COMPARE_GREATER_THAN:
