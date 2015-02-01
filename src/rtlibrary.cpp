@@ -318,7 +318,7 @@ long Runtime::newArray(Type* elementType, int length) {
 
     if (vmState.enableDebug) {
         std::cout
-            << "Allocted array (size: " << memSize << " bytes, length: " << length << ", type: " << elementType->name()
+            << "Allocated array (size: " << memSize << " bytes, length: " << length << ", type: " << elementType->name()
             << ") at " << (long)arrayPtr
             << std::endl;
     }
@@ -338,7 +338,7 @@ long Runtime::newObject(Type* type) {
 
     if (vmState.enableDebug) {
         std::cout
-            << "Allocted object (size: " << memSize << " bytes, type: " <<  type->name() 
+            << "Allocated object (size: " << memSize << " bytes, type: " <<  type->name() 
             << ") at " << (long)structPtr
             << std::endl;
     }
