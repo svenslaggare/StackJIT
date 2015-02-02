@@ -43,6 +43,12 @@ std::string checkType(const Type* expectedType, const Type* actualType) {
     }
 }
 
+void assertNotVoidType(int index, const Type* type) {
+    if (type != nullptr && type->name() == "Void") {
+        typeError(index, "Void type not allowed.");
+    }
+}
+
 std::deque<const Type*> asVector(InstructionTypes types) {
     std::deque<const Type*> typesList;
 
@@ -441,6 +447,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
                 }
 
                 auto elemType = vmState.findType(inst.StrValue);
+                assertNotVoidType(index, elemType);
 
                 if (!isNull) {
                     auto arrayElemType = dynamic_cast<const ArrayType*>(arrayRefType)->elementType();
@@ -479,6 +486,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
                 }
 
                 auto elemType = vmState.findType(inst.StrValue);
+                assertNotVoidType(index, elemType);
 
                 if (!isNull) {
                     auto arrayElemType = dynamic_cast<const ArrayType*>(arrayRefType)->elementType();
