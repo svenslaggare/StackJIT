@@ -13,9 +13,9 @@ func main() Int
 
 	LDLOC 0
 	PUSHINT 1337
-	STFIELD Point::x
+	STFIELD Point::y
 
 	LDLOC 0
-	LDFIELD Point::x
+	LDFIELD Point::y
 	RET
 }

@@ -899,6 +899,11 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             auto structMetadata = vmState.getStructMetadata(structAndField.first);
             int fieldOffset = structMetadata.fieldOffset(structAndField.second);
 
+            //Get the size of the field
+            auto elemSize = TypeSystem::sizeOfType(structMetadata.getField(structAndField.second));
+            bool is32bits = elemSize == 4;
+            bool is8bits = elemSize == 1;
+
             if (inst.OpCode == OpCodes::LOAD_FIELD) {
                 //Pop the operand
                 Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the object
@@ -907,10 +912,16 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 generateNullCheck(generatedCode);
 
                 //Compute the address of the field
-                Amd64Backend::addByteToReg(generatedCode, Registers::AX, fieldOffset); //add rax, 4
+                Amd64Backend::addByteToReg(generatedCode, Registers::AX, fieldOffset); //add rax, <field offset>
 
                 //Load the field
-                Amd64Backend::moveMemoryByRegToReg(generatedCode, Registers::CX, Registers::AX); //mov rcx, [rax]
+                //Amd64Backend::moveMemoryByRegToReg(generatedCode, Registers::CX, Registers::AX); //mov rcx, [rax]
+                if (!is8bits) {
+                    Amd64Backend::moveMemoryByRegToReg(generatedCode, Registers::CX, Registers::AX, is32bits); //mov r/ecx, [rax]
+                } else {
+                    pushArray(generatedCode, { 0x8A, 0x08 }); //mov cl, [rax]
+                }
+
                 Amd64Backend::pushReg(generatedCode, Registers::CX); //pop rcx
             } else {
                 //Pop the operand
@@ -921,7 +932,12 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 generateNullCheck(generatedCode);
 
                 //Store the field
-                Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::AX, fieldOffset, Registers::DX); //mov [rax+<fieldOffset>], rdx
+                //Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::AX, fieldOffset, Registers::DX); //mov [rax+<fieldOffset>], rdx
+                if (!is8bits) {
+                    Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::AX, fieldOffset, Registers::DX, is32bits); //mov [rax+<fieldOffset>], r/edx
+                } else {
+                    pushArray(generatedCode, { 0x88, 0x50, (unsigned char)fieldOffset }); //mov [rax+4], dl
+                }
             }
         }
         break;
