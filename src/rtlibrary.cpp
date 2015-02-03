@@ -20,6 +20,8 @@ void Runtime::popFunc() {
 }
 
 void Runtime::printStackFrame(long* basePtr, Function* func) {
+    using namespace Runtime::Internal;
+
     int numArgs = func->numArgs();
     int numLocals = func->numLocals();
 
@@ -75,9 +77,7 @@ void printValue(long value, const Type* type) {
             std::cout << "0x" << std::hex << value << std::dec;
         }
     } else if (type->name() == "Float") {
-        //int floatPattern = 1096149893;
         //float floatValue = *(reinterpret_cast<float*>(&floatPattern));
-
         std::cout << value;
     } else {
         std::cout << value;
@@ -86,7 +86,13 @@ void printValue(long value, const Type* type) {
     std::cout << " (" + type->name() + ")";
 }
 
-void Runtime::printAliveObjects(long* basePtr, Function* func, int instIndex, std::string indentation) {
+void printObject(ObjectHandle* handle) {
+    std::cout 
+        << "0x" << std::hex << (long)handle->handle() << std::dec << ": " << handle->size()
+        << " bytes (" << handle->type()->name() << ")" << std::endl;
+}
+
+void Runtime::Internal::printAliveObjects(long* basePtr, Function* func, int instIndex, std::string indentation) {
     int numArgs = func->numArgs();
     int numLocals = func->numLocals();
     auto operandTypes = func->instructionOperandTypes.at(instIndex);
@@ -133,13 +139,7 @@ void Runtime::printAliveObjects(long* basePtr, Function* func, int instIndex, st
     }
 }
 
-void printObject(ObjectHandle* handle) {
-    std::cout 
-        << "0x" << std::hex << (long)handle->handle() << std::dec << ": " << handle->size()
-        << " bytes (" << handle->type()->name() << ")" << std::endl;
-}
-
-void Runtime::markObject(ObjectHandle* handle) {
+void Runtime::Internal::markObject(ObjectHandle* handle) {
     if (!handle->isMarked()) {
         if (TypeSystem::isArray(handle->type())) {
             auto arrayHandle = static_cast<ArrayHandle*>(handle);
@@ -174,7 +174,7 @@ void Runtime::markObject(ObjectHandle* handle) {
     }
 }
 
-void Runtime::markValue(long value, const Type* type) {
+void Runtime::Internal::markValue(long value, const Type* type) {
     unsigned char* objPtr = (unsigned char*)value;
 
     //Don't mark nulls
@@ -184,7 +184,7 @@ void Runtime::markValue(long value, const Type* type) {
 
     if (TypeSystem::isReferenceType(type)) {
         if (vmState.getObjects().count(objPtr) > 0) {
-            Runtime::markObject(vmState.getObjects().at(objPtr));
+            markObject(vmState.getObjects().at(objPtr));
         } else {
             if (vmState.enableDebug) {
                 //Due to a bug in the root finding, its possible to mark invalid values.
@@ -194,7 +194,7 @@ void Runtime::markValue(long value, const Type* type) {
     }
 }
 
-void Runtime::markObjects(long* basePtr, Function* func, int instIndex) {
+void Runtime::Internal::markObjects(long* basePtr, Function* func, int instIndex) {
     int numArgs = func->numArgs();
     int numLocals = func->numLocals();
     auto operandTypes = func->instructionOperandTypes.at(instIndex);
@@ -206,24 +206,24 @@ void Runtime::markObjects(long* basePtr, Function* func, int instIndex) {
 
     if (numArgs > 0) {
         for (int i = 0; i < numArgs; i++) {
-            Runtime::markValue(argsStart[-i], func->arguments()[i]);
+            markValue(argsStart[-i], func->arguments()[i]);
         }
     }
 
     if (numLocals > 0) {
         for (int i = 0; i < numLocals; i++) {
-            Runtime::markValue(localsStart[-i], func->getLocal(i));
+            markValue(localsStart[-i], func->getLocal(i));
         }
     }
 
     if (stackSize > 0) {
         for (int i = 0; i < stackSize; i++) {
-            Runtime::markValue(stackStart[-i], operandTypes[i]);
+            markValue(stackStart[-i], operandTypes[i]);
         }
     }
 }
 
-void Runtime::sweepObjects() {
+void Runtime::Internal::sweepObjects() {
     std::vector<ObjectHandle*> objectsToRemove;
 
     for (auto objEntry : vmState.getObjects()) {
@@ -247,6 +247,8 @@ void Runtime::sweepObjects() {
 }
 
 void Runtime::garbageCollect(long* basePtr, Function* func, int instIndex) {
+    using namespace Runtime::Internal;
+
     int startStrLength = 0;
 
     if (vmState.enableDebug) {
@@ -267,10 +269,10 @@ void Runtime::garbageCollect(long* basePtr, Function* func, int instIndex) {
     if (vmState.enableDebug) {
         std::cout << "Stack trace: " << std::endl;
         std::cout << func->name() << " (" << instIndex << ")" << std::endl;
-        Runtime::printAliveObjects(basePtr, func, instIndex, "\t");
+        printAliveObjects(basePtr, func, instIndex, "\t");
     }
 
-    Runtime::markObjects(basePtr, func, instIndex);
+    markObjects(basePtr, func, instIndex);
 
     int topFuncIndex = 0;
     for (auto callEntry : vmState.callStack()) {
@@ -282,13 +284,13 @@ void Runtime::garbageCollect(long* basePtr, Function* func, int instIndex) {
             std::cout << topFunc->name() << " (" << callPoint << ")" << std::endl;
         }
 
-        Runtime::printAliveObjects(callBasePtr, topFunc, callPoint, "\t");
-        Runtime::markObjects(callBasePtr, topFunc, callPoint);
+        printAliveObjects(callBasePtr, topFunc, callPoint, "\t");
+        markObjects(callBasePtr, topFunc, callPoint);
 
         topFuncIndex++;
     }
 
-    Runtime::sweepObjects();
+    sweepObjects();
 
     if (vmState.enableDebug) {
         printTimes('-', startStrLength / 2 - 3);

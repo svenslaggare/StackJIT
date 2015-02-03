@@ -54,7 +54,7 @@ public:
 //Represents a struct handle
 class StructHandle : public ObjectHandle  {
 public:
-	//Creates a new sturct handle
+	//Creates a new struct handle
 	StructHandle(unsigned char* handle, std::size_t objSize, const Type* type);
 	StructHandle();
 };

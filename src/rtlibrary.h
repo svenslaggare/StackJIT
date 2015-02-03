@@ -16,20 +16,23 @@ namespace Runtime {
 	//Prints the given stack frame
 	void printStackFrame(long* basePtr, Function* func);
 
-	//Prints the alive objects
-	void printAliveObjects(long* basePtr, Function* func, int instIndex, std::string indentation = "");
+	//Intermal functions
+	namespace Internal {
+		//Prints the alive objects
+		void printAliveObjects(long* basePtr, Function* func, int instIndex, std::string indentation = "");
 
-	//Marks the given object
-	void markObject(ObjectHandle* handle);
+		//Marks the given object
+		void markObject(ObjectHandle* handle);
 
-	//Marks the given value
-	void markValue(long value, const Type* type);
+		//Marks the given value
+		void markValue(long value, const Type* type);
 
-	//Marks all the objects
-	void markObjects(long* basePtr, Function* func, int instIndex);
+		//Marks all the objects
+		void markObjects(long* basePtr, Function* func, int instIndex);
 
-	//Sweeps (deletes) none reachable objects
-	void sweepObjects();
+		//Sweeps (deletes) none reachable objects
+		void sweepObjects();
+	};
 
 	//Tries to collect garbage
 	void garbageCollect(long* basePtr, Function* func, int instIndex);

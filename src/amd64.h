@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 
+//Converts to/from byte arrays
 union ShortToBytes {
     short ShortValue;
     unsigned char ByteValues[sizeof(short)];
@@ -46,6 +47,13 @@ namespace RegisterCallArguments {
 	const Registers Arg1 = Registers::SI;
 	const Registers Arg2 = Registers::DX;
 	const Registers Arg3 = Registers::CX;
+}
+
+namespace FloatRegisterCallArguments {
+	const FloatRegisters Arg0 = FloatRegisters::XMM0;
+	const FloatRegisters Arg1 = FloatRegisters::XMM1;
+	const FloatRegisters Arg2 = FloatRegisters::XMM2;
+	const FloatRegisters Arg3 = FloatRegisters::XMM3;
 }
 
 typedef std::vector<unsigned char> CodeGen;

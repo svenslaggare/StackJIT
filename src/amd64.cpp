@@ -277,8 +277,7 @@ void Amd64Backend::compareRegToReg(CodeGen& codeGen, Registers reg1, Registers r
 }
 
 //Jumps to the target
-void Amd64Backend::jump(CodeGen& codeGen, int target)
-{
+void Amd64Backend::jump(CodeGen& codeGen, int target) {
 	IntToBytes converter;
 	converter.IntValue = target;
 
@@ -290,8 +289,7 @@ void Amd64Backend::jump(CodeGen& codeGen, int target)
 }
 
 //Jumps if equal to the target
-void Amd64Backend::jumpEqual(CodeGen& codeGen, int target)
-{
+void Amd64Backend::jumpEqual(CodeGen& codeGen, int target) {
 	IntToBytes converter;
 	converter.IntValue = target;
 
@@ -304,8 +302,7 @@ void Amd64Backend::jumpEqual(CodeGen& codeGen, int target)
 }
 
 //Jumps if not equal to the target
-void Amd64Backend::jumpNotEqual(CodeGen& codeGen, int target)
-{
+void Amd64Backend::jumpNotEqual(CodeGen& codeGen, int target) {
 	IntToBytes converter;
 	converter.IntValue = target;
 
@@ -318,8 +315,7 @@ void Amd64Backend::jumpNotEqual(CodeGen& codeGen, int target)
 }
 
 //Jumps if > to the target
-void Amd64Backend::jumpGreaterThan(CodeGen& codeGen, int target)
-{
+void Amd64Backend::jumpGreaterThan(CodeGen& codeGen, int target) {
 	IntToBytes converter;
 	converter.IntValue = target;
 
@@ -332,8 +328,7 @@ void Amd64Backend::jumpGreaterThan(CodeGen& codeGen, int target)
 }
 
 //Jumps if >= to the target
-void Amd64Backend::jumpGreaterThanOrEqual(CodeGen& codeGen, int target)
-{
+void Amd64Backend::jumpGreaterThanOrEqual(CodeGen& codeGen, int target) {
 	IntToBytes converter;
 	converter.IntValue = target;
 
@@ -346,8 +341,7 @@ void Amd64Backend::jumpGreaterThanOrEqual(CodeGen& codeGen, int target)
 }
 
 //Jumps if < to the target
-void Amd64Backend::jumpLessThan(CodeGen& codeGen, int target)
-{
+void Amd64Backend::jumpLessThan(CodeGen& codeGen, int target) {
 	IntToBytes converter;
 	converter.IntValue = target;
 
@@ -360,8 +354,7 @@ void Amd64Backend::jumpLessThan(CodeGen& codeGen, int target)
 }
 
 //Jumps if <= to the target
-void Amd64Backend::jumpLessThanOrEqual(CodeGen& codeGen, int target)
-{
+void Amd64Backend::jumpLessThanOrEqual(CodeGen& codeGen, int target) {
 	IntToBytes converter;
 	converter.IntValue = target;
 

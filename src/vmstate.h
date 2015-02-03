@@ -12,7 +12,7 @@ class ObjectHandle;
 
 using CallStackEntry = std::pair<Function*, int>;
 
-//Represents the state of the VM
+//Contains the state of the VM
 class VMState {
 private:
 	std::unordered_map<std::string, Type*> mTypes;
@@ -38,6 +38,7 @@ public:
     VMState();
 	~VMState();
 
+    //Prevent the VM state from being copied
     VMState(const VMState&) = delete;
     VMState& operator=(const VMState&) = delete;
 

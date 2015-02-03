@@ -94,6 +94,6 @@ public:
 	//The size of the function
 	int functionSize() const;
 
-	//Frees the allocted memory for the function (if mananaged)
+	//Frees the allocted memory for the function (if managed)
 	void deleteCodeMemory();
 };

@@ -4,7 +4,6 @@
 #include <fstream>
 #include <stack>
 #include <assert.h>
-#include <limits>
 
 #include "codegenerator.h"
 #include "typechecker.h"
@@ -157,10 +156,6 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
         }
     }
 
-    // ShortToBytes shortConverter;
-    // shortConverter.ShortValue = stackSize;
-    // pushArray(function.generatedCode, { 0xC8, shortConverter.ByteValues[0], shortConverter.ByteValues[1], 0x00 }); //enter <stack size>, 0
-
     //Move function arguments from registers to the stack
     if (function.numArgs() > 0) {
         //Move the arguments from the registers to the stack
@@ -274,7 +269,7 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
 
         std::cout
             << "Generated function '" << function.name() << "(" + argsStr + ") " << TypeChecker::typeToString(function.returnType())
-            << "' of size: " << length << " bytes."
+            << "' of size " << length << " bytes."
             << std::endl;
     }
 
@@ -610,12 +605,12 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 functionData.callTable[make_pair(function.name(), generatedCode.size())] = inst.StrValue;
             }
 
-            if (vmState.enableDebug) {
-                //Only print external functions
-                if (!funcToCall.isManaged()) {
-                    std::cout << "Calling '" << inst.StrValue + "' at 0x" << std::hex << funcAddr << std::dec << "." << std::endl;
-                }
-            }
+            // if (vmState.enableDebug) {
+            //     //Only print external functions
+            //     if (!funcToCall.isManaged()) {
+            //         std::cout << "Calling '" << inst.StrValue + "' at 0x" << std::hex << funcAddr << std::dec << "." << std::endl;
+            //     }
+            // }
 
             //Move the address of the call to rax
             Amd64Backend::moveLongToReg(generatedCode, Registers::AX, funcAddr); //mov rax, <addr>
