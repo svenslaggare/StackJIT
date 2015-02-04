@@ -272,7 +272,6 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                         throw std::runtime_error("'" + tokens[i] + "' is not a valid type.");
                     }
 
-
                     parameters.push_back(fieldType);
                 }
 

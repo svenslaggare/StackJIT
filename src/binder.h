@@ -17,6 +17,7 @@ public:
 	std::string functionSignature(std::string name, const std::vector<const Type*>& parameters) const;
 
 	std::string functionSignature(const FunctionDefinition& funcDef) const;
+	std::string functionSignature(const Function& func) const;
 
 	//Defines the given function
 	bool define(FunctionDefinition funcDef);

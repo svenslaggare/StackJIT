@@ -26,6 +26,10 @@ std::string Binder::functionSignature(const FunctionDefinition& funcDef) const {
 	return functionSignature(funcDef.name(), funcDef.arguments());
 }
 
+std::string Binder::functionSignature(const Function& func) const {
+	return functionSignature(func.name(), func.arguments());
+}
+
 bool Binder::define(FunctionDefinition funcDef) {
 	auto signature = functionSignature(funcDef);
 

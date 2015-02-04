@@ -23,6 +23,6 @@ func main() Int
 	PUSHINT 4
 	PUSHINT 6
 	PUSHINT 5
-	CALL int_add
+	CALL int_add(Int Int Int)
 	RET
 }

@@ -4,7 +4,7 @@ func main() Int
    PUSHINT 0
    PUSHINT 5
    SUB
-   CALL abs
+   CALL abs(Int)
    STLOC 0
 
    LDLOC 0

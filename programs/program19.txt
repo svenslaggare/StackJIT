@@ -3,7 +3,7 @@ func bool_to_int(Bool) Int
    .locals 1
 
    LDARG 0
-   PUSHINTTRUE
+   PUSHTRUE
    BNE 6
 
    PUSHINT 1
@@ -22,6 +22,6 @@ func main() Int
    PUSHINT 1337
    PUSHINT 4711
    CMPGE
-   CALL bool_to_int
+   CALL bool_to_int(Bool)
    RET
 }

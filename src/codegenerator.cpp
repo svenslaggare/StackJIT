@@ -100,23 +100,18 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
         auto offset = call.first.second;
         auto calledFunc = call.second;
 
-        // //Check if defined
-        // if (vmState.functionTable.count(calledFunc) > 0) {
-            //Get a pointer to the functions instructions
-            long calledFuncAddr = vmState.binder().getFunction(calledFunc).entryPoint();
-            unsigned char* funcCode = (unsigned char*)(vmState.binder().getFunction(funcName).entryPoint());
+        //Get a pointer to the functions instructions
+        long calledFuncAddr = vmState.binder().getFunction(calledFunc).entryPoint();
+        unsigned char* funcCode = (unsigned char*)(vmState.binder().getFunction(funcName).entryPoint());
 
-            //Update the call target
-            LongToBytes converter;
-            converter.LongValue = calledFuncAddr;
+        //Update the call target
+        LongToBytes converter;
+        converter.LongValue = calledFuncAddr;
 
-            int base = offset + 2;
-            for (int i = 0; i < sizeof(long); i++) {
-                funcCode[base + i] = converter.ByteValues[i];
-            }
-        // } else {
-        //     throw std::runtime_error("Function '" + calledFunc + "' not found.");
-        // }
+        int base = offset + 2;
+        for (int i = 0; i < sizeof(long); i++) {
+            funcCode[base + i] = converter.ByteValues[i];
+        }
     }
 
     //Make the functions memory executable, but not writable.
@@ -555,9 +550,6 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         {   
             //Check if defined
             auto signature = vmState.binder().functionSignature(inst.StrValue, inst.Parameters);
-            if (!vmState.binder().isDefined(signature)) {
-                throw std::runtime_error("There exists no function with the signature '" + signature + "'.");
-            }
 
             //Call the pushFunc runtime function
             Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&Runtime::pushFunc);
@@ -615,7 +607,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 funcAddr = funcToCall.entryPoint();
             } else {
                 //Mark that the function call needs to be patched with the entry point later
-                functionData.callTable[make_pair(function.name(), generatedCode.size())] = inst.StrValue;
+                functionData.callTable[make_pair(vmState.binder().functionSignature(function), generatedCode.size())] = signature;
             }
 
             // if (vmState.enableDebug) {

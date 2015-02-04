@@ -14,7 +14,7 @@ namespace StandardLibrary {
 	void println(int x);
 
 	//Prints the given float followed by a line break
-	void printfln(float x);
+	void println(float x);
 
 	//Prints the given char
 	void printchar(int x);

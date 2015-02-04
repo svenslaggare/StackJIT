@@ -16,7 +16,7 @@ func main() Int
 	PUSHINT 15
 	STLOC 1
 	PUSHINT 5
-	CALL int_PUSHINT
+	CALL int_PUSHINT(Int)
 	STLOC 0
 	LDLOC 1
 	RET

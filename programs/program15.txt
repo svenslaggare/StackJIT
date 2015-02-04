@@ -9,7 +9,7 @@ func main() Int
 	.locals 1
 	.local 0 Ref.Struct.Point
 
-	PUSHINTNULL
+	PUSHNULL
 	STLOC 0
 
 	NEWOBJ Ref.Struct.Point

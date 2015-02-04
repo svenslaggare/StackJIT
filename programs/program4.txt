@@ -10,8 +10,8 @@ func main() Int
 {
 	PUSHINT 3
 	PUSHINT 6
-	CALL int_add
+	CALL int_add(Int Int)
 	PUSHINT 12
-	CALL int_add
+	CALL int_add(Int Int)
 	RET
 }

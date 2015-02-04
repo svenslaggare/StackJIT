@@ -2,10 +2,10 @@ func main() Int
 {
    .locals 1
    
-   PUSHINTTRUE
-   PUSHINTFALSE
+   PUSHTRUE
+   PUSHFALSE
    OR
-   PUSHINTTRUE
+   PUSHTRUE
    BNE 8
    PUSHINT 5
    STLOC 0

@@ -16,9 +16,9 @@ func main() Int
 {  
    PUSHFLOAT 13.37
    PUSHFLOAT 47.11
-   CALL addFloat
+   CALL addFloat(Float Float)
    
-   CALL printfln
+   CALL println(Float)
 
    PUSHINT 0
    RET
@@ -35,7 +35,7 @@ func main1() Int
    STLOC 0
 
    LDLOC 0
-   CALL printfln
+   CALL println(Float)
 
    PUSHINT 0
    RET

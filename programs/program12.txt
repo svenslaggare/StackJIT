@@ -30,7 +30,7 @@ func main() Int
 
 	LDLOC 0
 	LDLEN
-	call println
+	CALL println(Int)
 
 	LDLOC 0
 	PUSHINT 0
