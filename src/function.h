@@ -60,6 +60,7 @@ public:
 //Represents a definition for a function
 class FunctionDefinition {
 private:
+	std::string mName;
 	std::vector<const Type*> mArguments;
 	const Type* mReturnType;
 
@@ -69,12 +70,15 @@ private:
 	bool mIsManaged;
 public:
 	//Creates a new managed function definition
-	FunctionDefinition(std::vector<const Type*> arguments, const Type* returnType, long entryPoint, int funcSize);
+	FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, long entryPoint, int funcSize);
 
 	//Creates a new external function definition
-	FunctionDefinition(std::vector<const Type*> arguments, const Type* returnType, long entryPoint);
+	FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, long entryPoint);
 
 	FunctionDefinition();
+
+	//Returns the name
+	std::string name() const;
 
 	//Returns the type of the return value
 	const Type* returnType() const;

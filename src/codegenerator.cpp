@@ -67,7 +67,9 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
     //Add the functions to the func table
     for (auto currentFunc : program.functions) {
         auto func = currentFunc.second;
-        vmState.functionTable[func->name()] = FunctionDefinition(func->arguments(), func->returnType(), 0, 0);
+        FunctionDefinition funcDef(func->name(), func->arguments(), func->returnType(), 0, 0);
+        auto& binder = vmState.binder();
+        binder.define(funcDef);
     }
 
     //Generate instructions for all functions
@@ -86,8 +88,10 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
             callTable[call.first] = call.second;
         }
 
+        auto signature = vmState.binder().functionSignature(func->name(), func->arguments());
+
         //Set the entry point & size for the function
-        vmState.functionTable[func->name()].setFunctionBody((long)funcPtr, func->generatedCode.size());
+        vmState.binder().getFunction(signature).setFunctionBody((long)funcPtr, func->generatedCode.size());
     }
 
     //Fix unresolved calls
@@ -96,11 +100,11 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
         auto offset = call.first.second;
         auto calledFunc = call.second;
 
-        //Check if defined
-        if (vmState.functionTable.count(calledFunc) > 0) {
+        // //Check if defined
+        // if (vmState.functionTable.count(calledFunc) > 0) {
             //Get a pointer to the functions instructions
-            long calledFuncAddr = vmState.functionTable[calledFunc].entryPoint();
-            unsigned char* funcCode = (unsigned char*)(vmState.functionTable[funcName].entryPoint());
+            long calledFuncAddr = vmState.binder().getFunction(calledFunc).entryPoint();
+            unsigned char* funcCode = (unsigned char*)(vmState.binder().getFunction(funcName).entryPoint());
 
             //Update the call target
             LongToBytes converter;
@@ -110,16 +114,17 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
             for (int i = 0; i < sizeof(long); i++) {
                 funcCode[base + i] = converter.ByteValues[i];
             }
-        } else {
-            throw std::runtime_error("Function '" + calledFunc + "' not found.");
-        }
+        // } else {
+        //     throw std::runtime_error("Function '" + calledFunc + "' not found.");
+        // }
     }
 
     //Make the functions memory executable, but not writable.
     for (auto currentFunc : program.functions) {
         auto func = currentFunc.second;
+        auto signature = vmState.binder().functionSignature(func->name(), func->arguments());
 
-        void* mem = (void*)vmState.functionTable[func->name()].entryPoint();
+        void* mem = (void*)vmState.binder().getFunction(signature).entryPoint();
         int length = func->generatedCode.size();
 
         int success = mprotect(mem, length, PROT_EXEC | PROT_READ);
@@ -127,7 +132,7 @@ JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
     }
 
     //Return the main func as entry point
-    return (JitFunction)vmState.functionTable["main"].entryPoint();
+    return (JitFunction)vmState.binder().getFunction("main()").entryPoint();
 }
 
 JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionData, VMState& vmState) {
@@ -320,6 +325,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::PUSH_INT:
         //Push the value
         Amd64Backend::pushInt(generatedCode, inst.Value.Int); //push <value>
+        // Amd64Backend::moveLongToReg(generatedCode, Registers::AX, inst.Value.Int);
+        // Amd64Backend::pushReg(generatedCode, Registers::AX);
         break;
     case OpCodes::PUSH_FLOAT:
         {
@@ -521,7 +528,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::LOAD_LOCAL:
         {
             //Load rax with the locals offset
-            Amd64Backend::moveIntToReg(generatedCode, Registers::AX, (inst.Value.Int + function.numArgs() + stackOffset) * -Amd64Backend::REG_SIZE); //mov rax, <int>
+            Amd64Backend::moveIntToReg(generatedCode, Registers::AX, (inst.Value.Int + function.numArgs() + stackOffset) * -Amd64Backend::REG_SIZE); //mov rax, <local>
 
             //Now add the base pointer
             Amd64Backend::addRegToReg(generatedCode, Registers::AX, Registers::BP); //add rax, rbp
@@ -546,6 +553,12 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::CALL:
         {   
+            //Check if defined
+            auto signature = vmState.binder().functionSignature(inst.StrValue, inst.Parameters);
+            if (!vmState.binder().isDefined(signature)) {
+                throw std::runtime_error("There exists no function with the signature '" + signature + "'.");
+            }
+
             //Call the pushFunc runtime function
             Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&Runtime::pushFunc);
             Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)&function); //Address of the func handle as the target as first arg
@@ -555,7 +568,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             //Get the address of the function to call
             long funcAddr = 0;
 
-            auto funcToCall = vmState.functionTable.at(inst.StrValue);
+            auto funcToCall = vmState.binder().getFunction(signature);
             int numArgs = funcToCall.arguments().size();
 
             //Set the function arguments
@@ -641,7 +654,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&Runtime::printStackFrame);
                 Amd64Backend::moveRegToReg(generatedCode, Registers::DI, Registers::BP); //BP as the first argument
                 Amd64Backend::moveLongToReg(generatedCode, Registers::SI, (long)&function); //Address of the function as second argument
-                Amd64Backend::callInReg(generatedCode, Registers::AX);
+                Amd64Backend::callInReg(generatedCode, Registers::AX);         
             }
 
             if (!TypeSystem::isPrimitiveType(function.returnType(), PrimitiveTypes::Void)) {
@@ -649,7 +662,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 if (function.returnType()->name() == "Float") {
                     Amd64Backend::popReg(generatedCode, FloatRegisters::XMM0);
                 } else {
-                    Amd64Backend::popReg(generatedCode, Registers::AX); //pop eax
+                    Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
                 }
             }
 

@@ -12,8 +12,12 @@ struct Pair
 
 func main1() Int
 {
-	.locals 1
+	.locals 2
 	.local 0 Ref.Struct.Point
+	#.local 1 Float
+
+	#PUSHFLOAT 13.37
+	#STLOC 1
 
 	NEWOBJ Ref.Struct.Point
 	NEWOBJ Ref.Struct.Point

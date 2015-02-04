@@ -5,6 +5,7 @@
 #include <deque>
 #include "structmetadata.h"
 #include "function.h"
+#include "binder.h"
 
 class Type;
 class StructType;
@@ -16,7 +17,9 @@ using CallStackEntry = std::pair<Function*, int>;
 class VMState {
 private:
 	std::unordered_map<std::string, Type*> mTypes;
+    Binder mBinder;
 	std::unordered_map<std::string, StructMetadata> mStructsMetadata;
+
 	std::unordered_map<const unsigned char*, ObjectHandle*> mObjects;
 	std::deque<CallStackEntry> mCallStack;
 public:
@@ -31,8 +34,6 @@ public:
 
 	//Indicates if the generated code is outputed as a file
 	bool outputGeneratedCode = false;
-
-	std::unordered_map<std::string, FunctionDefinition> functionTable;
 
     //Creates a new VM State
     VMState();
@@ -59,6 +60,10 @@ public:
 
     //Pushes the given function to the top of the stack
     void pushFunc(Function* func, int instIndex);
+
+    //Returns the binder
+    Binder& binder();
+    const Binder& binder() const;
 
     //Finds the type object for the given type name
     const Type* findType(std::string name);

@@ -47,8 +47,8 @@ int main(int argc, char* argv[]) {
 
     //Tokenize the input
     auto tokens = Parser::tokenize(std::cin);
-    //std::ifstream fileStream("programs/program20.txt");
-    //auto tokens = Parser::tokenize(fileStream);
+    // std::ifstream fileStream("programs/program21.txt");
+    // auto tokens = Parser::tokenize(fileStream);
 
     //Parse it
     Parser::parseTokens(tokens, vmState, program);
@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
     }
 
     //Unmap function code memory
-    for (auto funcEntry : vmState.functionTable) {
+    for (auto funcEntry : vmState.binder().functionTable()) {
         auto func = funcEntry.second;
         func.deleteCodeMemory();
     }

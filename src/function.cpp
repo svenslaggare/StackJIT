@@ -48,19 +48,23 @@ void Function::setStackSize(int size) {
 	mStackSize = size;
 }
 
-FunctionDefinition::FunctionDefinition(std::vector<const Type*> arguments, const Type* returnType, long entryPoint, int funcSize)
-    : mArguments(arguments), mReturnType(returnType), mEntryPoint(entryPoint), mFunctionSize(funcSize), mIsManaged(true) {
+FunctionDefinition::FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, long entryPoint, int funcSize)
+    : mName(name), mArguments(parameters), mReturnType(returnType), mEntryPoint(entryPoint), mFunctionSize(funcSize), mIsManaged(true) {
 
 }
 
-FunctionDefinition::FunctionDefinition(std::vector<const Type*> arguments, const Type* returnType, long entryPoint)
-    : mArguments(arguments), mReturnType(returnType), mEntryPoint(entryPoint), mFunctionSize(0), mIsManaged(false) {
+FunctionDefinition::FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, long entryPoint)
+    : mName(name), mArguments(parameters), mReturnType(returnType), mEntryPoint(entryPoint), mFunctionSize(0), mIsManaged(false) {
 
 }
 
 FunctionDefinition::FunctionDefinition()
-    : mEntryPoint(0), mFunctionSize(0), mIsManaged(false), mReturnType(nullptr) {
+    : mName(""), mEntryPoint(0), mFunctionSize(0), mIsManaged(false), mReturnType(nullptr) {
 
+}
+
+std::string FunctionDefinition::name() const {
+    return mName;
 }
 
 void FunctionDefinition::setFunctionBody(long entryPoint, int functionSize) {

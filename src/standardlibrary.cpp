@@ -34,9 +34,16 @@ void StandardLibrary::add(VMState& vmState) {
 	auto floatType = vmState.findType(TypeSystem::primitiveTypeName(PrimitiveTypes::Float));
 	auto voidType = vmState.findType(TypeSystem::primitiveTypeName(PrimitiveTypes::Void));
 
-	vmState.functionTable["abs"] = FunctionDefinition({ intType }, intType, (long)(&abs));
-	vmState.functionTable["print"] = FunctionDefinition({ intType }, voidType, (long)(&print));
-	vmState.functionTable["println"] = FunctionDefinition({ intType }, voidType, (long)(&println));
-	vmState.functionTable["printfln"] = FunctionDefinition({ floatType }, voidType, (long)(&printfln));
-	vmState.functionTable["printchar"] = FunctionDefinition({ intType }, voidType, (long)(&printchar));
+	auto& binder = vmState.binder();
+	binder.define(FunctionDefinition("abs", { intType }, intType, (long)(&abs)));
+	binder.define(FunctionDefinition("print", { intType }, voidType, (long)(&print)));
+	binder.define(FunctionDefinition("println", { intType }, voidType, (long)(&println)));
+	binder.define(FunctionDefinition("println", { floatType }, voidType, (long)(&printfln)));
+	binder.define(FunctionDefinition("printchar", { intType }, voidType, (long)(&printchar)));
+
+	// vmState.functionTable["abs"] = FunctionDefinition("abs", { intType }, intType, (long)(&abs));
+	// vmState.functionTable["print"] = FunctionDefinition("print", { intType }, voidType, (long)(&print));
+	// vmState.functionTable["println"] = FunctionDefinition("println", { intType }, voidType, (long)(&println));
+	// vmState.functionTable["printfln"] = FunctionDefinition("printfln", { floatType }, voidType, (long)(&printfln));
+	// vmState.functionTable["printchar"] = FunctionDefinition("printchar", { intType }, voidType, (long)(&printchar));
 }

@@ -41,6 +41,14 @@ void VMState::pushFunc(Function* func, int instIndex) {
     mCallStack.push_front(newEntry);
 }
 
+Binder& VMState::binder() {
+    return mBinder;
+}
+
+const Binder& VMState::binder() const {
+    return mBinder;
+}
+
 const Type* VMState::findType(std::string name) {
     if (mTypes.count(name) > 0) {
         return mTypes[name];

@@ -248,9 +248,36 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
             if (currentToLower == "call") {
                 assertTokenCount(tokens, i, 1);
                 std::string funcName = tokens[i + 1];
-                currentFunc->instructions.push_back(Instructions::makeCall(funcName));
-
                 i++;
+
+                assertTokenCount(tokens, i, 1);
+                if (tokens[i + 1] != "(") {
+                    throw std::runtime_error("Expected '(' after called function.");
+                }
+                i++;
+
+                std::vector<const Type*> parameters;
+
+                while (true) {
+                    assertTokenCount(tokens, i, 1);
+                    i++;
+
+                    if (tokens[i] == ")") {
+                        break;
+                    }
+
+                    auto fieldType = vmState.findType(tokens[i]);
+
+                    if (fieldType == nullptr) {
+                        throw std::runtime_error("'" + tokens[i] + "' is not a valid type.");
+                    }
+
+
+                    parameters.push_back(fieldType);
+                }
+
+                currentFunc->instructions.push_back(Instructions::makeCall(funcName, parameters));
+
                 continue;
             }
 
@@ -338,15 +365,16 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                     auto returnType = vmState.findType(tokens[i + 1]);
                     int numArgs = funcParams.size();
 
+                    auto signature = vmState.binder().functionSignature(funcName, funcParams);
+
                     if (numArgs >= 0 && numArgs <= 4) {
-                        if (program.functions.count(funcName) == 0 && vmState.functionTable.count(funcName) == 0) {
+                        if (program.functions.count(signature) == 0 && !vmState.binder().isDefined(signature)) {
                             //Create a new function        
                             Function* newFunc = new Function(funcName, funcParams, returnType);
-                            program.functions[funcName] = newFunc;
-
+                            program.functions[signature] = newFunc;
                             currentFunc = newFunc;
                         } else {
-                            throw std::runtime_error("The function '" + funcName + "' is already defined.");
+                            throw std::runtime_error("The function '" + signature + "' is already defined.");
                         }
                     } else {
                         throw std::runtime_error("Maximum four arguments are supported.");
@@ -374,8 +402,8 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
         }
     }
 
-    if (program.functions.count("main") > 0) {
-        auto mainFunc = program.functions["main"];
+    if (program.functions.count("main()") > 0) {
+        auto mainFunc = program.functions["main()"];
 
         if (mainFunc->arguments().size() != 0 || !TypeSystem::isPrimitiveType(mainFunc->returnType(), PrimitiveTypes::Integer)) {
            throw std::runtime_error("The main function must have the following signature: 'func main() Int'"); 

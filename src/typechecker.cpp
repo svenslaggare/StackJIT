@@ -302,11 +302,13 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
             break;
         case OpCodes::CALL:
             {
-                if (vmState.functionTable.count(inst.StrValue) == 0) {
-                    typeError(index, "The function '" + inst.StrValue + "' is not defined.");
+                auto signature = vmState.binder().functionSignature(inst.StrValue, inst.Parameters);
+
+                if (!vmState.binder().isDefined(signature)) {
+                    typeError(index, "The function '" + signature + "' is not defined.");
                 }
 
-                auto calledFunc = vmState.functionTable.at(inst.StrValue);
+                auto calledFunc = vmState.binder().getFunction(signature);
                 int calledFuncNumArgs = calledFunc.arguments().size();
                 assertOperandCount(index, operandStack, calledFuncNumArgs);
 

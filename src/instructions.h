@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 
 //The OP codes for the instuctios
 enum OpCodes {
@@ -47,6 +48,8 @@ enum OpCodes {
     STORE_FIELD
 };
 
+class Type;
+
 //Represents an instruction
 struct Instruction {
     OpCodes OpCode;
@@ -57,6 +60,8 @@ struct Instruction {
     } Value;
 
     std::string StrValue;
+
+    std::vector<const Type*> Parameters;
 };
 
 namespace Instructions {
@@ -73,5 +78,5 @@ namespace Instructions {
     Instruction makeWithStr(OpCodes opCode, std::string value);
 
     //Creates a new call instruction
-    Instruction makeCall(std::string funcName);
+    Instruction makeCall(std::string funcName, std::vector<const Type*> parameters);
 }

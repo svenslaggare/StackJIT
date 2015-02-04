@@ -27,9 +27,10 @@ Instruction Instructions::makeWithStr(OpCodes opCode, std::string value) {
     return inst;
 }
 
-Instruction Instructions::makeCall(std::string funcName) {
+Instruction Instructions::makeCall(std::string funcName, std::vector<const Type*> parameters) {
     Instruction inst;
     inst.StrValue = funcName;
+    inst.Parameters = parameters;
     inst.OpCode = OpCodes::CALL;
     return inst;
 }
