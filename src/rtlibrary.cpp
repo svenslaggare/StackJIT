@@ -173,14 +173,14 @@ void Runtime::Internal::markObject(ObjectHandle* handle) {
 }
 
 void Runtime::Internal::markValue(long value, const Type* type) {
-    unsigned char* objPtr = (unsigned char*)value;
-
-    //Don't mark nulls
-    if (objPtr == nullptr) {
-        return;
-    }
-
     if (TypeSystem::isReferenceType(type)) {
+        unsigned char* objPtr = (unsigned char*)value;
+
+        //Don't mark nulls
+        if (objPtr == nullptr) {
+            return;
+        }
+        
         if (vmState.getObjects().count(objPtr) > 0) {
             markObject(vmState.getObjects().at(objPtr));
         } else {

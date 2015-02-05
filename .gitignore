@@ -1,6 +1,8 @@
 *.o
 stackjit
 amd64-test
+vm-test
+tests/runners/*
 *.jit
 *.s
 *.sublime-workspace
