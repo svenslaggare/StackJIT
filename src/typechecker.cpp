@@ -424,7 +424,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
                 }
 
                 if (*elemType == *voidType) {
-                    typeError(index, "Arrays of Voids are not allowed");
+                    typeError(index, "Array of type 'Void' is not allowed.");
                 }
 
                 operandStack.push(vmState.findType("Ref.Array[" + inst.StrValue + "]"));

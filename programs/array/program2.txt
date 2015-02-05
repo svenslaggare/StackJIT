@@ -28,17 +28,17 @@ func main() Int
 	CALL newArray(Int)
 	STLOC 0
 
-	#LDLOC 0
-	#PUSHINT 0
-	#PUSHINT 1337
-	#STELEM Int
-
-	#LDLOC 0
-	#LDLEN
-	#CALL printLine(Int)
-
-	#LDLOC 0
+	LDLOC 0
 	PUSHINT 0
-	#CALL getElement(Ref.Array[Int] Int)
+	PUSHINT 1337
+	STELEM Int
+
+	LDLOC 0
+	LDLEN
+	CALL printLine(Int)
+
+	LDLOC 0
+	PUSHINT 0
+	CALL getElement(Ref.Array[Int] Int)
 	RET
 }

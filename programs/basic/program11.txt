@@ -14,24 +14,12 @@ func addFloat(Float Float) Float
 
 func main() Int
 {  
-   PUSHFLOAT 13.37
-   PUSHFLOAT 47.11
-   CALL addFloat(Float Float)
-   
-   CALL println(Float)
-
-   PUSHINT 0
-   RET
-}
-
-func main1() Int
-{  
    .locals 1
    .local 0 Float
 
    PUSHFLOAT 13.37
    PUSHFLOAT 47.11
-   ADD
+   CALL addFloat(Float Float)
    STLOC 0
 
    LDLOC 0
