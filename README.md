@@ -28,7 +28,7 @@ The number of locals a function has _should_ be defined in the beginning of the 
 syntax: `.locals <count>`. If the number of locals isn't defined, zero is chosen.
 
 ###Function calls###
-The arguments to call with are popped from the evaluation stack where the top operand is the last argument and so on. Only 4 arguments are supported.
+The arguments to call with are popped from the evaluation stack where the top operand is the last argument and so on. Only 4 arguments are supported. The VM supports function overloads. The signature of a function is defined as: `<name>(<type 1> <type 2> ...)`.
 
 ###Functions###
 Functions can be defined using the following syntax:
@@ -52,8 +52,8 @@ A structure is a reference type and can only be manipulated via references. The 
 ```
 struct <name>
 {
-    <field 1> <type>
-    <field 2> <type>
+    <field 1> <type 1>
+    <field 2> <type 1>
 }
 ```
 
@@ -86,7 +86,7 @@ Dereferencing a null reference will result in a null reference error. Both array
 * `STLOC <local>`: Pops the top operand and stores it in the given local.
 
 ###Functions###
-* `CALL <name>`: Calls the given function. The arguments are popped from the evaluation stack.
+* `CALL <signature>`: Calls the given function. The arguments are popped from the evaluation stack.
 * `RET`: Returns from the current function, popping the return value from the evalutation stack.
 * `LDARG <arg>`: Loads the given function argument and pushes it to the evaluation stack.
 
@@ -109,6 +109,7 @@ Dereferencing a null reference will result in a null reference error. Both array
 
 ###Reference types###
 * `PUSHNULL`: Pushes a null reference unto the operand stack.
+* `GC`: Invokes the garbage collector. This instruction may be removed in the future.
 
 ###Arrays###
 * `NEWARR <type>`: Pops the size of the array and creates a new array of the given type and pushes the reference on the stack.
@@ -123,5 +124,6 @@ Dereferencing a null reference will result in a null reference error. Both array
 
 ##Platforms##
 Supports Linux x64.
+At the moment, the VM only works properly compiled with G++. Using Clang++ gives strange errors when using the GC.
 <br>
 Tested on Linux Mint 16 & 17 64-bits.

@@ -1,0 +1,8 @@
+func main() Int
+{
+   .locals 1
+   .local 0 Void
+
+   PUSHINT 0
+   RET
+}

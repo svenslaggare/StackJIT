@@ -16,9 +16,6 @@ public:
 	ObjectHandle(unsigned char* handle, std::size_t size, const Type* type);
 	virtual ~ObjectHandle();
 
-	//Deletes the underlying handle
-	void deleteHandle();
-
 	//Returns the size of the handled object
 	std::size_t size() const;
 

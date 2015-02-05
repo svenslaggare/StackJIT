@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cxxtest/TestSuite.h>
 
+//Executes the given command
 std::string executeCmd(const char* cmd) {
     auto pipe = popen(cmd, "r");
 
@@ -22,6 +23,7 @@ std::string executeCmd(const char* cmd) {
     return result;
 }
 
+//Invokes the VM with the given program
 std::string invokeVM(std::string programName) {
 	std::string invokePath = "../StackJIT/stackjit -nd < programs/" + programName + ".txt 2>&1";
 	return executeCmd(invokePath.data());
@@ -67,6 +69,8 @@ public:
         TS_ASSERT_EQUALS(invokeVM("basic/program11"), "60.48\n0\n");
         TS_ASSERT_EQUALS(invokeVM("basic/program12"), "0\n");
         TS_ASSERT_EQUALS(invokeVM("basic/program13"), "4711\n13.37\n1\n0\n");
+
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("basic/invalid_program1")), "  what():  1: Locals of 'Void' type are not allowed.\n");
     }
 
     void testArray() {

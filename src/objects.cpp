@@ -8,10 +8,6 @@ ObjectHandle::ObjectHandle(unsigned char* handle, std::size_t size, const Type* 
 }
 
 ObjectHandle::~ObjectHandle() {
-	deleteHandle();
-}
-
-void ObjectHandle::deleteHandle() {
 	delete[] mHandle;
 	mHandle = nullptr;
 	mSize = 0;

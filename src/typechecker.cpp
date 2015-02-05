@@ -77,11 +77,21 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
     auto& func = funcData.function;
     const auto numInsts = func.instructions.size();
 
+    if (numInsts == 0) {
+        typeError(1, "Empty functions are not allowed.");
+    }
+
     std::vector<InstructionTypes> instructionsOperandTypes;
     instructionsOperandTypes.reserve(numInsts);
 
     std::vector<InstructionTypes> postInstructionsOperandTypes;
     postInstructionsOperandTypes.reserve(numInsts);
+
+    const auto intType = vmState.findType(TypeSystem::primitiveTypeName(PrimitiveTypes::Integer));
+    const auto floatType = vmState.findType(TypeSystem::primitiveTypeName(PrimitiveTypes::Float));
+    const auto boolType = vmState.findType(TypeSystem::primitiveTypeName(PrimitiveTypes::Bool));
+    const auto voidType = vmState.findType(TypeSystem::primitiveTypeName(PrimitiveTypes::Void));
+    const auto nullType = vmState.findType("Ref.Null");
 
     //Set the local type if set
     std::vector<const Type*> locals(func.numLocals());
@@ -90,17 +100,15 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
         auto localType = func.getLocal(i);
 
         if (localType != nullptr) {
+            if (localType == voidType) {
+                typeError(1, "Locals of 'Void' type are not allowed.");
+            }
+
             locals[i] = localType;
         }
     }
 
     std::vector<BranchCheck> branches;
-
-    const auto intType = vmState.findType(TypeSystem::primitiveTypeName(PrimitiveTypes::Integer));
-    const auto floatType = vmState.findType(TypeSystem::primitiveTypeName(PrimitiveTypes::Float));
-    const auto boolType = vmState.findType(TypeSystem::primitiveTypeName(PrimitiveTypes::Bool));
-    const auto voidType = vmState.findType(TypeSystem::primitiveTypeName(PrimitiveTypes::Void));
-    const auto nullType = vmState.findType("Ref.Null");
 
     int index = 1;
 
@@ -627,6 +635,8 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
                     typeError(index, "Invalid field reference.");
                 }
             }
+            break;
+        case OpCodes::GARBAGE_COLLECT:
             break;
         }
 

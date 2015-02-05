@@ -22,7 +22,6 @@ void VMState::newObject(ObjectHandle* handle) {
 
 void VMState::deleteObject(ObjectHandle* handle) {
     mObjects.erase(handle->handle());
-    handle->deleteHandle();
     delete handle;
 }
 

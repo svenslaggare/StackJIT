@@ -101,8 +101,6 @@ void Runtime::Internal::printAliveObjects(long* basePtr, Function* func, int ins
 
     long* argsStart = basePtr - 1;
     long* localsStart = basePtr - 1 - numArgs;
-    //long* stackStart = basePtr - numArgs - numLocals - (func->stackSize() / 8);
-    //long* stackStart = basePtr - 1 - numArgs - numLocals - (func->stackSize() / 8) + stackSize;
     long* stackStart = basePtr - 1 - (func->stackSize() / 8);
 
     if (numArgs > 0) {
