@@ -4,6 +4,7 @@
 
 class VMState;
 
+//Represents the standard library
 namespace StandardLibrary {
 	int abs(int x);
 
