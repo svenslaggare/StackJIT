@@ -6,6 +6,7 @@
 #include "structmetadata.h"
 #include "function.h"
 #include "binder.h"
+#include "gc.h"
 
 class Type;
 class StructType;
@@ -18,9 +19,9 @@ class VMState {
 private:
 	std::unordered_map<std::string, Type*> mTypes;
     Binder mBinder;
-	std::unordered_map<std::string, StructMetadata> mStructsMetadata;
+	StructMetadataProvider mStructProvider;
+    GarbageCollector mGC;
 
-	std::unordered_map<const unsigned char*, ObjectHandle*> mObjects;
 	std::deque<CallStackEntry> mCallStack;
 public:
 	//Indicates if debugging is enabled
@@ -35,6 +36,9 @@ public:
 	//Indicates if the generated code is outputed as a file
 	bool outputGeneratedCode = false;
 
+    //Indicates if the GC is disabled
+    bool disableGC = false;
+
     //Creates a new VM State
     VMState();
 	~VMState();
@@ -42,15 +46,6 @@ public:
     //Prevent the VM state from being copied
     VMState(const VMState&) = delete;
     VMState& operator=(const VMState&) = delete;
-
-    //Returns the handles for the allocated objects
-    const std::unordered_map<const unsigned char*, ObjectHandle*>& getObjects() const;
-
-    //Adds the given handle to the list of objects
-    void newObject(ObjectHandle* handle);
-
-    //Deletes the given object
-    void deleteObject(ObjectHandle* handle);
 
     //Returns the call stack
     const std::deque<CallStackEntry>& callStack() const;
@@ -61,25 +56,20 @@ public:
     //Pushes the given function to the top of the stack
     void pushFunc(Function* func, int instIndex);
 
+    //Returns the GC
+    GarbageCollector& gc();
+
+    //Returns the struct metadata provider
+    StructMetadataProvider& structProvider();
+    const StructMetadataProvider& structProvider() const;
+
     //Returns the binder
     Binder& binder();
     const Binder& binder() const;
 
-    //Finds the type object for the given type name
+    //Tries to find or construct the given type name name. Nullptr if not found.
     const Type* findType(std::string name);
 
-    //Returns the given type (nullptr if not found)
+    //Returns the given type. Nullptr if not found.
     const Type* getType(std::string name) const;
-
-    //Adds metadata for the given struct
-    void addStructMetadata(std::string structName, StructMetadata structMetadata);
-
-    //Indicates if the stuct is defined
-    bool isStructDefined(std::string structName) const;
-
-    //Returns the metadata for the given struct
-    const StructMetadata& getStructMetadata(std::string structName) const;
-
-    //Returns the metadata for the given struct
-    const StructMetadata& getStructMetadata(const StructType* structType) const;
 };

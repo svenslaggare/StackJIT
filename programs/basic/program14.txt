@@ -1,0 +1,7 @@
+func main() Int
+{
+	PUSHINT 6
+	PUSHINT 3
+	DIV
+	RET
+}

@@ -537,7 +537,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
 
                 std::string structName = dynamic_cast<const StructType*>(structType)->structName();
 
-                if (!vmState.isStructDefined(structName)) {
+                if (!vmState.structProvider().isDefined(structName)) {
                     typeError(index, "'" + structName + "' is not a defined struct.");
                 }
 
@@ -561,11 +561,11 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
                     auto structName = structAndField.first;
                     auto fieldName = structAndField.second;
 
-                    if (!vmState.isStructDefined(structName)) {
+                    if (!vmState.structProvider().isDefined(structName)) {
                         typeError(index, "'" + structName + "' is not a struct type.");
                     }
 
-                    auto structMetadata = vmState.getStructMetadata(structName);
+                    auto structMetadata = vmState.structProvider()[structName];
 
                     auto structType = vmState.findType("Ref.Struct." + structName);
 
@@ -607,11 +607,11 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
                     auto structName = structAndField.first;
                     auto fieldName = structAndField.second;
 
-                    if (!vmState.isStructDefined(structName)) {
+                    if (!vmState.structProvider().isDefined(structName)) {
                         typeError(index, "'" + structName + "' is not a struct type.");
                     }
 
-                    auto structMetadata = vmState.getStructMetadata(structName);
+                    auto structMetadata = vmState.structProvider()[structName];
                     auto fieldType = structMetadata.getField(fieldName);
 
                     if (fieldType == nullptr) {

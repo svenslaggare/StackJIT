@@ -2,7 +2,8 @@
 #include "type.h"
 #include "objects.h"
 
-VMState::VMState() {
+VMState::VMState()
+    : mGC(*this) {
 
 }
 
@@ -10,19 +11,12 @@ VMState::~VMState() {
     for (auto type : mTypes) {
         delete type.second;
     }
-}
 
-const std::unordered_map<const unsigned char*, ObjectHandle*>& VMState::getObjects() const {
-    return mObjects;
-}
-
-void VMState::newObject(ObjectHandle* handle) {
-    mObjects.insert({ handle->handle(), handle });
-}
-
-void VMState::deleteObject(ObjectHandle* handle) {
-    mObjects.erase(handle->handle());
-    delete handle;
+    //Unmap function code memory
+    for (auto funcEntry : mBinder.functionTable()) {
+        auto func = funcEntry.second;
+        func.deleteCodeMemory();
+    }
 }
 
 const std::deque<CallStackEntry>& VMState::callStack() const {
@@ -40,12 +34,24 @@ void VMState::pushFunc(Function* func, int instIndex) {
     mCallStack.push_front(newEntry);
 }
 
+GarbageCollector& VMState::gc() {
+    return mGC;
+}
+
 Binder& VMState::binder() {
     return mBinder;
 }
 
 const Binder& VMState::binder() const {
     return mBinder;
+}
+
+StructMetadataProvider& VMState::structProvider() {
+    return mStructProvider;
+}
+
+const StructMetadataProvider& VMState::structProvider() const {
+    return mStructProvider;
 }
 
 const Type* VMState::findType(std::string name) {
@@ -64,26 +70,4 @@ const Type* VMState::getType(std::string name) const {
     } else {
         return nullptr;
     }
-}
-
-void VMState::addStructMetadata(std::string structName, StructMetadata structMetadata) {
-    if (mStructsMetadata.count(structName) == 0) {
-        mStructsMetadata[structName] = structMetadata;
-    }
-}
-
-bool VMState::isStructDefined(std::string structName) const {
-    return mStructsMetadata.count(structName) > 0;
-}
-
-const StructMetadata& VMState::getStructMetadata(std::string structName) const {
-    if (mStructsMetadata.count(structName) > 0) {
-        return mStructsMetadata.at(structName);
-    } else {
-        throw std::out_of_range("The struct isn't defined.");
-    }
-}
-
-const StructMetadata& VMState::getStructMetadata(const StructType* structType) const {
-    return getStructMetadata(structType->structName());
 }

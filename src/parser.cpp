@@ -315,7 +315,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
 
         if (isStructBody) {
             if (currentToLower == "}") {
-                vmState.addStructMetadata(structName, StructMetadata(structFields));
+                vmState.structProvider().add(structName, StructMetadata(structFields));
                 structFields.clear();
 
                 isStruct = false;

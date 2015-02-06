@@ -18,28 +18,43 @@ VMState vmState;
 int main(int argc, char* argv[]) {
     Program program;
 
-    //Switches
+    //Options
     for (int i = 1; i < argc; i++) {
         std::string switchStr = argv[i];
+        bool handled = false;
 
         if (switchStr == "-d" || switchStr == "-debug") {
             vmState.enableDebug = true;
+            handled = true;
         }
 
         if (switchStr == "-nd") {
             vmState.enableDebug = false;
+            handled = true;
         }
 
         if (switchStr == "-ptc") {
             vmState.printTypeChecking = true;
+            handled = true;
         }
 
         if (switchStr == "-psf") {
             vmState.printStackFrame = true;
+            handled = true;
         }
 
         if (switchStr == "-ogc") {
             vmState.outputGeneratedCode = true;
+            handled = true;
+        }
+
+        if (switchStr == "-nogc") {
+            vmState.disableGC = true;
+            handled = true;
+        }
+
+        if (!handled) {
+            std::cout << "Unhandled option: " << switchStr << std::endl;
         }
     }
 
@@ -68,21 +83,6 @@ int main(int argc, char* argv[]) {
     }
 
     std::cout << res << std::endl;
-
-    //Free objects
-    for (auto objEntry : vmState.getObjects()) {
-        if (vmState.enableDebug) {
-            //std::cout << "Freed object (" << obj->getSize() << " bytes) at 0x" << std::hex << (long)(obj->getHandle()) << std::dec << std::endl;
-        }
-
-        delete objEntry.second;
-    }
-
-    //Unmap function code memory
-    for (auto funcEntry : vmState.binder().functionTable()) {
-        auto func = funcEntry.second;
-        func.deleteCodeMemory();
-    }
 
     return 0;
 }

@@ -62,7 +62,7 @@ unsigned char* GarbageCollector::newArray(const Type* elementType, int length) {
 }
 
 unsigned char* GarbageCollector::newStruct(const StructType* structType) {
-    std::size_t memSize = vmState.getStructMetadata(structType->structName()).size();
+    std::size_t memSize = vmState.structProvider()[structType->structName()].size();
     unsigned char* structPtr = new unsigned char[memSize];
     memset(structPtr, 0, memSize);
 
@@ -99,7 +99,7 @@ void GarbageCollector::markObject(ObjectHandle* handle) {
             handle->mark();
 
             auto structType = static_cast<const StructType*>(handle->type());
-            auto structMetadata = vmState.getStructMetadata(structType);
+            auto structMetadata = vmState.structProvider().metadataFor(structType);
 
             //Mark ref fields
             for (auto fieldEntry : structMetadata.fields()) {
@@ -157,13 +157,17 @@ void GarbageCollector::sweepObjects() {
     mObjectsToRemove.clear();
 }
 
-void GarbageCollector::beginGC() {
-	std::cout << "Alive objects: " << std::endl;
+bool GarbageCollector::beginGC() {
+    if (vmState.enableDebug) {
+    	std::cout << "Alive objects: " << std::endl;
 
-    for (auto objEntry : mObjects) {
-        auto obj = objEntry.second;
-        printObject(obj);
+        for (auto objEntry : mObjects) {
+            auto obj = objEntry.second;
+            printObject(obj);
+        }
     }
+
+    return true;
 }
 
 void GarbageCollector::endGC() {

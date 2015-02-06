@@ -1,5 +1,6 @@
 #pragma once
 #include <map>
+#include <unordered_map>
 
 class Type;
 
@@ -31,4 +32,24 @@ public:
 
 	//Returns the fields
 	const std::map<std::string, Field>& fields() const;
+};
+
+class StructType;
+
+//Provides struct metadata
+class StructMetadataProvider {
+private:
+	std::unordered_map<std::string, StructMetadata> mStructsMetadata;
+public:
+	//Adds metadata for the given struct
+    void add(std::string structName, StructMetadata structMetadata);
+
+    //Indicates if the stuct is defined
+    bool isDefined(std::string structName) const;
+
+    //Returns the metadata for the given struct
+    const StructMetadata& operator[](std::string structName) const;
+
+    //Returns the metadata for the given struct
+    const StructMetadata& metadataFor(const StructType* structType) const;
 };

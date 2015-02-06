@@ -1,0 +1,37 @@
+struct Point
+{
+	x Int
+	y Int
+}
+
+struct Pair
+{
+	first Ref.Struct.Point
+	second Int
+}
+
+func main3() Int
+{
+	.locals 1
+	.local 0 Ref.Struct.Pair
+
+	NEWOBJ Ref.Struct.Pair
+	STLOC 0
+
+	LDLOC 0
+	NEWOBJ Ref.Struct.Point
+	STFIELD Pair::first
+
+	PUSHNULL
+	STLOC 0
+	GC
+
+	PUSHINT 0
+	RET
+}
+
+func main() Int
+{
+	CALL main3()
+	RET
+}

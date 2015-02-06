@@ -24,8 +24,8 @@ std::string executeCmd(const char* cmd) {
 }
 
 //Invokes the VM with the given program
-std::string invokeVM(std::string programName) {
-	std::string invokePath = "../StackJIT/stackjit -nd < programs/" + programName + ".txt 2>&1";
+std::string invokeVM(std::string programName, std::string options = "-nd -nogc") {
+	std::string invokePath = "../StackJIT/stackjit " + options + " < programs/" + programName + ".txt 2>&1";
 	return executeCmd(invokePath.data());
 }
 
@@ -86,5 +86,12 @@ public:
         TS_ASSERT_EQUALS(invokeVM("struct/program2"), "4\n4711\n");
         TS_ASSERT_EQUALS(invokeVM("struct/program3"), "0\n");
         TS_ASSERT_EQUALS(invokeVM("struct/program4"), "0\n");
+    }
+
+    void testGC() {
+        TS_ASSERT_EQUALS(invokeVM("gc/program1"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program2"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program3"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program4"), "0\n");
     }
 };

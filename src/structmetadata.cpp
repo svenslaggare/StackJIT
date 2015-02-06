@@ -1,6 +1,7 @@
 #include "structmetadata.h"
 #include "type.h"
 
+//Struct metadata
 Field::Field(const Type* type, std::size_t offset)
 	: type(type), offset(offset) {
 
@@ -41,4 +42,27 @@ std::size_t StructMetadata::size() const {
 
 const std::map<std::string, Field>& StructMetadata::fields() const {
 	return mFields;
+}
+
+//Provider
+void StructMetadataProvider::add(std::string structName, StructMetadata structMetadata) {
+	if (mStructsMetadata.count(structName) == 0) {
+        mStructsMetadata[structName] = structMetadata;
+    }
+}
+
+bool StructMetadataProvider::isDefined(std::string structName) const {
+	return mStructsMetadata.count(structName) > 0;
+}
+
+const StructMetadata& StructMetadataProvider::operator[](std::string structName) const {
+	if (mStructsMetadata.count(structName) > 0) {
+        return mStructsMetadata.at(structName);
+    } else {
+        throw std::out_of_range("The struct isn't defined.");
+    }
+}
+
+const StructMetadata& StructMetadataProvider::metadataFor(const StructType* structType) const {
+	return operator[](structType->structName());
 }

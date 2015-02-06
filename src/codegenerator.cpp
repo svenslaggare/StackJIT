@@ -359,7 +359,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                     if (intOp) {
                         Amd64Backend::addRegToReg(generatedCode, Registers::AX, Registers::CX, is32bits); //add eax, ecx
                     } else if (floatOp) {
-                        pushArray(generatedCode, { 0xF3, 0x0F, 0x58, 0xC1 }); //addss  xmm0, xmm1  
+                        pushArray(generatedCode, { 0xF3, 0x0F, 0x58, 0xC1 }); //addss xmm0, xmm1  
                     }
                     break;
                 case OpCodes::SUB:
@@ -378,6 +378,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                     break;
                 case OpCodes::DIV:
                     if (intOp) {
+                        pushArray(generatedCode, { 0x99 });
                         Amd64Backend::divRegFromReg(generatedCode, Registers::AX, Registers::CX, is32bits); //idiv eax, ecx
                     } else if (floatOp) {
                         pushArray(generatedCode, { 0xF3, 0x0F, 0x5E, 0xC1 }); //divss xmm0, xmm1
@@ -752,13 +753,15 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         {
             auto elemType = vmState.getType(inst.StrValue);
 
-            //Call the garbageCollect runtime function
-            // Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&Runtime::garbageCollect);
-            // Amd64Backend::moveRegToReg(generatedCode, Registers::DI, Registers::BP); //BP as the first argument
-            // Amd64Backend::moveLongToReg(generatedCode, Registers::SI, (long)&function); //Address of the function as second argument
-            // Amd64Backend::moveIntToReg(generatedCode, Registers::DX, instIndex); //Current inst index as third argument
-            // Amd64Backend::callInReg(generatedCode, Registers::AX);
-
+            if (!vmState.disableGC) {
+                //Call the garbageCollect runtime function
+                Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&Runtime::garbageCollect);
+                Amd64Backend::moveRegToReg(generatedCode, Registers::DI, Registers::BP); //BP as the first argument
+                Amd64Backend::moveLongToReg(generatedCode, Registers::SI, (long)&function); //Address of the function as second argument
+                Amd64Backend::moveIntToReg(generatedCode, Registers::DX, instIndex); //Current inst index as third argument
+                Amd64Backend::callInReg(generatedCode, Registers::AX);
+            }
+            
             //The pointer to the type as the first arg
             Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)elemType); //mov rdi, <addr of type pointer>
 
@@ -864,11 +867,13 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             auto structType = vmState.getType(inst.StrValue);
 
             //Call the garbageCollect runtime function
-            // Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&Runtime::garbageCollect);
-            // Amd64Backend::moveRegToReg(generatedCode, Registers::DI, Registers::BP); //BP as the first argument
-            // Amd64Backend::moveLongToReg(generatedCode, Registers::SI, (long)&function); //Address of the function as second argument
-            // Amd64Backend::moveIntToReg(generatedCode, Registers::DX, instIndex); //Current inst index as third argument
-            // Amd64Backend::callInReg(generatedCode, Registers::AX);
+            if (!vmState.disableGC) {
+                Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&Runtime::garbageCollect);
+                Amd64Backend::moveRegToReg(generatedCode, Registers::DI, Registers::BP); //BP as the first argument
+                Amd64Backend::moveLongToReg(generatedCode, Registers::SI, (long)&function); //Address of the function as second argument
+                Amd64Backend::moveIntToReg(generatedCode, Registers::DX, instIndex); //Current inst index as third argument
+                Amd64Backend::callInReg(generatedCode, Registers::AX);
+            }
 
             //Call the newObject runtime function
             Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&Runtime::newObject);
@@ -896,7 +901,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             std::pair<std::string, std::string> structAndField;
             TypeSystem::getStructAndField(inst.StrValue, structAndField);
 
-            auto structMetadata = vmState.getStructMetadata(structAndField.first);
+            auto structMetadata = vmState.structProvider()[structAndField.first];
             int fieldOffset = structMetadata.fieldOffset(structAndField.second);
 
             //Get the size of the field

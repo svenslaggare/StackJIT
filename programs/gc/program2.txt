@@ -1,0 +1,38 @@
+struct Point
+{
+	x Int
+	y Int
+}
+
+func main2() Int
+{
+	.locals 1
+	.local 0 Ref.Array[Ref.Struct.Point]
+
+	PUSHINT 2
+	NEWARR Ref.Struct.Point
+	STLOC 0
+
+	LDLOC 0
+	PUSHINT 0
+	NEWOBJ Ref.Struct.Point
+	STELEM Ref.Struct.Point
+
+	LDLOC 0
+	PUSHINT 1
+	NEWOBJ Ref.Struct.Point
+	STELEM Ref.Struct.Point
+
+	PUSHNULL
+	STLOC 0
+	GC
+
+	PUSHINT 0
+	RET
+}
+
+func main() Int
+{
+	CALL main2()
+	RET
+}

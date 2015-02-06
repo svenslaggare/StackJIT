@@ -4,7 +4,13 @@ struct Point
 	y Int
 }
 
-func main1() Int
+struct Pair
+{
+	first Ref.Struct.Point
+	second Int
+}
+
+func main4() Int
 {
 	.locals 1
 	.local 0 Ref.Struct.Point
@@ -14,6 +20,9 @@ func main1() Int
 	STLOC 0
 	STLOC 0
 
+	NEWOBJ Ref.Struct.Point
+	STLOC 0 
+
 	GC
 
 	PUSHINT 0
@@ -22,6 +31,6 @@ func main1() Int
 
 func main() Int
 {
-	CALL main1()
+	CALL main4()
 	RET
 }

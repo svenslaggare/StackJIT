@@ -32,7 +32,7 @@ private:
 public:
 	//Creates a new GC
 	GarbageCollector(VMState& vmState);
-
+	
 	~GarbageCollector();
 
 	//Prevent the GC from being copied
@@ -48,9 +48,9 @@ public:
 	//Marks the value of the given type
 	void markValue(long value, const Type* type);
 
-	//Begins the garbage collection
-	void beginGC();
+	//Begins the garbage collection. Return true if started.
+	bool beginGC();
 
-	//Ends the garbage collection
+	//Ends the garbage collection.
 	void endGC();
 };
