@@ -85,7 +85,7 @@ void printValue(long value, const Type* type) {
 void Runtime::Internal::printAliveObjects(long* basePtr, Function* func, int instIndex, std::string indentation) {
     int numArgs = func->numArgs();
     int numLocals = func->numLocals();
-    auto operandTypes = func->instructionOperandTypes.at(instIndex);
+    auto operandTypes = func->preInstructionOperandTypes.at(instIndex);
     int stackSize = operandTypes.size();
 
     long* argsStart = basePtr - 1;
@@ -129,7 +129,7 @@ void Runtime::Internal::markObjects(long* basePtr, Function* func, int instIndex
 
     int numArgs = func->numArgs();
     int numLocals = func->numLocals();
-    auto operandTypes = func->instructionOperandTypes.at(instIndex);
+    auto operandTypes = func->preInstructionOperandTypes.at(instIndex);
     int stackSize = operandTypes.size();
 
     long* argsStart = basePtr - 1;

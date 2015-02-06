@@ -10,6 +10,7 @@
 #include "standardlibrary.h"
 #include "codegenerator.h"
 #include "vmstate.h"
+#include "executionengine.h"
 #include "objects.h"
 
 //The global state for the VM
@@ -69,7 +70,10 @@ int main(int argc, char* argv[]) {
     Parser::parseTokens(tokens, vmState, program);
 
     //Generate a function for the instructions
-    int (*programPtr)() = CodeGenerator::generateProgram(program, vmState);
+    //int (*programPtr)() = CodeGenerator::generateProgram(program, vmState);
+    auto& engine = vmState.engine();
+    engine.loadProgram(program);
+    auto programPtr = engine.entryPoint();
 
     if (vmState.enableDebug) {
         std::cout << "Program output:" << std::endl;

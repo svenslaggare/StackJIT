@@ -17,7 +17,7 @@ void Amd64Backend::pushInt(CodeGen& codeGen, int value) {
 	IntToBytes converter;
 	converter.IntValue = value;
 
-	for (int i = 0; i < sizeof(int); i++) {
+	for (std::size_t i = 0; i < sizeof(int); i++) {
 		codeGen.push_back(converter.ByteValues[i]);
 	}
 }
@@ -45,7 +45,7 @@ void Amd64Backend::moveRegToMemory(CodeGen& codeGen, long destAddr, Registers sr
 	LongToBytes converter;
 	converter.LongValue = destAddr;
 
-	for (int i = 0; i < sizeof(long); i++) {
+	for (std::size_t i = 0; i < sizeof(long); i++) {
 		codeGen.push_back(converter.ByteValues[i]);
 	}
 }
@@ -58,7 +58,7 @@ void Amd64Backend::moveMemoryToReg(CodeGen& codeGen, Registers destReg, long src
 	LongToBytes converter;
 	converter.LongValue = srcAddr;
 
-	for (int i = 0; i < sizeof(long); i++) {
+	for (std::size_t i = 0; i < sizeof(long); i++) {
 		codeGen.push_back(converter.ByteValues[i]);
 	}
 }
@@ -90,7 +90,7 @@ void Amd64Backend::moveIntToReg(CodeGen& codeGen, Registers dest, int value) {
 	IntToBytes converter;
 	converter.IntValue = value;
 
-	for (int i = 0; i < sizeof(int); i++) {
+	for (std::size_t i = 0; i < sizeof(int); i++) {
 		codeGen.push_back(converter.ByteValues[i]);
 	}
 }
@@ -102,7 +102,7 @@ void Amd64Backend::moveLongToReg(CodeGen& codeGen, Registers dest, long value) {
 	LongToBytes converter;
 	converter.LongValue = value;
 
-	for (int i = 0; i < sizeof(long); i++) {
+	for (std::size_t i = 0; i < sizeof(long); i++) {
 		codeGen.push_back(converter.ByteValues[i]);
 	}
 }
@@ -155,7 +155,7 @@ void Amd64Backend::call(CodeGen& codeGen, int funcAddr) {
 	IntToBytes converter;
 	converter.IntValue = funcAddr;
 
-	for (int i = 0; i < sizeof(int); i++) {
+	for (std::size_t i = 0; i < sizeof(int); i++) {
 		codeGen.push_back(converter.ByteValues[i]);
 	}
 }
@@ -217,7 +217,7 @@ void Amd64Backend::subIntFromReg(CodeGen& codeGen, Registers destReg, int value,
     IntToBytes converter;
 	converter.IntValue = value;
 
-	for (int i = 0; i < sizeof(int); i++) {
+	for (std::size_t i = 0; i < sizeof(int); i++) {
 		codeGen.push_back(converter.ByteValues[i]);
 	}
 }
@@ -283,7 +283,7 @@ void Amd64Backend::jump(CodeGen& codeGen, int target) {
 
 	codeGen.push_back(0xE9);
 
-	for (int i = 0; i < sizeof(int); i++) {
+	for (std::size_t i = 0; i < sizeof(int); i++) {
 		codeGen.push_back(converter.ByteValues[i]);
 	}
 }
@@ -296,7 +296,7 @@ void Amd64Backend::jumpEqual(CodeGen& codeGen, int target) {
 	codeGen.push_back(0x0F);
 	codeGen.push_back(0x84);
 
-	for (int i = 0; i < sizeof(int); i++) {
+	for (std::size_t i = 0; i < sizeof(int); i++) {
 		codeGen.push_back(converter.ByteValues[i]);
 	}
 }
@@ -309,7 +309,7 @@ void Amd64Backend::jumpNotEqual(CodeGen& codeGen, int target) {
 	codeGen.push_back(0x0F);
 	codeGen.push_back(0x85);
 
-	for (int i = 0; i < sizeof(int); i++) {
+	for (std::size_t i = 0; i < sizeof(int); i++) {
 		codeGen.push_back(converter.ByteValues[i]);
 	}
 }
@@ -322,7 +322,7 @@ void Amd64Backend::jumpGreaterThan(CodeGen& codeGen, int target) {
 	codeGen.push_back(0x0F);
 	codeGen.push_back(0x8F);
 
-	for (int i = 0; i < sizeof(int); i++) {
+	for (std::size_t i = 0; i < sizeof(int); i++) {
 		codeGen.push_back(converter.ByteValues[i]);
 	}
 }
@@ -335,7 +335,7 @@ void Amd64Backend::jumpGreaterThanOrEqual(CodeGen& codeGen, int target) {
 	codeGen.push_back(0x0F);
 	codeGen.push_back(0x8D);
 
-	for (int i = 0; i < sizeof(int); i++) {
+	for (std::size_t i = 0; i < sizeof(int); i++) {
 		codeGen.push_back(converter.ByteValues[i]);
 	}
 }
@@ -348,7 +348,7 @@ void Amd64Backend::jumpLessThan(CodeGen& codeGen, int target) {
 	codeGen.push_back(0x0F);
 	codeGen.push_back(0x8C);
 
-	for (int i = 0; i < sizeof(int); i++) {
+	for (std::size_t i = 0; i < sizeof(int); i++) {
 		codeGen.push_back(converter.ByteValues[i]);
 	}
 }
@@ -361,7 +361,7 @@ void Amd64Backend::jumpLessThanOrEqual(CodeGen& codeGen, int target) {
 	codeGen.push_back(0x0F);
 	codeGen.push_back(0x8E);
 
-	for (int i = 0; i < sizeof(int); i++) {
+	for (std::size_t i = 0; i < sizeof(int); i++) {
 		codeGen.push_back(converter.ByteValues[i]);
 	}
 }

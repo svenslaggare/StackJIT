@@ -16,11 +16,12 @@ private:
 
 	std::vector<const Type*> mLocalTypes;
 
-	int mStackSize;
+	std::size_t mStackSize;
+	std::size_t mOperandStackSize;
 public:
 	std::vector<Instruction> instructions;
 	std::vector<unsigned char> generatedCode;
-	std::vector<std::deque<const Type*>> instructionOperandTypes;	
+	std::vector<std::deque<const Type*>> preInstructionOperandTypes;	
 	std::vector<std::deque<const Type*>> postInstructionOperandTypes;	
 
 	//Creates a new function
@@ -51,10 +52,16 @@ public:
 	void setLocal(int index, const Type* type);
 
 	//The size of the stack
-	int stackSize() const;
+	std::size_t stackSize() const;
 
 	//Sets the size of the stack
-	void setStackSize(int size);
+	void setStackSize(std::size_t size);
+
+	//The size of the operand stack
+	std::size_t operandStackSize() const;
+
+	//Sets the size of the operand stack
+	void setOperandStackSize(std::size_t size);
 };
 
 //Represents a definition for a function

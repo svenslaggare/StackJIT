@@ -17,11 +17,6 @@
 #include "standardlibrary.h"
 #include "amd64.h"
 
-FunctionCompilationData::FunctionCompilationData(Function& function)
-    : function(function), operandStackSize(0) {
-
-}
-
 void pushArray(std::vector<unsigned char>& dest, const std::vector<unsigned char>& values) {
     for (auto current : values) {
         dest.push_back(current);
@@ -61,85 +56,12 @@ void generateCall(CodeGen& codeGen, long funcPtr) {
     Amd64Backend::callInReg(codeGen, Registers::AX);
 }
 
-JitFunction CodeGenerator::generateProgram(Program& program, VMState& vmState) {
-    std::map<FunctionCall, std::string> callTable;
-
-    //Add the functions to the func table
-    for (auto currentFunc : program.functions) {
-        auto func = currentFunc.second;
-        FunctionDefinition funcDef(func->name(), func->arguments(), func->returnType(), 0, 0);
-        auto& binder = vmState.binder();
-        binder.define(funcDef);
-    }
-
-    //Generate instructions for all functions
-    for (auto currentFunc : program.functions) {
-        auto func = currentFunc.second;
-        FunctionCompilationData funcData { *func };
-
-        auto funcPtr = generateFunction(funcData, vmState);
-
-        if (vmState.enableDebug) {
-            std::cout << "Defined function '" << func->name() << "' at 0x" << std::hex << (long)funcPtr << std::dec << "." << std::endl;
-        }
-
-        //Add the unresolved call to the program call table
-        for (auto call : funcData.callTable) {
-            callTable[call.first] = call.second;
-        }
-
-        auto signature = vmState.binder().functionSignature(func->name(), func->arguments());
-
-        //Set the entry point & size for the function
-        vmState.binder().getFunction(signature).setFunctionBody((long)funcPtr, func->generatedCode.size());
-    }
-
-    //Fix unresolved calls
-    for (auto call : callTable) {
-        auto funcName = call.first.first;
-        auto offset = call.first.second;
-        auto calledFunc = call.second;
-
-        //Get a pointer to the functions instructions
-        long calledFuncAddr = vmState.binder().getFunction(calledFunc).entryPoint();
-        unsigned char* funcCode = (unsigned char*)(vmState.binder().getFunction(funcName).entryPoint());
-
-        //Update the call target
-        LongToBytes converter;
-        converter.LongValue = calledFuncAddr;
-
-        int base = offset + 2;
-        for (int i = 0; i < sizeof(long); i++) {
-            funcCode[base + i] = converter.ByteValues[i];
-        }
-    }
-
-    //Make the functions memory executable, but not writable.
-    for (auto currentFunc : program.functions) {
-        auto func = currentFunc.second;
-        auto signature = vmState.binder().functionSignature(func->name(), func->arguments());
-
-        void* mem = (void*)vmState.binder().getFunction(signature).entryPoint();
-        int length = func->generatedCode.size();
-
-        int success = mprotect(mem, length, PROT_EXEC | PROT_READ);
-        assert(success == 0);
-    }
-
-    //Return the main func as entry point
-    return (JitFunction)vmState.binder().getFunction("main()").entryPoint();
-}
-
-JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionData, VMState& vmState) {
-    TypeChecker::typeCheckFunction(functionData, vmState, vmState.enableDebug && vmState.printTypeChecking);
-
+void CodeGenerator::initalizeFunction(FunctionCompilationData& functionData) {
     auto& function = functionData.function;
-    function.instructionOperandTypes = functionData.instructionOperandTypes;
-    function.postInstructionOperandTypes = functionData.postInstructionOperandTypes;
 
     //Calculate the size of the stack aligned to 16 bytes
-    int neededStackSize = (function.numArgs() + function.numLocals() + functionData.operandStackSize) * Amd64Backend::REG_SIZE;
-    int stackSize = ((neededStackSize + 15) / 16) * 16;
+    std::size_t neededStackSize = (function.numArgs() + function.numLocals() + functionData.operandStackSize) * Amd64Backend::REG_SIZE;
+    std::size_t stackSize = ((neededStackSize + 15) / 16) * 16;
 
     function.setStackSize(stackSize);
 
@@ -155,10 +77,45 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
             Amd64Backend::subIntFromReg(function.generatedCode, Registers::SP, stackSize); //sub rsp, <size of stack>
         }
     }
+}
 
-    //Move function arguments from registers to the stack
+void CodeGenerator::zeroLocals(FunctionCompilationData& functionData) {
+    auto& function = functionData.function;
+
+    if (function.numLocals() > 0) {
+        //This method should be faster? but makes the generated code larger
+        // Amd64Backend::moveIntToReg(function.generatedCode, Registers::AX, 0); //mov rax, 0
+
+        // for (int i = 0; i < function.numLocals(); i++) {
+        //     int localOffset = (i + function.numArgs() + 1) * -Amd64Backend::REG_SIZE;
+        //     Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, localOffset, Registers::AX); //mov [rbp-local], rax
+        // }
+
+        //Set the dir flag to decrease
+        function.generatedCode.push_back(0xFD); //std
+
+        //Set the address where the locals starts
+        Amd64Backend::moveRegToReg(function.generatedCode, Registers::DI, Registers::BP); //mov rdi, rbp
+        Amd64Backend::addByteToReg(function.generatedCode, Registers::DI, (function.numArgs() + 1) * -Amd64Backend::REG_SIZE); //add rdi, <locals offset>
+
+        //Set the number of locals
+        Amd64Backend::moveIntToReg(function.generatedCode, Registers::CX, function.numLocals()); //mov rcx, <num locals>
+
+        //Zero eax
+        pushArray(function.generatedCode, { 0x31, 0xC0 }); //xor eax, eax
+
+        //Execute the zeroing
+        pushArray(function.generatedCode, { 0xF3, 0x48, 0xAB }); //rep stosq
+
+        //Clear the dir flag
+        function.generatedCode.push_back(0xFC); //cld
+    }
+}
+
+void CodeGenerator::moveArgsToStack(FunctionCompilationData& functionData) {
+    auto& function = functionData.function;
+
     if (function.numArgs() > 0) {
-        //Move the arguments from the registers to the stack
         if (function.numArgs() >= 4) {
             if (TypeSystem::isPrimitiveType(function.arguments()[3], PrimitiveTypes::Float)) {
                 Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -4 * Amd64Backend::REG_SIZE, FloatRegisters::XMM3); //movss [rbp-4*REG_SIZE], xmm3
@@ -191,114 +148,6 @@ JitFunction CodeGenerator::generateFunction(FunctionCompilationData& functionDat
             }
         }
     }
-
-    //Zero the locals
-    if (function.numLocals() > 0) {
-        //This method should be faster? but makes the generated code larger
-        // Amd64Backend::moveIntToReg(function.generatedCode, Registers::AX, 0); //mov rax, 0
-
-        // for (int i = 0; i < function.numLocals(); i++) {
-        //     int localOffset = (i + function.numArgs() + 1) * -Amd64Backend::REG_SIZE;
-        //     Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, localOffset, Registers::AX); //mov [rbp-local], rax
-        // }
-
-        //Set the dir flag to decrease
-        function.generatedCode.push_back(0xFD); //std
-
-        //Set the address where the locals starts
-        Amd64Backend::moveRegToReg(function.generatedCode, Registers::DI, Registers::BP); //mov rdi, rbp
-        Amd64Backend::addByteToReg(function.generatedCode, Registers::DI, (function.numArgs() + 1) * -Amd64Backend::REG_SIZE); //add rdi, <locals offset>
-
-        //Set the number of locals
-        Amd64Backend::moveIntToReg(function.generatedCode, Registers::CX, function.numLocals()); //mov rcx, <num locals>
-
-        //Zero eax
-        pushArray(function.generatedCode, { 0x31, 0xC0 }); //xor eax, eax
-
-        //Execute the zeroing
-        pushArray(function.generatedCode, { 0xF3, 0x48, 0xAB }); //rep stosq
-
-        //Clear the dir flag
-        function.generatedCode.push_back(0xFC); //cld
-    }
-
-    //Generate the native instructions for the program
-    int i = 0;
-    for (auto current : function.instructions) {
-        generateInstruction(functionData, vmState, current, i);
-        i++;
-    }
-
-    //Patch branches with the native targets
-    for (auto branch : functionData.branchTable) {
-        unsigned int source = branch.first;
-        unsigned int target = branch.second.first;
-        unsigned int instSize = branch.second.second;
-
-        unsigned int nativeTarget = functionData.instructionNumMapping[target];
-
-        //Calculate the native jump location
-        IntToBytes converter;
-        converter.IntValue = nativeTarget - source - instSize;
-
-        unsigned int sourceOffset = instSize - sizeof(int);
-
-        //Update the source with the native target
-        for (int i = 0; i < sizeof(int); i++) {
-            function.generatedCode[source + sourceOffset + i] = converter.ByteValues[i];
-        }
-    }
-
-    //Get a pointer & size of the generated instructions
-    unsigned char* code = function.generatedCode.data();
-    int length = function.generatedCode.size();
-
-    if (vmState.enableDebug) {
-        std::string argsStr = "";
-        bool isFirst = true;
-
-        for (auto param : function.arguments()) {
-            if (isFirst) {
-                isFirst = false;
-            } else {
-                argsStr += " ";
-            }
-
-            argsStr += TypeChecker::typeToString(param);
-        }
-
-        std::cout
-            << "Generated function '" << function.name() << "(" + argsStr + ") " << TypeChecker::typeToString(function.returnType())
-            << "' of size " << length << " bytes."
-            << std::endl;
-    }
-
-    //Indicates if to output the generated code to a file
-    if (vmState.outputGeneratedCode) {
-        std::ofstream asmFile (functionData.function.name() + ".jit", std::ios::binary);
-
-        if (asmFile.is_open()) {
-            asmFile.write((char*)code, length);
-            asmFile.close();
-        }
-    }
-
-    //Allocate writable and readable memory
-    void *mem = mmap(
-        nullptr,
-        length,
-        PROT_WRITE | PROT_READ,
-        MAP_ANON | MAP_PRIVATE,
-        -1,
-        0);
-
-    assert(mem != MAP_FAILED);
-
-    //Copy the instructions
-    memcpy(mem, code, length);
-
-    //Return the generated instuctions as a function pointer
-    return (JitFunction)mem;
 }
 
 void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, const VMState& vmState, const Instruction& inst, int instIndex) {
@@ -339,7 +188,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::MUL:
     case OpCodes::DIV:
         {
-            auto opType = function.instructionOperandTypes[instIndex][0];
+            auto opType = function.preInstructionOperandTypes[instIndex][0];
             bool intOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Integer);
             bool floatOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Float);
             bool is32bits = false;
@@ -465,7 +314,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::COMPARE_LESS_THAN:
     case OpCodes::COMPARE_LESS_THAN_OR_EQUAL:
         {
-            auto opType = function.instructionOperandTypes[instIndex][0];
+            auto opType = function.preInstructionOperandTypes[instIndex][0];
             bool intOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Integer);
             bool boolType = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Bool);
             bool floatOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Float);
@@ -565,7 +414,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             int numArgs = funcToCall.arguments().size();
 
             //Set the function arguments
-            auto opTypes = function.instructionOperandTypes[instIndex];
+            auto opTypes = function.preInstructionOperandTypes[instIndex];
 
             if (numArgs >= 4) {
                 auto argType = opTypes.at(numArgs - 4);
@@ -608,7 +457,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 funcAddr = funcToCall.entryPoint();
             } else {
                 //Mark that the function call needs to be patched with the entry point later
-                functionData.callTable[make_pair(vmState.binder().functionSignature(function), generatedCode.size())] = signature;
+                functionData.unresolvedCalls[make_pair(vmState.binder().functionSignature(function), generatedCode.size())] = signature;
             }
 
             // if (vmState.enableDebug) {
@@ -688,7 +537,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             Amd64Backend::jump(generatedCode, 0); //jmp <target>
 
             //As the exact target in native instructions isn't known, defer to later.
-            functionData.branchTable[generatedCode.size() - 5] = std::make_pair(inst.Value.Int, 5);
+            functionData.unresolvedBranches[generatedCode.size() - 5] = std::make_pair(inst.Value.Int, 5);
         }
         break;
     case OpCodes::BRANCH_EQUAL:
@@ -698,7 +547,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::BRANCH_LESS_THAN:
     case OpCodes::BRANCH_LESS_THAN_OR_EQUAL:
         {           
-            auto opType = function.instructionOperandTypes[instIndex][0];
+            auto opType = function.preInstructionOperandTypes[instIndex][0];
             bool intOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Integer);
             bool boolType = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Bool);
             bool floatOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Float);
@@ -743,7 +592,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             }
 
             //As the exact target in native instructions isn't known, defer to later.
-            functionData.branchTable[generatedCode.size() - 6] = std::make_pair(inst.Value.Int, 6);
+            functionData.unresolvedBranches[generatedCode.size() - 6] = std::make_pair(inst.Value.Int, 6);
         }
         break;
     case OpCodes::PUSH_NULL:

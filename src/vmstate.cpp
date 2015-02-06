@@ -3,7 +3,7 @@
 #include "objects.h"
 
 VMState::VMState()
-    : mGC(*this) {
+    : mGC(*this), mEngine(*this) {
 
 }
 
@@ -34,12 +34,12 @@ void VMState::pushFunc(Function* func, int instIndex) {
     mCallStack.push_front(newEntry);
 }
 
-GarbageCollector& VMState::gc() {
-    return mGC;
-}
-
 Binder& VMState::binder() {
     return mBinder;
+}
+
+ExecutionEngine& VMState::engine() {
+    return mEngine;
 }
 
 const Binder& VMState::binder() const {
@@ -52,6 +52,10 @@ StructMetadataProvider& VMState::structProvider() {
 
 const StructMetadataProvider& VMState::structProvider() const {
     return mStructProvider;
+}
+
+GarbageCollector& VMState::gc() {
+    return mGC;
 }
 
 const Type* VMState::findType(std::string name) {

@@ -3,6 +3,7 @@
 #include <string>
 
 struct FunctionCompilationData;
+class Function;
 class VMState;
 class Type;
 
@@ -16,5 +17,5 @@ namespace TypeChecker {
 	std::string typeToString(const Type* type);
 
 	//Type checks the given function
-	void typeCheckFunction(FunctionCompilationData& function, VMState& vmState, bool showDebug = false);
+	void typeCheckFunction(Function& function, VMState& vmState, bool showDebug = false);
 }

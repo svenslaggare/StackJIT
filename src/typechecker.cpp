@@ -71,11 +71,10 @@ struct BranchCheck {
     }
 };
 
-void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& vmState, bool showDebug) {
+void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool showDebug) {
     InstructionTypes operandStack;
 
-    auto& func = funcData.function;
-    const auto numInsts = func.instructions.size();
+    const auto numInsts = function.instructions.size();
 
     if (numInsts == 0) {
         typeError(1, "Empty functions are not allowed.");
@@ -94,10 +93,10 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
     const auto nullType = vmState.findType("Ref.Null");
 
     //Set the local type if set
-    std::vector<const Type*> locals(func.numLocals());
+    std::vector<const Type*> locals(function.numLocals());
 
     for (int i = 0; i < locals.size(); i++) {
-        auto localType = func.getLocal(i);
+        auto localType = function.getLocal(i);
 
         if (localType != nullptr) {
             if (localType == voidType) {
@@ -113,25 +112,25 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
     int index = 1;
 
     if (showDebug) {
-    	std::cout << "----Type checking: " <<  func.name() << "----" << std::endl;
+        std::cout << "----Type checking: " <<  function.name() << "----" << std::endl;
     }
 
     //Check the function definition
-    if (func.returnType() == nullptr) {
+    if (function.returnType() == nullptr) {
         throw std::runtime_error("The function cannot return type 'Untyped'.");
     }
 
     int i = 0;
-    for (auto arg : func.arguments()) {
+    for (auto arg : function.arguments()) {
         if (arg == nullptr || TypeSystem::isPrimitiveType(arg, PrimitiveTypes::Void)) {
-            throw std::runtime_error("The argument: " + std::to_string(i) + " in function '" + func.name() + "' cannot be of type '" + typeToString(arg) + "'.");
+            throw std::runtime_error("The argument: " + std::to_string(i) + " in function '" + function.name() + "' cannot be of type '" + typeToString(arg) + "'.");
         }
 
         i++;
     }
 
-    for (auto inst : func.instructions) {
-    	instructionsOperandTypes.push_back(operandStack);
+    for (auto inst : function.instructions) {
+        instructionsOperandTypes.push_back(operandStack);
 
         switch (inst.OpCode) {
         case OpCodes::NOP:
@@ -301,7 +300,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
                 if (error == "") {
                     if (locals[localsIndex] == nullptr) {
                         locals[localsIndex] = valueType;
-                        func.setLocal(localsIndex, valueType);
+                        function.setLocal(localsIndex, valueType);
                     }
                 } else {
                     typeError(index, error);
@@ -340,7 +339,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
             {
                 int returnCount = 1;
 
-                if (TypeSystem::isPrimitiveType(func.returnType(), PrimitiveTypes::Void)) {
+                if (TypeSystem::isPrimitiveType(function.returnType(), PrimitiveTypes::Void)) {
                     returnCount = 0;
                 }
 
@@ -348,8 +347,8 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
                     if (returnCount > 0) {
                         auto returnType = popType(operandStack);
 
-                        if (*returnType != *func.returnType()) {
-                            throw std::runtime_error("Expected '" + TypeChecker::typeToString(func.returnType()) + "' as return type.");
+                        if (*returnType != *function.returnType()) {
+                            throw std::runtime_error("Expected '" + TypeChecker::typeToString(function.returnType()) + "' as return type.");
                         }
                     }
                 } else {
@@ -360,7 +359,7 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
             }
             break;
         case OpCodes::LOAD_ARG:
-            operandStack.push(func.arguments()[inst.Value.Int]);
+            operandStack.push(function.arguments()[inst.Value.Int]);
             break;
         case OpCodes::BRANCH_EQUAL:
         case OpCodes::BRANCH_NOT_EQUAL:
@@ -671,40 +670,40 @@ void TypeChecker::typeCheckFunction(FunctionCompilationData& funcData, VMState& 
     }
 
     if (showDebug) {
-	    for (int i = 0; i < numInsts; i++) {
-	        auto types = instructionsOperandTypes[i];
+        for (int i = 0; i < numInsts; i++) {
+            auto types = instructionsOperandTypes[i];
 
-	        std::cout << i << ": ";
+            std::cout << i << ": ";
 
-	        while (!types.empty()) {
-	            std::cout << typeToString(types.top()) << " ";
-	            types.pop();
-	        }
+            while (!types.empty()) {
+                std::cout << typeToString(types.top()) << " ";
+                types.pop();
+            }
 
-	        std::cout << std::endl;
-	    }
+            std::cout << std::endl;
+        }
     }
 
     if (showDebug) {
-    	std::cout << "----End type checking----" << std::endl;
+        std::cout << "----End type checking----" << std::endl;
     }
 
-    for (int i = 0; i < func.numLocals(); i++) {
-        if (func.getLocal(i) == nullptr) {
+    for (int i = 0; i < function.numLocals(); i++) {
+        if (function.getLocal(i) == nullptr) {
             typeError(1, "Local " + std::to_string(i) + " is not typed.");
         }
     }
 
     //Save the operand types
     for (auto instTypes : instructionsOperandTypes) {
-        funcData.instructionOperandTypes.push_back(asVector(instTypes));
+        function.preInstructionOperandTypes.push_back(asVector(instTypes));
 
-        if (instTypes.size() > funcData.operandStackSize) {
-            funcData.operandStackSize = instTypes.size();
+        if (instTypes.size() > function.operandStackSize()) {
+            function.setOperandStackSize(instTypes.size());
         }
     }
 
     for (auto instTypes : postInstructionsOperandTypes) {
-        funcData.postInstructionOperandTypes.push_back(asVector(instTypes));
+        function.postInstructionOperandTypes.push_back(asVector(instTypes));
     }
 }

@@ -3,10 +3,12 @@
 #include <string>
 #include <vector>
 #include <deque>
+
 #include "structmetadata.h"
 #include "function.h"
 #include "binder.h"
 #include "gc.h"
+#include "executionengine.h"
 
 class Type;
 class StructType;
@@ -20,6 +22,7 @@ private:
 	std::unordered_map<std::string, Type*> mTypes;
     Binder mBinder;
 	StructMetadataProvider mStructProvider;
+    ExecutionEngine mEngine;
     GarbageCollector mGC;
 
 	std::deque<CallStackEntry> mCallStack;
@@ -56,16 +59,19 @@ public:
     //Pushes the given function to the top of the stack
     void pushFunc(Function* func, int instIndex);
 
-    //Returns the GC
-    GarbageCollector& gc();
+    //Returns the binder
+    Binder& binder();
+    const Binder& binder() const;
 
     //Returns the struct metadata provider
     StructMetadataProvider& structProvider();
     const StructMetadataProvider& structProvider() const;
 
-    //Returns the binder
-    Binder& binder();
-    const Binder& binder() const;
+    //Returns the execution engine
+    ExecutionEngine& engine();
+
+    //Returns the GC
+    GarbageCollector& gc();
 
     //Tries to find or construct the given type name name. Nullptr if not found.
     const Type* findType(std::string name);

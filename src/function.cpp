@@ -4,7 +4,7 @@
 #include <sys/mman.h>
 
 Function::Function(std::string name, std::vector<const Type*> arguments, const Type* returnType)
-	: mName(name), mArguments(arguments), mReturnType(returnType), mStackSize(0) {
+	: mName(name), mArguments(arguments), mReturnType(returnType), mStackSize(0), mOperandStackSize(0) {
 
 }
 
@@ -40,12 +40,20 @@ void Function::setLocal(int index, const Type* type) {
 	mLocalTypes.at(index) = type;
 }
 
-int Function::stackSize() const {
+std::size_t Function::stackSize() const {
 	return mStackSize;
 }
 
-void Function::setStackSize(int size) {
+void Function::setStackSize(std::size_t size) {
 	mStackSize = size;
+}
+
+std::size_t Function::operandStackSize() const {
+    return mOperandStackSize;
+}
+
+void Function::setOperandStackSize(std::size_t size) {
+    mOperandStackSize = size;
 }
 
 FunctionDefinition::FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, long entryPoint, int funcSize)
