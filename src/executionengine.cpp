@@ -1,7 +1,7 @@
 #include "executionengine.h"
 #include "vmstate.h"
 #include "binder.h"
-#include "program.h"
+#include "assembly.h"
 #include "function.h"
 #include "typechecker.h"
 #include "type.h"
@@ -15,33 +15,39 @@ ExecutionEngine::ExecutionEngine(VMState& vmState)
 }
 
 EntryPointFunction ExecutionEngine::entryPoint() const {
-	return (EntryPointFunction)(mVMState.binder()["main()"].entryPoint());
+    if (mVMState.binder().isDefined("main()") > 0) {
+        return (EntryPointFunction)(mVMState.binder()["main()"].entryPoint());
+    } else {
+        throw std::runtime_error("No entry point has been defined.");
+    }
 }
 
-void ExecutionEngine::loadProgram(Program& program) {
+void ExecutionEngine::loadAssembly(Assembly& assembly) {
 	//Add the functions to the func table
-    for (auto currentFunc : program.functions) {
+    for (auto currentFunc : assembly.functions) {
         auto func = currentFunc.second;
         FunctionDefinition funcDef(func->name(), func->arguments(), func->returnType(), 0, 0);
         auto& binder = mVMState.binder();
         binder.define(funcDef);
     }
 
-    if (program.functions.count("main()") > 0) {
-        auto mainFunc = program.functions["main()"];
+    if (assembly.type() == AssemblyType::PROGRAM) {
+        if (assembly.functions.count("main()") > 0) {
+            auto mainFunc = assembly.functions["main()"];
 
-        if (mainFunc->arguments().size() != 0 || !TypeSystem::isPrimitiveType(mainFunc->returnType(), PrimitiveTypes::Integer)) {
-           throw std::runtime_error("The main function must have the following signature: 'func main() Int'"); 
+            if (mainFunc->arguments().size() != 0 || !TypeSystem::isPrimitiveType(mainFunc->returnType(), PrimitiveTypes::Integer)) {
+               throw std::runtime_error("The main function must have the following signature: 'main() Int'"); 
+            }
+        } else {
+            throw std::runtime_error("The main function must be defined.");
         }
-    } else {
-        throw std::runtime_error("The main function must be defined.");
     }
 
     //Generate instructions for all functions
-    for (auto currentFunc : program.functions) {
+    for (auto currentFunc : assembly.functions) {
         auto func = currentFunc.second;
 
-        //Type check the program
+        //Type check the assembly
         TypeChecker::typeCheckFunction(*func, mVMState, mVMState.enableDebug && mVMState.printTypeChecking);
 
         auto funcPtr = mJIT.generateFunction(func);

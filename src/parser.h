@@ -1,9 +1,8 @@
 #pragma once
 #include <vector>
-#include <map>
 #include <string>
 
-struct Program;
+class Assembly;
 class VMState;
 
 //The parser
@@ -12,5 +11,5 @@ namespace Parser {
 	std::vector<std::string> tokenize(std::istream& stream);
 	
 	//Parses the given tokens
-	void parseTokens(const std::vector<std::string>& tokens, VMState& vmState, Program& program);
+	void parseTokens(const std::vector<std::string>& tokens, VMState& vmState, Assembly& assembly);
 }

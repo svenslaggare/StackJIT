@@ -11,11 +11,38 @@
 #include <string.h>
 #include <iostream>
 #include <fstream>
-#include <stack>
 #include <assert.h>
 
+BranchTarget::BranchTarget(unsigned int target, unsigned int instructionSize)
+	: target(target), instructionSize(instructionSize) {
+
+}
+
+UnresolvedFunctionCall::UnresolvedFunctionCall(std::string functionName, unsigned int callOffset)
+	: functionName(functionName), callOffset(callOffset) {
+
+}
+
+bool UnresolvedFunctionCall::operator<(const UnresolvedFunctionCall& rhs) const {
+	if (functionName < rhs.functionName) {
+		return true;
+	} else if (functionName > rhs.functionName) {
+		return true;
+	} else {
+		return callOffset < rhs.callOffset;
+	}
+}
+
+bool UnresolvedFunctionCall::operator==(const UnresolvedFunctionCall& rhs) const {
+	return functionName == rhs.functionName && callOffset == rhs.callOffset;
+}
+
+UnresolvedFunctionCall::Hash_t UnresolvedFunctionCall::Hash = [](const UnresolvedFunctionCall& call) {
+	return std::hash<std::string>()(call.functionName) + call.callOffset;
+};
+
 FunctionCompilationData::FunctionCompilationData(Function& function)
-    : function(function), operandStackSize(0) {
+    : function(function), operandStackSize(0), unresolvedCalls(7, UnresolvedFunctionCall::Hash) {
 
 }
 
@@ -29,16 +56,15 @@ void JITCompiler::resolveBranches(FunctionCompilationData& functionData) {
 
     for (auto branch : functionData.unresolvedBranches) {
         unsigned int source = branch.first;
-        unsigned int target = branch.second.first;
-        unsigned int instSize = branch.second.second;
+        auto branchTarget = branch.second;
 
-        unsigned int nativeTarget = functionData.instructionNumMapping[target];
+        unsigned int nativeTarget = functionData.instructionNumMapping[branchTarget.target];
 
         //Calculate the native jump location
         IntToBytes converter;
-        converter.IntValue = nativeTarget - source - instSize;
+        converter.IntValue = nativeTarget - source - branchTarget.instructionSize;
 
-        unsigned int sourceOffset = instSize - sizeof(int);
+        unsigned int sourceOffset = branchTarget.instructionSize - sizeof(int);
 
         //Update the source with the native target
         for (std::size_t i = 0; i < sizeof(int); i++) {
@@ -135,8 +161,8 @@ void JITCompiler::resolveCallTargets() {
     	auto& func = funcEntry.second;
 
 	    for (auto call : func.unresolvedCalls) {
-	        auto funcName = call.first.first;
-	        auto offset = call.first.second;
+	        auto funcName = call.first.functionName;
+	        auto offset = call.first.callOffset;
 	        auto calledFunc = call.second;
 
 	        //Get a pointer to the functions instructions
@@ -147,7 +173,7 @@ void JITCompiler::resolveCallTargets() {
 	        LongToBytes converter;
 	        converter.LongValue = calledFuncAddr;
 
-	        int base = offset + 2;
+	        unsigned int base = offset + 2;
 	        for (std::size_t i = 0; i < sizeof(long); i++) {
 	            funcCode[base + i] = converter.ByteValues[i];
 	        }

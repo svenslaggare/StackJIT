@@ -3,6 +3,7 @@
 #include <map>
 #include <vector>
 #include <deque>
+#include <functional>
 
 class VMState;
 class Function;
@@ -11,8 +12,31 @@ class Type;
 //Represents a jitted function
 typedef int (*JitFunction)();
 
-typedef std::pair<std::string, unsigned int> FunctionCall;
-typedef std::pair<unsigned int, unsigned int> BranchTarget;
+//Represents a branch target
+struct BranchTarget {
+	const unsigned int target;
+	const unsigned int instructionSize;
+
+	BranchTarget(unsigned int target, unsigned int instructionSize);
+};
+
+//Represents an unresolved function call
+struct UnresolvedFunctionCall {
+	//The function that has an unresolved call
+	const std::string functionName;
+
+	//The offset for the call instruction
+	const unsigned int callOffset;
+
+	UnresolvedFunctionCall(std::string functionName, unsigned int callOffset);
+
+	bool operator<(const UnresolvedFunctionCall& rhs) const;
+	bool operator==(const UnresolvedFunctionCall& rhs) const;
+
+	//The custom hash function
+	typedef std::function<std::size_t(const UnresolvedFunctionCall& call)> Hash_t;
+	static Hash_t Hash;
+};
 
 //Holds compilation data for a function
 struct FunctionCompilationData {
@@ -25,7 +49,7 @@ struct FunctionCompilationData {
 	std::vector<unsigned int> instructionNumMapping;			
 
 	//Unresolved function calls						 
-	std::map<FunctionCall, std::string> unresolvedCalls;
+	std::unordered_map<UnresolvedFunctionCall, std::string,	UnresolvedFunctionCall::Hash_t> unresolvedCalls;
 
 	//The types of the operands for the instruction
 	std::vector<std::deque<const Type*>> preInstructionOperandTypes;

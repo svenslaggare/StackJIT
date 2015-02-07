@@ -1,15 +1,12 @@
 #include "typechecker.h"
-
-#include <iostream>
-#include <vector>
-
 #include "vmstate.h"
-#include "codegenerator.h"
-#include "program.h"
 #include "function.h"
 #include "instructions.h"
 #include "type.h"
 #include "structmetadata.h"
+
+#include <iostream>
+#include <vector>
 
 const Type* TypeChecker::popType(InstructionTypes& stack) {
     auto value = stack.top();

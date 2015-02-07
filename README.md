@@ -41,7 +41,7 @@ func <name>(<arg type 1> <arg type 2> ...) <return type>
 When a function returns, there must be only _one_ (zero if void) operand on the evalutation stack.
 
 ####Main function####
-The main function _must_ and have the following signature: `func main() Int` and _must_ be defined.
+The main function _must_ and have the following signature: `main() Int` and _must_ be defined.
 The returned value from the main function will be the output for the program.
 
 ###Arrays###
@@ -67,6 +67,7 @@ Dereferencing a null reference will result in a null reference error. Both array
 ###Int & Float###
 * `PUSHINT <value>`: Pushes a 32-bits integer to the evaluation stack.
 * `PUSHFLOAT <value>`: Pushes a 32-bits floating point to the evaluation stack.
+* `CONVINTTOFLOAT`: Pops an int from the evaluation stack and converts it to a float, pushing the result to the evaluation stack.*
 
 ###Arithmetic###
 * `ADD`: Pops two operands, adds them and pushes the result to the evaluation stack.

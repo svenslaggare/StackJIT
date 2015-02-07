@@ -3,21 +3,19 @@
 #include <vector>
 #include <string.h>
 
-#include "amd64.h"
-#include "program.h"
-#include "instructions.h"
+#include "assembly.h"
 #include "parser.h"
 #include "standardlibrary.h"
-#include "codegenerator.h"
 #include "vmstate.h"
 #include "executionengine.h"
-#include "objects.h"
 
 //The global state for the VM
 VMState vmState;
 
 int main(int argc, char* argv[]) {
-    Program program;
+    std::vector<Assembly> libraries;
+    auto& engine = vmState.engine();
+    StandardLibrary::add(vmState);
 
     //Options
     for (int i = 1; i < argc; i++) {
@@ -26,32 +24,54 @@ int main(int argc, char* argv[]) {
 
         if (switchStr == "-d" || switchStr == "-debug") {
             vmState.enableDebug = true;
-            handled = true;
+            continue;
         }
 
         if (switchStr == "-nd") {
             vmState.enableDebug = false;
-            handled = true;
+            continue;
         }
 
         if (switchStr == "-ptc") {
             vmState.printTypeChecking = true;
-            handled = true;
+            continue;
         }
 
         if (switchStr == "-psf") {
             vmState.printStackFrame = true;
-            handled = true;
+            continue;
         }
 
         if (switchStr == "-ogc") {
             vmState.outputGeneratedCode = true;
-            handled = true;
+            continue;
         }
 
         if (switchStr == "-nogc") {
             vmState.disableGC = true;
-            handled = true;
+            continue;
+        }
+
+        if (switchStr == "-i") {
+            int next = i + 1;
+
+            if (next < argc) {
+                //Load the library
+                std::string libraryPath = argv[next];
+                std::ifstream fileStream(libraryPath);
+
+                auto tokens = Parser::tokenize(fileStream);
+                libraries.emplace_back(AssemblyType::LIBRARY);
+                auto& lib = libraries[libraries.size() - 1];
+
+                Parser::parseTokens(tokens, vmState, lib);
+                engine.loadAssembly(lib);
+                i++;
+            } else {
+                std::cout << "Expected a path after '-i' option." << std::endl;
+            }
+
+            continue;
         }
 
         if (!handled) {
@@ -59,20 +79,17 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    StandardLibrary::add(vmState);
-
     //Tokenize the input
     auto tokens = Parser::tokenize(std::cin);
     // std::ifstream fileStream("programs/program21.txt");
     // auto tokens = Parser::tokenize(fileStream);
 
     //Parse it
+    Assembly program(AssemblyType::PROGRAM);
     Parser::parseTokens(tokens, vmState, program);
 
     //Generate a function for the instructions
-    //int (*programPtr)() = CodeGenerator::generateProgram(program, vmState);
-    auto& engine = vmState.engine();
-    engine.loadProgram(program);
+    engine.loadAssembly(program);
     auto programPtr = engine.entryPoint();
 
     if (vmState.enableDebug) {

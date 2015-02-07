@@ -5,7 +5,7 @@
 typedef int (*EntryPointFunction)();
 
 class VMState;
-class Program;
+class Assembly;
 
 //Represents the execution engine
 class ExecutionEngine {
@@ -23,6 +23,6 @@ public:
 	//Returns the entry point
 	EntryPointFunction entryPoint() const; 
 
-	//Loads the given program
-	void loadProgram(Program& program);
+	//Loads the given assembly
+	void loadAssembly(Assembly& assembly);
 };

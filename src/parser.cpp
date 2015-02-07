@@ -6,7 +6,7 @@
 #include "parser.h"
 #include "instructions.h"
 #include "codegenerator.h"
-#include "program.h"
+#include "assembly.h"
 #include "function.h"
 #include "typechecker.h"
 #include "type.h"
@@ -131,7 +131,7 @@ std::unordered_map<std::string, OpCodes> strOperandInstructions
     { "ldfield", OpCodes::LOAD_FIELD }
 };
 
-void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmState, Program& program) {
+void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmState, Assembly& assembly) {
     bool isFunc = false;
     bool isFuncBody = false;
     bool isFuncDef = false;
@@ -367,10 +367,10 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                     auto signature = vmState.binder().functionSignature(funcName, funcParams);
 
                     if (numArgs >= 0 && numArgs <= 4) {
-                        if (program.functions.count(signature) == 0 && !vmState.binder().isDefined(signature)) {
+                        if (assembly.functions.count(signature) == 0 && !vmState.binder().isDefined(signature)) {
                             //Create a new function        
                             Function* newFunc = new Function(funcName, funcParams, returnType);
-                            program.functions[signature] = newFunc;
+                            assembly.functions[signature] = newFunc;
                             currentFunc = newFunc;
                         } else {
                             throw std::runtime_error("The function '" + signature + "' is already defined.");
