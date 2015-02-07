@@ -67,7 +67,8 @@ Dereferencing a null reference will result in a null reference error. Both array
 ###Int & Float###
 * `PUSHINT <value>`: Pushes a 32-bits integer to the evaluation stack.
 * `PUSHFLOAT <value>`: Pushes a 32-bits floating point to the evaluation stack.
-* `CONVINTTOFLOAT`: Pops an int from the evaluation stack and converts it to a float, pushing the result to the evaluation stack.*
+* `CONVINTTOFLOAT`: Pops an int from the evaluation stack and converts it to a float, pushing the result to the evaluation stack.
+* `CONVFLOATTOINT`: Pops a float from the evaluation stack and converts it to a int, pushing the result to the evaluation stack.
 
 ###Arithmetic###
 * `ADD`: Pops two operands, adds them and pushes the result to the evaluation stack.

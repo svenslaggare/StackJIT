@@ -411,7 +411,9 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                 auto externSignature = vmState.binder().functionSignature(externFuncName, parameters);
 
                 if (vmState.binder().isDefined(externSignature)) {
-                    vmState.binder().defineExternal(signature, externSignature);
+                    if (!vmState.binder().defineExternal(signature, externSignature)) {
+                        throw std::runtime_error("'" + externSignature + "' is not an external function.");
+                    }
                 } else {
                     throw std::runtime_error("The external function '" + externSignature + "' is not defined.");
                 }
