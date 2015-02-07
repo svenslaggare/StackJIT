@@ -41,6 +41,15 @@ bool Binder::define(FunctionDefinition funcDef) {
 	}
 }
 
+bool Binder::defineExternal(std::string signature, std::string externalSignature) {
+	if (mFunctionTable.count(signature) == 0 && mFunctionTable.count(externalSignature) > 0) {
+		mFunctionTable.insert({ signature, mFunctionTable[externalSignature] });
+		return true;
+	} else {
+		return false;
+	}
+}
+
 bool Binder::isDefined(std::string signature) const {
 	return mFunctionTable.count(signature) > 0;
 }

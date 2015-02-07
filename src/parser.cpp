@@ -131,13 +131,51 @@ std::unordered_map<std::string, OpCodes> strOperandInstructions
     { "ldfield", OpCodes::LOAD_FIELD }
 };
 
+std::string nextToken(const std::vector<std::string>& tokens, int& index) {
+    int left = tokens.size() - (index + 1);
+
+    if (left > 0) {
+        return tokens[++index];
+    } else {
+        throw std::runtime_error("Reached end of tokens.");
+    }
+}
+
+void parseFunctionDef(const std::vector<std::string>& tokens, int& tokenIndex, VMState& vmState, std::string& name, std::vector<const Type*>& parameters, const Type*& returnType) {
+    name = nextToken(tokens, tokenIndex);
+
+    if (nextToken(tokens, tokenIndex) != "(") {
+        throw std::runtime_error("Expected '(' after function name.");
+    } 
+
+    while (true) {
+        std::string param = nextToken(tokens, tokenIndex);
+
+        if (param == ")") {
+            break;
+        }
+
+        auto paramType = vmState.findType(param);
+
+        if (paramType == nullptr) {
+            throw std::runtime_error("'" + param + "' is not a type.");
+        }
+
+        parameters.push_back(paramType);
+    }
+
+    auto returnTypeName = nextToken(tokens, tokenIndex);
+    returnType = vmState.findType(returnTypeName);
+
+    if (returnType == nullptr) {
+        throw std::runtime_error("'" + returnTypeName + "' is not a type.");
+    }
+}
+
 void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmState, Assembly& assembly) {
     bool isFunc = false;
     bool isFuncBody = false;
     bool isFuncDef = false;
-    std::string funcName;
-    bool isFuncParams = false;
-    std::vector<const Type*> funcParams {};
     bool localsSet = false;
 
     Function* currentFunc = nullptr;
@@ -147,26 +185,22 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
     std::string structName;
     std::map<std::string, const Type*> structFields;
 
+    bool isExternFunc = false;
+
     for (int i = 0; i < tokens.size(); i++) {
         std::string current = tokens[i];
         std::string currentToLower = toLower(current);
 
         if (isFuncBody) {
             if (currentToLower == "pushint") {
-                assertTokenCount(tokens, i, 1);
-                int value = stoi(tokens[i + 1]);
+                int value = stoi(nextToken(tokens, i));
                 currentFunc->instructions.push_back(Instructions::makeWithInt(OpCodes::PUSH_INT, value));
-
-                i++;
                 continue;
             }
 
             if (currentToLower == "pushfloat") {
-                assertTokenCount(tokens, i, 1);
-                float value = stof(tokens[i + 1]);
+                float value = stof(nextToken(tokens, i));
                 currentFunc->instructions.push_back(Instructions::makeWithFloat(OpCodes::PUSH_FLOAT, value));
-
-                i++;
                 continue;
             }
 
@@ -175,18 +209,14 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
             }
 
             if (strOperandInstructions.count(currentToLower) > 0) {
-                assertTokenCount(tokens, i, 1);
-                std::string value = tokens[i + 1];
+                std::string value = nextToken(tokens, i);
                 currentFunc->instructions.push_back(Instructions::makeWithStr(strOperandInstructions[currentToLower], value));
-
-                i++;
                 continue;
             }
 
             if (currentToLower == ".locals") {
                 if (!localsSet) {
-                    assertTokenCount(tokens, i, 1);
-                    int localsCount = stoi(tokens[i + 1]);
+                    int localsCount = stoi(nextToken(tokens, i));
 
                     if (localsCount >= 0) {
                         localsSet = true;
@@ -195,7 +225,6 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                         throw std::runtime_error("The number of locals must be >= 0.");
                     }
 
-                    i++;
                     continue;
                 } else {
                     throw std::runtime_error("The locals has already been set.");
@@ -204,12 +233,11 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
 
             if (currentToLower == ".local") {
                 if (localsSet) {
-                    assertTokenCount(tokens, i, 2);
-                    int localIndex = stoi(tokens[i + 1]);
-                    auto localType = vmState.findType(tokens[i + 2]);
+                    int localIndex = stoi(nextToken(tokens, i));
+                    auto localType = vmState.findType(nextToken(tokens, i));
 
                     if (localType == nullptr) {
-                        throw std::runtime_error("'" + tokens[i + 2] + "' is not a type");
+                        throw std::runtime_error("'" + tokens[i] + "' is not a type");
                     }
 
                     if (localIndex >= 0 && localIndex < currentFunc->numLocals()) {
@@ -218,7 +246,6 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                         throw std::runtime_error("Invalid local index.");
                     }
 
-                    i += 2;
                     continue;
                 } else {
                     throw std::runtime_error("The locals must been set.");
@@ -226,13 +253,11 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
             }
 
             if (currentToLower == "ldloc" || currentToLower == "stloc") {
-                assertTokenCount(tokens, i, 1);
-
                 if (!localsSet) {
                     throw std::runtime_error("The locals must be set.");
                 }
 
-                int local = stoi(tokens[i + 1]);
+                int local = stoi(nextToken(tokens, i));
                 auto opCode = currentToLower == "ldloc" ? OpCodes::LOAD_LOCAL : OpCodes::STORE_LOCAL;
 
                 if (local >= 0 && local < currentFunc->numLocals()) {
@@ -241,48 +266,40 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                     throw std::runtime_error("The local index is out of range.");
                 }
 
-                i++;
                 continue;
             }
 
             if (currentToLower == "call") {
-                assertTokenCount(tokens, i, 1);
-                std::string funcName = tokens[i + 1];
-                i++;
+                std::string funcName = nextToken(tokens, i);
 
-                assertTokenCount(tokens, i, 1);
-                if (tokens[i + 1] != "(") {
+                if (nextToken(tokens, i) != "(") {
                     throw std::runtime_error("Expected '(' after called function.");
                 }
-                i++;
 
                 std::vector<const Type*> parameters;
 
                 while (true) {
-                    assertTokenCount(tokens, i, 1);
-                    i++;
+                    auto param = nextToken(tokens, i);
 
-                    if (tokens[i] == ")") {
+                    if (param == ")") {
                         break;
                     }
 
-                    auto fieldType = vmState.findType(tokens[i]);
+                    auto paramType = vmState.findType(param);
 
-                    if (fieldType == nullptr) {
-                        throw std::runtime_error("'" + tokens[i] + "' is not a valid type.");
+                    if (paramType == nullptr) {
+                        throw std::runtime_error("'" + param + "' is not a valid type.");
                     }
 
-                    parameters.push_back(fieldType);
+                    parameters.push_back(paramType);
                 }
 
                 currentFunc->instructions.push_back(Instructions::makeCall(funcName, parameters));
-
                 continue;
             }
 
             if (currentToLower == "ldarg") {
-                assertTokenCount(tokens, i, 1);
-                int argNum = stoi(tokens[i + 1]);
+                int argNum = stoi(nextToken(tokens, i));
 
                 if (argNum >= 0 && argNum < currentFunc->numArgs()) {
                     currentFunc->instructions.push_back(Instructions::makeWithInt(OpCodes::LOAD_ARG, argNum));
@@ -290,25 +307,18 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                     throw std::runtime_error("The argument index is out of range.");
                 }
 
-                i++;
                 continue;
             }
 
             if (currentToLower == "br") {
-                assertTokenCount(tokens, i, 1);
-                int target = stoi(tokens[i + 1]);
+                int target = stoi(nextToken(tokens, i));
                 currentFunc->instructions.push_back(Instructions::makeWithInt(OpCodes::BRANCH, target));
-
-                i++;
                 continue;
             }
 
             if (branchInstructions.count(currentToLower) > 0) {
-                assertTokenCount(tokens, i, 1);
-                int target = stoi(tokens[i + 1]);
+                int target = stoi(nextToken(tokens, i));
                 currentFunc->instructions.push_back(Instructions::makeWithInt(branchInstructions[currentToLower], target));
-
-                i++;
                 continue;
             }
         }
@@ -323,27 +333,25 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                 continue;
             }
 
-            assertTokenCount(tokens, i, 1);
-            auto fieldName = tokens[i];
-            auto fieldType = vmState.findType(tokens[++i]);
+            auto fieldName = current;
+            auto fieldType = vmState.findType(nextToken(tokens, i));
 
             if (fieldType == nullptr) {
-                throw std::runtime_error("'" + tokens[i + 1] + "' is not a valid type.");
+                throw std::runtime_error("'" + tokens[i] + "' is not a valid type.");
             }
 
             structFields.insert({ fieldName, fieldType });
         }
 
-        if (!isFunc && !isStruct) {
+        if (!isFunc && !isStruct && !isExternFunc) {
             if (currentToLower == "func") {
-                assertTokenCount(tokens, i, 1);
                 isFuncDef = true;
-                funcName = tokens[i + 1];
                 isFunc = true;
             } else if (currentToLower == "struct") {
-                assertTokenCount(tokens, i, 1);
-                structName = tokens[i + 1];
+                structName = nextToken(tokens, i);
                 isStruct = true;
+            } else if (currentToLower == "extern") {
+                isExternFunc = true;
             } else {
                 throw std::runtime_error("Invalid identifier '" + current + "'");
             }
@@ -357,41 +365,61 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
             isStructBody = true;
         }
 
+        //Parse the function definition
         if (isFuncDef) {
-            if (isFuncParams) {
-                if (currentToLower == ")") {     
-                    assertTokenCount(tokens, i, 1);                   
-                    auto returnType = vmState.findType(tokens[i + 1]);
-                    int numArgs = funcParams.size();
+            std::string funcName;
+            std::vector<const Type*> parameters;
+            const Type* returnType = nullptr;
+            parseFunctionDef(tokens, i, vmState, funcName, parameters, returnType);            
 
-                    auto signature = vmState.binder().functionSignature(funcName, funcParams);
+            int numArgs = parameters.size();
+            auto signature = vmState.binder().functionSignature(funcName, parameters);
 
-                    if (numArgs >= 0 && numArgs <= 4) {
-                        if (assembly.functions.count(signature) == 0 && !vmState.binder().isDefined(signature)) {
-                            //Create a new function        
-                            Function* newFunc = new Function(funcName, funcParams, returnType);
-                            assembly.functions[signature] = newFunc;
-                            currentFunc = newFunc;
-                        } else {
-                            throw std::runtime_error("The function '" + signature + "' is already defined.");
-                        }
-                    } else {
-                        throw std::runtime_error("Maximum four arguments are supported.");
-                    }
-
-                    isFuncParams = false;
-                    isFuncDef = false;
-                    funcParams = {};
-                    funcName = "";
-                    localsSet = false;
+            if (numArgs >= 0 && numArgs <= 4) {
+                if (assembly.functions.count(signature) == 0 && !vmState.binder().isDefined(signature)) {
+                    //Create a new function        
+                    Function* newFunc = new Function(funcName, parameters, returnType);
+                    assembly.functions[signature] = newFunc;
+                    currentFunc = newFunc;
                 } else {
-                    funcParams.push_back(vmState.findType(current));
+                    throw std::runtime_error("The function '" + signature + "' is already defined.");
                 }
+            } else {
+                throw std::runtime_error("Maximum four arguments are supported.");
             }
 
-            if (currentToLower == "(") {
-                isFuncParams = true;
+            isFuncDef = false;
+            localsSet = false;
+        }
+
+        //Parse external function
+        if (isExternFunc) {
+            auto funcName = nextToken(tokens, i);
+
+            if (nextToken(tokens, i) != "::") {
+                throw std::runtime_error("Expected '::' after extern function name.");
+            } 
+
+            std::string externFuncName;
+            std::vector<const Type*> parameters;
+            const Type* returnType = nullptr;
+            parseFunctionDef(tokens, i, vmState, externFuncName, parameters, returnType); 
+
+            auto signature = vmState.binder().functionSignature(funcName, parameters);
+
+            if (assembly.functions.count(signature) == 0 && !vmState.binder().isDefined(signature)) {
+                auto externSignature = vmState.binder().functionSignature(externFuncName, parameters);
+
+                if (vmState.binder().isDefined(externSignature)) {
+                    vmState.binder().defineExternal(signature, externSignature);
+                } else {
+                    throw std::runtime_error("The external function '" + externSignature + "' is not defined.");
+                }
+            } else {
+                throw std::runtime_error("The function '" + signature + "' is already defined.");
             }
+
+            isExternFunc = false;
         }
 
         if (isFuncBody && currentToLower == "}") {

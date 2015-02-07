@@ -1,20 +1,10 @@
 #Defines the Runtime library.
 
 #Prints an int followed by a line break to standard output
-func std.println(Int) Void
-{
-	LDARG 0
-	CALL println(Int)
-	RET
-}
+extern std.println :: println(Int) Void
 
 #Prints a float followed by a line break to standard output
-func std.println(Float) Void
-{
-	LDARG 0
-	CALL println(Float)
-	RET
-}
+extern std.println :: println(Float) Void
 
 #Invokes the garbage collector
 func std.gc.collect() Void
@@ -24,25 +14,10 @@ func std.gc.collect() Void
 }
 
 #Computes the square root
-func std.math.sqrt(Float) Float
-{
-	LDARG 0
-	CALL sqrt(Float)
-	RET
-}
+extern std.math.sqrt :: sqrt(Float) Float
 
 #Computes the sine function
-func std.math.sin(Float) Float
-{
-	LDARG 0
-	CALL sin(Float)
-	RET
-}
+extern std.math.sin :: sin(Float) Float
 
 #Computes the cosine function
-func std.math.cos(Float) Float
-{
-	LDARG 0
-	CALL cos(Float)
-	RET
-}
+extern std.math.cos :: cos(Float) Float
