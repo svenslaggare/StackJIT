@@ -163,7 +163,7 @@ void Runtime::garbageCollect(long* basePtr, Function* func, int instIndex) {
         int startStrLength = 0;
 
         if (vmState.enableDebug) {
-            auto startStr = "-----Start GC in func " + func->name() + " (" + std::to_string(instIndex) + ")-----";
+            auto startStr = "---------------Start GC in func " + func->name() + " (" + std::to_string(instIndex) + ")---------------";
             std::cout << startStr << std::endl;
             startStrLength = startStr.length();
         }

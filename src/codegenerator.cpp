@@ -455,13 +455,6 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             	});
             }
 
-            // if (vmState.enableDebug) {
-            //     //Only print external functions
-            //     if (!funcToCall.isManaged()) {
-            //         std::cout << "Calling '" << inst.StrValue + "' at 0x" << std::hex << funcAddr << std::dec << "." << std::endl;
-            //     }
-            // }
-
             //Make the call
             generateCall(generatedCode, funcAddr);
 
@@ -475,18 +468,18 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             }
 
             //Call the popFunc runtime function
-            if (function.name() != "main") {
-                generateCall(generatedCode, (long)&Runtime::popFunc);
-            }
+            generateCall(generatedCode, (long)&Runtime::popFunc);
         }
         break;
     case OpCodes::RET:
         {
             //If debug is enabled, print the stack frame before return
             if (vmState.enableDebug && vmState.printStackFrame) {
+                Amd64Backend::pushReg(generatedCode, Registers::BP);
                 Amd64Backend::moveRegToReg(generatedCode, Registers::DI, Registers::BP); //BP as the first argument
                 Amd64Backend::moveLongToReg(generatedCode, Registers::SI, (long)&function); //Address of the function as second argument
                 generateCall(generatedCode, (long)&Runtime::printStackFrame);    
+                Amd64Backend::popReg(generatedCode, Registers::BP);
             }
 
             if (!TypeSystem::isPrimitiveType(function.returnType(), PrimitiveTypes::Void)) {
@@ -600,10 +593,12 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
             if (!vmState.disableGC) {
                 //Call the garbageCollect runtime function
+                Amd64Backend::pushReg(generatedCode, Registers::BP);
                 Amd64Backend::moveRegToReg(generatedCode, Registers::DI, Registers::BP); //BP as the first argument
                 Amd64Backend::moveLongToReg(generatedCode, Registers::SI, (long)&function); //Address of the function as second argument
                 Amd64Backend::moveIntToReg(generatedCode, Registers::DX, instIndex); //Current inst index as third argument
                 generateCall(generatedCode, (long)&Runtime::garbageCollect);
+                Amd64Backend::popReg(generatedCode, Registers::BP);
             }
             
             //The pointer to the type as the first arg
@@ -712,10 +707,12 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
             //Call the garbageCollect runtime function
             if (!vmState.disableGC) {
+                Amd64Backend::pushReg(generatedCode, Registers::BP);
                 Amd64Backend::moveRegToReg(generatedCode, Registers::DI, Registers::BP); //BP as the first argument
                 Amd64Backend::moveLongToReg(generatedCode, Registers::SI, (long)&function); //Address of the function as second argument
                 Amd64Backend::moveIntToReg(generatedCode, Registers::DX, instIndex); //Current inst index as third argument
                 generateCall(generatedCode, (long)&Runtime::garbageCollect);
+                Amd64Backend::popReg(generatedCode, Registers::BP);
             }
 
             //Call the newObject runtime function

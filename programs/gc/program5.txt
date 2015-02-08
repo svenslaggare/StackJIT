@@ -1,0 +1,29 @@
+func std.gc.collect() Void
+{
+	GC
+	RET
+}
+
+func printLength(Ref.Array[Int]) Void
+{
+   RET
+}
+
+func main() Int
+{
+   .locals 1
+   .local 0 Ref.Array[Int]
+
+   PUSHINT 5
+   NEWARR Int
+   STLOC 0
+
+   LDLOC 0
+   CALL printLength(Ref.Array[Int])
+
+   #CALL std.gc.collect()
+   GC
+
+   PUSHINT 0
+   RET
+}
