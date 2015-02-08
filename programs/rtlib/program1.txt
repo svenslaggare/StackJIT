@@ -3,6 +3,11 @@ func main() Int
 	PUSHFLOAT 2
 	CALL std.math.sin(Float)
 	CALL std.println(Float)
+
+	PUSHINT -5
+	CALL std.math.abs(Int)
+	CALL std.println(Int)
+	
 	PUSHINT 0
 	RET
 }

@@ -10,7 +10,7 @@ class Function;
 class Type;
 
 //Represents a jitted function
-typedef int (*JitFunction)();
+typedef void (*JitFunction)();
 
 //Represents a branch target
 struct BranchTarget {

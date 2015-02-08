@@ -13,6 +13,9 @@ func std.gc.collect() Void
 	RET
 }
 
+#Computes the absolute function
+extern std.math.abs :: abs(Int) Int
+
 #Computes the square root
 extern std.math.sqrt :: sqrt(Float) Float
 

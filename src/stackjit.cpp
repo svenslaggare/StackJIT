@@ -60,6 +60,10 @@ int main(int argc, char* argv[]) {
                 std::string libraryPath = argv[next];
                 std::ifstream fileStream(libraryPath);
 
+                if (!fileStream.is_open()) {
+                    std::cout << "Could not load library '" << libraryPath << "'." << std::endl;
+                }
+
                 auto tokens = Parser::tokenize(fileStream);
                 libraries.emplace_back(AssemblyType::LIBRARY);
                 auto& lib = libraries[libraries.size() - 1];

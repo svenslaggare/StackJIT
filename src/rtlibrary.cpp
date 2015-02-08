@@ -118,7 +118,7 @@ void Runtime::Internal::printAliveObjects(long* basePtr, Function* func, int ins
         std::cout << indentation << "Stack: " << std::endl;
         for (int i = 0; i < stackSize; i++) {
             std::cout << indentation << i << ": ";
-            printValue(stackStart[-i], operandTypes[i]);
+            printValue(stackStart[-i], operandTypes[stackSize - 1 - i]);
             std::cout << std::endl;
         }
     }
@@ -150,7 +150,7 @@ void Runtime::Internal::markObjects(long* basePtr, Function* func, int instIndex
 
     if (stackSize > 0) {
         for (int i = 0; i < stackSize; i++) {
-            gc.markValue(stackStart[-i], operandTypes[i]);
+            gc.markValue(stackStart[-i], operandTypes[stackSize - 1 - i]);
         }
     }
 }
