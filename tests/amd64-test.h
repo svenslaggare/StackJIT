@@ -143,6 +143,15 @@ public:
         Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::BP, -16, Registers::CX);
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x48, 0x89, 0x4D, 0xF0 }));
         generatedCode.clear();
+
+        //Numbered registers
+        Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::BP, -16, NumberedRegisters::R8);
+        TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x4C, 0x89, 0x45, 0xF0 }));
+        generatedCode.clear();
+
+        Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::AX, -16, NumberedRegisters::R9);
+        TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x4C, 0x89, 0x48, 0xF0 }));
+        generatedCode.clear();
     }
 
     //Tests moveIntToReg

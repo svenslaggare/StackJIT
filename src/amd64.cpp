@@ -87,6 +87,13 @@ void Amd64Backend::moveRegToMemoryRegWithOffset(CodeGen& codeGen, Registers dest
 	codeGen.push_back(offset);
 }
 
+void Amd64Backend::moveRegToMemoryRegWithOffset(CodeGen& codeGen, Registers destMemReg, char offset, NumberedRegisters src) {
+	codeGen.push_back(0x4c);
+	codeGen.push_back(0x89);
+	codeGen.push_back(0x40 | destMemReg | (src << 3));
+	codeGen.push_back(offset);
+}
+
 void Amd64Backend::moveIntToReg(CodeGen& codeGen, Registers dest, int value) {
 	codeGen.push_back(0x48);
 	codeGen.push_back(0xc7);

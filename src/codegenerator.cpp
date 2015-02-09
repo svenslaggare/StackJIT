@@ -128,8 +128,7 @@ void CodeGenerator::moveArgsToStack(FunctionCompilationData& functionData) {
             if (TypeSystem::isPrimitiveType(function.arguments()[5], PrimitiveTypes::Float)) {
                 Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -6 * Amd64Backend::REG_SIZE, FloatRegisters::XMM5); //movss [rbp-6*REG_SIZE], xmm5
             } else {
-                //Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -6 * Amd64Backend::REG_SIZE, Registers::R9); //mov [rbp-6*REG_SIZE], r9
-                pushArray(function.generatedCode, { 0x4C, 0x89, 0x4d, (unsigned char)(-6 * Amd64Backend::REG_SIZE) }); //mov [rbp-6*REG_SIZE], r9
+                Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -6 * Amd64Backend::REG_SIZE, NumberedRegisters::R9); //mov [rbp-6*REG_SIZE], r9
             }
         }
 
@@ -137,8 +136,7 @@ void CodeGenerator::moveArgsToStack(FunctionCompilationData& functionData) {
             if (TypeSystem::isPrimitiveType(function.arguments()[4], PrimitiveTypes::Float)) {
                 Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -5 * Amd64Backend::REG_SIZE, FloatRegisters::XMM4); //movss [rbp-5*REG_SIZE], xmm4
             } else {
-                //Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -5 * Amd64Backend::REG_SIZE, Registers::R8); //mov [rbp-5*REG_SIZE], r8
-                pushArray(function.generatedCode, { 0x4C, 0x89, 0x45, (unsigned char)(-5 * Amd64Backend::REG_SIZE) }); //mov [rbp-5*REG_SIZE], r8
+                Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -5 * Amd64Backend::REG_SIZE, NumberedRegisters::R8); //mov [rbp-5*REG_SIZE], r8
             }
         }
 
@@ -195,8 +193,6 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::PUSH_INT:
         //Push the value
         Amd64Backend::pushInt(generatedCode, inst.Value.Int); //push <value>
-        // Amd64Backend::moveLongToReg(generatedCode, Registers::AX, inst.Value.Int);
-        // Amd64Backend::pushReg(generatedCode, Registers::AX);
         break;
     case OpCodes::PUSH_FLOAT:
         {
@@ -205,8 +201,6 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
             //Push the value
             Amd64Backend::pushInt(generatedCode, *floatData); //push <value>
-            //Amd64Backend::moveLongToReg(generatedCode, Registers::AX, *floatData);
-            //Amd64Backend::pushReg(generatedCode, Registers::AX);
         }
         break;  
     case OpCodes::ADD:
