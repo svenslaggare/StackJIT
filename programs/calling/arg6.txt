@@ -1,0 +1,27 @@
+func add6(Int Int Int Int Int Int) Int
+{
+	LDARG 0
+	LDARG 1
+	ADD
+	LDARG 2
+	ADD
+	LDARG 3
+	ADD
+	LDARG 4
+	ADD
+	LDARG 5
+	ADD
+	RET
+}
+
+func main() Int
+{
+	PUSHINT 2
+	PUSHINT 3
+	PUSHINT 4
+	PUSHINT 5
+	PUSHINT 6
+	PUSHINT 7
+	CALL add6(Int Int Int Int Int Int)
+	RET
+}

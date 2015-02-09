@@ -26,6 +26,11 @@ void Amd64Backend::popReg(CodeGen& codeGen, Registers reg) {
 	codeGen.push_back(0x58 | reg);
 }
 
+void Amd64Backend::popReg(CodeGen& codeGen, NumberedRegisters reg) {
+	codeGen.push_back(0x41);
+	codeGen.push_back(0x58 | reg);
+}
+
 void Amd64Backend::popReg(CodeGen& codeGen, FloatRegisters reg) {
     Amd64Backend::moveMemoryByRegToReg(codeGen, reg, Registers::SP); 			   //movss <reg>, [rsp]
 	Amd64Backend::addByteToReg(codeGen, Registers::SP, Amd64Backend::REG_SIZE);    //add rsp, <reg size> 

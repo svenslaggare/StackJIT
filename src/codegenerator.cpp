@@ -48,6 +48,22 @@ void generateNullCheck(CodeGen& codeGen) {
     Amd64Backend::callInReg(codeGen, Registers::DI); //call rdi
 }
 
+//Generates a call to the garabeCollect runtime function
+void generateGCCall(CodeGen& generatedCode, Function& function, int instIndex, bool saveBSP = true) {
+    if (saveBSP) {
+        Amd64Backend::pushReg(generatedCode, Registers::BP);
+    }
+
+    Amd64Backend::moveRegToReg(generatedCode, Registers::DI, Registers::BP); //BP as the first argument
+    Amd64Backend::moveLongToReg(generatedCode, Registers::SI, (long)&function); //Address of the function as second argument
+    Amd64Backend::moveIntToReg(generatedCode, Registers::DX, instIndex); //Current inst index as third argument
+    generateCall(generatedCode, (long)&Runtime::garbageCollect);
+
+    if (saveBSP) {
+        Amd64Backend::popReg(generatedCode, Registers::BP);
+    }
+}
+
 void CodeGenerator::initalizeFunction(FunctionCompilationData& functionData) {
     auto& function = functionData.function;
 
@@ -108,6 +124,24 @@ void CodeGenerator::moveArgsToStack(FunctionCompilationData& functionData) {
     auto& function = functionData.function;
 
     if (function.numArgs() > 0) {
+        if (function.numArgs() >= 6) {
+            if (TypeSystem::isPrimitiveType(function.arguments()[5], PrimitiveTypes::Float)) {
+                Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -6 * Amd64Backend::REG_SIZE, FloatRegisters::XMM5); //movss [rbp-6*REG_SIZE], xmm5
+            } else {
+                //Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -6 * Amd64Backend::REG_SIZE, Registers::R9); //mov [rbp-6*REG_SIZE], r9
+                pushArray(function.generatedCode, { 0x4C, 0x89, 0x4d, (unsigned char)(-6 * Amd64Backend::REG_SIZE) }); //mov [rbp-6*REG_SIZE], r9
+            }
+        }
+
+        if (function.numArgs() >= 5) {
+            if (TypeSystem::isPrimitiveType(function.arguments()[4], PrimitiveTypes::Float)) {
+                Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -5 * Amd64Backend::REG_SIZE, FloatRegisters::XMM4); //movss [rbp-5*REG_SIZE], xmm4
+            } else {
+                //Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -5 * Amd64Backend::REG_SIZE, Registers::R8); //mov [rbp-5*REG_SIZE], r8
+                pushArray(function.generatedCode, { 0x4C, 0x89, 0x45, (unsigned char)(-5 * Amd64Backend::REG_SIZE) }); //mov [rbp-5*REG_SIZE], r8
+            }
+        }
+
         if (function.numArgs() >= 4) {
             if (TypeSystem::isPrimitiveType(function.arguments()[3], PrimitiveTypes::Float)) {
                 Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -4 * Amd64Backend::REG_SIZE, FloatRegisters::XMM3); //movss [rbp-4*REG_SIZE], xmm3
@@ -395,9 +429,11 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             auto calledSignature = vmState.binder().functionSignature(inst.StrValue, inst.Parameters);
 
             //Call the pushFunc runtime function
+            //Amd64Backend::pushReg(generatedCode, Registers::BP);
             Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)&function); //Address of the func handle as the target as first arg
             Amd64Backend::moveLongToReg(generatedCode, Registers::SI, instIndex); //Current inst index as second arg
             generateCall(generatedCode, (long)&Runtime::pushFunc);
+            //Amd64Backend::popReg(generatedCode, Registers::BP);
 
             //Get the address of the function to call
             long funcAddr = 0;
@@ -407,6 +443,24 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
             //Set the function arguments
             auto opTypes = function.preInstructionOperandTypes[instIndex];
+
+            if (numArgs >= 6) {
+                auto argType = opTypes.at(numArgs - 6);
+                if (argType->name() == "Float") {    
+                    Amd64Backend::popReg(generatedCode, FloatRegisters::XMM5);             
+                } else {
+                    Amd64Backend::popReg(generatedCode, NumberedRegisters::R9); //pop r9
+                }
+            }
+
+            if (numArgs >= 5) {
+                auto argType = opTypes.at(numArgs - 5);
+                if (argType->name() == "Float") {    
+                    Amd64Backend::popReg(generatedCode, FloatRegisters::XMM4);             
+                } else {
+                    Amd64Backend::popReg(generatedCode, NumberedRegisters::R8); //pop r8
+                }
+            }
 
             if (numArgs >= 4) {
                 auto argType = opTypes.at(numArgs - 4);
@@ -468,7 +522,9 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             }
 
             //Call the popFunc runtime function
+            //Amd64Backend::pushReg(generatedCode, Registers::BP);
             generateCall(generatedCode, (long)&Runtime::popFunc);
+            //Amd64Backend::popReg(generatedCode, Registers::BP);
         }
         break;
     case OpCodes::RET:
@@ -592,13 +648,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             auto elemType = vmState.getType(inst.StrValue);
 
             if (!vmState.disableGC) {
-                //Call the garbageCollect runtime function
-                Amd64Backend::pushReg(generatedCode, Registers::BP);
-                Amd64Backend::moveRegToReg(generatedCode, Registers::DI, Registers::BP); //BP as the first argument
-                Amd64Backend::moveLongToReg(generatedCode, Registers::SI, (long)&function); //Address of the function as second argument
-                Amd64Backend::moveIntToReg(generatedCode, Registers::DX, instIndex); //Current inst index as third argument
-                generateCall(generatedCode, (long)&Runtime::garbageCollect);
-                Amd64Backend::popReg(generatedCode, Registers::BP);
+                generateGCCall(generatedCode, function, instIndex);
             }
             
             //The pointer to the type as the first arg
@@ -617,8 +667,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             Amd64Backend::callInReg(generatedCode, Registers::DI); //call rdi
 
             //Call the newArray runtime function
-            Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&Runtime::newArray);
-            Amd64Backend::callInReg(generatedCode, Registers::AX);
+            generateCall(generatedCode, (long)&Runtime::newArray);
 
             //Push the returned pointer
             Amd64Backend::pushReg(generatedCode, Registers::AX);
@@ -707,18 +756,14 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
             //Call the garbageCollect runtime function
             if (!vmState.disableGC) {
-                Amd64Backend::pushReg(generatedCode, Registers::BP);
-                Amd64Backend::moveRegToReg(generatedCode, Registers::DI, Registers::BP); //BP as the first argument
-                Amd64Backend::moveLongToReg(generatedCode, Registers::SI, (long)&function); //Address of the function as second argument
-                Amd64Backend::moveIntToReg(generatedCode, Registers::DX, instIndex); //Current inst index as third argument
-                generateCall(generatedCode, (long)&Runtime::garbageCollect);
-                Amd64Backend::popReg(generatedCode, Registers::BP);
+                generateGCCall(generatedCode, function, instIndex);
             }
 
             //Call the newObject runtime function
-            Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&Runtime::newObject);
+            Amd64Backend::pushReg(generatedCode, Registers::BP);
             Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)structType); //The pointer to the type as the first arg
-            Amd64Backend::callInReg(generatedCode, Registers::AX);
+            generateCall(generatedCode, (long)&Runtime::newObject);
+            Amd64Backend::popReg(generatedCode, Registers::BP);
 
             //Push the returned pointer
             Amd64Backend::pushReg(generatedCode, Registers::AX);
@@ -726,11 +771,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::GARBAGE_COLLECT:
         {
-            //Call the garbageCollect runtime function
-            Amd64Backend::moveRegToReg(generatedCode, Registers::DI, Registers::BP); //BP as the first argument
-            Amd64Backend::moveLongToReg(generatedCode, Registers::SI, (long)&function); //Address of the function as second argument
-            Amd64Backend::moveIntToReg(generatedCode, Registers::DX, instIndex); //Current inst index as third argument
-            generateCall(generatedCode, (long)&Runtime::garbageCollect);
+            generateGCCall(generatedCode, function, instIndex, true);
         }
         break;
     case OpCodes::LOAD_FIELD:

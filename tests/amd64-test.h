@@ -35,6 +35,14 @@ public:
         Amd64Backend::popReg(generatedCode, Registers::CX);
         TS_ASSERT_EQUALS(generatedCode[0], 0x59);
         generatedCode.clear();
+
+        Amd64Backend::popReg(generatedCode, NumberedRegisters::R8);
+        TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x41, 0x58 }));
+        generatedCode.clear();
+
+        Amd64Backend::popReg(generatedCode, NumberedRegisters::R9);
+        TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x41, 0x59 }));
+        generatedCode.clear();
     }
 
     //Tests moveRegToReg
@@ -87,6 +95,14 @@ public:
         Amd64Backend::moveMemoryByRegToReg(generatedCode, Registers::CX, Registers::CX);
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x48, 0x8B, 0x09 }));
         generatedCode.clear();
+
+        // Amd64Backend::moveMemoryByRegToReg(generatedCode, Registers::R8, Registers::CX);
+        // TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x4C, 0x8B, 0x01 }));
+        // generatedCode.clear();
+
+        // Amd64Backend::moveMemoryByRegToReg(generatedCode, Registers::AX, Registers::R9);
+        // TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x49, 0x8B, 0x01 }));
+        // generatedCode.clear();
     }
 
     //Tests moveRegToMemoryRegWithOffset

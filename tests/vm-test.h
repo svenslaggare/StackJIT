@@ -73,6 +73,15 @@ public:
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("basic/invalid_program1")), "  what():  1: Locals of 'Void' type are not allowed.\n");
     }
 
+    void testCall() {
+        TS_ASSERT_EQUALS(invokeVM("calling/arg1"), "4\n");
+        TS_ASSERT_EQUALS(invokeVM("calling/arg2"), "9\n");
+        TS_ASSERT_EQUALS(invokeVM("calling/arg3"), "12\n");
+        TS_ASSERT_EQUALS(invokeVM("calling/arg4"), "14\n");
+        TS_ASSERT_EQUALS(invokeVM("calling/arg5"), "20\n");
+        TS_ASSERT_EQUALS(invokeVM("calling/arg6"), "27\n");
+    }
+
     void testArray() {
         TS_ASSERT_EQUALS(invokeVM("array/program1"), "1337\n");
         TS_ASSERT_EQUALS(invokeVM("array/program2"), "4\n1337\n");

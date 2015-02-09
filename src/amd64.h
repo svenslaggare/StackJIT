@@ -26,7 +26,13 @@ enum Registers : unsigned char {
 	SP = 0b100,
 	BP = 0b101,
 	SI = 0b110,
-	DI = 0b111
+	DI = 0b111,
+};
+
+//The numbered registers
+enum NumberedRegisters : unsigned char {
+	R8 = 0b000,
+	R9 = 0b001,
 };
 
 //The floating point registers
@@ -47,6 +53,8 @@ namespace RegisterCallArguments {
 	const Registers Arg1 = Registers::SI;
 	const Registers Arg2 = Registers::DX;
 	const Registers Arg3 = Registers::CX;
+	const NumberedRegisters Arg4 = NumberedRegisters::R8;
+	const NumberedRegisters Arg5 = NumberedRegisters::R9;
 }
 
 namespace FloatRegisterCallArguments {
@@ -54,6 +62,8 @@ namespace FloatRegisterCallArguments {
 	const FloatRegisters Arg1 = FloatRegisters::XMM1;
 	const FloatRegisters Arg2 = FloatRegisters::XMM2;
 	const FloatRegisters Arg3 = FloatRegisters::XMM3;
+	const FloatRegisters Arg4 = FloatRegisters::XMM4;
+	const FloatRegisters Arg5 = FloatRegisters::XMM5;
 }
 
 typedef std::vector<unsigned char> CodeGen;
@@ -74,6 +84,9 @@ namespace Amd64Backend {
 
 	//Pops from the stack to the given register
 	void popReg(CodeGen&, Registers);
+
+	//Pops from the stack to the given register
+	void popReg(CodeGen&, NumberedRegisters);
 
 	//Pops from the stack to the given register
 	void popReg(CodeGen&, FloatRegisters);

@@ -1,0 +1,12 @@
+func add1(Int) Int
+{
+	LDARG 0
+	RET
+}
+
+func main() Int
+{
+	PUSHINT 4
+	CALL add1(Int)
+	RET
+}

@@ -1,0 +1,24 @@
+func add5(Int Int Int Int Int) Int
+{
+	LDARG 0
+	LDARG 1
+	ADD
+	LDARG 2
+	ADD
+	LDARG 3
+	ADD
+	LDARG 4
+	ADD
+	RET
+}
+
+func main() Int
+{
+	PUSHINT 2
+	PUSHINT 3
+	PUSHINT 4
+	PUSHINT 5
+	PUSHINT 6
+	CALL add5(Int Int Int Int Int)
+	RET
+}

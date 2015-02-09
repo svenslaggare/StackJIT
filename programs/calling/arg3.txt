@@ -1,0 +1,18 @@
+func add3(Int Int Int) Int
+{
+	LDARG 0
+	LDARG 1
+	ADD
+	LDARG 2
+	ADD
+	RET
+}
+
+func main() Int
+{
+	PUSHINT 3
+	PUSHINT 4
+	PUSHINT 5
+	CALL add3(Int Int Int)
+	RET
+}

@@ -375,7 +375,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
             int numArgs = parameters.size();
             auto signature = vmState.binder().functionSignature(funcName, parameters);
 
-            if (numArgs >= 0 && numArgs <= 4) {
+            if (numArgs >= 0 && numArgs <= 6) {
                 if (assembly.functions.count(signature) == 0 && !vmState.binder().isDefined(signature)) {
                     //Create a new function        
                     Function* newFunc = new Function(funcName, parameters, returnType);
@@ -385,7 +385,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                     throw std::runtime_error("The function '" + signature + "' is already defined.");
                 }
             } else {
-                throw std::runtime_error("Maximum four arguments are supported.");
+                throw std::runtime_error("Maximum six arguments are supported.");
             }
 
             isFuncDef = false;
