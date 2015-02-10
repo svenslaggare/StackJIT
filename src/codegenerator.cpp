@@ -621,7 +621,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 Amd64Backend::popReg(generatedCode, FloatRegisters::XMM0); //pop xmm0
 
                 //Compare
-                pushArray(generatedCode, { 0x0F, 0x2E, 0xC1 }); //ucomiss xmm0, xmm1 
+                pushArray(generatedCode, { 0x0F, 0x2E, 0xC8 }); //ucomiss xmm1, xmm0
                 unsignedComparison = true;
             } 
 
