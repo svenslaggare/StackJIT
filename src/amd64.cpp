@@ -339,6 +339,19 @@ void Amd64Backend::jumpGreaterThan(CodeGen& codeGen, int target) {
 	}
 }
 
+//Jumps if > to the target (unsigned)
+void Amd64Backend::jumpGreaterThanUnsigned(CodeGen& codeGen, int target) {
+	IntToBytes converter;
+	converter.IntValue = target;
+
+	codeGen.push_back(0x0F);
+	codeGen.push_back(0x87);
+
+	for (std::size_t i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.ByteValues[i]);
+	}
+}
+
 //Jumps if >= to the target
 void Amd64Backend::jumpGreaterThanOrEqual(CodeGen& codeGen, int target) {
 	IntToBytes converter;
@@ -346,6 +359,19 @@ void Amd64Backend::jumpGreaterThanOrEqual(CodeGen& codeGen, int target) {
 
 	codeGen.push_back(0x0F);
 	codeGen.push_back(0x8D);
+
+	for (std::size_t i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.ByteValues[i]);
+	}
+}
+
+//Jumps if >= to the target (unsigned)
+void Amd64Backend::jumpGreaterThanOrEqualUnsigned(CodeGen& codeGen, int target) {
+	IntToBytes converter;
+	converter.IntValue = target;
+
+	codeGen.push_back(0x0F);
+	codeGen.push_back(0x83);
 
 	for (std::size_t i = 0; i < sizeof(int); i++) {
 		codeGen.push_back(converter.ByteValues[i]);
@@ -365,6 +391,19 @@ void Amd64Backend::jumpLessThan(CodeGen& codeGen, int target) {
 	}
 }
 
+//Jumps if < to the target (unsigned)
+void Amd64Backend::jumpLessThanUnsigned(CodeGen& codeGen, int target) {
+	IntToBytes converter;
+	converter.IntValue = target;
+
+	codeGen.push_back(0x0F);
+	codeGen.push_back(0x82);
+
+	for (std::size_t i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.ByteValues[i]);
+	}
+}
+
 //Jumps if <= to the target
 void Amd64Backend::jumpLessThanOrEqual(CodeGen& codeGen, int target) {
 	IntToBytes converter;
@@ -372,6 +411,19 @@ void Amd64Backend::jumpLessThanOrEqual(CodeGen& codeGen, int target) {
 
 	codeGen.push_back(0x0F);
 	codeGen.push_back(0x8E);
+
+	for (std::size_t i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.ByteValues[i]);
+	}
+}
+
+//Jumps if <= to the target (unsigned)
+void Amd64Backend::jumpLessThanOrEqualUnsigned(CodeGen& codeGen, int target) {
+	IntToBytes converter;
+	converter.IntValue = target;
+
+	codeGen.push_back(0x0F);
+	codeGen.push_back(0x86);
 
 	for (std::size_t i = 0; i < sizeof(int); i++) {
 		codeGen.push_back(converter.ByteValues[i]);

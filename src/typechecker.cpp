@@ -253,8 +253,10 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                 } else {
                     if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Integer) && TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
                         operandStack.push(boolType);
+                    } else if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Float) && TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Float)) {
+                        operandStack.push(boolType);
                     } else {
-                        typeError(index, "Expected 2 operands of type Int on the stack.");
+                        typeError(index, "Expected 2 operands of type Int or Float on the stack.");
                     }
                 }
             }

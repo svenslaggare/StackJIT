@@ -1,5 +1,3 @@
-#include <string.h>
-
 #include "codegenerator.h"
 #include "typechecker.h"
 #include "type.h"
@@ -8,6 +6,9 @@
 #include "function.h"
 #include "instructions.h"
 #include "amd64.h"
+
+#include <string.h>
+#include <iostream>
 
 void pushArray(std::vector<unsigned char>& dest, const std::vector<unsigned char>& values) {
     for (auto current : values) {
@@ -338,6 +339,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             bool intOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Integer);
             bool boolType = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Bool);
             bool floatOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Float);
+            bool unsignedComparison = false;
 
             if (intOp || boolType) {
                 //Pop 2 operands
@@ -353,6 +355,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
                 //Compare
                 pushArray(generatedCode, { 0x0F, 0x2E, 0xC1 }); //ucomiss xmm0, xmm1 
+                unsignedComparison = true;
             }
 
             //Jump
@@ -367,16 +370,32 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                     Amd64Backend::jumpNotEqual(generatedCode, target);
                     break;
                 case OpCodes::COMPARE_GREATER_THAN:
-                    Amd64Backend::jumpGreaterThan(generatedCode, target);
+                    if (unsignedComparison) {
+                        Amd64Backend::jumpGreaterThanUnsigned(generatedCode, target);                  
+                    } else {
+                        Amd64Backend::jumpGreaterThan(generatedCode, target);
+                    }
                     break;
                 case OpCodes::COMPARE_GREATER_THAN_OR_EQUAL:
-                    Amd64Backend::jumpGreaterThanOrEqual(generatedCode, target);
+                    if (unsignedComparison) {
+                        Amd64Backend::jumpGreaterThanOrEqualUnsigned(generatedCode, target);
+                    } else {
+                        Amd64Backend::jumpGreaterThanOrEqual(generatedCode, target);
+                    }
                     break;
                 case OpCodes::COMPARE_LESS_THAN:
-                    Amd64Backend::jumpLessThan(generatedCode, target);
+                    if (unsignedComparison) {
+                        Amd64Backend::jumpLessThanUnsigned(generatedCode, target);
+                    } else {
+                        Amd64Backend::jumpLessThan(generatedCode, target);
+                    }
                     break;
                 case OpCodes::COMPARE_LESS_THAN_OR_EQUAL:
-                    Amd64Backend::jumpLessThanOrEqual(generatedCode, target);
+                    if (unsignedComparison) {
+                        Amd64Backend::jumpLessThanOrEqualUnsigned(generatedCode, target);
+                    } else {
+                        Amd64Backend::jumpLessThanOrEqual(generatedCode, target);
+                    }
                     break;
                 default:
                     break;
@@ -587,6 +606,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             bool intOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Integer);
             bool boolType = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Bool);
             bool floatOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Float);
+            bool unsignedComparison = false;
 
             if (intOp || boolType) {
                 //Pop 2 operands
@@ -602,6 +622,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
                 //Compare
                 pushArray(generatedCode, { 0x0F, 0x2E, 0xC1 }); //ucomiss xmm0, xmm1 
+                unsignedComparison = true;
             } 
 
             switch (inst.OpCode) {
@@ -612,16 +633,32 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                     Amd64Backend::jumpNotEqual(generatedCode, 0); //jne <target>
                     break;
                 case OpCodes::BRANCH_GREATER_THAN:
-                    Amd64Backend::jumpGreaterThan(generatedCode, 0); //jg <target>
+                    if (unsignedComparison) {
+                        Amd64Backend::jumpGreaterThanUnsigned(generatedCode, 0); //jg <target>
+                    } else {
+                        Amd64Backend::jumpGreaterThan(generatedCode, 0); //jg <target>
+                    }
                     break;
                 case OpCodes::BRANCH_GREATER_THAN_OR_EQUAL:
-                    Amd64Backend::jumpGreaterThanOrEqual(generatedCode, 0); //jge <target>
+                    if (unsignedComparison) {
+                        Amd64Backend::jumpGreaterThanOrEqualUnsigned(generatedCode, 0); //jge <target>
+                    } else {
+                        Amd64Backend::jumpGreaterThanOrEqual(generatedCode, 0); //jge <target>
+                    }
                     break;
                 case OpCodes::BRANCH_LESS_THAN:
-                    Amd64Backend::jumpLessThan(generatedCode, 0); //jl <target>
+                    if (unsignedComparison){
+                        Amd64Backend::jumpLessThanUnsigned(generatedCode, 0); //jl <target>
+                    } else {
+                        Amd64Backend::jumpLessThan(generatedCode, 0); //jl <target>
+                    }
                     break;
                 case OpCodes::BRANCH_LESS_THAN_OR_EQUAL:
-                    Amd64Backend::jumpLessThanOrEqual(generatedCode, 0); //jle <target>
+                    if (unsignedComparison) {
+                        Amd64Backend::jumpLessThanOrEqualUnsigned(generatedCode, 0); //jle <target>
+                    } else {
+                        Amd64Backend::jumpLessThanOrEqual(generatedCode, 0); //jle <target>
+                    }
                     break;
                 default:
                     break;

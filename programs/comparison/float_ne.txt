@@ -1,0 +1,33 @@
+func println(Bool) Void
+{
+   LDARG 0
+   PUSHTRUE
+   BNE 6
+   PUSHINT 1
+   CALL println(Int)
+   BR 8
+   PUSHINT 0
+   CALL println(Int)
+   RET
+}
+
+func main() Int
+{
+   PUSHFLOAT 3.000000
+   PUSHFLOAT 4.000000
+   CMPNE
+   CALL println(Bool)
+
+   PUSHFLOAT 4.000000
+   PUSHFLOAT 4.000000
+   CMPNE
+   CALL println(Bool)
+
+   PUSHFLOAT 5.000000
+   PUSHFLOAT 4.000000
+   CMPNE
+   CALL println(Bool)
+
+   PUSHINT 4711
+   RET
+}

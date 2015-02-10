@@ -6,6 +6,9 @@ extern std.println :: println(Int) Void
 #Prints a float followed by a line break to standard output
 extern std.println :: println(Float) Void
 
+#Prints the given character
+extern std.printchar :: printchar(Int) Void
+
 #Invokes the garbage collector
 func std.gc.collect() Void
 {

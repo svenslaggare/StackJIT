@@ -174,12 +174,24 @@ namespace Amd64Backend {
 	//Jumps if > to the target relative the current instruction
 	void jumpGreaterThan(CodeGen&, int);
 
+	//Jumps if > to the target relative the current instruction. Uses unsigned comparison.
+	void jumpGreaterThanUnsigned(CodeGen&, int);
+
 	//Jumps if >= to the target relative the current instruction
 	void jumpGreaterThanOrEqual(CodeGen&, int);
+
+	//Jumps if >= to the target relative the current instruction. Uses unsigned comparison.
+	void jumpGreaterThanOrEqualUnsigned(CodeGen&, int);
 
 	//Jumps if < to the target relative the current instruction
 	void jumpLessThan(CodeGen&, int);
 
+	//Jumps if < to the target relative the current instruction. Uses unsigned comparison.
+	void jumpLessThanUnsigned(CodeGen&, int);
+
 	//Jumps if <= to the target relative the current instruction
 	void jumpLessThanOrEqual(CodeGen&, int);
+
+	//Jumps if <= to the target relative the current instruction. Uses unsigned comparison.
+	void jumpLessThanOrEqualUnsigned(CodeGen&, int);
 }
