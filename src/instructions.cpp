@@ -20,6 +20,13 @@ Instruction Instructions::makeWithFloat(OpCodes opCode, float value) {
     return inst;
 }
 
+Instruction Instructions::makeWithChar(OpCodes opCode, char value) {
+    Instruction inst;
+    inst.Value.Char = value;
+    inst.OpCode = opCode;
+    return inst;
+}
+
 Instruction Instructions::makeWithStr(OpCodes opCode, std::string value) {
     Instruction inst;
     inst.StrValue = value;

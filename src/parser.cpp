@@ -16,6 +16,8 @@ std::vector<std::string> Parser::tokenize(std::istream& stream) {
     std::vector<std::string> tokens;
     std::string token;
     bool isComment = false;
+    bool isString = false;
+    bool escape = false;
 
     char c;
     while (stream.get(c)) {
@@ -33,7 +35,19 @@ std::vector<std::string> Parser::tokenize(std::istream& stream) {
         }
 
         if (!isComment) {
-            if (isspace(c)) {
+            if (!escape) {
+                if (c == '\\') {
+                    escape = true;
+                    continue;
+                }
+
+                if (c == '"') {
+                    isString = !isString;
+                    continue;
+                }
+            }
+
+            if (isspace(c) && !isString) {
                 newToken = true;
             }
 
@@ -55,6 +69,10 @@ std::vector<std::string> Parser::tokenize(std::istream& stream) {
             if (newIdentifier) {
                 tokens.push_back(std::string{ c });
             }
+        }
+
+        if (escape) {
+            escape = false;
         }
     }
 
@@ -204,6 +222,12 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                 continue;
             }
 
+            if (currentToLower == "pushchar") {
+                char value = (char)stoi(nextToken(tokens, i));
+                currentFunc->instructions.push_back(Instructions::makeWithChar(OpCodes::PUSH_CHAR, value));
+                continue;
+            }
+
             if (noOperandsInstructions.count(currentToLower) > 0) {
                 currentFunc->instructions.push_back(Instructions::make(noOperandsInstructions[currentToLower]));
             }
@@ -320,6 +344,11 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                 int target = stoi(nextToken(tokens, i));
                 currentFunc->instructions.push_back(Instructions::makeWithInt(branchInstructions[currentToLower], target));
                 continue;
+            }
+
+            if (currentToLower == "ldstr") {
+                auto str = nextToken(tokens, i);
+                currentFunc->instructions.push_back(Instructions::makeWithStr(OpCodes::LOAD_STRING, str));
             }
         }
 

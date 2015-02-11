@@ -144,6 +144,10 @@ public:
         TS_ASSERT_EQUALS(invokeVM("branch/float_le3"), "1\n");        
     }
 
+    void testChar() {
+        TS_ASSERT_EQUALS(invokeVM("string/char1"), "A\n0\n");
+    }
+
     void testArray() {
         TS_ASSERT_EQUALS(invokeVM("array/program1"), "1337\n");
         TS_ASSERT_EQUALS(invokeVM("array/program2"), "4\n1337\n");

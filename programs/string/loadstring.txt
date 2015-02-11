@@ -1,0 +1,36 @@
+func println(Ref.Array[Char]) Void
+{
+	.locals 1
+	
+	PUSHINT 0
+	STLOC 0
+
+	LDARG 0
+	LDLOC 0
+	LDELEM Char
+	CALL printchar(Char)
+
+	LDLOC 0
+	PUSHINT 1
+	ADD
+	STLOC 0
+
+	LDLOC 0
+	LDARG 0
+	LDLEN
+	BLT 2
+
+	PUSHCHAR 10
+	CALL printchar(Char)
+
+	RET
+}
+
+func main() Int
+{
+	ldstr "Hello, World!"
+	CALL println(Ref.Array[Char])
+
+	PUSHINT 0
+	RET
+}

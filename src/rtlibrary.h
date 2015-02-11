@@ -34,6 +34,9 @@ namespace Runtime {
 	//Creates a new struct of the given type
 	long newObject(Type* type);
 
+	//Creates a new string of the given length
+	long newString(const char* string, int length);
+
 	//Stops the execution
 	void runtimeError(std::string errorMessage);
 

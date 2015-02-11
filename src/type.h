@@ -66,12 +66,16 @@ enum PrimitiveTypes : unsigned char {
 	Void,
 	Integer,
 	Float,
-	Bool
+	Bool,
+	Char
 };
 
 namespace TypeSystem {
-	//Returns the name of the given primitive type
-	std::string primitiveTypeName(PrimitiveTypes primitiveType);
+	//Converts the given string into a primitive type. True if correct type.
+	bool fromString(std::string typeName, PrimitiveTypes& primitiveType);
+
+	//Returns the given primitive type as a string
+	std::string toString(PrimitiveTypes primitiveType);
 
 	//Creates a new type from the given string
 	Type* makeTypeFromString(std::string typeName);

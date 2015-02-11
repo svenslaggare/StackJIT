@@ -215,6 +215,16 @@ long Runtime::newObject(Type* type) {
     return (long)(vmState.gc().newStruct(structType));
 }
 
+long Runtime::newString(const char* string, int length) {
+    auto strPtr = vmState.gc().newArray(vmState.getType(TypeSystem::toString(PrimitiveTypes::Char)), length);
+    
+    for (int i = 0; i < length; i++) {
+        strPtr[i + 4] = string[i];
+    }
+
+    return (long)strPtr;
+}
+
 void Runtime::runtimeError(std::string errorMessage) {
     throw std::runtime_error(errorMessage);
 }

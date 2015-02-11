@@ -59,7 +59,28 @@ std::string StructType::structName() const {
 	return mStructName;
 }
 
-std::string TypeSystem::primitiveTypeName(PrimitiveTypes primitiveType) {
+bool TypeSystem::fromString(std::string typeName, PrimitiveTypes& primitiveType) {
+	if (typeName == "Int") {
+		primitiveType = PrimitiveTypes::Integer;
+		return true;
+	} else if (typeName == "Float") {
+		primitiveType = PrimitiveTypes::Float;
+		return true;
+	} else if (typeName == "Bool") {
+		primitiveType = PrimitiveTypes::Bool;
+		return true;
+	} else if (typeName == "Char") {
+		primitiveType = PrimitiveTypes::Char;
+		return true;
+	} else if (typeName == "Void") {
+		primitiveType = PrimitiveTypes::Void;
+		return true;
+	}
+
+	return false;
+}
+
+std::string TypeSystem::toString(PrimitiveTypes primitiveType) {
 	switch (primitiveType) {
 		case PrimitiveTypes::Void:
 			return "Void";
@@ -69,17 +90,12 @@ std::string TypeSystem::primitiveTypeName(PrimitiveTypes primitiveType) {
 			return "Float";
 		case PrimitiveTypes::Bool:
 			return "Bool";
+		case PrimitiveTypes::Char:
+			return "Char";
 	}
 
 	return "";
 }
-
-std::unordered_map<std::string, std::function<Type*()>> primitiveTypeNames {
-	{ "Void", []() -> Type* { return new Type("Void"); } },
-	{ "Int", []() -> Type* { return new Type("Int"); } },
-	{ "Float", []() -> Type* { return new Type("Float"); } },
-	{ "Bool", []() -> Type* { return new Type("Bool"); } }
-};
 
 Type* TypeSystem::makeTypeFromString(std::string typeName) {
 	//Split the type name
@@ -110,9 +126,10 @@ Type* TypeSystem::makeTypeFromString(std::string typeName) {
 
 	std::string arrayPattern = "Array.(.*).";
 	std::regex arrayRegex(arrayPattern, std::regex_constants::extended);
+	PrimitiveTypes primType;
 
-	if (primitiveTypeNames.count(typeParts.at(0)) > 0) {
-		return primitiveTypeNames[typeParts.at(0)]();
+	if (fromString(typeParts.at(0), primType)) {
+		return new Type(typeParts.at(0));
 	} else if (typeParts.at(0) == "Ref") {
 		std::smatch match;
 		bool foundArray = std::regex_match(typeParts.at(1), match, arrayRegex);
@@ -135,15 +152,10 @@ Type* TypeSystem::makeTypeFromString(std::string typeName) {
 
 bool TypeSystem::isPrimitiveType(const Type* type, PrimitiveTypes primitiveType) {
 	if (type != nullptr) {
-		switch (primitiveType) {
-			case PrimitiveTypes::Void:
-				return type->name().compare("Void") == 0;
-			case PrimitiveTypes::Integer:
-				return type->name().compare("Int") == 0;
-			case PrimitiveTypes::Float:
-				return type->name().compare("Float") == 0;
-			case PrimitiveTypes::Bool:
-				return type->name().compare("Bool") == 0;
+		PrimitiveTypes outType;
+
+		if (fromString(type->name(), outType)) {
+			return outType == primitiveType;
 		}
 	}
 
@@ -188,6 +200,8 @@ std::size_t TypeSystem::sizeOfType(PrimitiveTypes primitiveType) {
 		return 4;
 	case PrimitiveTypes::Bool:
 		return 1;
+	case PrimitiveTypes::Char:
+		return 1;
 	}
 
 	return 0;
@@ -195,13 +209,10 @@ std::size_t TypeSystem::sizeOfType(PrimitiveTypes primitiveType) {
 
 std::size_t TypeSystem::sizeOfType(const Type* type) {
 	auto typeName = type->name();
+	PrimitiveTypes primitiveType;
 
-	if (typeName == "Int") {
-		return TypeSystem::sizeOfType(PrimitiveTypes::Integer);
-	} else if (typeName == "Float") {
-		return TypeSystem::sizeOfType(PrimitiveTypes::Float);
-	} else if (typeName == "Bool") {
-		return TypeSystem::sizeOfType(PrimitiveTypes::Bool);
+	if (fromString(typeName, primitiveType)) {
+		return sizeOfType(primitiveType);
 	} else if (TypeSystem::isReferenceType(type)) {
 		return sizeof(long);
 	}

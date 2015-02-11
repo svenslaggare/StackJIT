@@ -7,7 +7,7 @@ extern std.println :: println(Int) Void
 extern std.println :: println(Float) Void
 
 #Prints the given character
-extern std.printchar :: printchar(Int) Void
+extern std.printchar :: printchar(Char) Void
 
 #Invokes the garbage collector
 func std.gc.collect() Void

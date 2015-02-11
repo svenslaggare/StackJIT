@@ -16,7 +16,7 @@ namespace StandardLibrary {
 	void println(float x);
 
 	//Prints the given char
-	void printchar(int x);
+	void printchar(char x);
 
 	//Computes the absolute value
 	int abs(int x);

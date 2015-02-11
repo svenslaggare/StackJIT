@@ -7,6 +7,7 @@ enum OpCodes {
     NOP,
     PUSH_INT,
     PUSH_FLOAT,
+    PUSH_CHAR,
     POP,
     ADD,
     SUB,
@@ -45,7 +46,8 @@ enum OpCodes {
     LOAD_ARRAY_LENGTH,
     NEW_OBJECT,
     LOAD_FIELD,
-    STORE_FIELD
+    STORE_FIELD,
+    LOAD_STRING
 };
 
 class Type;
@@ -57,6 +59,7 @@ struct Instruction {
     union {
         float Float;
         int Int;
+        char Char;
     } Value;
 
     std::string StrValue;
@@ -73,6 +76,9 @@ namespace Instructions {
 
     //Creates a new instruction with a float as value
     Instruction makeWithFloat(OpCodes opCode, float value);
+
+    //Creates a new instruction with a char as value
+    Instruction makeWithChar(OpCodes opCode, char value);
 
     //Creates a new instruction with a string as the value
     Instruction makeWithStr(OpCodes opCode, std::string value);

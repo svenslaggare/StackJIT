@@ -204,6 +204,10 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             Amd64Backend::pushInt(generatedCode, *floatData); //push <value>
         }
         break;  
+     case OpCodes::PUSH_CHAR:
+        //Push the value
+        pushArray(generatedCode, { 0x6A, (unsigned char)inst.Value.Char }); //push <value>
+        break;
     case OpCodes::ADD:
     case OpCodes::SUB:
     case OpCodes::MUL:
@@ -853,6 +857,27 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                     pushArray(generatedCode, { 0x88, 0x50, (unsigned char)fieldOffset }); //mov [rax+4], dl
                 }
             }
+        }
+        break;
+    case OpCodes::LOAD_STRING:
+        {
+            auto elemType = vmState.getType("Char");
+
+            if (!vmState.disableGC) {
+                generateGCCall(generatedCode, function, instIndex);
+            }
+            
+            //The pointer to the string as the first arg
+            Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)inst.StrValue.data()); //mov rdi, <addr of string>
+
+            //The length of the string as the second arg
+            Amd64Backend::moveIntToReg(generatedCode, Registers::SI, inst.StrValue.length()); //mov rsi, <string length>
+
+            //Call the newString runtime function
+            generateCall(generatedCode, (long)&Runtime::newString);
+
+            //Push the returned pointer
+            Amd64Backend::pushReg(generatedCode, Registers::AX);
         }
         break;
     }

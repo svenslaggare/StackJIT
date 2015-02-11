@@ -83,12 +83,14 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
     std::vector<InstructionTypes> postInstructionsOperandTypes;
     postInstructionsOperandTypes.reserve(numInsts);
 
-    const auto intType = vmState.findType(TypeSystem::primitiveTypeName(PrimitiveTypes::Integer));
-    const auto floatType = vmState.findType(TypeSystem::primitiveTypeName(PrimitiveTypes::Float));
-    const auto boolType = vmState.findType(TypeSystem::primitiveTypeName(PrimitiveTypes::Bool));
-    const auto voidType = vmState.findType(TypeSystem::primitiveTypeName(PrimitiveTypes::Void));
+    const auto intType = vmState.findType(TypeSystem::toString(PrimitiveTypes::Integer));
+    const auto floatType = vmState.findType(TypeSystem::toString(PrimitiveTypes::Float));
+    const auto boolType = vmState.findType(TypeSystem::toString(PrimitiveTypes::Bool));
+    const auto charType = vmState.findType(TypeSystem::toString(PrimitiveTypes::Char));
+    const auto voidType = vmState.findType(TypeSystem::toString(PrimitiveTypes::Void));
     const auto nullType = vmState.findType("Ref.Null");
-
+    const auto stringType = vmState.findType("Ref.Array[Char]");
+    
     //Set the local type if set
     std::vector<const Type*> locals(function.numLocals());
 
@@ -137,6 +139,9 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
             break;
         case OpCodes::PUSH_FLOAT:
             operandStack.push(floatType);
+            break;
+        case OpCodes::PUSH_CHAR:
+            operandStack.push(charType);
             break;
         case OpCodes::POP:
             assertOperandCount(index, operandStack, 1);
@@ -635,6 +640,9 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
             }
             break;
         case OpCodes::GARBAGE_COLLECT:
+            break;
+        case OpCodes::LOAD_STRING:
+            operandStack.push(stringType);
             break;
         }
 

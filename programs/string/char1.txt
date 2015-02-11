@@ -1,0 +1,17 @@
+func main() Int
+{
+	.locals 1
+	.local 0 Char
+
+	PUSHCHAR 65
+	STLOC 0
+
+	LDLOC 0
+	CALL printchar(Char)
+
+	PUSHCHAR 10
+	CALL printchar(Char)
+
+	PUSHINT 0
+	RET
+}
