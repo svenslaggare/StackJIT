@@ -102,6 +102,48 @@ public:
         TS_ASSERT_EQUALS(invokeVM("comparison/float_lt"), "1\n0\n0\n4711\n");     
     }
 
+    void testBranch() {
+        TS_ASSERT_EQUALS(invokeVM("branch/int_eq"), "1\n");
+        TS_ASSERT_EQUALS(invokeVM("branch/int_eq2"), "0\n");
+
+        TS_ASSERT_EQUALS(invokeVM("branch/int_ne"), "1\n");
+        TS_ASSERT_EQUALS(invokeVM("branch/int_ne2"), "0\n");
+
+        TS_ASSERT_EQUALS(invokeVM("branch/int_gt"), "1\n");
+        TS_ASSERT_EQUALS(invokeVM("branch/int_gt2"), "0\n");
+
+        TS_ASSERT_EQUALS(invokeVM("branch/int_ge"), "1\n");
+        TS_ASSERT_EQUALS(invokeVM("branch/int_ge2"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("branch/int_ge3"), "1\n");
+
+        TS_ASSERT_EQUALS(invokeVM("branch/int_lt"), "1\n");
+        TS_ASSERT_EQUALS(invokeVM("branch/int_lt2"), "0\n");
+
+        TS_ASSERT_EQUALS(invokeVM("branch/int_le"), "1\n");
+        TS_ASSERT_EQUALS(invokeVM("branch/int_le2"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("branch/int_le3"), "1\n");
+        
+        TS_ASSERT_EQUALS(invokeVM("branch/float_eq"), "1\n");
+        TS_ASSERT_EQUALS(invokeVM("branch/float_eq2"), "0\n");
+
+        TS_ASSERT_EQUALS(invokeVM("branch/float_ne"), "1\n");
+        TS_ASSERT_EQUALS(invokeVM("branch/float_ne2"), "0\n");
+
+        TS_ASSERT_EQUALS(invokeVM("branch/float_gt"), "1\n");
+        TS_ASSERT_EQUALS(invokeVM("branch/float_gt2"), "0\n");
+
+        TS_ASSERT_EQUALS(invokeVM("branch/float_ge"), "1\n");
+        TS_ASSERT_EQUALS(invokeVM("branch/float_ge2"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("branch/float_ge3"), "1\n");
+
+        TS_ASSERT_EQUALS(invokeVM("branch/float_lt"), "1\n");
+        TS_ASSERT_EQUALS(invokeVM("branch/float_lt2"), "0\n");
+
+        TS_ASSERT_EQUALS(invokeVM("branch/float_le"), "1\n");
+        TS_ASSERT_EQUALS(invokeVM("branch/float_le2"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("branch/float_le3"), "1\n");        
+    }
+
     void testArray() {
         TS_ASSERT_EQUALS(invokeVM("array/program1"), "1337\n");
         TS_ASSERT_EQUALS(invokeVM("array/program2"), "4\n1337\n");

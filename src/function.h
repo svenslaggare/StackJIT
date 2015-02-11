@@ -1,8 +1,8 @@
 #pragma once
+#include "instructions.h"
 #include <vector>
 #include <deque>
 #include <string>
-#include "instructions.h"
 
 class Type;
 
