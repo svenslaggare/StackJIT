@@ -5,6 +5,11 @@ func println(Ref.Array[Char]) Void
 	PUSHINT 0
 	STLOC 0
 
+	LDLOC 0
+	LDARG 0
+	LDLEN
+	BGE 15
+
 	LDARG 0
 	LDLOC 0
 	LDELEM Char
@@ -15,11 +20,8 @@ func println(Ref.Array[Char]) Void
 	ADD
 	STLOC 0
 
-	LDLOC 0
-	LDARG 0
-	LDLEN
-	BLT 2
-
+	BR 2
+	
 	PUSHCHAR 10
 	CALL printchar(Char)
 

@@ -42,6 +42,11 @@ std::vector<std::string> Parser::tokenize(std::istream& stream) {
                 }
 
                 if (c == '"') {
+                    if (isString) {
+                        tokens.push_back(token);
+                        token = "";
+                    }
+
                     isString = !isString;
                     continue;
                 }
@@ -67,7 +72,7 @@ std::vector<std::string> Parser::tokenize(std::istream& stream) {
             }
 
             if (newIdentifier) {
-                tokens.push_back(std::string{ c });
+                tokens.push_back(std::string { c });
             }
         }
 
