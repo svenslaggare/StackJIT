@@ -4,38 +4,19 @@ struct Point
 	y Int
 }
 
-struct Point3D
-{
-	x Int
-	y Int
-	z Int
-}
-
 func main() Int
 {
-	.locals 0
+	.locals 1
+	.local 0 Ref.Struct.Point
 
-	#PUSHINTNULL
+	PUSHNULL
+	STLOC 0
 
-	#PUSHINT 2
-	#NEWARR Int
+	NEWOBJ Ref.Struct.Point
+	STLOC 0
 
-	NEWOBJ Ref.Struct.Point3D
-	#NEWOBJ Ref.Struct.Point
-
-	LDFIELD Point3D::z
-
-	#PUSHINT 0
-	#STFIELD Point::x
-	#PUSHINT 0
-
-	#PUSHINT 0
-	#LDELEM Int
-
-	#PUSHINT 0
-	#PUSHINT 0
-	#STELEM Int
-	#PUSHINT 0
+	LDLOC 0
+	LDFIELD Point::x
 
 	RET
 }

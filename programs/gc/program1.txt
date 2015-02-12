@@ -4,7 +4,7 @@ struct Point
 	y Int
 }
 
-func main1() Int
+func main() Int
 {
 	.locals 1
 	.local 0 Ref.Struct.Point
@@ -14,14 +14,14 @@ func main1() Int
 	STLOC 0
 	STLOC 0
 
-	GC
+	#GC
 
 	PUSHINT 0
 	RET
 }
 
-func main() Int
-{
-	CALL main1()
-	RET
-}
+#func main() Int
+#{
+#	CALL main1()
+#	RET
+#}

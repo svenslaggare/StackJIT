@@ -155,13 +155,15 @@ public:
         TS_ASSERT_EQUALS(invokeVM("array/program3"), "1337\n4\n0\n");
 
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program1")), "  what():  2: Array of type 'Void' is not allowed.\n");
+
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/boundscheck")), "  what():  Array index is out of bounds.\n");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/boundscheck2")), "  what():  Array index is out of bounds.\n");
     }
 
     void testStruct() {
         TS_ASSERT_EQUALS(invokeVM("struct/program1"), "1337\n");
         TS_ASSERT_EQUALS(invokeVM("struct/program2"), "4\n4711\n");
         TS_ASSERT_EQUALS(invokeVM("struct/program3"), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("struct/program4"), "0\n");
     }
 
     void testGC() {

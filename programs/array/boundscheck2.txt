@@ -1,0 +1,8 @@
+func main() Int
+{
+	PUSHINT 4
+	NEWARR Int
+	PUSHINT 4
+	LDELEM Int
+	RET
+}

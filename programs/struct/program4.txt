@@ -1,22 +1,52 @@
 struct Point
 {
-	x Int
-	y Int
+	x Float
+	y Float
+}
+
+func Point::length(Ref.Struct.Point) Float
+{
+	.locals 1
+	LDARG 0
+	STLOC 0
+
+	LDLOC 0
+	LDFIELD Point::x
+	LDLOC 0
+	LDFIELD Point::x
+	MUL
+
+	LDLOC 0
+	LDFIELD Point::y
+	LDLOC 0
+	LDFIELD Point::y
+	MUL
+
+	ADD
+	CALL sqrt(Float)
+
+	RET
 }
 
 func main() Int
 {
 	.locals 1
-	.local 0 Ref.Struct.Point
-
-	PUSHNULL
-	STLOC 0
-
+	
 	NEWOBJ Ref.Struct.Point
 	STLOC 0
 
 	LDLOC 0
-	LDFIELD Point::x
+	PUSHFLOAT 1.23
+	STFIELD Point::x
 
+	LDLOC 0
+	PUSHFLOAT 2.23
+	STFIELD Point::y
+
+	LDLOC 0
+	CALL Point::length(Ref.Struct.Point)
+	CALL println(Float)
+
+	PUSHINT 0
 	RET
 }

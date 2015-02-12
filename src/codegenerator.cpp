@@ -702,7 +702,9 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             Amd64Backend::callInReg(generatedCode, Registers::DI); //call rdi
 
             //Call the newArray runtime function
+            Amd64Backend::pushReg(generatedCode, Registers::BP);
             generateCall(generatedCode, (long)&Runtime::newArray);
+            Amd64Backend::popReg(generatedCode, Registers::BP);
 
             //Push the returned pointer
             Amd64Backend::pushReg(generatedCode, Registers::AX);
@@ -874,7 +876,9 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             Amd64Backend::moveIntToReg(generatedCode, Registers::SI, inst.StrValue.length()); //mov rsi, <string length>
 
             //Call the newString runtime function
+            Amd64Backend::pushReg(generatedCode, Registers::BP);
             generateCall(generatedCode, (long)&Runtime::newString);
+            Amd64Backend::popReg(generatedCode, Registers::BP);
 
             //Push the returned pointer
             Amd64Backend::pushReg(generatedCode, Registers::AX);
