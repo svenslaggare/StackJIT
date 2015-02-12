@@ -2,8 +2,8 @@ StackJIT
 ========
 
 A simple JIT compiler for a stack-based VM.
-<br>
-The JIT part is based on a blog entry by [Josh Haberman](http://blog.reverberate.org/2012/12/hello-jit-world-joy-of-simple-jits.html).
+
+#Documentation#
 
 ###Branches###
 Only branches within the current function is supported.
@@ -111,7 +111,7 @@ A string is of type `Ref.Array[Char]` and is a char array, this may change in th
 * `CMPGT`: Pops two operands, if the first operand is greater than the second pushes _true_ else _false_.
 * `CMPGE`: Pops two operands, if the first operand is greater than or equal to the second pushes _true_ else _false_.
 * `CMPLT`: Pops two operands, if the first operand is less than the second pushes _true_ else _false_.
-* `CMPLE>`: Pops two operands, if the first operand is less than or equal to the second pushes _true_ else _false_.
+* `CMPLE`: Pops two operands, if the first operand is less than or equal to the second pushes _true_ else _false_.
 
 ###Reference types###
 * `PUSHNULL`: Pushes a null reference unto the operand stack.

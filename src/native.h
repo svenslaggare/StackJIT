@@ -1,11 +1,8 @@
 #pragma once
-#include <map>
-#include <string>
-
 class VMState;
 
-//Represents the standard library
-namespace StandardLibrary {
+//Represents the native library
+namespace NativeLibrary {
 	//Prints the given integer
 	void print(int x);
 
@@ -21,6 +18,6 @@ namespace StandardLibrary {
 	//Computes the absolute value
 	int abs(int x);
 
-	//Adds the standard library to the given VM state
+	//Adds the native library to the given VM state
 	void add(VMState& vmState);
 }

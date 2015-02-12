@@ -7,7 +7,6 @@
 #include "binder.h"
 #include "function.h"
 
-#include <sys/mman.h>
 #include <string.h>
 #include <iostream>
 #include <fstream>
@@ -138,15 +137,7 @@ JitFunction JITCompiler::generateFunction(Function* function) {
     }
 
     //Allocate writable and readable memory
-    void *mem = mmap(
-        nullptr,
-        length,
-        PROT_WRITE | PROT_READ,
-        MAP_ANON | MAP_PRIVATE,
-        -1,
-        0);
-
-    assert(mem != MAP_FAILED);
+    void *mem = mCompiler.allocateMemory(length);
 
     //Copy the instructions
     memcpy(mem, code, length);
@@ -191,10 +182,8 @@ void JITCompiler::makeExecutable() {
 
         if (funcData.unresolvedCalls.size() == 0) {
 	        void* mem = (void*)mVMState.binder().getFunction(signature).entryPoint();
-	        int length = funcData.function.generatedCode.size();
-
-	        int success = mprotect(mem, length, PROT_EXEC | PROT_READ);
-	        assert(success == 0);
+	        std::size_t size = funcData.function.generatedCode.size();
+            mCompiler.makeExecutableMemory(mem, size);
 	    } else {
 	    	throw std::runtime_error("The function '" + signature + "' has unresolved calls.");
 	    }

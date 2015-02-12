@@ -1,6 +1,7 @@
 #pragma once
+#include "linux.h"
+
 #include <unordered_map>
-#include <map>
 #include <vector>
 #include <deque>
 #include <functional>
@@ -68,6 +69,7 @@ struct FunctionCompilationData {
 class JITCompiler {
 private:
 	VMState& mVMState;
+	LinuxCompiler mCompiler;
 	std::unordered_map<std::string, FunctionCompilationData> mFunctions;
 
 	//Resolves branches for the given function

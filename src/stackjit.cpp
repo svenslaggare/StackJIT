@@ -5,7 +5,7 @@
 
 #include "assembly.h"
 #include "parser.h"
-#include "standardlibrary.h"
+#include "native.h"
 #include "vmstate.h"
 #include "executionengine.h"
 
@@ -15,7 +15,7 @@ VMState vmState;
 int main(int argc, char* argv[]) {
     std::vector<Assembly> libraries;
     auto& engine = vmState.engine();
-    StandardLibrary::add(vmState);
+    NativeLibrary::add(vmState);
 
     //Options
     for (int i = 1; i < argc; i++) {
