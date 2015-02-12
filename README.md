@@ -12,9 +12,10 @@ Only branches within the current function is supported.
 The VM supports the following types:
 
 __Primitive types__
-* Int: 32 bit integers.
+* Int: 32 bit integer.
 * Float: 32 bits floating point.
 * Bool: True or false.
+* Char: 8 bits integer.
 * Void: Only allowed in return type which indicates no return value.
 
 __Reference types__
@@ -59,6 +60,9 @@ struct <name>
 
 ###Null ref###
 Dereferencing a null reference will result in a null reference error. Both array and object instructions can result in a null reference error.
+
+###String###
+A string is of type `Ref.Array[Char]` and is a char array, this may change in the future. The syntax for declaring a string is `"string value"`.
 
 ##Instruction set##
 ###Basic###
@@ -123,6 +127,10 @@ Dereferencing a null reference will result in a null reference error. Both array
 * `NEWOBJ <type>` Creates a new object of the given type and pushes the reference to the stack.
 * `LDFIELD <field>` Pops a struct ref from the stack and loads a value from the given field pushing unto the stack.
 * `STFIELD <field>` Pops a struct ref from the stack, a value and stores the value at the given field.
+
+###String###
+* `LDSTR <string>` Creates a new string and pushes the reference to the string to the evaluation stack.
+* `PUSHCHAR <char value>` Pushes a char to the evaluation stack.
 
 ##Platforms##
 Supports Linux x64.

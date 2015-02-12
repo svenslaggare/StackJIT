@@ -9,6 +9,38 @@ extern std.println :: println(Float) Void
 #Prints the given character
 extern std.printchar :: printchar(Char) Void
 
+#Prints the given string followed by a new line
+func std.println(Ref.Array[Char]) Void
+{
+	.locals 1
+	.local 0 Int
+	
+	PUSHINT 0
+	STLOC 0
+
+	LDLOC 0
+	LDARG 0
+	LDLEN
+	BGE 15
+
+	LDARG 0
+	LDLOC 0
+	LDELEM Char
+	CALL printchar(Char)
+
+	LDLOC 0
+	PUSHINT 1
+	ADD
+	STLOC 0
+
+	BR 2
+	
+	PUSHCHAR 10
+	CALL printchar(Char)
+
+	RET
+}
+
 #Invokes the garbage collector
 func std.gc.collect() Void
 {

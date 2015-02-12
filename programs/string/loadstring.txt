@@ -1,6 +1,7 @@
 func println(Ref.Array[Char]) Void
 {
 	.locals 1
+	.local 0 Int
 	
 	PUSHINT 0
 	STLOC 0
@@ -30,7 +31,7 @@ func println(Ref.Array[Char]) Void
 
 func main() Int
 {
-	ldstr "Hello, World!"
+	LDSTR "Hello, World!"
 	CALL println(Ref.Array[Char])
 
 	PUSHINT 0
