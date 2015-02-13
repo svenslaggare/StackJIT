@@ -166,6 +166,7 @@ public:
         TS_ASSERT_EQUALS(invokeVM("struct/program3"), "0\n");
 
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_program1")), "  what():  1: 'Point' is not a defined type.\n");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_program2")), "  what():  2: 'Point' is not a struct type.\n");
     }
 
     void testGC() {

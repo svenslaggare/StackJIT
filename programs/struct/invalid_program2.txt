@@ -1,0 +1,11 @@
+func main() Int
+{
+	.locals 1
+	
+	PUSHNULL
+	LDFIELD Point::x
+	STLOC 0
+
+	PUSHINT 0
+	RET
+}
