@@ -61,8 +61,8 @@ struct <name>
 ###Null ref###
 Dereferencing a null reference will result in a null reference error. Both array and object instructions can result in a null reference error.
 
-###String###
-A string is of type `Ref.Array[Char]` and is a char array, this may change in the future. The syntax for declaring a string is `"string value"`.
+###Strings###
+A string is of type `Ref.Array[Char]`, this may change in the future. The syntax for declaring a string is `"string value"`.
 
 ##Instruction set##
 ###Basic###
