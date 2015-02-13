@@ -1,0 +1,16 @@
+struct Point
+{
+	x Int
+	y Int
+}
+
+func main() Int
+{
+	.locals 1
+	
+	NEWOBJ Point
+	STLOC 0
+
+	PUSHINT 0
+	RET
+}

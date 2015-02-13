@@ -534,6 +534,10 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
             {
                 auto structType = vmState.findType(inst.StrValue);
 
+                if (structType == nullptr) {
+                    typeError(index, "'" + inst.StrValue + "' is not a defined type.");
+                }
+
                 if (!TypeSystem::isReferenceType(structType)) {
                     typeError(index, "'" + structType->name() + "' is not a struct type.");
                 }
