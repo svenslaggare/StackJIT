@@ -80,6 +80,13 @@ public:
         TS_ASSERT_EQUALS(invokeVM("calling/arg4"), "14\n");
         TS_ASSERT_EQUALS(invokeVM("calling/arg5"), "20\n");
         TS_ASSERT_EQUALS(invokeVM("calling/arg6"), "27\n");
+
+        TS_ASSERT_EQUALS(invokeVM("calling/arg1_float"), "4\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("calling/arg2_float"), "9\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("calling/arg3_float"), "12\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("calling/arg4_float"), "14\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("calling/arg5_float"), "20\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("calling/arg6_float"), "27\n0\n");
     }
 
     void testComparison() {

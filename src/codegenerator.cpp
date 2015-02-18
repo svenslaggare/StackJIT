@@ -65,6 +65,11 @@ void generateGCCall(CodeGen& generatedCode, Function& function, int instIndex, b
     }
 }
 
+CodeGenerator::CodeGenerator(const CallingConvention& callingConvention) 
+    : mCallingConvention(callingConvention) {
+
+}
+
 void CodeGenerator::initalizeFunction(FunctionCompilationData& functionData) {
     auto& function = functionData.function;
 
@@ -122,57 +127,7 @@ void CodeGenerator::zeroLocals(FunctionCompilationData& functionData) {
 }
 
 void CodeGenerator::moveArgsToStack(FunctionCompilationData& functionData) {
-    auto& function = functionData.function;
-
-    if (function.numArgs() > 0) {
-        if (function.numArgs() >= 6) {
-            if (TypeSystem::isPrimitiveType(function.arguments()[5], PrimitiveTypes::Float)) {
-                Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -6 * Amd64Backend::REG_SIZE, FloatRegisters::XMM5); //movss [rbp-6*REG_SIZE], xmm5
-            } else {
-                Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -6 * Amd64Backend::REG_SIZE, NumberedRegisters::R9); //mov [rbp-6*REG_SIZE], r9
-            }
-        }
-
-        if (function.numArgs() >= 5) {
-            if (TypeSystem::isPrimitiveType(function.arguments()[4], PrimitiveTypes::Float)) {
-                Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -5 * Amd64Backend::REG_SIZE, FloatRegisters::XMM4); //movss [rbp-5*REG_SIZE], xmm4
-            } else {
-                Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -5 * Amd64Backend::REG_SIZE, NumberedRegisters::R8); //mov [rbp-5*REG_SIZE], r8
-            }
-        }
-
-        if (function.numArgs() >= 4) {
-            if (TypeSystem::isPrimitiveType(function.arguments()[3], PrimitiveTypes::Float)) {
-                Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -4 * Amd64Backend::REG_SIZE, FloatRegisters::XMM3); //movss [rbp-4*REG_SIZE], xmm3
-            } else {
-                Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -4 * Amd64Backend::REG_SIZE, Registers::CX); //mov [rbp-4*REG_SIZE], rcx
-            }
-        }
-
-        if (function.numArgs() >= 3) {
-            if (TypeSystem::isPrimitiveType(function.arguments()[2], PrimitiveTypes::Float)) {
-                Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -3 * Amd64Backend::REG_SIZE, FloatRegisters::XMM2); //movss [rbp-3*REG_SIZE], xmm2
-            } else {
-                Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -3 * Amd64Backend::REG_SIZE, Registers::DX); //mov [rbp-3*REG_SIZE], rdx
-            }
-        }
-
-        if (function.numArgs() >= 2) {
-            if (TypeSystem::isPrimitiveType(function.arguments()[1], PrimitiveTypes::Float)) {
-                Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -2 * Amd64Backend::REG_SIZE, FloatRegisters::XMM1); //movss [rbp-2*REG_SIZE], xmm1
-            } else {
-                Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -2 * Amd64Backend::REG_SIZE , Registers::SI); //mov [rbp-2*REG_SIZE], rsi
-            }
-        }
-
-        if (function.numArgs() >= 1) {
-            if (TypeSystem::isPrimitiveType(function.arguments()[0], PrimitiveTypes::Float)) {
-                Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -Amd64Backend::REG_SIZE, FloatRegisters::XMM0); //movss [rbp-REG_SIZE], xmm0
-            } else {
-                Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -Amd64Backend::REG_SIZE, Registers::DI); //mov [rbp-REG_SIZE], rdi
-            }
-        }
-    }
+    mCallingConvention.moveArgsToStack(functionData);
 }
 
 void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, const VMState& vmState, const Instruction& inst, int instIndex) {
@@ -461,59 +416,9 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             //Set the function arguments
             auto opTypes = function.preInstructionOperandTypes[instIndex];
 
-            if (numArgs >= 6) {
-                auto argType = opTypes.at(numArgs - 6);
-                if (argType->name() == "Float") {    
-                    Amd64Backend::popReg(generatedCode, FloatRegisters::XMM5);             
-                } else {
-                    Amd64Backend::popReg(generatedCode, NumberedRegisters::R9); //pop r9
-                }
-            }
-
-            if (numArgs >= 5) {
-                auto argType = opTypes.at(numArgs - 5);
-                if (argType->name() == "Float") {    
-                    Amd64Backend::popReg(generatedCode, FloatRegisters::XMM4);             
-                } else {
-                    Amd64Backend::popReg(generatedCode, NumberedRegisters::R8); //pop r8
-                }
-            }
-
-            if (numArgs >= 4) {
-                auto argType = opTypes.at(numArgs - 4);
-                if (argType->name() == "Float") {    
-                    Amd64Backend::popReg(generatedCode, FloatRegisters::XMM3);             
-                } else {
-                    Amd64Backend::popReg(generatedCode, Registers::CX); //pop rcx
-                }
-            }
-
-            if (numArgs >= 3) {
-                auto argType = opTypes.at(numArgs - 3);
-                if (argType->name() == "Float") {   
-                    Amd64Backend::popReg(generatedCode, FloatRegisters::XMM2);            
-                } else {
-                    Amd64Backend::popReg(generatedCode, Registers::DX); //pop rdx
-                }
-            }
-
-            if (numArgs >= 2) {
-                auto argType = opTypes.at(numArgs - 2);
-                if (argType->name() == "Float") { 
-                    Amd64Backend::popReg(generatedCode, FloatRegisters::XMM1);                 
-                } else {
-                    Amd64Backend::popReg(generatedCode, Registers::SI); //pop rsi
-                }
-            }
-
-            if (numArgs >= 1) {
-                auto argType = opTypes.at(numArgs - 1);
-                if (argType->name() == "Float") {
-                    Amd64Backend::popReg(generatedCode, FloatRegisters::XMM0);
-                } else {
-                    Amd64Backend::popReg(generatedCode, Registers::DI); //pop rdi
-                }
-            }
+            mCallingConvention.callFunctionArguments(functionData, funcToCall, [&](int arg) {
+                return opTypes.at(numArgs - 1 - arg);
+            });
 
             //Check if the function entry point is defined yet
             if (funcToCall.entryPoint() != 0) {
@@ -530,13 +435,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             generateCall(generatedCode, funcAddr);
 
             //Push the result
-            if (funcToCall.returnType()->name() != "Void") {
-                if (funcToCall.returnType()->name() == "Float") {
-                    Amd64Backend::pushReg(generatedCode, FloatRegisters::XMM0);
-                } else {
-                    Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
-                }
-            }
+            mCallingConvention.returnValue(functionData, funcToCall);
 
             //Call the popFunc runtime function
             //Amd64Backend::pushReg(generatedCode, Registers::BP);

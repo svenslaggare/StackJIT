@@ -1,0 +1,23 @@
+func add4(Float Float Float Float) Float
+{
+	LDARG 0
+	LDARG 1
+	ADD
+	LDARG 2
+	ADD
+	LDARG 3
+	ADD
+	RET
+}
+
+func main() Int
+{
+	PUSHFLOAT 2
+	PUSHFLOAT 3
+	PUSHFLOAT 4
+	PUSHFLOAT 5
+	CALL add4(Float Float Float Float)
+	CALL println(Float)
+	PUSHINT 0
+	RET
+}

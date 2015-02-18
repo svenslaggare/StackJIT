@@ -46,7 +46,7 @@ FunctionCompilationData::FunctionCompilationData(Function& function)
 }
 
 JITCompiler::JITCompiler(VMState& vmState)
-	: mVMState(vmState) {
+	: mVMState(vmState), mCodeGen(mCallingConvention) {
 
 }
 
@@ -84,18 +84,18 @@ JitFunction JITCompiler::generateFunction(Function* function) {
     functionData.operandStackSize = function->operandStackSize();
     
     //Initialize the function
-    CodeGenerator::initalizeFunction(functionData);
+    mCodeGen.initalizeFunction(functionData);
 
     //Move function arguments from registers to the stack
-    CodeGenerator::moveArgsToStack(functionData);
+    mCodeGen.moveArgsToStack(functionData);
 
     //Zero the locals
-    CodeGenerator::zeroLocals(functionData);
+    mCodeGen.zeroLocals(functionData);
 
     //Generate the native instructions for the program
     int i = 0;
     for (auto current : function->instructions) {
-        CodeGenerator::generateInstruction(functionData, mVMState, current, i);
+        mCodeGen.generateInstruction(functionData, mVMState, current, i);
         i++;
     }
 

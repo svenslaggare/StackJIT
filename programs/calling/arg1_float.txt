@@ -1,0 +1,14 @@
+func add1(Float) Float
+{
+	LDARG 0
+	RET
+}
+
+func main() Int
+{
+	PUSHFLOAT 4
+	CALL add1(Float)
+	CALL println(Float)
+	PUSHINT 0
+	RET
+}

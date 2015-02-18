@@ -1,5 +1,7 @@
 #pragma once
 #include "linux.h"
+#include "callingconventions.h"
+#include "codegenerator.h"
 
 #include <unordered_map>
 #include <vector>
@@ -70,6 +72,8 @@ class JITCompiler {
 private:
 	VMState& mVMState;
 	LinuxCompiler mCompiler;
+	LinuxCallingConvention mCallingConvention;
+	CodeGenerator mCodeGen;
 	std::unordered_map<std::string, FunctionCompilationData> mFunctions;
 
 	//Resolves branches for the given function

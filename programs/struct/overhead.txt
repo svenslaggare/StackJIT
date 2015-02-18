@@ -1,0 +1,44 @@
+struct Point
+{
+   y Float
+   x Float
+}
+
+func Point::distance(Ref.Struct.Point Ref.Struct.Point) Float
+{
+   .locals 3
+   .local 1 Float
+   .local 2 Float
+   .local 0 Float
+
+   LDARG 0
+   LDFIELD Point::x
+   LDARG 1
+   LDFIELD Point::x
+   SUB
+   STLOC 1
+   LDARG 0
+   LDFIELD Point::y
+   LDARG 1
+   LDFIELD Point::y
+   SUB
+   STLOC 2
+   LDLOC 1
+   LDLOC 1
+   MUL
+   LDLOC 2
+   LDLOC 2
+   MUL
+   ADD
+   CALL sqrt(Float)
+   STLOC 0
+   BR 22
+   LDLOC 0
+   RET
+}
+
+func main() Int
+{
+   PUSHINT 0
+   RET
+}
