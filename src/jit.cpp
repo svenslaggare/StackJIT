@@ -86,12 +86,6 @@ JitFunction JITCompiler::generateFunction(Function* function) {
     //Initialize the function
     mCodeGen.initalizeFunction(functionData);
 
-    //Move function arguments from registers to the stack
-    mCodeGen.moveArgsToStack(functionData);
-
-    //Zero the locals
-    mCodeGen.zeroLocals(functionData);
-
     //Generate the native instructions for the program
     int i = 0;
     for (auto current : function->instructions) {

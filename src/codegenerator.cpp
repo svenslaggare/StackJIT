@@ -91,6 +91,9 @@ void CodeGenerator::initalizeFunction(FunctionCompilationData& functionData) {
             Amd64Backend::subIntFromReg(function.generatedCode, Registers::SP, stackSize); //sub rsp, <size of stack>
         }
     }
+
+    mCallingConvention.moveArgsToStack(functionData);
+    zeroLocals(functionData);
 }
 
 void CodeGenerator::zeroLocals(FunctionCompilationData& functionData) {
@@ -124,10 +127,6 @@ void CodeGenerator::zeroLocals(FunctionCompilationData& functionData) {
         //Clear the dir flag
         function.generatedCode.push_back(0xFC); //cld
     }
-}
-
-void CodeGenerator::moveArgsToStack(FunctionCompilationData& functionData) {
-    mCallingConvention.moveArgsToStack(functionData);
 }
 
 void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, const VMState& vmState, const Instruction& inst, int instIndex) {
