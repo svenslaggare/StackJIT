@@ -1,0 +1,44 @@
+struct Point
+{
+   y Float
+   x Float
+}
+
+member Point::addX(Ref.Struct.Point) Float
+{
+   LDARG 0
+   LDFIELD Point::x
+
+   LDARG 1
+   LDFIELD Point::x
+
+   ADD
+
+   RET
+}
+
+func main() Int
+{
+   .locals 2
+   NEWOBJ Ref.Struct.Point
+   STLOC 0
+
+   NEWOBJ Ref.Struct.Point
+   STLOC 1
+
+   LDLOC 0
+   PUSHFLOAT 2
+   STFIELD Point::x
+
+   LDLOC 1
+   PUSHFLOAT 3
+   STFIELD Point::x
+
+   LDLOC 0
+   LDLOC 1
+   CALLINST Point::addX(Ref.Struct.Point)
+   CALL println(Float)
+
+   PUSHINT 0
+   RET
+}

@@ -41,9 +41,19 @@ func <name>(<arg type 1> <arg type 2> ...) <return type>
 ```
 When a function returns, there must be only _one_ (zero if void) operand on the evalutation stack.
 
-####Main function####
+__Main function__
+
 The main function _must_ and have the following signature: `main() Int` and _must_ be defined.
 The returned value from the main function will be the output for the program.
+
+###Member functions###
+A member function works like a normal function except that fist argument (arg 0) is bound to the "this reference". The signature for a member function is: `<struct name>::<name>(<type 1> <type 2> ...)`. A member function is defined as:
+```
+func <struct name>::<name>(<arg type 1> <arg type 2> ...) <return type>
+{
+    <function body>
+}
+```
 
 ###Arrays###
 The VM supports arrays of both primitive types and other reference types. When the arrays is created the elements are default initialized to zero for primitive types and null for reference types.
@@ -93,6 +103,7 @@ A string is of type `Ref.Array[Char]`, this may change in the future. The syntax
 
 ###Functions###
 * `CALL <signature>`: Calls the given function. The arguments are popped from the evaluation stack.
+* `CALLINST <signature>`: Calls the given member function. The arguments are popped from the evaluation stack.
 * `RET`: Returns from the current function, popping the return value from the evalutation stack.
 * `LDARG <arg>`: Loads the given function argument and pushes it to the evaluation stack.
 
