@@ -2,13 +2,13 @@
 #include <stack>
 #include <string>
 
-struct FunctionCompilationData;
 class Function;
 class VMState;
 class Type;
 
 typedef std::stack<const Type*> InstructionTypes;
 
+//The type checker
 namespace TypeChecker {
 	//Pops a type from the given stack
 	const Type* popType(InstructionTypes& stack);

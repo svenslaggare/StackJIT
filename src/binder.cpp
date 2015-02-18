@@ -1,5 +1,6 @@
 #include "binder.h"
 #include "typechecker.h"
+#include "type.h"
 
 const std::unordered_map<std::string, FunctionDefinition>& Binder::functionTable() const {
 	return mFunctionTable;
@@ -20,6 +21,12 @@ std::string Binder::functionSignature(std::string name, const std::vector<const 
     }
 
     return name + "(" + argsStr + ")";
+}
+
+std::string Binder::memberFunctionSignature(const StructType* structType, std::string name, const std::vector<const Type*>& parameters) const {
+	auto params = parameters;
+	params.insert(params.begin(), structType);
+	return functionSignature(structType->structName() + "::" + name, params);
 }
 
 std::string Binder::functionSignature(const FunctionDefinition& funcDef) const {

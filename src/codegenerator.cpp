@@ -395,9 +395,16 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         }
         break;
     case OpCodes::CALL:
+    case OpCodes::CALL_INSTANCE:
         {   
             //Check if defined
-            auto calledSignature = vmState.binder().functionSignature(inst.StrValue, inst.Parameters);
+            std::string calledSignature = "";
+
+            if (inst.OpCode == OpCodes::CALL_INSTANCE) {
+                calledSignature = vmState.binder().memberFunctionSignature(inst.CalledStructType, inst.StrValue, inst.Parameters);
+            } else {
+                calledSignature = vmState.binder().functionSignature(inst.StrValue, inst.Parameters);
+            }
 
             //Call the pushFunc runtime function
             //Amd64Backend::pushReg(generatedCode, Registers::BP);

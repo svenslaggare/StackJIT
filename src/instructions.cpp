@@ -41,3 +41,12 @@ Instruction Instructions::makeCall(std::string funcName, std::vector<const Type*
     inst.OpCode = OpCodes::CALL;
     return inst;
 }
+
+Instruction Instructions::makeCallInstance(const StructType* structType, std::string funcName, std::vector<const Type*> parameters) {
+    Instruction inst;
+    inst.CalledStructType = structType;
+    inst.StrValue = funcName;
+    inst.Parameters = parameters;
+    inst.OpCode = OpCodes::CALL_INSTANCE;
+    return inst;
+}

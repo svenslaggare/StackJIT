@@ -312,14 +312,28 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
             }
             break;
         case OpCodes::CALL:
+        case OpCodes::CALL_INSTANCE:
             {
-                auto signature = vmState.binder().functionSignature(inst.StrValue, inst.Parameters);
+                bool isInstance = inst.OpCode == OpCodes::CALL_INSTANCE;
+
+                std::string signature = "";
+
+                if (!isInstance) {
+                    signature = vmState.binder().functionSignature(inst.StrValue, inst.Parameters);
+                } else {
+                    signature = vmState.binder().memberFunctionSignature(inst.CalledStructType, inst.StrValue, inst.Parameters);
+                }
 
                 if (!vmState.binder().isDefined(signature)) {
                     typeError(index, "The function '" + signature + "' is not defined.");
                 }
 
                 auto calledFunc = vmState.binder().getFunction(signature);
+
+                if (!isInstance && calledFunc.isMemberFunction()) {
+                    typeError(index, "Member functions must be called with the 'CALLINST' instruction.");
+                }
+
                 int calledFuncNumArgs = calledFunc.arguments().size();
                 assertOperandCount(index, operandStack, calledFuncNumArgs);
 

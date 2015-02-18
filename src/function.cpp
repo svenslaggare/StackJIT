@@ -3,8 +3,8 @@
 #include <stdexcept>
 #include <sys/mman.h>
 
-Function::Function(std::string name, std::vector<const Type*> arguments, const Type* returnType)
-	: mName(name), mArguments(arguments), mReturnType(returnType), mStackSize(0), mOperandStackSize(0) {
+Function::Function(std::string name, std::vector<const Type*> arguments, const Type* returnType, bool isMemberFunction)
+	: mName(name), mArguments(arguments), mReturnType(returnType), mStackSize(0), mOperandStackSize(0), mIsMemberFunction(isMemberFunction) {
 
 }
 
@@ -22,6 +22,10 @@ int Function::numArgs() const {
 
 const Type* Function::returnType() const {
 	return mReturnType;
+}
+
+bool Function::isMemberFunction() const {
+    return mIsMemberFunction;
 }
 
 int Function::numLocals() const {
@@ -56,30 +60,35 @@ void Function::setOperandStackSize(std::size_t size) {
     mOperandStackSize = size;
 }
 
-FunctionDefinition::FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, long entryPoint, int funcSize)
-    : mName(name), mArguments(parameters), mReturnType(returnType), mEntryPoint(entryPoint), mFunctionSize(funcSize), mIsManaged(true) {
+FunctionDefinition::FunctionDefinition(
+    std::string name,
+    std::vector<const Type*> parameters,
+    const Type* returnType,
+    long entryPoint, 
+    int funcSize,
+    bool isMemberFunction)
+    : mName(name),
+      mArguments(parameters),
+      mReturnType(returnType),
+      mEntryPoint(entryPoint),
+      mFunctionSize(funcSize),
+      mIsManaged(true),
+      mIsMemberFunction(isMemberFunction) {
 
 }
 
 FunctionDefinition::FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, long entryPoint)
-    : mName(name), mArguments(parameters), mReturnType(returnType), mEntryPoint(entryPoint), mFunctionSize(0), mIsManaged(false) {
+    : mName(name), mArguments(parameters), mReturnType(returnType), mEntryPoint(entryPoint), mFunctionSize(0), mIsManaged(false), mIsMemberFunction(false) {
 
 }
 
 FunctionDefinition::FunctionDefinition()
-    : mName(""), mEntryPoint(0), mFunctionSize(0), mIsManaged(false), mReturnType(nullptr) {
+    : mName(""), mEntryPoint(0), mFunctionSize(0), mIsManaged(false), mReturnType(nullptr), mIsMemberFunction(false) {
 
 }
 
 std::string FunctionDefinition::name() const {
     return mName;
-}
-
-void FunctionDefinition::setFunctionBody(long entryPoint, int functionSize) {
-    if (mIsManaged) {
-        mEntryPoint = entryPoint;
-        mFunctionSize = functionSize;
-    }
 }
 
 const Type* FunctionDefinition::returnType() const {
@@ -90,8 +99,19 @@ const std::vector<const Type*>& FunctionDefinition::arguments() const {
     return mArguments;
 }
 
+bool FunctionDefinition::isMemberFunction() const {
+    return mIsMemberFunction;
+}
+
 bool FunctionDefinition::isManaged() const {
     return mIsManaged;
+}
+
+void FunctionDefinition::setFunctionBody(long entryPoint, int functionSize) {
+    if (mIsManaged) {
+        mEntryPoint = entryPoint;
+        mFunctionSize = functionSize;
+    }
 }
 
 long FunctionDefinition::entryPoint() const {

@@ -198,7 +198,6 @@ void parseFunctionDef(const std::vector<std::string>& tokens, int& tokenIndex, V
 void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmState, Assembly& assembly) {
     bool isFunc = false;
     bool isFuncBody = false;
-    bool isFuncDef = false;
     bool localsSet = false;
 
     Function* currentFunc = nullptr;
@@ -207,8 +206,6 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
     bool isStructBody = false;
     std::string structName;
     std::map<std::string, const Type*> structFields;
-
-    bool isExternFunc = false;
 
     for (int i = 0; i < tokens.size(); i++) {
         std::string current = tokens[i];
@@ -298,8 +295,29 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                 continue;
             }
 
-            if (currentToLower == "call") {
+            if (currentToLower == "call" || currentToLower == "callinst") {
+                bool isInstance = currentToLower == "callinst";
+
                 std::string funcName = nextToken(tokens, i);
+                const StructType* structType = nullptr;
+
+                if (isInstance) {
+                    auto structNamePos = funcName.find("::");
+
+                    if (structNamePos != std::string::npos) {
+                        auto structName = funcName.substr(0, structNamePos);
+
+                        if (!vmState.structProvider().isDefined(structName)) {
+                            throw std::runtime_error("'" + structName + "' is not a defined struct.");
+                        }
+
+                        structType = dynamic_cast<const StructType*>(vmState.findType("Ref.Struct." + structName));
+                    } else {
+                        throw std::runtime_error("Expected '::' in called member function.");
+                    }
+
+                    funcName = funcName.substr(structNamePos + 2);
+                }
 
                 if (nextToken(tokens, i) != "(") {
                     throw std::runtime_error("Expected '(' after called function.");
@@ -323,7 +341,11 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                     parameters.push_back(paramType);
                 }
 
-                currentFunc->instructions.push_back(Instructions::makeCall(funcName, parameters));
+                if (isInstance) {
+                    currentFunc->instructions.push_back(Instructions::makeCallInstance(structType, funcName, parameters));
+                } else {
+                    currentFunc->instructions.push_back(Instructions::makeCall(funcName, parameters));
+                }
                 continue;
             }
 
@@ -377,6 +399,10 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
             structFields.insert({ fieldName, fieldType });
         }
 
+        bool isFuncDef = false;
+        bool isExternFunc = false;
+        bool isMemberDef = false;
+
         if (!isFunc && !isStruct && !isExternFunc) {
             if (currentToLower == "func") {
                 isFuncDef = true;
@@ -386,6 +412,8 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                 isStruct = true;
             } else if (currentToLower == "extern") {
                 isExternFunc = true;
+            } else if (currentToLower == "member") {
+                isMemberDef = true;
             } else {
                 throw std::runtime_error("Invalid identifier '" + current + "'");
             }
@@ -406,10 +434,14 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
             const Type* returnType = nullptr;
             parseFunctionDef(tokens, i, vmState, funcName, parameters, returnType);            
 
+            if (funcName.find("::") != std::string::npos) {
+                throw std::runtime_error("'::' is only allowed in member functions.");
+            }
+
             int numArgs = parameters.size();
             auto signature = vmState.binder().functionSignature(funcName, parameters);
 
-            if (numArgs >= 0 && numArgs <= 6) {
+            if (numArgs >= 0 && numArgs <= MAXIMUM_NUMBER_OF_ARGUMENTS) {
                 if (assembly.functions.count(signature) == 0 && !vmState.binder().isDefined(signature)) {
                     //Create a new function        
                     Function* newFunc = new Function(funcName, parameters, returnType);
@@ -419,10 +451,9 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                     throw std::runtime_error("The function '" + signature + "' is already defined.");
                 }
             } else {
-                throw std::runtime_error("Maximum six arguments are supported.");
+                throw std::runtime_error("Maximum " + std::to_string(MAXIMUM_NUMBER_OF_ARGUMENTS) + " arguments are supported.");
             }
 
-            isFuncDef = false;
             localsSet = false;
         }
 
@@ -454,8 +485,51 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
             } else {
                 throw std::runtime_error("The function '" + signature + "' is already defined.");
             }
+        }
 
-            isExternFunc = false;
+        //Parse the member function
+        if (isMemberDef) {
+            std::string funcName;
+            std::vector<const Type*> parameters;
+            const Type* returnType = nullptr;
+            parseFunctionDef(tokens, i, vmState, funcName, parameters, returnType);            
+
+            //Get the struct name
+            auto structNamePos = funcName.find("::");
+
+            if (structNamePos == std::string::npos) {
+                throw std::runtime_error("Expected '::' in member function name.");
+            }
+
+            auto structTypeName = funcName.substr(0, structNamePos);
+
+            if (!vmState.structProvider().isDefined(structTypeName)) {
+                throw std::runtime_error("'" + structTypeName + "' is not defined struct type.");
+            }
+
+            auto structType = vmState.findType("Ref.Struct." + structTypeName);
+
+            //Add the implicit this reference
+            parameters.push_back(structType);
+
+            int numArgs = parameters.size();
+            auto signature = vmState.binder().functionSignature(funcName, parameters);
+
+            if (numArgs >= 0 && numArgs <= MAXIMUM_NUMBER_OF_ARGUMENTS) {
+                if (assembly.functions.count(signature) == 0 && !vmState.binder().isDefined(signature)) {
+                    //Create a new function        
+                    Function* newFunc = new Function(funcName, parameters, returnType, true);
+                    assembly.functions[signature] = newFunc;
+                    currentFunc = newFunc;
+                } else {
+                    throw std::runtime_error("The function '" + signature + "' is already defined.");
+                }
+            } else {
+                throw std::runtime_error("Maximum " + std::to_string(MAXIMUM_NUMBER_OF_ARGUMENTS) + " arguments are supported.");
+            }
+
+            localsSet = false;
+            isFunc = true;
         }
 
         if (isFuncBody && currentToLower == "}") {

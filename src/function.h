@@ -16,6 +16,8 @@ private:
 
 	std::vector<const Type*> mLocalTypes;
 
+	bool mIsMemberFunction;
+
 	std::size_t mStackSize;
 	std::size_t mOperandStackSize;
 public:
@@ -25,7 +27,7 @@ public:
 	std::vector<std::deque<const Type*>> postInstructionOperandTypes;	
 
 	//Creates a new function
-	Function(std::string name, std::vector<const Type*> arguments, const Type* returnType);
+	Function(std::string name, std::vector<const Type*> arguments, const Type* returnType, bool isMemberFunction = false);
 
 	//The name of the function
 	std::string name() const;
@@ -38,6 +40,9 @@ public:
 
 	//The return type
 	const Type* returnType() const;
+
+	//Indicates if the function is a member function
+	bool isMemberFunction() const;
 
 	//The number of locals
 	int numLocals() const;
@@ -70,6 +75,7 @@ private:
 	std::string mName;
 	std::vector<const Type*> mArguments;
 	const Type* mReturnType;
+	bool mIsMemberFunction;
 
 	long mEntryPoint;
 	int mFunctionSize;
@@ -77,7 +83,7 @@ private:
 	bool mIsManaged;
 public:
 	//Creates a new managed function definition
-	FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, long entryPoint, int funcSize);
+	FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, long entryPoint, int funcSize, bool isMemberFunction = false);
 
 	//Creates a new external function definition
 	FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, long entryPoint);
@@ -93,11 +99,14 @@ public:
 	//Returns the types of the arguments
 	const std::vector<const Type*>& arguments() const;
 
-	//Sets the function body (for managed functions)
-	void setFunctionBody(long entryPoint, int functionSize);
-
 	//Indicates if the function is implemented in managed code
 	bool isManaged() const;
+
+	//Indicates if the function is a member function
+	bool isMemberFunction() const;
+
+	//Sets the function body (for managed functions)
+	void setFunctionBody(long entryPoint, int functionSize);
 
 	//The entry point
 	long entryPoint() const;

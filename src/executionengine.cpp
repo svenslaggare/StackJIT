@@ -26,7 +26,12 @@ void ExecutionEngine::loadAssembly(Assembly& assembly) {
 	//Add the functions to the func table
     for (auto currentFunc : assembly.functions) {
         auto func = currentFunc.second;
-        FunctionDefinition funcDef(func->name(), func->arguments(), func->returnType(), 0, 0);
+        FunctionDefinition funcDef(
+            func->name(),
+            func->arguments(),
+            func->returnType(),
+            0, 0, func->isMemberFunction());
+
         auto& binder = mVMState.binder();
         binder.define(funcDef);
     }

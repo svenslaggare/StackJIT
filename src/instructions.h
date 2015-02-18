@@ -29,6 +29,7 @@ enum OpCodes {
     LOAD_LOCAL,
     STORE_LOCAL, 
     CALL,
+    CALL_INSTANCE,
     RET,
     LOAD_ARG,
     BRANCH,
@@ -51,6 +52,7 @@ enum OpCodes {
 };
 
 class Type;
+class StructType;
 
 //Represents an instruction
 struct Instruction {
@@ -64,6 +66,7 @@ struct Instruction {
 
     std::string StrValue;
 
+    const StructType* CalledStructType;
     std::vector<const Type*> Parameters;
 };
 
@@ -85,4 +88,7 @@ namespace Instructions {
 
     //Creates a new call instruction
     Instruction makeCall(std::string funcName, std::vector<const Type*> parameters);
+
+    //Creates a new call instance instruction
+    Instruction makeCallInstance(const StructType* structType, std::string funcName, std::vector<const Type*> parameters);
 }

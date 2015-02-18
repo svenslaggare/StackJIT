@@ -1,0 +1,51 @@
+struct Point
+{
+   y Float
+   x Float
+}
+
+member Point::length() Float
+{
+   .locals 1
+   LDARG 0
+   STLOC 0
+
+   LDLOC 0
+   LDFIELD Point::x
+   LDLOC 0
+   LDFIELD Point::x
+   MUL
+
+   LDLOC 0
+   LDFIELD Point::y
+   LDLOC 0
+   LDFIELD Point::y
+   MUL
+
+   ADD
+   CALL sqrt(Float)
+
+   RET
+}
+
+func main() Int
+{
+   .locals 1
+   NEWOBJ Ref.Struct.Point
+   STLOC 0
+
+   LDLOC 0
+   PUSHFLOAT 2
+   STFIELD Point::x
+
+   LDLOC 0
+   PUSHFLOAT 3
+   STFIELD Point::y
+
+   LDLOC 0
+   CALLINST Point::length()
+   CALL println(Float)
+
+   PUSHINT 0
+   RET
+}
