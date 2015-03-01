@@ -4,7 +4,7 @@ struct Point
 	y Int
 }
 
-member Point::.constructor() Void
+member Point::.constructor() Int
 {
    RET
 }
@@ -16,11 +16,6 @@ func main() Int
 	NEWOBJ Point::.constructor()
 	STLOC 0
 
-	LDLOC 0
-	PUSHINT 1337
-	STFIELD Point::y
-
-	LDLOC 0
-	LDFIELD Point::y
+	PUSHINT 0
 	RET
 }

@@ -4,6 +4,7 @@ func std.gc.collect() Void
 	RET
 }
 
+
 func printLength(Ref.Array[Int]) Void
 {
    RET

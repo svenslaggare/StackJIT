@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <string>
 #include <iostream>
+#include <algorithm> 
+#include <functional> 
+#include <cctype>
+#include <locale>
 #include <cxxtest/TestSuite.h>
 
 //Executes the given command
@@ -24,9 +28,25 @@ std::string executeCmd(const char* cmd) {
 }
 
 //Invokes the VM with the given program
-std::string invokeVM(std::string programName, std::string options = "-nd -nogc") {
+std::string invokeVM(std::string programName, std::string options = "-nd --no-gc") {
 	std::string invokePath = "../StackJIT/stackjit " + options + " < programs/" + programName + ".txt 2>&1";
 	return executeCmd(invokePath.data());
+}
+
+static inline std::string &ltrim(std::string &s) {
+        s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+        return s;
+}
+
+// trim from end
+static inline std::string &rtrim(std::string &s) {
+        s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+        return s;
+}
+
+// trim from both ends
+static inline std::string &trim(std::string &s) {
+        return ltrim(rtrim(s));
 }
 
 //Strips error messages of unnecessary information
@@ -50,7 +70,7 @@ std::string stripErrorMessage(std::string errorMessage) {
         line++;
     }
 
-    return stripedString;
+    return rtrim(ltrim(stripedString));
 }
 
 class VMTestSuite : public CxxTest::TestSuite {
@@ -70,7 +90,7 @@ public:
         TS_ASSERT_EQUALS(invokeVM("basic/program12"), "0\n");
         TS_ASSERT_EQUALS(invokeVM("basic/program13"), "4711\n13.37\n1\n0\n");
 
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("basic/invalid_program1")), "  what():  1: Locals of 'Void' type are not allowed.\n");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("basic/invalid_program1")), "what():  1: Locals of 'Void' type are not allowed.");
     }
 
     void testCall() {
@@ -161,10 +181,10 @@ public:
         TS_ASSERT_EQUALS(invokeVM("array/program2"), "4\n1337\n");
         TS_ASSERT_EQUALS(invokeVM("array/program3"), "1337\n4\n0\n");
 
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program1")), "  what():  2: Array of type 'Void' is not allowed.\n");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program1")), "what():  2: Array of type 'Void' is not allowed.");
 
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/boundscheck")), "  what():  Array index is out of bounds.\n");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/boundscheck2")), "  what():  Array index is out of bounds.\n");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/boundscheck")), "what():  Array index is out of bounds.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/boundscheck2")), "what():  Array index is out of bounds.");
     }
 
     void testStruct() {
@@ -176,8 +196,13 @@ public:
         TS_ASSERT_EQUALS(invokeVM("struct/memberfunction2"), "5\n0\n");
         TS_ASSERT_EQUALS(invokeVM("struct/memberfunction3"), "2.5\n5.5\n0\n");
 
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_program1")), "  what():  1: 'Point' is not a defined type.\n");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_program2")), "  what():  2: 'Point' is not a struct type.\n");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_program1")), "what():  \'Point\' is not a defined struct.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_program2")), "what():  2: \'Point\' is not a struct type.");
+
+        TS_ASSERT_EQUALS(invokeVM("struct/constructor1"), "0\n");
+
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_constructor1")), "what():  Constructors must be of return type 'Void'.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_constructor2")), "what():  1: The constructor \'Point::.constructor(Ref.Struct.Point)\' is not defined.");
     }
 
     void testGC() {

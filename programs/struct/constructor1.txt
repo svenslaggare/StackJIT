@@ -20,13 +20,10 @@ member Point::.constructor(Float Float) Void
 func main() Int
 {
    .locals 1
-   NEWOBJ Ref.Struct.Point
-   STLOC 0
-
-   LDLOC 0
    PUSHFLOAT 2
    PUSHFLOAT 4
-   CALLINST Point::.constructor(Float Float)
+   NEWOBJ Point::.constructor(Float Float)
+   STLOC 0
 
    PUSHINT 0
    RET

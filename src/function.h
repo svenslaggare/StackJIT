@@ -17,6 +17,7 @@ private:
 	std::vector<const Type*> mLocalTypes;
 
 	bool mIsMemberFunction;
+	bool mIsConstructor;
 
 	std::size_t mStackSize;
 	std::size_t mOperandStackSize;
@@ -27,7 +28,7 @@ public:
 	std::vector<std::deque<const Type*>> postInstructionOperandTypes;	
 
 	//Creates a new function
-	Function(std::string name, std::vector<const Type*> arguments, const Type* returnType, bool isMemberFunction = false);
+	Function(std::string name, std::vector<const Type*> arguments, const Type* returnType, bool isMemberFunction = false, bool isConstructor = false);
 
 	//The name of the function
 	std::string name() const;
@@ -43,6 +44,9 @@ public:
 
 	//Indicates if the function is a member function
 	bool isMemberFunction() const;
+
+	//Indicates if the function is a constructor
+	bool isConstructor() const;
 
 	//The number of locals
 	int numLocals() const;

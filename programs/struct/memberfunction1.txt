@@ -4,6 +4,11 @@ struct Point
    x Float
 }
 
+member Point::.constructor() Void
+{
+   RET
+}
+
 member Point::length() Float
 {
    .locals 1
@@ -31,7 +36,7 @@ member Point::length() Float
 func main() Int
 {
    .locals 1
-   NEWOBJ Ref.Struct.Point
+   NEWOBJ Point::.constructor()
    STLOC 0
 
    LDLOC 0

@@ -119,6 +119,10 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
         throw std::runtime_error("The function cannot return type 'Untyped'.");
     }
 
+    if (function.isConstructor() && function.returnType() != voidType) {
+        throw std::runtime_error("Constructors must be of return type 'Void'.");
+    }
+
     int i = 0;
     for (auto arg : function.arguments()) {
         if (arg == nullptr || TypeSystem::isPrimitiveType(arg, PrimitiveTypes::Void)) {
@@ -546,23 +550,30 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
             break;
         case OpCodes::NEW_OBJECT:
             {
-                auto structType = vmState.findType(inst.StrValue);
+                bool isInstance = inst.OpCode == OpCodes::CALL_INSTANCE;
 
-                if (structType == nullptr) {
-                    typeError(index, "'" + inst.StrValue + "' is not a defined type.");
+                std::string signature = vmState.binder().memberFunctionSignature(inst.CalledStructType, inst.StrValue, inst.Parameters);
+
+                if (!vmState.binder().isDefined(signature)) {
+                    typeError(index, "The constructor '" + signature + "' is not defined.");
                 }
 
-                if (!TypeSystem::isReferenceType(structType)) {
-                    typeError(index, "'" + structType->name() + "' is not a struct type.");
+                auto calledFunc = vmState.binder().getFunction(signature);
+
+                int calledFuncNumArgs = calledFunc.arguments().size();
+                assertOperandCount(index, operandStack, calledFuncNumArgs - 1);
+
+                //Check the arguments
+                for (int i = calledFuncNumArgs - 1; i >= 1; i--) {
+                    auto argType = popType(operandStack);
+                    auto error = checkType(calledFunc.arguments()[i], argType);
+
+                    if (error != "") {
+                        typeError(index, error);
+                    }
                 }
 
-                std::string structName = dynamic_cast<const StructType*>(structType)->structName();
-
-                if (!vmState.structProvider().isDefined(structName)) {
-                    typeError(index, "'" + structName + "' is not a defined struct.");
-                }
-
-                operandStack.push(structType);
+                operandStack.push(inst.CalledStructType);
             }
             break;
         case OpCodes::LOAD_FIELD:

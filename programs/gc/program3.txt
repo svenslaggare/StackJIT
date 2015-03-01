@@ -4,10 +4,20 @@ struct Point
 	y Int
 }
 
+member Point::.constructor() Void
+{
+   RET
+}
+
 struct Pair
 {
 	first Ref.Struct.Point
 	second Int
+}
+
+member Pair::.constructor() Void
+{
+   RET
 }
 
 func main3() Int
@@ -15,11 +25,11 @@ func main3() Int
 	.locals 1
 	.local 0 Ref.Struct.Pair
 
-	NEWOBJ Ref.Struct.Pair
+	NEWOBJ Pair::.constructor()
 	STLOC 0
 
 	LDLOC 0
-	NEWOBJ Ref.Struct.Point
+	NEWOBJ Point::.constructor()
 	STFIELD Pair::first
 
 	PUSHNULL

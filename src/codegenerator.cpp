@@ -206,7 +206,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                     break;
                 case OpCodes::DIV:
                     if (intOp) {
-                        pushArray(generatedCode, { 0x99 });
+                        pushArray(generatedCode, { 0x99 }); //cdq
                         Amd64Backend::divRegFromReg(generatedCode, Registers::AX, Registers::CX, is32bits); //idiv eax, ecx
                     } else if (floatOp) {
                         pushArray(generatedCode, { 0xF3, 0x0F, 0x5E, 0xC1 }); //divss xmm0, xmm1
@@ -397,7 +397,6 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::CALL:
     case OpCodes::CALL_INSTANCE:
         {   
-            //Check if defined
             std::string calledSignature = "";
 
             if (inst.OpCode == OpCodes::CALL_INSTANCE) {
@@ -694,11 +693,11 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::NEW_OBJECT:
         {
-            auto structType = vmState.getType(inst.StrValue);
+            auto structType = inst.CalledStructType;
 
             //Call the garbageCollect runtime function
             if (!vmState.disableGC) {
-                generateGCCall(generatedCode, function, instIndex);
+                generateGCCall(generatedCode, function, instIndex, false); //TODO: Should not be false as it could destroy the base pointer.
             }
 
             //Call the newObject runtime function
@@ -706,9 +705,38 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)structType); //The pointer to the type as the first arg
             generateCall(generatedCode, (long)&Runtime::newObject);
             Amd64Backend::popReg(generatedCode, Registers::BP);
-
-            //Push the returned pointer
+     
+            //Push the reference to the created object
+            Amd64Backend::moveRegToReg(generatedCode, RegisterCallArguments::Arg0, Registers::AX);
             Amd64Backend::pushReg(generatedCode, Registers::AX);
+
+            //Call the constructor
+            std::string calledSignature = vmState.binder().memberFunctionSignature(inst.CalledStructType, inst.StrValue, inst.Parameters);
+
+            //Get the address of the function to call
+            long funcAddr = 0;
+
+            auto funcToCall = vmState.binder().getFunction(calledSignature);
+            int numArgs = funcToCall.arguments().size() - 1;
+
+            //Set the constructor arguments
+            for (int i = 0; i < numArgs; i++) {
+                mCallingConvention.callFunctionArgument(functionData, i + 1, inst.Parameters.at(i));
+            }
+
+            //Check if the function entry point is defined yet
+            if (funcToCall.entryPoint() != 0) {
+                funcAddr = funcToCall.entryPoint();
+            } else {
+                //Mark that the function call needs to be patched with the entry point later
+                functionData.unresolvedCalls.insert({
+                    UnresolvedFunctionCall(vmState.binder().functionSignature(function), generatedCode.size()),
+                    calledSignature
+                });
+            }
+
+            //Make the call
+            generateCall(generatedCode, funcAddr);
         }
         break;
     case OpCodes::GARBAGE_COLLECT:

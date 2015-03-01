@@ -3,8 +3,14 @@
 #include <stdexcept>
 #include <sys/mman.h>
 
-Function::Function(std::string name, std::vector<const Type*> arguments, const Type* returnType, bool isMemberFunction)
-	: mName(name), mArguments(arguments), mReturnType(returnType), mStackSize(0), mOperandStackSize(0), mIsMemberFunction(isMemberFunction) {
+Function::Function(std::string name, std::vector<const Type*> arguments, const Type* returnType, bool isMemberFunction, bool isConstructor)
+	: mName(name),
+      mArguments(arguments),
+      mReturnType(returnType),
+      mStackSize(0), 
+      mOperandStackSize(0),
+      mIsMemberFunction(isMemberFunction),
+      mIsConstructor(isConstructor) {
 
 }
 
@@ -26,6 +32,10 @@ const Type* Function::returnType() const {
 
 bool Function::isMemberFunction() const {
     return mIsMemberFunction;
+}
+
+bool Function::isConstructor() const {
+    return mIsConstructor;
 }
 
 int Function::numLocals() const {

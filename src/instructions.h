@@ -91,4 +91,7 @@ namespace Instructions {
 
     //Creates a new call instance instruction
     Instruction makeCallInstance(const StructType* structType, std::string funcName, std::vector<const Type*> parameters);
+
+    //Creates a new create object instruction
+    Instruction makeNewObject(const StructType* structType, std::vector<const Type*> parameters);
 }

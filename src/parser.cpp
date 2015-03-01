@@ -149,7 +149,6 @@ std::unordered_map<std::string, OpCodes> strOperandInstructions
     { "newarr", OpCodes::NEW_ARRAY },
     { "stelem", OpCodes::STORE_ELEMENT },
     { "ldelem", OpCodes::LOAD_ELEMENT },
-    { "newobj", OpCodes::NEW_OBJECT },
     { "stfield", OpCodes::STORE_FIELD },
     { "ldfield", OpCodes::LOAD_FIELD }
 };
@@ -192,6 +191,24 @@ void parseFunctionDef(const std::vector<std::string>& tokens, int& tokenIndex, V
 
     if (returnType == nullptr) {
         throw std::runtime_error("'" + returnTypeName + "' is not a type.");
+    }
+}
+
+void readCallParameters(const std::vector<std::string>& tokens, int& tokenIndex, VMState& vmState, std::vector<const Type*>& parameters) {
+    while (true) {
+        auto param = nextToken(tokens, tokenIndex);
+
+        if (param == ")") {
+            break;
+        }
+
+        auto paramType = vmState.findType(param);
+
+        if (paramType == nullptr) {
+            throw std::runtime_error("'" + param + "' is not a valid type.");
+        }
+
+        parameters.push_back(paramType);
     }
 }
 
@@ -324,28 +341,14 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                 }
 
                 std::vector<const Type*> parameters;
-
-                while (true) {
-                    auto param = nextToken(tokens, i);
-
-                    if (param == ")") {
-                        break;
-                    }
-
-                    auto paramType = vmState.findType(param);
-
-                    if (paramType == nullptr) {
-                        throw std::runtime_error("'" + param + "' is not a valid type.");
-                    }
-
-                    parameters.push_back(paramType);
-                }
+                readCallParameters(tokens, i, vmState, parameters);
 
                 if (isInstance) {
                     currentFunc->instructions.push_back(Instructions::makeCallInstance(structType, funcName, parameters));
                 } else {
                     currentFunc->instructions.push_back(Instructions::makeCall(funcName, parameters));
                 }
+
                 continue;
             }
 
@@ -357,6 +360,41 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                 } else {
                     throw std::runtime_error("The argument index is out of range.");
                 }
+
+                continue;
+            }
+
+            if (currentToLower == "newobj") {
+                std::string funcName = nextToken(tokens, i);
+                const StructType* structType = nullptr;
+
+                auto structNamePos = funcName.find("::");
+
+                if (structNamePos != std::string::npos) {
+                    auto structName = funcName.substr(0, structNamePos);
+
+                    if (!vmState.structProvider().isDefined(structName)) {
+                        throw std::runtime_error("'" + structName + "' is not a defined struct.");
+                    }
+
+                    structType = dynamic_cast<const StructType*>(vmState.findType("Ref.Struct." + structName));
+                } else {
+                    throw std::runtime_error("Expected '::' after the type in a new object instruction.");
+                }
+
+                funcName = funcName.substr(structNamePos + 2);
+
+                if (funcName != ".constructor") {
+                    throw std::runtime_error("Expected call to constructor.");
+                }
+
+                if (nextToken(tokens, i) != "(") {
+                    throw std::runtime_error("Expected '(' after called function.");
+                }
+
+                std::vector<const Type*> parameters;
+                readCallParameters(tokens, i, vmState, parameters);
+                currentFunc->instructions.push_back(Instructions::makeNewObject(structType, parameters));
 
                 continue;
             }
@@ -502,6 +540,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
             }
 
             auto structTypeName = funcName.substr(0, structNamePos);
+            auto memberFunctionName = funcName.substr(structNamePos + 2);
 
             if (!vmState.structProvider().isDefined(structTypeName)) {
                 throw std::runtime_error("'" + structTypeName + "' is not defined struct type.");
@@ -518,7 +557,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
             if (numArgs >= 0 && numArgs <= MAXIMUM_NUMBER_OF_ARGUMENTS) {
                 if (assembly.functions.count(signature) == 0 && !vmState.binder().isDefined(signature)) {
                     //Create a new function        
-                    Function* newFunc = new Function(funcName, parameters, returnType, true);
+                    Function* newFunc = new Function(funcName, parameters, returnType, true, memberFunctionName == ".constructor");
                     assembly.functions[signature] = newFunc;
                     currentFunc = newFunc;
                 } else {

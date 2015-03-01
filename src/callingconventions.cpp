@@ -58,6 +58,58 @@ void LinuxCallingConvention::moveArgsToStack(FunctionCompilationData& functionDa
     }
 }
 
+void LinuxCallingConvention::callFunctionArgument(FunctionCompilationData& functionData, int argIndex, const Type* argType) const {
+    auto& generatedCode = functionData.function.generatedCode;
+
+    if (argIndex == 5) {
+        if (argType->name() == "Float") {    
+            Amd64Backend::popReg(generatedCode, FloatRegisters::XMM5);             
+        } else {
+            Amd64Backend::popReg(generatedCode, NumberedRegisters::R9); //pop r9
+        }
+    }
+
+    if (argIndex == 4) {
+        if (argType->name() == "Float") {    
+            Amd64Backend::popReg(generatedCode, FloatRegisters::XMM4);             
+        } else {
+            Amd64Backend::popReg(generatedCode, NumberedRegisters::R8); //pop r8
+        }
+    }
+
+    if (argIndex == 3) {
+        if (argType->name() == "Float") {    
+            Amd64Backend::popReg(generatedCode, FloatRegisters::XMM3);             
+        } else {
+            Amd64Backend::popReg(generatedCode, Registers::CX); //pop rcx
+        }
+    }
+
+    if (argIndex == 2) {
+        if (argType->name() == "Float") {   
+            Amd64Backend::popReg(generatedCode, FloatRegisters::XMM2);            
+        } else {
+            Amd64Backend::popReg(generatedCode, Registers::DX); //pop rdx
+        }
+    }
+
+    if (argIndex == 1) {
+        if (argType->name() == "Float") { 
+            Amd64Backend::popReg(generatedCode, FloatRegisters::XMM1);                 
+        } else {
+            Amd64Backend::popReg(generatedCode, Registers::SI); //pop rsi
+        }
+    }
+
+    if (argIndex == 0) {
+        if (argType->name() == "Float") {
+            Amd64Backend::popReg(generatedCode, FloatRegisters::XMM0);
+        } else {
+            Amd64Backend::popReg(generatedCode, Registers::DI); //pop rdi
+        }
+    }
+}
+
 void LinuxCallingConvention::callFunctionArguments(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall, GetArugmentType getArgumentType) const {
 	int numArgs = funcToCall.arguments().size();
 	auto& generatedCode = functionData.function.generatedCode;

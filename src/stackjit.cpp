@@ -22,32 +22,32 @@ int main(int argc, char* argv[]) {
         std::string switchStr = argv[i];
         bool handled = false;
 
-        if (switchStr == "-d" || switchStr == "-debug") {
+        if (switchStr == "-d" || switchStr == "--debug") {
             vmState.enableDebug = true;
             continue;
         }
 
-        if (switchStr == "-nd") {
+        if (switchStr == "-nd" || switchStr == "--no-debug") {
             vmState.enableDebug = false;
             continue;
         }
 
-        if (switchStr == "-ptc") {
+        if (switchStr == "-ptc" || switchStr == "--print-type-checking") {
             vmState.printTypeChecking = true;
             continue;
         }
 
-        if (switchStr == "-psf") {
+        if (switchStr == "-psf" || switchStr == "--print-stack-frame") {
             vmState.printStackFrame = true;
             continue;
         }
 
-        if (switchStr == "-ogc") {
+        if (switchStr == "-ogc" || switchStr == "--output-generated-code") {
             vmState.outputGeneratedCode = true;
             continue;
         }
 
-        if (switchStr == "-nogc") {
+        if (switchStr == "--no-gc") {
             vmState.disableGC = true;
             continue;
         }

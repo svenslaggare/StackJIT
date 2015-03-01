@@ -50,3 +50,12 @@ Instruction Instructions::makeCallInstance(const StructType* structType, std::st
     inst.OpCode = OpCodes::CALL_INSTANCE;
     return inst;
 }
+
+ Instruction Instructions::makeNewObject(const StructType* structType, std::vector<const Type*> parameters) {
+    Instruction inst;
+    inst.CalledStructType = structType;
+    inst.StrValue = ".constructor";
+    inst.Parameters = parameters;
+    inst.OpCode = OpCodes::NEW_OBJECT;
+    return inst;
+ }

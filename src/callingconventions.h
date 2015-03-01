@@ -14,6 +14,9 @@ public:
 	//Moves the argument to the stack for the given function
 	virtual void moveArgsToStack(FunctionCompilationData& functionData) const = 0;
 
+	//Generates code for calling with the given argument
+	virtual void callFunctionArgument(FunctionCompilationData& functionData, int argIndex, const Type* argType) const = 0;
+
 	//Generates code for calling the given function
 	virtual void callFunctionArguments(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall, GetArugmentType getArgumentType) const = 0;
 
@@ -25,6 +28,7 @@ public:
 class LinuxCallingConvention : public CallingConvention {
 public:
 	virtual void moveArgsToStack(FunctionCompilationData& functionData) const override;
+	virtual void callFunctionArgument(FunctionCompilationData& functionData, int argIndex, const Type* argType) const override;
 	virtual void callFunctionArguments(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall, GetArugmentType getArgumentType) const override;
 	virtual void returnValue(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall) const override;
 };

@@ -4,6 +4,11 @@ struct Point
 	y Int
 }
 
+member Point::.constructor() Void
+{
+   RET
+}
+
 func main() Int
 {
 	.locals 1
@@ -12,7 +17,7 @@ func main() Int
 	PUSHNULL
 	STLOC 0
 
-	NEWOBJ Ref.Struct.Point
+	NEWOBJ Point::.constructor()
 	STLOC 0
 
 	LDLOC 0
