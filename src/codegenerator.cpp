@@ -702,14 +702,10 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
             //Call the newObject runtime function
             Amd64Backend::pushReg(generatedCode, Registers::BP);
-            Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)structType); //The pointer to the type as the first arg
+            Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (long)structType); //The pointer to the type as the first arg
             generateCall(generatedCode, (long)&Runtime::newObject);
             Amd64Backend::popReg(generatedCode, Registers::BP);
      
-            //Push the reference to the created object
-            Amd64Backend::moveRegToReg(generatedCode, RegisterCallArguments::Arg0, Registers::AX);
-            Amd64Backend::pushReg(generatedCode, Registers::AX);
-
             //Call the constructor
             std::string calledSignature = vmState.binder().memberFunctionSignature(inst.CalledStructType, inst.StrValue, inst.Parameters);
 
@@ -720,11 +716,16 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             int numArgs = funcToCall.arguments().size() - 1;
 
             //Set the constructor arguments
-            for (int i = 0; i < numArgs; i++) {
+            Amd64Backend::moveRegToReg(generatedCode, RegisterCallArguments::Arg0, Registers::AX);
+
+            for (int i = numArgs - 1; i >= 0; i--) {
                 mCallingConvention.callFunctionArgument(functionData, i + 1, inst.Parameters.at(i));
             }
 
-            //Check if the function entry point is defined yet
+            //Push the reference to the created object
+            Amd64Backend::pushReg(generatedCode, Registers::AX);
+
+            //Check if the constructor entry point is defined yet
             if (funcToCall.entryPoint() != 0) {
                 funcAddr = funcToCall.entryPoint();
             } else {
