@@ -205,7 +205,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
     bool isStruct = false;
     bool isStructBody = false;
     std::string structName;
-    std::map<std::string, const Type*> structFields;
+    std::unordered_map<std::string, const Type*> structFields;
 
     for (int i = 0; i < tokens.size(); i++) {
         std::string current = tokens[i];
@@ -510,7 +510,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
             auto structType = vmState.findType("Ref.Struct." + structTypeName);
 
             //Add the implicit this reference
-            parameters.push_back(structType);
+            parameters.insert(parameters.begin(), structType);
 
             int numArgs = parameters.size();
             auto signature = vmState.binder().functionSignature(funcName, parameters);

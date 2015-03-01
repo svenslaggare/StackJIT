@@ -1,6 +1,7 @@
 #include "binder.h"
 #include "typechecker.h"
 #include "type.h"
+#include <iostream>
 
 const std::unordered_map<std::string, FunctionDefinition>& Binder::functionTable() const {
 	return mFunctionTable;
@@ -38,7 +39,7 @@ std::string Binder::functionSignature(const Function& func) const {
 }
 
 bool Binder::define(FunctionDefinition funcDef) {
-	auto signature = functionSignature(funcDef);
+	std::string signature = functionSignature(funcDef);
 
 	if (mFunctionTable.count(signature) == 0) {
 		mFunctionTable.insert({ signature, funcDef });

@@ -1,13 +1,14 @@
 #include "structmetadata.h"
 #include "type.h"
 
-//Struct metadata
+//Field
 Field::Field(const Type* type, std::size_t offset)
 	: type(type), offset(offset) {
 
 }
 
-StructMetadata::StructMetadata(std::map<std::string, const Type*> fields)
+//Struct metadata
+StructMetadata::StructMetadata(std::unordered_map<std::string, const Type*> fields)
 	: mSize(0) {
 	for (auto field : fields) {
 		mFields.insert({ field.first, Field(field.second, mSize) });
@@ -40,7 +41,7 @@ std::size_t StructMetadata::size() const {
 	return mSize;
 }
 
-const std::map<std::string, Field>& StructMetadata::fields() const {
+const std::unordered_map<std::string, Field>& StructMetadata::fields() const {
 	return mFields;
 }
 

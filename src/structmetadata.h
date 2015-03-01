@@ -15,10 +15,11 @@ struct Field {
 //Contains metadata for a struct
 class StructMetadata {
 private:
-	std::map<std::string, Field> mFields;
+	std::unordered_map<std::string, Field> mFields;
 	std::size_t mSize;
 public:
-	StructMetadata(std::map<std::string, const Type*> fields);
+	//Creates a new struct with the given fields
+	StructMetadata(std::unordered_map<std::string, const Type*> fields);
 	StructMetadata();
 
 	//Returns the given field
@@ -31,7 +32,7 @@ public:
 	std::size_t size() const;
 
 	//Returns the fields
-	const std::map<std::string, Field>& fields() const;
+	const std::unordered_map<std::string, Field>& fields() const;
 };
 
 class StructType;
@@ -44,7 +45,7 @@ public:
 	//Adds metadata for the given struct
     void add(std::string structName, StructMetadata structMetadata);
 
-    //Indicates if the stuct is defined
+    //Indicates if the struct is defined
     bool isDefined(std::string structName) const;
 
     //Returns the metadata for the given struct

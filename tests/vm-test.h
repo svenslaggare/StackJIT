@@ -174,6 +174,7 @@ public:
 
         TS_ASSERT_EQUALS(invokeVM("struct/memberfunction1"), "3.60555\n0\n");
         TS_ASSERT_EQUALS(invokeVM("struct/memberfunction2"), "5\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("struct/memberfunction3"), "2.5\n5.5\n0\n");
 
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_program1")), "  what():  1: 'Point' is not a defined type.\n");
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_program2")), "  what():  2: 'Point' is not a struct type.\n");

@@ -49,7 +49,7 @@ The returned value from the main function will be the output for the program.
 ###Member functions###
 A member function works like a normal function except that fist argument (arg 0) is bound to the "this reference". The signature for a member function is: `<struct name>::<name>(<type 1> <type 2> ...)`. A member function is defined as:
 ```
-func <struct name>::<name>(<arg type 1> <arg type 2> ...) <return type>
+member <struct name>::<name>(<arg type 1> <arg type 2> ...) <return type>
 {
     <function body>
 }
