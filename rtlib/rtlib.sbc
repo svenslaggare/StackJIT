@@ -59,3 +59,47 @@ extern std.math.sin :: sin(Float) Float
 
 #Computes the cosine function
 extern std.math.cos :: cos(Float) Float
+
+#Represents a 2D vector
+struct Vector2
+{
+	x Float
+	y Float
+}
+
+member Vector2::.constructor(Float Float) Void
+{
+   LDARG 0
+   LDARG 1
+   STFIELD Vector2::x
+
+   LDARG 0
+   LDARG 2
+   STFIELD Vector2::y
+
+   RET
+}
+
+member Vector2::length() Float
+{
+   .locals 1
+   LDARG 0
+   STLOC 0
+
+   LDLOC 0
+   LDFIELD Vector2::x
+   LDLOC 0
+   LDFIELD Vector2::x
+   MUL
+
+   LDLOC 0
+   LDFIELD Vector2::y
+   LDLOC 0
+   LDFIELD Vector2::y
+   MUL
+
+   ADD
+   CALL sqrt(Float)
+
+   RET
+}

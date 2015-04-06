@@ -126,7 +126,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
     int i = 0;
     for (auto arg : function.arguments()) {
         if (arg == nullptr || TypeSystem::isPrimitiveType(arg, PrimitiveTypes::Void)) {
-            throw std::runtime_error("The argument: " + std::to_string(i) + " in function '" + function.name() + "' cannot be of type '" + typeToString(arg) + "'.");
+            throw std::runtime_error("Argument: " + std::to_string(i) + " in function '" + function.name() + "' cannot be of type '" + typeToString(arg) + "'.");
         }
 
         i++;

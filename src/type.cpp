@@ -139,8 +139,21 @@ Type* TypeSystem::makeTypeFromString(std::string typeName) {
 			elementType = elementType.substr(1, elementType.length() - 2);
 			return new ArrayType(makeTypeFromString(elementType));
 		} else if (typeParts[1] == "Struct") {
-			if (typeParts.size() == 3) {
-				return new StructType(typeParts.at(2));
+			if (typeParts.size() >= 3) {
+				std::string structName = "";
+				bool isFirst = true;
+
+				for (int i = 2; i < typeParts.size(); i++) {
+					if (isFirst) {
+						isFirst = false;
+					} else {
+						structName += ".";
+					}
+
+					structName += typeParts[i];
+				}
+
+				return new StructType(structName);
 			}
 		} else if (typeParts.at(1) == "Null") {
 			return new NullReferenceType();
