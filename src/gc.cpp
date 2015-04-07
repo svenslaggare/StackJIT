@@ -41,7 +41,11 @@ unsigned char* GarbageCollector::newArray(const Type* elementType, int length) {
     memset(arrayPtr, 0, memSize);
 
     //Add the array to the list of objects
-    newObject(new ArrayHandle(arrayPtr, memSize, vmState.getType(TypeSystem::arrayTypeName(elementType)), length));
+    newObject(new ArrayHandle(
+        arrayPtr,
+        memSize,
+        vmState.typeProvider().getType(TypeSystem::arrayTypeName(elementType)),
+        length));
 
     //Set the size of the array
     IntToBytes converter;
@@ -105,9 +109,9 @@ void GarbageCollector::markObject(ObjectHandle* handle) {
             for (auto fieldEntry : structMetadata.fields()) {
                 auto field = fieldEntry.second;
 
-                if (TypeSystem::isReferenceType(field.type)) {
-                    long fieldValue = *((long*)handle->handle() + field.offset);
-                    markValue(fieldValue, field.type);
+                if (TypeSystem::isReferenceType(field.type())) {
+                    long fieldValue = *((long*)handle->handle() + field.offset());
+                    markValue(fieldValue, field.type());
                 }
             }
         }

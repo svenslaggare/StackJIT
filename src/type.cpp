@@ -39,7 +39,8 @@ NullReferenceType::NullReferenceType(): ReferenceType("Null") {
 
 }
 
-ArrayType::ArrayType(const Type* elementType): ReferenceType("Array[" + elementType->name() + "]"), mElementType(elementType) {
+ArrayType::ArrayType(const Type* elementType)
+	: ReferenceType("Array[" + elementType->name() + "]"), mElementType(elementType) {
 
 }
 
@@ -51,7 +52,8 @@ ArrayType::~ArrayType() {
 	delete mElementType;
 }
 
-StructType::StructType(std::string name): ReferenceType("Struct." + name), mStructName(name) {
+StructType::StructType(std::string name)
+	: ReferenceType("Struct." + name), mStructName(name) {
 
 }
 

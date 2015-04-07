@@ -8,10 +8,6 @@ VMState::VMState()
 }
 
 VMState::~VMState() {
-    for (auto type : mTypes) {
-        delete type.second;
-    }
-
     //Unmap function code memory
     for (auto funcEntry : mBinder.functionTable()) {
         auto func = funcEntry.second;
@@ -32,6 +28,14 @@ CallStackEntry VMState::popFunc() {
 void VMState::pushFunc(Function* func, int instIndex) {
     auto newEntry = std::make_pair(func, instIndex);
     mCallStack.push_front(newEntry);
+}
+
+TypeProvider& VMState::typeProvider() {
+    return mTypeProvider;
+}
+
+const TypeProvider& VMState::typeProvider() const {
+    return mTypeProvider;
 }
 
 Binder& VMState::binder() {
@@ -56,22 +60,4 @@ const StructMetadataProvider& VMState::structProvider() const {
 
 GarbageCollector& VMState::gc() {
     return mGC;
-}
-
-const Type* VMState::findType(std::string name) {
-    if (mTypes.count(name) > 0) {
-        return mTypes[name];
-    } else {
-        auto type = TypeSystem::makeTypeFromString(name);
-        mTypes.insert({ name, type });
-        return type;
-    }
-}
-
-const Type* VMState::getType(std::string name) const {
-    if (mTypes.count(name) > 0) {
-        return mTypes.at(name);
-    } else {
-        return nullptr;
-    }
 }

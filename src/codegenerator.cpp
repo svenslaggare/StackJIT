@@ -584,7 +584,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::NEW_ARRAY:
         {
-            auto elemType = vmState.getType(inst.StrValue);
+            auto elemType = vmState.typeProvider().getType(inst.StrValue);
 
             if (!vmState.disableGC) {
                 generateGCCall(generatedCode, function, instIndex);
@@ -616,7 +616,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::STORE_ELEMENT:
         {
-            auto elemType = vmState.getType(inst.StrValue);
+            auto elemType = vmState.typeProvider().getType(inst.StrValue);
 
             //Pop the operands
             Amd64Backend::popReg(generatedCode, Registers::DX); //The value to store
@@ -647,7 +647,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::LOAD_ELEMENT:
         {
-            auto elemType = vmState.getType(inst.StrValue);
+            auto elemType = vmState.typeProvider().getType(inst.StrValue);
 
             //Pop the operands
             Amd64Backend::popReg(generatedCode, Registers::CX); //The index of the element
@@ -797,7 +797,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::LOAD_STRING:
         {
-            auto elemType = vmState.getType("Char");
+            auto elemType = vmState.typeProvider().getType("Char");
 
             if (!vmState.disableGC) {
                 generateGCCall(generatedCode, function, instIndex);

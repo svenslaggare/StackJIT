@@ -3,12 +3,20 @@
 
 //Field
 Field::Field(const Type* type, std::size_t offset)
-	: type(type), offset(offset) {
+	: mType(type), mOffset(offset) {
 
 }
 
+const Type* Field::type() const {
+	return mType;
+}
+
+const std::size_t Field::offset() const {
+	return mOffset;
+}
+
 //Struct metadata
-StructMetadata::StructMetadata(std::unordered_map<std::string, const Type*> fields)
+StructMetadata::StructMetadata(std::vector<std::pair<std::string, const Type*>> fields)
 	: mSize(0) {
 	for (auto field : fields) {
 		mFields.insert({ field.first, Field(field.second, mSize) });
@@ -23,7 +31,7 @@ StructMetadata::StructMetadata()
 
 const Type* StructMetadata::getField(std::string fieldName) const {
 	if (mFields.count(fieldName) > 0) {
-		return mFields.at(fieldName).type;
+		return mFields.at(fieldName).type();
 	} else {
 		return nullptr;
 	}
@@ -31,7 +39,7 @@ const Type* StructMetadata::getField(std::string fieldName) const {
 
 std::size_t StructMetadata::fieldOffset(std::string fieldName) const {
 	if (mFields.count(fieldName) > 0) {
-		return mFields.at(fieldName).offset;
+		return mFields.at(fieldName).offset();
 	} else {
 		throw std::out_of_range("The given field doesn't exist in the current type.");
 	}

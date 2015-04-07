@@ -177,8 +177,8 @@ void parseFunctionDef(const std::vector<std::string>& tokens, int& tokenIndex, V
             break;
         }
 
-        auto paramType = vmState.findType(param);
-
+        auto paramType = vmState.typeProvider().makeType(param);
+        
         if (paramType == nullptr) {
             throw std::runtime_error("'" + param + "' is not a type.");
         }
@@ -187,7 +187,7 @@ void parseFunctionDef(const std::vector<std::string>& tokens, int& tokenIndex, V
     }
 
     auto returnTypeName = nextToken(tokens, tokenIndex);
-    returnType = vmState.findType(returnTypeName);
+    returnType = vmState.typeProvider().makeType(returnTypeName);
 
     if (returnType == nullptr) {
         throw std::runtime_error("'" + returnTypeName + "' is not a type.");
@@ -202,7 +202,7 @@ void readCallParameters(const std::vector<std::string>& tokens, int& tokenIndex,
             break;
         }
 
-        auto paramType = vmState.findType(param);
+        auto paramType = vmState.typeProvider().makeType(param);
 
         if (paramType == nullptr) {
             throw std::runtime_error("'" + param + "' is not a valid type.");
@@ -222,7 +222,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
     bool isStruct = false;
     bool isStructBody = false;
     std::string structName;
-    std::unordered_map<std::string, const Type*> structFields;
+    std::vector<std::pair<std::string, const Type*>> structFields;
 
     for (int i = 0; i < tokens.size(); i++) {
         std::string current = tokens[i];
@@ -277,7 +277,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
             if (currentToLower == ".local") {
                 if (localsSet) {
                     int localIndex = stoi(nextToken(tokens, i));
-                    auto localType = vmState.findType(nextToken(tokens, i));
+                    auto localType = vmState.typeProvider().makeType(nextToken(tokens, i));
 
                     if (localType == nullptr) {
                         throw std::runtime_error("'" + tokens[i] + "' is not a type");
@@ -328,7 +328,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                             throw std::runtime_error("'" + structName + "' is not a defined struct.");
                         }
 
-                        structType = dynamic_cast<const StructType*>(vmState.findType("Ref.Struct." + structName));
+                        structType = dynamic_cast<const StructType*>(vmState.typeProvider().makeType("Ref.Struct." + structName));
                     } else {
                         throw std::runtime_error("Expected '::' in called member function.");
                     }
@@ -377,7 +377,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                         throw std::runtime_error("'" + structName + "' is not a defined struct.");
                     }
 
-                    structType = dynamic_cast<const StructType*>(vmState.findType("Ref.Struct." + structName));
+                    structType = dynamic_cast<const StructType*>(vmState.typeProvider().makeType("Ref.Struct." + structName));
                 } else {
                     throw std::runtime_error("Expected '::' after the type in a new object instruction.");
                 }
@@ -428,13 +428,13 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
             }
 
             auto fieldName = current;
-            auto fieldType = vmState.findType(nextToken(tokens, i));
+            auto fieldType = vmState.typeProvider().makeType(nextToken(tokens, i));
 
             if (fieldType == nullptr) {
                 throw std::runtime_error("'" + tokens[i] + "' is not a valid type.");
             }
 
-            structFields.insert({ fieldName, fieldType });
+            structFields.push_back(std::make_pair(fieldName, fieldType));
         }
 
         bool isFuncDef = false;
@@ -546,7 +546,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
                 throw std::runtime_error("'" + structTypeName + "' is not defined struct type.");
             }
 
-            auto structType = vmState.findType("Ref.Struct." + structTypeName);
+            auto structType = vmState.typeProvider().makeType("Ref.Struct." + structTypeName);
 
             //Add the implicit this reference
             parameters.insert(parameters.begin(), structType);

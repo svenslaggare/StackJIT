@@ -1,15 +1,24 @@
 #pragma once
 #include <map>
 #include <unordered_map>
+#include <vector>
 
 class Type;
 
 //Represents a field
-struct Field {
-	const Type* type;
-	const std::size_t offset;
-
+class Field {
+private:
+	const Type* mType;
+	const std::size_t mOffset;
+public:
+	//Creates a new field
 	Field(const Type* type, std::size_t offset);
+
+	//Returns the type of the field
+	const Type* type() const;
+
+	//Returns the offset of the field in the struct
+	const std::size_t offset() const;
 };
 
 //Contains metadata for a struct
@@ -19,7 +28,7 @@ private:
 	std::size_t mSize;
 public:
 	//Creates a new struct with the given fields
-	StructMetadata(std::unordered_map<std::string, const Type*> fields);
+	StructMetadata(std::vector<std::pair<std::string, const Type*>> fields);
 	StructMetadata();
 
 	//Returns the given field

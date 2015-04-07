@@ -83,13 +83,13 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
     std::vector<InstructionTypes> postInstructionsOperandTypes;
     postInstructionsOperandTypes.reserve(numInsts);
 
-    const auto intType = vmState.findType(TypeSystem::toString(PrimitiveTypes::Integer));
-    const auto floatType = vmState.findType(TypeSystem::toString(PrimitiveTypes::Float));
-    const auto boolType = vmState.findType(TypeSystem::toString(PrimitiveTypes::Bool));
-    const auto charType = vmState.findType(TypeSystem::toString(PrimitiveTypes::Char));
-    const auto voidType = vmState.findType(TypeSystem::toString(PrimitiveTypes::Void));
-    const auto nullType = vmState.findType("Ref.Null");
-    const auto stringType = vmState.findType("Ref.Array[Char]");
+    const auto intType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Integer));
+    const auto floatType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Float));
+    const auto boolType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Bool));
+    const auto charType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Char));
+    const auto voidType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Void));
+    const auto nullType = vmState.typeProvider().makeType("Ref.Null");
+    const auto stringType = vmState.typeProvider().makeType("Ref.Array[Char]");
     
     //Set the local type if set
     std::vector<const Type*> locals(function.numLocals());
@@ -446,7 +446,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                     typeError(index, error);
                 }
 
-                auto elemType = vmState.findType(inst.StrValue);
+                auto elemType = vmState.typeProvider().makeType(inst.StrValue);
 
                 if (elemType == nullptr) {
                     typeError(index, "'" + inst.StrValue + "' is not a valid type.");
@@ -456,7 +456,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                     typeError(index, "Array of type 'Void' is not allowed.");
                 }
 
-                operandStack.push(vmState.findType("Ref.Array[" + inst.StrValue + "]"));
+                operandStack.push(vmState.typeProvider().makeType("Ref.Array[" + inst.StrValue + "]"));
             }
             break;
         case OpCodes::STORE_ELEMENT:
@@ -477,7 +477,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                     typeError(index, "Expected second operand to be of type Int.");
                 }
 
-                auto elemType = vmState.findType(inst.StrValue);
+                auto elemType = vmState.typeProvider().makeType(inst.StrValue);
                 assertNotVoidType(index, elemType);
 
                 if (!isNull) {
@@ -516,7 +516,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                     typeError(index, "Expected second operand to be of type Int.");
                 }
 
-                auto elemType = vmState.findType(inst.StrValue);
+                auto elemType = vmState.typeProvider().makeType(inst.StrValue);
                 assertNotVoidType(index, elemType);
 
                 if (!isNull) {
@@ -599,7 +599,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
 
                     auto structMetadata = vmState.structProvider()[structName];
 
-                    auto structType = vmState.findType("Ref.Struct." + structName);
+                    auto structType = vmState.typeProvider().makeType("Ref.Struct." + structName);
 
                     if (!isNull) {
                         auto error = checkType(structType, structRefType);
@@ -650,7 +650,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                         typeError(index, "There exists no '" + fieldName + "' field in the '" + structName + "' struct.");
                     }
 
-                    auto structType = vmState.findType("Ref.Struct." + structName);
+                    auto structType = vmState.typeProvider().makeType("Ref.Struct." + structName);
 
                     if (!isNull) {
                         auto error = checkType(structType, structRefType);

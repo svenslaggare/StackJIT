@@ -216,7 +216,8 @@ long Runtime::newObject(Type* type) {
 }
 
 long Runtime::newString(const char* string, int length) {
-    auto strPtr = vmState.gc().newArray(vmState.getType(TypeSystem::toString(PrimitiveTypes::Char)), length);
+    auto elemType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Char));
+    auto strPtr = vmState.gc().newArray(elemType, length);
     
     for (int i = 0; i < length; i++) {
         strPtr[i + 4] = string[i];

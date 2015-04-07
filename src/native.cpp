@@ -31,10 +31,10 @@ int NativeLibrary::abs(int x) {
 }
 
 void NativeLibrary::add(VMState& vmState) {
-	auto intType = vmState.findType(TypeSystem::toString(PrimitiveTypes::Integer));
-	auto floatType = vmState.findType(TypeSystem::toString(PrimitiveTypes::Float));
-	auto charType = vmState.findType(TypeSystem::toString(PrimitiveTypes::Char));
-	auto voidType = vmState.findType(TypeSystem::toString(PrimitiveTypes::Void));
+	auto intType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Integer));
+	auto floatType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Float));
+	auto charType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Char));
+	auto voidType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Void));
 
 	auto& binder = vmState.binder();
 

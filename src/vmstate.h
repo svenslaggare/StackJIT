@@ -8,17 +8,14 @@
 #include "binder.h"
 #include "gc.h"
 #include "executionengine.h"
-
-class Type;
-class StructType;
-class ObjectHandle;
+#include "typeprovider.h"
 
 using CallStackEntry = std::pair<Function*, int>;
 
 //Contains the state of the VM
 class VMState {
 private:
-	std::unordered_map<std::string, Type*> mTypes;
+	TypeProvider mTypeProvider;
     Binder mBinder;
 	StructMetadataProvider mStructProvider;
     ExecutionEngine mEngine;
@@ -58,6 +55,10 @@ public:
     //Pushes the given function to the top of the stack
     void pushFunc(Function* func, int instIndex);
 
+    //Returns the type provider
+    TypeProvider& typeProvider();
+    const TypeProvider& typeProvider() const;
+
     //Returns the binder
     Binder& binder();
     const Binder& binder() const;
@@ -71,10 +72,4 @@ public:
 
     //Returns the GC
     GarbageCollector& gc();
-
-    //Tries to find or construct the given type name name. Nullptr if not found.
-    const Type* findType(std::string name);
-
-    //Returns the given type. Nullptr if not found.
-    const Type* getType(std::string name) const;
 };
