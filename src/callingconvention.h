@@ -23,12 +23,3 @@ public:
 	//Generates code for returning a value from a function
 	virtual void returnValue(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall) const = 0;
 };
-
-//Represents the calling convetions for Linux
-class LinuxCallingConvention : public CallingConvention {
-public:
-	virtual void moveArgsToStack(FunctionCompilationData& functionData) const override;
-	virtual void callFunctionArgument(FunctionCompilationData& functionData, int argIndex, const Type* argType) const override;
-	virtual void callFunctionArguments(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall, GetArugmentType getArgumentType) const override;
-	virtual void returnValue(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall) const override;
-};

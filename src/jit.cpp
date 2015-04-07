@@ -131,7 +131,7 @@ JitFunction JITCompiler::generateFunction(Function* function) {
     }
 
     //Allocate writable and readable memory
-    void *mem = mCompiler.allocateMemory(length);
+    void *mem = mMemoryManager.allocateMemory(length);
 
     //Copy the instructions
     memcpy(mem, code, length);
@@ -177,7 +177,7 @@ void JITCompiler::makeExecutable() {
         if (funcData.unresolvedCalls.size() == 0) {
 	        void* mem = (void*)mVMState.binder().getFunction(signature).entryPoint();
 	        std::size_t size = funcData.function.generatedCode.size();
-            mCompiler.makeExecutableMemory(mem, size);
+            mMemoryManager.makeExecutableMemory(mem, size);
 	    } else {
 	    	throw std::runtime_error("The function '" + signature + "' has unresolved calls.");
 	    }

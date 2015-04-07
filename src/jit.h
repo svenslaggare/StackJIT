@@ -1,6 +1,6 @@
 #pragma once
 #include "linux.h"
-#include "callingconventions.h"
+#include "callingconvention.h"
 #include "codegenerator.h"
 
 #include <unordered_map>
@@ -71,7 +71,7 @@ struct FunctionCompilationData {
 class JITCompiler {
 private:
 	VMState& mVMState;
-	LinuxCompiler mCompiler;
+	LinuxMemoryManager mMemoryManager;
 	LinuxCallingConvention mCallingConvention;
 	CodeGenerator mCodeGen;
 	std::unordered_map<std::string, FunctionCompilationData> mFunctions;
