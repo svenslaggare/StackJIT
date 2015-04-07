@@ -1,0 +1,27 @@
+struct Point
+{
+   y Float
+   x Float
+}
+
+member Point::.constructor() Void
+{
+   RET
+}
+
+member Point::length() Float
+{
+   PUSHFLOAT 0
+   RET
+}
+
+func main() Int
+{
+   .locals 1
+   PUSHNULL
+   CALLINST Point::length()
+   STLOC 0
+
+   PUSHINT 0
+   RET
+}

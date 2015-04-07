@@ -38,7 +38,7 @@ void Runtime::printStackFrame(long* basePtr, Function* func) {
 }
 
 void printStackTrace(long* basePtr, int level) {
-    if (level > 50 || basePtr == nullptr) {
+    if (basePtr == nullptr) {
         return;
     }
 

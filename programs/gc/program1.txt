@@ -19,14 +19,8 @@ func main() Int
 	STLOC 0
 	STLOC 0
 
-	#GC
+	GC
 
 	PUSHINT 0
 	RET
 }
-
-#func main() Int
-#{
-#	CALL main1()
-#	RET
-#}

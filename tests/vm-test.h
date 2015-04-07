@@ -203,6 +203,8 @@ public:
 
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_constructor1")), "what():  Constructors must be of return type 'Void'.");
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_constructor2")), "what():  1: The constructor \'Point::.constructor(Ref.Struct.Point)\' is not defined.");
+
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_memberfunction1")), "what():  Null reference error.");
     }
 
     void testGC() {

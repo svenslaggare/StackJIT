@@ -37,10 +37,10 @@ void generateArrayBoundsCheck(CodeGen& codeGen) {
 }
 
 //Generates null check
-void generateNullCheck(CodeGen& codeGen) {
+void generateNullCheck(CodeGen& codeGen, Registers refReg = Registers::AX, Registers cmpReg = Registers::SI) {
     //Compare the reference with null
-    Amd64Backend::moveIntToReg(codeGen, Registers::SI, 0); //mov rsi, 0
-    Amd64Backend::compareRegToReg(codeGen, Registers::AX, Registers::SI); //cmp rcx, rsi
+    Amd64Backend::moveIntToReg(codeGen, cmpReg, 0); //mov <ref>, 0
+    Amd64Backend::compareRegToReg(codeGen, refReg, cmpReg); //cmp <ref>, <cmp>
 
     pushArray(codeGen, { 0x75, 10 + 2 }); //jnz <after call>
 
@@ -76,6 +76,7 @@ void CodeGenerator::initalizeFunction(FunctionCompilationData& functionData) {
     //Calculate the size of the stack aligned to 16 bytes
     std::size_t neededStackSize = (function.numArgs() + function.numLocals() + functionData.operandStackSize) * Amd64Backend::REG_SIZE;
     std::size_t stackSize = ((neededStackSize + 15) / 16) * 16;
+    // std::size_t stackSize = neededStackSize;
 
     function.setStackSize(stackSize);
 
@@ -406,11 +407,11 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             }
 
             //Call the pushFunc runtime function
-            //Amd64Backend::pushReg(generatedCode, Registers::BP);
+            Amd64Backend::pushReg(generatedCode, Registers::BP);
             Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)&function); //Address of the func handle as the target as first arg
             Amd64Backend::moveLongToReg(generatedCode, Registers::SI, instIndex); //Current inst index as second arg
             generateCall(generatedCode, (long)&Runtime::pushFunc);
-            //Amd64Backend::popReg(generatedCode, Registers::BP);
+            Amd64Backend::popReg(generatedCode, Registers::BP);
 
             //Get the address of the function to call
             long funcAddr = 0;
@@ -424,6 +425,13 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             mCallingConvention.callFunctionArguments(functionData, funcToCall, [&](int arg) {
                 return opTypes.at(numArgs - 1 - arg);
             });
+
+            if (inst.OpCode == OpCodes::CALL_INSTANCE) {
+                //Null check
+                Amd64Backend::pushReg(generatedCode, Registers::CX);
+                generateNullCheck(generatedCode, RegisterCallArguments::Arg0, Registers::CX);
+                Amd64Backend::popReg(generatedCode, Registers::CX);
+            }
 
             //Check if the function entry point is defined yet
             if (funcToCall.entryPoint() != 0) {
@@ -443,9 +451,9 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             mCallingConvention.returnValue(functionData, funcToCall);
 
             //Call the popFunc runtime function
-            //Amd64Backend::pushReg(generatedCode, Registers::BP);
+            Amd64Backend::pushReg(generatedCode, Registers::BP);
             generateCall(generatedCode, (long)&Runtime::popFunc);
-            //Amd64Backend::popReg(generatedCode, Registers::BP);
+            Amd64Backend::popReg(generatedCode, Registers::BP);
         }
         break;
     case OpCodes::RET:
@@ -697,7 +705,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
             //Call the garbageCollect runtime function
             if (!vmState.disableGC) {
-                generateGCCall(generatedCode, function, instIndex, false); //TODO: Should not be false as it could destroy the base pointer.
+                generateGCCall(generatedCode, function, instIndex, true); //TODO: Should not be false as it could destroy the base pointer.
             }
 
             //Call the newObject runtime function

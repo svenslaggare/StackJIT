@@ -9,18 +9,7 @@ member Point::.constructor() Void
    RET
 }
 
-struct Pair
-{
-	first Ref.Struct.Point
-	second Int
-}
-
-member Pair::.constructor() Void
-{
-   RET
-}
-
-func main4() Int
+func main() Int
 {
 	.locals 1
 	.local 0 Ref.Struct.Point
@@ -36,11 +25,5 @@ func main4() Int
 	GC
 
 	PUSHINT 0
-	RET
-}
-
-func main() Int
-{
-	CALL main4()
 	RET
 }
