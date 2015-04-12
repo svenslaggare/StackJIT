@@ -145,7 +145,7 @@ Type* TypeSystem::makeTypeFromString(std::string typeName) {
 				std::string structName = "";
 				bool isFirst = true;
 
-				for (int i = 2; i < typeParts.size(); i++) {
+				for (std::size_t i = 2; i < typeParts.size(); i++) {
 					if (isFirst) {
 						isFirst = false;
 					} else {

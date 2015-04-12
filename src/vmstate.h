@@ -18,8 +18,8 @@ private:
 	TypeProvider mTypeProvider;
     Binder mBinder;
 	StructMetadataProvider mStructProvider;
-    ExecutionEngine mEngine;
     GarbageCollector mGC;
+    ExecutionEngine mEngine;
 
 	std::deque<CallStackEntry> mCallStack;
 public:

@@ -26,7 +26,7 @@ void typeError(int instIndex, std::string errorMessage) {
     throw std::runtime_error(std::to_string(instIndex) + ": " + errorMessage);
 }
 
-void assertOperandCount(int index, const InstructionTypes& stack, int count) {
+void assertOperandCount(int index, const InstructionTypes& stack, std::size_t count) {
     if (stack.size() < count) {
         typeError(index, "Expected " + std::to_string(count) + " operand(s) on the stack.");
     }
@@ -58,11 +58,11 @@ std::deque<const Type*> asVector(InstructionTypes types) {
 }
 
 struct BranchCheck {
-    const int source;
-    const int target;
+    const std::size_t source;
+    const std::size_t target;
     const InstructionTypes branchTypes;
 
-    BranchCheck(int source, int target, InstructionTypes branchTypes)
+    BranchCheck(std::size_t source, std::size_t target, InstructionTypes branchTypes)
         : source(source), target(target), branchTypes(branchTypes) {
 
     }
@@ -94,7 +94,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
     //Set the local type if set
     std::vector<const Type*> locals(function.numLocals());
 
-    for (int i = 0; i < locals.size(); i++) {
+    for (std::size_t i = 0; i < locals.size(); i++) {
         auto localType = function.getLocal(i);
 
         if (localType != nullptr) {
@@ -108,7 +108,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
 
     std::vector<BranchCheck> branches;
 
-    int index = 1;
+    std::size_t index = 1;
 
     if (showDebug) {
         std::cout << "----Type checking: " <<  function.name() << "----" << std::endl;
@@ -359,7 +359,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
             break;
         case OpCodes::RET:
             {
-                int returnCount = 1;
+                std::size_t returnCount = 1;
 
                 if (TypeSystem::isPrimitiveType(function.returnType(), PrimitiveTypes::Void)) {
                     returnCount = 0;
@@ -393,7 +393,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                 assertOperandCount(index, operandStack, 2);
                 
                 //Check if valid target
-                if (!(inst.Value.Int >= 0 && inst.Value.Int < numInsts)) {
+                if (!(inst.Value.Int >= 0 && inst.Value.Int < (int)numInsts)) {
                     typeError(index, "Invalid jump target (" + std::to_string(inst.Value.Int) + ").");
                 }
 
@@ -402,19 +402,19 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
     
                 if (*op1 == *intType) {               
                     if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
-                        branches.push_back({ index, inst.Value.Int, operandStack });
+                        branches.push_back({ index, (std::size_t)inst.Value.Int, operandStack });
                     } else {
                         typeError(index, "Expected 2 operands of type Int on the stack.");
                     }
                 } else if (*op1 == *boolType) {
                     if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Bool)) {
-                        branches.push_back({ index, inst.Value.Int, operandStack });
+                        branches.push_back({ index, (std::size_t)inst.Value.Int, operandStack });
                     } else {
                         typeError(index, "Expected 2 operands of type Bool on the stack.");
                     }
                 } else if (*op1 == *floatType) {
                     if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Float)) {
-                        branches.push_back({ index, inst.Value.Int, operandStack });
+                        branches.push_back({ index, (std::size_t)inst.Value.Int, operandStack });
                     } else {
                         typeError(index, "Expected 2 operands of type Float on the stack.");
                     }
@@ -425,11 +425,11 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
             break;
         case OpCodes::BRANCH:
             //Check if valid target
-            if (!(inst.Value.Int >= 0 && inst.Value.Int < numInsts)) {
+            if (!(inst.Value.Int >= 0 && inst.Value.Int < (int)numInsts)) {
                 typeError(index, "Invalid jump target (" + std::to_string(inst.Value.Int) + ").");
             }
 
-            branches.push_back({ index, inst.Value.Int, operandStack });
+            branches.push_back({ index, (std::size_t)inst.Value.Int, operandStack });
             break;
         case OpCodes::PUSH_NULL:
             {
@@ -550,8 +550,6 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
             break;
         case OpCodes::NEW_OBJECT:
             {
-                bool isInstance = inst.OpCode == OpCodes::CALL_INSTANCE;
-
                 std::string signature = vmState.binder().memberFunctionSignature(inst.CalledStructType, inst.StrValue, inst.Parameters);
 
                 if (!vmState.binder().isDefined(signature)) {
@@ -691,7 +689,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
         auto preTargetTypes = instructionsOperandTypes[branch.target];
 
         if (postSourceTypes.size() == preTargetTypes.size()) {
-            for (int i = 0; i < postSourceTypes.size(); i++) {
+            for (std::size_t i = 0; i < postSourceTypes.size(); i++) {
                 auto postType = popType(postSourceTypes);
                 auto preType = popType(preTargetTypes);
                 auto error = checkType(postType, preType);
@@ -706,7 +704,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
     }
 
     if (showDebug) {
-        for (int i = 0; i < numInsts; i++) {
+        for (std::size_t i = 0; i < numInsts; i++) {
             auto types = instructionsOperandTypes[i];
 
             std::cout << i << ": ";

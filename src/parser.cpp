@@ -153,7 +153,7 @@ std::unordered_map<std::string, OpCodes> strOperandInstructions
     { "ldfield", OpCodes::LOAD_FIELD }
 };
 
-std::string nextToken(const std::vector<std::string>& tokens, int& index) {
+std::string nextToken(const std::vector<std::string>& tokens, std::size_t& index) {
     int left = tokens.size() - (index + 1);
 
     if (left > 0) {
@@ -163,7 +163,8 @@ std::string nextToken(const std::vector<std::string>& tokens, int& index) {
     }
 }
 
-void parseFunctionDef(const std::vector<std::string>& tokens, int& tokenIndex, VMState& vmState, std::string& name, std::vector<const Type*>& parameters, const Type*& returnType) {
+void parseFunctionDef(const std::vector<std::string>& tokens, std::size_t& tokenIndex, VMState& vmState,
+                      std::string& name, std::vector<const Type*>& parameters, const Type*& returnType) {
     name = nextToken(tokens, tokenIndex);
 
     if (nextToken(tokens, tokenIndex) != "(") {
@@ -194,7 +195,7 @@ void parseFunctionDef(const std::vector<std::string>& tokens, int& tokenIndex, V
     }
 }
 
-void readCallParameters(const std::vector<std::string>& tokens, int& tokenIndex, VMState& vmState, std::vector<const Type*>& parameters) {
+void readCallParameters(const std::vector<std::string>& tokens, std::size_t& tokenIndex, VMState& vmState, std::vector<const Type*>& parameters) {
     while (true) {
         auto param = nextToken(tokens, tokenIndex);
 
@@ -224,7 +225,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, VMState& vmStat
     std::string structName;
     std::vector<std::pair<std::string, const Type*>> structFields;
 
-    for (int i = 0; i < tokens.size(); i++) {
+    for (std::size_t i = 0; i < tokens.size(); i++) {
         std::string current = tokens[i];
         std::string currentToLower = toLower(current);
 

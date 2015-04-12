@@ -16,11 +16,11 @@ private:
 
 	std::vector<const Type*> mLocalTypes;
 
-	bool mIsMemberFunction;
-	bool mIsConstructor;
-
 	std::size_t mStackSize;
 	std::size_t mOperandStackSize;
+
+	bool mIsMemberFunction;
+	bool mIsConstructor;
 public:
 	std::vector<Instruction> instructions;
 	std::vector<unsigned char> generatedCode;
@@ -79,12 +79,12 @@ private:
 	std::string mName;
 	std::vector<const Type*> mArguments;
 	const Type* mReturnType;
-	bool mIsMemberFunction;
 
 	long mEntryPoint;
 	int mFunctionSize;
 
 	bool mIsManaged;
+	bool mIsMemberFunction;
 public:
 	//Creates a new managed function definition
 	FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, long entryPoint, int funcSize, bool isMemberFunction = false);

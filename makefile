@@ -1,6 +1,6 @@
 CC=g++
-CFLAGS=-c -std=c++11
-LDFLAGS=-std=c++11
+CFLAGS=-c -std=c++11 -Wall
+LDFLAGS=-std=c++11 -Wall
 
 SRCDIR=src
 OBJDIR=obj

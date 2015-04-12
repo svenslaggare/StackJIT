@@ -88,12 +88,18 @@ FunctionDefinition::FunctionDefinition(
 }
 
 FunctionDefinition::FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, long entryPoint)
-    : mName(name), mArguments(parameters), mReturnType(returnType), mEntryPoint(entryPoint), mFunctionSize(0), mIsManaged(false), mIsMemberFunction(false) {
+    : mName(name),
+      mArguments(parameters),
+      mReturnType(returnType),
+      mEntryPoint(entryPoint),
+      mFunctionSize(0),
+      mIsManaged(false),
+      mIsMemberFunction(false) {
 
 }
 
 FunctionDefinition::FunctionDefinition()
-    : mName(""), mEntryPoint(0), mFunctionSize(0), mIsManaged(false), mReturnType(nullptr), mIsMemberFunction(false) {
+    : mName(""), mReturnType(nullptr), mEntryPoint(0), mFunctionSize(0), mIsManaged(false), mIsMemberFunction(false) {
 
 }
 

@@ -319,7 +319,6 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
             //Jump
             int target = 5 + 5;
-            int start = generatedCode.size();
 
             switch (inst.OpCode) {
                 case OpCodes::COMPARE_EQUAL:
@@ -805,8 +804,6 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::LOAD_STRING:
         {
-            auto elemType = vmState.typeProvider().getType("Char");
-
             if (!vmState.disableGC) {
                 generateGCCall(generatedCode, function, instIndex);
             }

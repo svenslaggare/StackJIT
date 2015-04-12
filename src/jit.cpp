@@ -41,7 +41,7 @@ UnresolvedFunctionCall::Hash_t UnresolvedFunctionCall::Hash = [](const Unresolve
 };
 
 FunctionCompilationData::FunctionCompilationData(Function& function)
-    : function(function), operandStackSize(0), unresolvedCalls(7, UnresolvedFunctionCall::Hash) {
+    : function(function), unresolvedCalls(7, UnresolvedFunctionCall::Hash), operandStackSize(0) {
 
 }
 
