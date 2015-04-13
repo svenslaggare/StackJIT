@@ -432,19 +432,37 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 Amd64Backend::popReg(generatedCode, Registers::CX);
             }
 
-            //Check if the function entry point is defined yet
-            if (funcToCall.entryPoint() != 0) {
-                funcAddr = funcToCall.entryPoint();
-            } else {
+            if (funcToCall.isManaged()) {
                 //Mark that the function call needs to be patched with the entry point later
-            	functionData.unresolvedCalls.insert({
-            		UnresolvedFunctionCall(vmState.binder().functionSignature(function), generatedCode.size()),
-            		calledSignature
-            	});
-            }
+                functionData.unresolvedCalls.insert({
+                    UnresolvedFunctionCall(
+                        FunctionCallType::RELATIVE,
+                        vmState.binder().functionSignature(function),
+                        generatedCode.size()),
+                    calledSignature
+                });
 
-            //Make the call
-            generateCall(generatedCode, funcAddr);
+                //Make the call
+                Amd64Backend::call(generatedCode, 0);
+            } else {
+                //Unmanaged functions are located beyond one int, direct addressing must be used.
+                //Check if the function entry point is defined yet
+                if (funcToCall.entryPoint() != 0) {
+                    funcAddr = funcToCall.entryPoint();
+                } else {
+                    //Mark that the function call needs to be patched with the entry point later
+                    functionData.unresolvedCalls.insert({
+                        UnresolvedFunctionCall(
+                            FunctionCallType::DIRECT,
+                            vmState.binder().functionSignature(function),
+                            generatedCode.size()),
+                        calledSignature
+                    });
+                }
+
+                //Make the call
+                generateCall(generatedCode, funcAddr);
+            }
 
             //Push the result
             mCallingConvention.returnValue(functionData, funcToCall);
@@ -738,7 +756,10 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             } else {
                 //Mark that the function call needs to be patched with the entry point later
                 functionData.unresolvedCalls.insert({
-                    UnresolvedFunctionCall(vmState.binder().functionSignature(function), generatedCode.size()),
+                    UnresolvedFunctionCall(
+                        FunctionCallType::DIRECT,
+                        vmState.binder().functionSignature(function),
+                        generatedCode.size()),
                     calledSignature
                 });
             }

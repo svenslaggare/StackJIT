@@ -18,21 +18,35 @@ typedef void (*JitFunction)();
 
 //Represents a branch target
 struct BranchTarget {
+	//The target of the branch
 	const unsigned int target;
+
+	//The size of the bransh instruction
 	const unsigned int instructionSize;
 
 	BranchTarget(unsigned int target, unsigned int instructionSize);
 };
 
+//The type of a function call
+enum class FunctionCallType {
+	//A direct address to the function is used
+	DIRECT,
+	//An address relative callee function to the function is used
+	RELATIVE
+};
+
 //Represents an unresolved function call
 struct UnresolvedFunctionCall {
+	const FunctionCallType type;
+
 	//The function that has an unresolved call
 	const std::string functionName;
 
 	//The offset for the call instruction
-	const unsigned int callOffset;
+	const std::size_t callOffset;
 
-	UnresolvedFunctionCall(std::string functionName, unsigned int callOffset);
+	//Creates a new unresolved function call
+	UnresolvedFunctionCall(FunctionCallType type, std::string functionName, std::size_t callOffset);
 
 	bool operator<(const UnresolvedFunctionCall& rhs) const;
 	bool operator==(const UnresolvedFunctionCall& rhs) const;

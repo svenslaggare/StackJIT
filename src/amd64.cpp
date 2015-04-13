@@ -160,9 +160,10 @@ void Amd64Backend::callInReg(CodeGen& codeGen, Registers func) {
 }
 
 void Amd64Backend::call(CodeGen& codeGen, int funcAddr) {
-	codeGen.push_back(0xff);
-	codeGen.push_back(0x14);
-	codeGen.push_back(0x25);
+	// codeGen.push_back(0xff);
+	// codeGen.push_back(0x14);
+	// codeGen.push_back(0x25);
+	codeGen.push_back(0xe8);
 
 	IntToBytes converter;
 	converter.IntValue = funcAddr;

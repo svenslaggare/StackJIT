@@ -136,11 +136,3 @@ long FunctionDefinition::entryPoint() const {
 int FunctionDefinition::functionSize() const {
     return mFunctionSize;
 }
-
-void FunctionDefinition::deleteCodeMemory(MemoryManager& memoryManager) {
-    if (functionSize() > 0) {
-        memoryManager.freeMemory((unsigned char*)entryPoint(), functionSize());
-        mFunctionSize = 0;
-        mEntryPoint = 0;
-    }
-}

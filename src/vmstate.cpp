@@ -8,11 +8,7 @@ VMState::VMState()
 }
 
 VMState::~VMState() {
-    //Unmap function code memory
-    for (auto funcEntry : mBinder.functionTable()) {
-        auto func = funcEntry.second;
-        func.deleteCodeMemory(mEngine.jitCompiler().memoryManager());
-    }
+
 }
 
 const std::deque<CallStackEntry>& VMState::callStack() const {

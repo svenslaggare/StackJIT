@@ -17,8 +17,8 @@ BranchTarget::BranchTarget(unsigned int target, unsigned int instructionSize)
 
 }
 
-UnresolvedFunctionCall::UnresolvedFunctionCall(std::string functionName, unsigned int callOffset)
-	: functionName(functionName), callOffset(callOffset) {
+UnresolvedFunctionCall::UnresolvedFunctionCall(FunctionCallType type, std::string functionName, std::size_t callOffset)
+	: type(type), functionName(functionName), callOffset(callOffset) {
 
 }
 
@@ -150,22 +150,35 @@ void JITCompiler::resolveCallTargets() {
     	auto& func = funcEntry.second;
 
 	    for (auto call : func.unresolvedCalls) {
+            auto callType = call.first.type;
 	        auto funcName = call.first.functionName;
 	        auto offset = call.first.callOffset;
 	        auto calledFunc = call.second;
 
-	        //Get a pointer to the functions instructions
+            //The address of the called function
 	        long calledFuncAddr = mVMState.binder().getFunction(calledFunc).entryPoint();
-	        unsigned char* funcCode = (unsigned char*)(mVMState.binder().getFunction(funcName).entryPoint());
+
+            //Get a pointer to the functions instructions
+	        unsigned char* funcCodePtr = (unsigned char*)(mVMState.binder().getFunction(funcName).entryPoint());
 
 	        //Update the call target
-	        LongToBytes converter;
-	        converter.LongValue = calledFuncAddr;
+            if (callType == FunctionCallType::DIRECT) {
+    	        LongToBytes converter;
+    	        converter.LongValue = calledFuncAddr;
 
-	        unsigned int base = offset + 2;
-	        for (std::size_t i = 0; i < sizeof(long); i++) {
-	            funcCode[base + i] = converter.ByteValues[i];
-	        }
+    	        std::size_t base = offset + 2;
+    	        for (std::size_t i = 0; i < sizeof(long); i++) {
+    	            funcCodePtr[base + i] = converter.ByteValues[i];
+    	        }
+            } else if (callType == FunctionCallType::RELATIVE) {
+                IntToBytes converter;
+                converter.IntValue = (int)(calledFuncAddr - ((long)funcCodePtr + offset + 5));
+
+                std::size_t base = offset + 1;
+                for (std::size_t i = 0; i < sizeof(int); i++) {
+                    funcCodePtr[base + i] = converter.ByteValues[i];
+                }
+            }
 	    }
 
 	    func.unresolvedCalls.clear();
@@ -173,17 +186,16 @@ void JITCompiler::resolveCallTargets() {
 }
 
 void JITCompiler::makeExecutable() {
-    //Make the functions memory executable, but not writable.
+    //Check that all calls has been resolved
     for (auto& funcEntry : mFunctions) {
         auto& funcData = funcEntry.second;
        	auto signature = mVMState.binder().functionSignature(funcData.function);
 
-        if (funcData.unresolvedCalls.size() == 0) {
-	        void* mem = (void*)mVMState.binder().getFunction(signature).entryPoint();
-	        std::size_t size = funcData.function.generatedCode.size();
-            mMemoryManager.makeExecutableMemory(mem, size);
-	    } else {
-	    	throw std::runtime_error("The function '" + signature + "' has unresolved calls.");
+        if (funcData.unresolvedCalls.size() > 0) {
+            throw std::runtime_error("The function '" + signature + "' has unresolved calls.");
 	    }
     }
+
+    //Make the functions memory executable, but not writable.
+    mMemoryManager.makeMemoryExecutable();
 }

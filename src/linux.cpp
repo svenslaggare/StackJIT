@@ -7,8 +7,53 @@
 #include <sys/mman.h>
 #include <assert.h>
 
-void* LinuxMemoryManager::allocateMemory(std::size_t size) {
-	void *mem = mmap(
+CodePage::CodePage(void* start, std::size_t size)
+    : mStart(start), mSize(size), mUsed(0) {
+
+}
+
+CodePage::~CodePage() {
+    munmap(mStart, mSize);
+}
+
+std::size_t CodePage::size() const {
+    return mSize;
+}
+
+std::size_t CodePage::used() const {
+    return mUsed;
+}
+
+void* CodePage::allocateMemory(std::size_t size) {
+    if (mUsed + size < mSize) {
+        void* newPtr = (char*)mStart + mUsed;
+        mUsed += size;
+        return newPtr;
+    } else {
+        return nullptr;
+    }
+}
+
+void CodePage::makeExecutable() {
+    int success = mprotect(mStart, mSize, PROT_EXEC | PROT_READ);
+    assert(success == 0);
+}
+
+LinuxMemoryManager::LinuxMemoryManager() {
+
+}
+
+LinuxMemoryManager::~LinuxMemoryManager() {
+    for (auto codePage : mPages) {
+        delete codePage;
+    }
+}
+
+CodePage* LinuxMemoryManager::newPage(std::size_t size) {
+    //Align to page size
+    size = ((size + PAGE_SIZE - 1) / PAGE_SIZE) * PAGE_SIZE;
+
+    void *mem = mmap(
         nullptr,
         size,
         PROT_WRITE | PROT_READ,
@@ -17,16 +62,38 @@ void* LinuxMemoryManager::allocateMemory(std::size_t size) {
         0);
 
     assert(mem != MAP_FAILED);
+    auto newPage = new CodePage(mem, size);
+    mPages.push_back(newPage);
+    return newPage;
+}
+
+CodePage* LinuxMemoryManager::activePage() {
+    return mPages[mPages.size() - 1];
+}
+
+void* LinuxMemoryManager::allocateMemory(std::size_t size) {
+    CodePage* page = nullptr;
+
+    if (mPages.size() == 0) {
+        page = newPage(size);
+    } else {
+        page = activePage();
+    }
+
+    void* mem = page->allocateMemory(size);
+
+    //If null, there is no room for the memory in the page, create a new one.
+    if (mem == nullptr) {
+        mem = newPage(size)->allocateMemory(size);
+    }
+
     return mem;
 }
 
-void LinuxMemoryManager::freeMemory(void* memory, std::size_t size) {
-    munmap(memory, size);
-}
-
-void LinuxMemoryManager::makeExecutableMemory(void* memory, std::size_t size) {
-	int success = mprotect(memory, size, PROT_EXEC | PROT_READ);
-	assert(success == 0);
+void LinuxMemoryManager::makeMemoryExecutable() {
+	for (auto codePage : mPages) {
+        codePage->makeExecutable();
+    }
 }
 
 void LinuxCallingConvention::moveArgsToStack(FunctionCompilationData& functionData) const {
