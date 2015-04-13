@@ -30,7 +30,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(HEADERS)
 
 test: test-amd64 test-vm
 
-test-amd64: $(TESTS_DIR)/amd64-test.h $(SRCDIR)/amd64.cpp $(SRCDIR)/amd64.h
+test-amd64: $(TESTS_DIR)/amd64-test.h $(OBJDIR) $(OBJDIR)/amd64.o
 	mkdir -p $(TEST_RUNNERS_DIR)
 	cxxtestgen --error-printer -o $(TEST_RUNNERS_DIR)/amd64test_runner.cpp $(TESTS_DIR)/amd64-test.h
 	$(CC) $(LDFLAGS) -o $(AMD64_TEST_EXECUTABLE) $(OBJDIR)/amd64.o -I $(CXXTEST) $(TEST_RUNNERS_DIR)/amd64test_runner.cpp
