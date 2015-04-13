@@ -1,7 +1,6 @@
 #include "function.h"
 #include "codegenerator.h"
-#include <stdexcept>
-#include <sys/mman.h>
+#include "memory.h"
 
 Function::Function(std::string name, std::vector<const Type*> arguments, const Type* returnType, bool isMemberFunction, bool isConstructor)
 	: mName(name),
@@ -138,9 +137,9 @@ int FunctionDefinition::functionSize() const {
     return mFunctionSize;
 }
 
-void FunctionDefinition::deleteCodeMemory() {
+void FunctionDefinition::deleteCodeMemory(MemoryManager& memoryManager) {
     if (functionSize() > 0) {
-        munmap((unsigned char*)entryPoint(), functionSize());
+        memoryManager.freeMemory((unsigned char*)entryPoint(), functionSize());
         mFunctionSize = 0;
         mEntryPoint = 0;
     }

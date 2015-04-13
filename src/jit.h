@@ -11,6 +11,7 @@
 class VMState;
 class Function;
 class Type;
+class MemoryManager;
 
 //Represents a jitted function
 typedef void (*JitFunction)();
@@ -85,6 +86,9 @@ public:
 	//Prevent it from being copied
 	JITCompiler(const JITCompiler&) = delete;
 	JITCompiler& operator=(const JITCompiler&) = delete;
+
+	//Returns the memory manager
+	MemoryManager& memoryManager();
 
 	//JITs the given function
 	JitFunction generateFunction(Function* function);

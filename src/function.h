@@ -5,6 +5,7 @@
 #include <string>
 
 class Type;
+class MemoryManager;
 
 //Represents an user defined function
 class Function {
@@ -119,5 +120,5 @@ public:
 	int functionSize() const;
 
 	//Frees the allocted memory for the function (if managed)
-	void deleteCodeMemory();
+	void deleteCodeMemory(MemoryManager& memoryManager);
 };

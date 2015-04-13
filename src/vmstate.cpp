@@ -11,7 +11,7 @@ VMState::~VMState() {
     //Unmap function code memory
     for (auto funcEntry : mBinder.functionTable()) {
         auto func = funcEntry.second;
-        func.deleteCodeMemory();
+        func.deleteCodeMemory(mEngine.jitCompiler().memoryManager());
     }
 }
 

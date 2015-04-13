@@ -74,6 +74,10 @@ void JITCompiler::resolveBranches(FunctionCompilationData& functionData) {
     functionData.unresolvedBranches.clear();
 }
 
+MemoryManager& JITCompiler::memoryManager() {
+    return mMemoryManager;
+}
+
 JitFunction JITCompiler::generateFunction(Function* function) {
 	auto signature = mVMState.binder().functionSignature(*function);
 	mFunctions.emplace(signature, FunctionCompilationData(*function));

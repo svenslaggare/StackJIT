@@ -20,6 +20,10 @@ void* LinuxMemoryManager::allocateMemory(std::size_t size) {
     return mem;
 }
 
+void LinuxMemoryManager::freeMemory(void* memory, std::size_t size) {
+    munmap(memory, size);
+}
+
 void LinuxMemoryManager::makeExecutableMemory(void* memory, std::size_t size) {
 	int success = mprotect(memory, size, PROT_EXEC | PROT_READ);
 	assert(success == 0);

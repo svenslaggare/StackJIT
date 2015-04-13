@@ -22,6 +22,10 @@ EntryPointFunction ExecutionEngine::entryPoint() const {
     }
 }
 
+JITCompiler& ExecutionEngine::jitCompiler() {
+    return mJIT;
+}
+
 void ExecutionEngine::loadAssembly(Assembly& assembly) {
 	//Add the functions to the func table
     for (auto currentFunc : assembly.functions) {

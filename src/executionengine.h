@@ -23,6 +23,9 @@ public:
 	//Returns the entry point
 	EntryPointFunction entryPoint() const; 
 
+	//Returns the JIT compiler
+	JITCompiler& jitCompiler();
+
 	//Loads the given assembly
 	void loadAssembly(Assembly& assembly);
 };

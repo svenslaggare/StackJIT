@@ -6,6 +6,7 @@
 class LinuxMemoryManager : public MemoryManager {
 public:
 	virtual void* allocateMemory(std::size_t size) override;
+	virtual void freeMemory(void* memory, std::size_t size) override;
 	virtual void makeExecutableMemory(void* memory, std::size_t size) override;
 };
 
