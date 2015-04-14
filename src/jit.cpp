@@ -135,7 +135,7 @@ JitFunction JITCompiler::generateFunction(Function* function) {
     }
 
     //Allocate writable and readable memory
-    void *mem = mMemoryManager.allocateMemory(length);
+    void* mem = mMemoryManager.allocateMemory(length);
 
     //Copy the instructions
     memcpy(mem, code, length);

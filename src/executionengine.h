@@ -25,4 +25,7 @@ public:
 
 	//Loads the given assembly
 	void loadAssembly(Assembly& assembly);
+
+	//Begins the execution of the program
+	void beginExecution();
 };

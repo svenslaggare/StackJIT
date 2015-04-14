@@ -67,7 +67,10 @@ void ExecutionEngine::loadAssembly(Assembly& assembly) {
         mVMState.binder().getFunction(signature).setFunctionBody((long)funcPtr, func->generatedCode.size());
     }
 
-    //Fix unresolved calls & make functions executable
+    //Fix unresolved calls
     mJIT.resolveCallTargets();
+}
+
+void ExecutionEngine::beginExecution() {
     mJIT.makeExecutable();
 }

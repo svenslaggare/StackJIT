@@ -213,4 +213,8 @@ public:
         TS_ASSERT_EQUALS(invokeVM("gc/program3"), "0\n");
         TS_ASSERT_EQUALS(invokeVM("gc/program4"), "0\n");
     }
+
+    void testLibrary() {
+        TS_ASSERT_EQUALS(invokeVM("rtlib/program1", "-nd --no-gc -i rtlib/rtlib.sbc"), "0.909297\n5\n0\n");
+    }
 };

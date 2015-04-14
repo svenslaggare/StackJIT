@@ -4,6 +4,7 @@
 #include "function.h"
 #include "type.h"
 
+#include <iostream>
 #include <sys/mman.h>
 #include <assert.h>
 
@@ -14,6 +15,10 @@ CodePage::CodePage(void* start, std::size_t size)
 
 CodePage::~CodePage() {
     munmap(mStart, mSize);
+}
+
+void* CodePage::start() const {
+    return mStart;
 }
 
 std::size_t CodePage::size() const {
@@ -67,27 +72,22 @@ CodePage* LinuxMemoryManager::newPage(std::size_t size) {
     return newPage;
 }
 
-CodePage* LinuxMemoryManager::activePage() {
-    return mPages[mPages.size() - 1];
-}
-
 void* LinuxMemoryManager::allocateMemory(std::size_t size) {
     CodePage* page = nullptr;
 
-    if (mPages.size() == 0) {
+    //Find a page wite enough size
+    for (auto currentPage : mPages) {
+        if (currentPage->used() + size < currentPage->size()) {
+            page = currentPage;
+            break;
+        }
+    }
+
+    if (page == nullptr) {
         page = newPage(size);
-    } else {
-        page = activePage();
     }
 
-    void* mem = page->allocateMemory(size);
-
-    //If null, there is no room for the memory in the page, create a new one.
-    if (mem == nullptr) {
-        mem = newPage(size)->allocateMemory(size);
-    }
-
-    return mem;
+    return page->allocateMemory(size);
 }
 
 void LinuxMemoryManager::makeMemoryExecutable() {

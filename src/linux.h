@@ -19,6 +19,9 @@ public:
 	CodePage(const CodePage&) = delete;
 	CodePage& operator=(const CodePage&) = delete;
 
+	//Returns the start of the page
+	void* start() const;
+
 	//Returns the size of the page
 	std::size_t size() const;
 
@@ -41,9 +44,6 @@ private:
 
 	//Creates a new page
 	CodePage* newPage(std::size_t size);
-
-	//Returns the active page
-	CodePage* activePage();
 public:
 	//Creates a new memory manager
 	LinuxMemoryManager();

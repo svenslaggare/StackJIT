@@ -3,7 +3,7 @@
 #include <vector>
 
 //The OP codes for the instuctios
-enum OpCodes {
+enum OpCodes : unsigned char {
     NOP,
     PUSH_INT,
     PUSH_FLOAT,
@@ -56,15 +56,20 @@ class StructType;
 
 //Represents an instruction
 struct Instruction {
+    //The op code
     OpCodes opCode;
 
+    //Primitive values
     float floatValue;
     int intValue;
     char charValue;
     std::string strValue;
 
-    const StructType* calledStructType;
+    //Used by call instructions
     std::vector<const Type*> parameters;
+
+    //Used by the objects instruction
+    const StructType* calledStructType;
 };
 
 namespace Instructions {
