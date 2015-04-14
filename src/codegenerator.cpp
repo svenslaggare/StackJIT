@@ -138,7 +138,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     //Make the mapping
     functionData.instructionNumMapping.push_back(generatedCode.size());
 
-    switch (inst.OpCode) {
+    switch (inst.opCode) {
     case OpCodes::NOP:
         generatedCode.push_back(0x90); //nop
         break;
@@ -148,12 +148,12 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::PUSH_INT:
         //Push the value
-        Amd64Backend::pushInt(generatedCode, inst.Value.Int); //push <value>
+        Amd64Backend::pushInt(generatedCode, inst.intValue); //push <value>
         break;
     case OpCodes::PUSH_FLOAT:
         {
             //Extract the byte pattern for the float
-            const int* floatData = reinterpret_cast<const int*>(&inst.Value.Float);
+            const int* floatData = reinterpret_cast<const int*>(&inst.floatValue);
 
             //Push the value
             Amd64Backend::pushInt(generatedCode, *floatData); //push <value>
@@ -161,7 +161,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;  
      case OpCodes::PUSH_CHAR:
         //Push the value
-        pushArray(generatedCode, { 0x6A, (unsigned char)inst.Value.Char }); //push <value>
+        pushArray(generatedCode, { 0x6A, (unsigned char)inst.charValue }); //push <value>
         break;
     case OpCodes::ADD:
     case OpCodes::SUB:
@@ -183,7 +183,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             }
 
             //Apply the operator
-            switch (inst.OpCode) {
+            switch (inst.opCode) {
                 case OpCodes::ADD:
                     if (intOp) {
                         Amd64Backend::addRegToReg(generatedCode, Registers::AX, Registers::CX, is32bits); //add eax, ecx
@@ -242,7 +242,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             bool is32bits = false;
 
             //Apply the operator
-            switch (inst.OpCode) {
+            switch (inst.opCode) {
                 case OpCodes::AND:
                     Amd64Backend::andRegToReg(generatedCode, Registers::AX, Registers::CX, is32bits); //and eax, ecx
                     break;
@@ -320,7 +320,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             //Jump
             int target = 5 + 5;
 
-            switch (inst.OpCode) {
+            switch (inst.opCode) {
                 case OpCodes::COMPARE_EQUAL:
                     Amd64Backend::jumpEqual(generatedCode, target);
                     break;
@@ -370,7 +370,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::LOAD_LOCAL:
         {
             //Load rax with the locals offset
-            int localOffset = (inst.Value.Int + function.numArgs() + stackOffset) * -Amd64Backend::REG_SIZE;
+            int localOffset = (inst.intValue + function.numArgs() + stackOffset) * -Amd64Backend::REG_SIZE;
             Amd64Backend::moveIntToReg(generatedCode, Registers::AX, localOffset); //mov rax, <local>
 
             //Now add the base pointer
@@ -388,7 +388,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             //Pop the top operand
             Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
 
-            int localOffset = (inst.Value.Int + function.numArgs() + stackOffset) * -Amd64Backend::REG_SIZE;
+            int localOffset = (inst.intValue + function.numArgs() + stackOffset) * -Amd64Backend::REG_SIZE;
 
             //Store the operand at the given local
             Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::BP, localOffset, Registers::AX); //mov [rbp-local], rax
@@ -399,10 +399,10 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         {   
             std::string calledSignature = "";
 
-            if (inst.OpCode == OpCodes::CALL_INSTANCE) {
-                calledSignature = vmState.binder().memberFunctionSignature(inst.CalledStructType, inst.StrValue, inst.Parameters);
+            if (inst.opCode == OpCodes::CALL_INSTANCE) {
+                calledSignature = vmState.binder().memberFunctionSignature(inst.calledStructType, inst.strValue, inst.parameters);
             } else {
-                calledSignature = vmState.binder().functionSignature(inst.StrValue, inst.Parameters);
+                calledSignature = vmState.binder().functionSignature(inst.strValue, inst.parameters);
             }
 
             //Call the pushFunc runtime function
@@ -425,7 +425,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 return opTypes.at(numArgs - 1 - arg);
             });
 
-            if (inst.OpCode == OpCodes::CALL_INSTANCE) {
+            if (inst.opCode == OpCodes::CALL_INSTANCE) {
                 //Null check
                 Amd64Backend::pushReg(generatedCode, Registers::CX);
                 generateNullCheck(generatedCode, RegisterCallArguments::Arg0, Registers::CX);
@@ -505,7 +505,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::LOAD_ARG:
         {
             //Load rax with the arg offset
-            Amd64Backend::moveIntToReg(generatedCode, Registers::AX, (inst.Value.Int + stackOffset) * -Amd64Backend::REG_SIZE); //mov rax, <int>
+            Amd64Backend::moveIntToReg(generatedCode, Registers::AX, (inst.intValue + stackOffset) * -Amd64Backend::REG_SIZE); //mov rax, <int>
 
             //Now add the base pointer
             Amd64Backend::addRegToReg(generatedCode, Registers::AX, Registers::BP); //add rax, rbp
@@ -524,7 +524,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             //As the exact target in native instructions isn't known, defer to later.
             functionData.unresolvedBranches.insert({
             	generatedCode.size() - 5,
-            	BranchTarget(inst.Value.Int, 5)
+            	BranchTarget(inst.intValue, 5)
             });
         }
         break;
@@ -558,7 +558,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 unsignedComparison = true;
             } 
 
-            switch (inst.OpCode) {
+            switch (inst.opCode) {
                 case OpCodes::BRANCH_EQUAL:
                     Amd64Backend::jumpEqual(generatedCode, 0); //je <target>
                     break;
@@ -600,7 +600,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             //As the exact target in native instructions isn't known, defer to later.
             functionData.unresolvedBranches.insert({
             	generatedCode.size() - 6,
-            	BranchTarget(inst.Value.Int, 6)
+            	BranchTarget(inst.intValue, 6)
             });
         }
         break;
@@ -609,7 +609,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::NEW_ARRAY:
         {
-            auto elemType = vmState.typeProvider().getType(inst.StrValue);
+            auto elemType = vmState.typeProvider().getType(inst.strValue);
 
             if (!vmState.disableGC) {
                 generateGCCall(generatedCode, function, instIndex);
@@ -641,7 +641,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::STORE_ELEMENT:
         {
-            auto elemType = vmState.typeProvider().getType(inst.StrValue);
+            auto elemType = vmState.typeProvider().getType(inst.strValue);
 
             //Pop the operands
             Amd64Backend::popReg(generatedCode, Registers::DX); //The value to store
@@ -672,7 +672,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::LOAD_ELEMENT:
         {
-            auto elemType = vmState.typeProvider().getType(inst.StrValue);
+            auto elemType = vmState.typeProvider().getType(inst.strValue);
 
             //Pop the operands
             Amd64Backend::popReg(generatedCode, Registers::CX); //The index of the element
@@ -718,11 +718,11 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::NEW_OBJECT:
         {
-            auto structType = inst.CalledStructType;
+            auto structType = inst.calledStructType;
 
             //Call the garbageCollect runtime function
             if (!vmState.disableGC) {
-                generateGCCall(generatedCode, function, instIndex, true); //TODO: Should not be false as it could destroy the base pointer.
+                generateGCCall(generatedCode, function, instIndex, true);
             }
 
             //Call the newObject runtime function
@@ -732,7 +732,10 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             Amd64Backend::popReg(generatedCode, Registers::BP);
      
             //Call the constructor
-            std::string calledSignature = vmState.binder().memberFunctionSignature(inst.CalledStructType, inst.StrValue, inst.Parameters);
+            std::string calledSignature = vmState.binder().memberFunctionSignature(
+                inst.calledStructType,
+                inst.strValue,
+                inst.parameters);
 
             //Get the address of the function to call
             long funcAddr = 0;
@@ -744,7 +747,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             Amd64Backend::moveRegToReg(generatedCode, RegisterCallArguments::Arg0, Registers::AX);
 
             for (int i = numArgs - 1; i >= 0; i--) {
-                mCallingConvention.callFunctionArgument(functionData, i + 1, inst.Parameters.at(i));
+                mCallingConvention.callFunctionArgument(functionData, i + 1, inst.parameters.at(i));
             }
 
             //Push the reference to the created object
@@ -778,7 +781,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         {
             //Get the field
             std::pair<std::string, std::string> structAndField;
-            TypeSystem::getStructAndField(inst.StrValue, structAndField);
+            TypeSystem::getStructAndField(inst.strValue, structAndField);
 
             auto structMetadata = vmState.structProvider()[structAndField.first];
             int fieldOffset = structMetadata.fieldOffset(structAndField.second);
@@ -788,7 +791,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             bool is32bits = elemSize == 4;
             bool is8bits = elemSize == 1;
 
-            if (inst.OpCode == OpCodes::LOAD_FIELD) {
+            if (inst.opCode == OpCodes::LOAD_FIELD) {
                 //Pop the operand
                 Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the object
 
@@ -830,10 +833,10 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             }
             
             //The pointer to the string as the first arg
-            Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)inst.StrValue.data()); //mov rdi, <addr of string>
+            Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)inst.strValue.data()); //mov rdi, <addr of string>
 
             //The length of the string as the second arg
-            Amd64Backend::moveIntToReg(generatedCode, Registers::SI, inst.StrValue.length()); //mov rsi, <string length>
+            Amd64Backend::moveIntToReg(generatedCode, Registers::SI, inst.strValue.length()); //mov rsi, <string length>
 
             //Call the newString runtime function
             Amd64Backend::pushReg(generatedCode, Registers::BP);

@@ -56,18 +56,15 @@ class StructType;
 
 //Represents an instruction
 struct Instruction {
-    OpCodes OpCode;
+    OpCodes opCode;
 
-    union {
-        float Float;
-        int Int;
-        char Char;
-    } Value;
+    float floatValue;
+    int intValue;
+    char charValue;
+    std::string strValue;
 
-    std::string StrValue;
-
-    const StructType* CalledStructType;
-    std::vector<const Type*> Parameters;
+    const StructType* calledStructType;
+    std::vector<const Type*> parameters;
 };
 
 namespace Instructions {

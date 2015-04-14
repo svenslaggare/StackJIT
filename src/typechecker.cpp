@@ -83,6 +83,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
     std::vector<InstructionTypes> postInstructionsOperandTypes;
     postInstructionsOperandTypes.reserve(numInsts);
 
+    //Get common types
     const auto intType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Integer));
     const auto floatType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Float));
     const auto boolType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Bool));
@@ -135,7 +136,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
     for (auto inst : function.instructions) {
         instructionsOperandTypes.push_back(operandStack);
 
-        switch (inst.OpCode) {
+        switch (inst.opCode) {
         case OpCodes::NOP:
             break;
         case OpCodes::PUSH_INT:
@@ -237,7 +238,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                 auto op1 = popType(operandStack);
                 auto op2 = popType(operandStack);
     
-                if (inst.OpCode == OpCodes::COMPARE_EQUAL || inst.OpCode == OpCodes::COMPARE_NOT_EQUAL) {
+                if (inst.opCode == OpCodes::COMPARE_EQUAL || inst.opCode == OpCodes::COMPARE_NOT_EQUAL) {
                     if (*op1 == *intType) {               
                         if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
                             operandStack.push(boolType);
@@ -285,7 +286,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
             break;
         case OpCodes::LOAD_LOCAL:
             {
-                auto localIndex = inst.Value.Int;
+                auto localIndex = inst.intValue;
                 auto localType = locals[localIndex];
 
                 if (localType != nullptr) {
@@ -299,7 +300,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
             {
                 assertOperandCount(index, operandStack, 1);
             
-                auto localsIndex = inst.Value.Int;
+                auto localsIndex = inst.intValue;
                 auto valueType = popType(operandStack);
                 auto localType = locals[localsIndex];
                 
@@ -318,14 +319,17 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
         case OpCodes::CALL:
         case OpCodes::CALL_INSTANCE:
             {
-                bool isInstance = inst.OpCode == OpCodes::CALL_INSTANCE;
+                bool isInstance = inst.opCode == OpCodes::CALL_INSTANCE;
 
                 std::string signature = "";
 
                 if (!isInstance) {
-                    signature = vmState.binder().functionSignature(inst.StrValue, inst.Parameters);
+                    signature = vmState.binder().functionSignature(inst.strValue, inst.parameters);
                 } else {
-                    signature = vmState.binder().memberFunctionSignature(inst.CalledStructType, inst.StrValue, inst.Parameters);
+                    signature = vmState.binder().memberFunctionSignature(
+                        inst.calledStructType,
+                        inst.strValue,
+                        inst.parameters);
                 }
 
                 if (!vmState.binder().isDefined(signature)) {
@@ -376,12 +380,13 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                 } else {
                     typeError(
                         index,
-                        "Expected " + std::to_string(returnCount) + " operand on the stack but got " + std::to_string(operandStack.size()) + " when returning.");
+                        "Expected " + std::to_string(returnCount) + " operand on the stack but got "
+                        + std::to_string(operandStack.size()) + " when returning.");
                 }
             }
             break;
         case OpCodes::LOAD_ARG:
-            operandStack.push(function.arguments()[inst.Value.Int]);
+            operandStack.push(function.arguments()[inst.intValue]);
             break;
         case OpCodes::BRANCH_EQUAL:
         case OpCodes::BRANCH_NOT_EQUAL:
@@ -393,8 +398,8 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                 assertOperandCount(index, operandStack, 2);
                 
                 //Check if valid target
-                if (!(inst.Value.Int >= 0 && inst.Value.Int < (int)numInsts)) {
-                    typeError(index, "Invalid jump target (" + std::to_string(inst.Value.Int) + ").");
+                if (!(inst.intValue >= 0 && inst.intValue < (int)numInsts)) {
+                    typeError(index, "Invalid jump target (" + std::to_string(inst.intValue) + ").");
                 }
 
                 auto op1 = popType(operandStack);
@@ -402,19 +407,19 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
     
                 if (*op1 == *intType) {               
                     if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
-                        branches.push_back({ index, (std::size_t)inst.Value.Int, operandStack });
+                        branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
                     } else {
                         typeError(index, "Expected 2 operands of type Int on the stack.");
                     }
                 } else if (*op1 == *boolType) {
                     if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Bool)) {
-                        branches.push_back({ index, (std::size_t)inst.Value.Int, operandStack });
+                        branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
                     } else {
                         typeError(index, "Expected 2 operands of type Bool on the stack.");
                     }
                 } else if (*op1 == *floatType) {
                     if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Float)) {
-                        branches.push_back({ index, (std::size_t)inst.Value.Int, operandStack });
+                        branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
                     } else {
                         typeError(index, "Expected 2 operands of type Float on the stack.");
                     }
@@ -425,11 +430,11 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
             break;
         case OpCodes::BRANCH:
             //Check if valid target
-            if (!(inst.Value.Int >= 0 && inst.Value.Int < (int)numInsts)) {
-                typeError(index, "Invalid jump target (" + std::to_string(inst.Value.Int) + ").");
+            if (!(inst.intValue >= 0 && inst.intValue < (int)numInsts)) {
+                typeError(index, "Invalid jump target (" + std::to_string(inst.intValue) + ").");
             }
 
-            branches.push_back({ index, (std::size_t)inst.Value.Int, operandStack });
+            branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
             break;
         case OpCodes::PUSH_NULL:
             {
@@ -446,17 +451,17 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                     typeError(index, error);
                 }
 
-                auto elemType = vmState.typeProvider().makeType(inst.StrValue);
+                auto elemType = vmState.typeProvider().makeType(inst.strValue);
 
                 if (elemType == nullptr) {
-                    typeError(index, "'" + inst.StrValue + "' is not a valid type.");
+                    typeError(index, "'" + inst.strValue + "' is not a valid type.");
                 }
 
                 if (*elemType == *voidType) {
                     typeError(index, "Array of type 'Void' is not allowed.");
                 }
 
-                operandStack.push(vmState.typeProvider().makeType("Ref.Array[" + inst.StrValue + "]"));
+                operandStack.push(vmState.typeProvider().makeType("Ref.Array[" + inst.strValue + "]"));
             }
             break;
         case OpCodes::STORE_ELEMENT:
@@ -477,7 +482,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                     typeError(index, "Expected second operand to be of type Int.");
                 }
 
-                auto elemType = vmState.typeProvider().makeType(inst.StrValue);
+                auto elemType = vmState.typeProvider().makeType(inst.strValue);
                 assertNotVoidType(index, elemType);
 
                 if (!isNull) {
@@ -491,7 +496,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                 }
 
                 if (elemType == nullptr) {
-                    typeError(index, "There exists no type '" + inst.StrValue + "'.");
+                    typeError(index, "There exists no type '" + inst.strValue + "'.");
                 }
  
                 if (*valueType != *elemType) {
@@ -516,7 +521,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                     typeError(index, "Expected second operand to be of type Int.");
                 }
 
-                auto elemType = vmState.typeProvider().makeType(inst.StrValue);
+                auto elemType = vmState.typeProvider().makeType(inst.strValue);
                 assertNotVoidType(index, elemType);
 
                 if (!isNull) {
@@ -530,7 +535,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                 }
 
                 if (elemType == nullptr) {
-                    typeError(index, "There exists no type '" + inst.StrValue + "'.");
+                    typeError(index, "There exists no type '" + inst.strValue + "'.");
                 }
 
                 operandStack.push(elemType);
@@ -550,7 +555,10 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
             break;
         case OpCodes::NEW_OBJECT:
             {
-                std::string signature = vmState.binder().memberFunctionSignature(inst.CalledStructType, inst.StrValue, inst.Parameters);
+                std::string signature = vmState.binder().memberFunctionSignature(
+                    inst.calledStructType,
+                    inst.strValue,
+                    inst.parameters);
 
                 if (!vmState.binder().isDefined(signature)) {
                     typeError(index, "The constructor '" + signature + "' is not defined.");
@@ -571,7 +579,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                     }
                 }
 
-                operandStack.push(inst.CalledStructType);
+                operandStack.push(inst.calledStructType);
             }
             break;
         case OpCodes::LOAD_FIELD:
@@ -587,7 +595,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
 
                 std::pair<std::string, std::string> structAndField;
 
-                if (TypeSystem::getStructAndField(inst.StrValue, structAndField)) {
+                if (TypeSystem::getStructAndField(inst.strValue, structAndField)) {
                     auto structName = structAndField.first;
                     auto fieldName = structAndField.second;
 
@@ -633,7 +641,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
 
                 std::pair<std::string, std::string> structAndField;
 
-                if (TypeSystem::getStructAndField(inst.StrValue, structAndField)) {
+                if (TypeSystem::getStructAndField(inst.strValue, structAndField)) {
                     auto structName = structAndField.first;
                     auto fieldName = structAndField.second;
 
@@ -674,7 +682,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
         }
 
         if (index == numInsts) {
-            if (inst.OpCode != OpCodes::RET) {
+            if (inst.opCode != OpCodes::RET) {
                 typeError(index, "Functions must end with a 'RET' instruction.");
             }
         }
