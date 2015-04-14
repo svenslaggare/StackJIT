@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
             continue;
         }
 
-        if (switchStr == "--no-gc") {
+        if (switchStr == "-ngc" || switchStr == "--no-gc") {
             vmState.disableGC = true;
             continue;
         }
