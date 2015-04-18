@@ -52,7 +52,7 @@ void ExecutionEngine::loadAssembly(Assembly& assembly) {
     for (auto currentFunc : assembly.functions) {
         auto func = currentFunc.second;
 
-        //Type check the assembly
+        //Type check the function
         TypeChecker::typeCheckFunction(*func, mVMState, mVMState.enableDebug && mVMState.printTypeChecking);
 
         auto funcPtr = mJIT.generateFunction(func);

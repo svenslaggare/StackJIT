@@ -1,5 +1,5 @@
 #include "loader.h"
-#include "newparser.h"
+#include "parser.h"
 #include "function.h"
 #include "vmstate.h"
 #include "instructions.h"
@@ -30,10 +30,9 @@ namespace {
 	}
 
 	//Loads the given instruction
-	Instruction loadInstruction(VMState& vmState, Function* function, NewParser::Instruction inst) {
-		Instruction newInst;
+	Instruction loadInstruction(VMState& vmState, Function* function, Parser::Instruction inst) {
+		Instruction newInst(inst.opCode);
 
-		newInst.opCode = inst.opCode;
 		newInst.intValue = inst.intValue;
 		newInst.charValue = inst.charValue;
 		newInst.floatValue = inst.floatValue;
@@ -53,7 +52,7 @@ namespace {
 	}
 
 	//Loads the given function
-	Function* loadFunction(VMState& vmState, NewParser::Function* function) {
+	Function* loadFunction(VMState& vmState, Parser::Function* function) {
 		std::vector<const Type*> parameters;
 		const Type* returnType;
 
@@ -89,7 +88,7 @@ namespace {
 	}
 
 	//Loads the given external function
-	void loadExternalFunction(VMState& vmState, Assembly& assembly, NewParser::Function* function) {
+	void loadExternalFunction(VMState& vmState, Assembly& assembly, Parser::Function* function) {
 		std::vector<const Type*> parameters;
 
 		for (auto param : function->parameters) {
@@ -114,7 +113,7 @@ namespace {
 	}
 
 	//Loads the given struct
-	void loadStruct(VMState& vmState, NewParser::Struct* structure) {
+	void loadStruct(VMState& vmState, Parser::Struct* structure) {
 		std::vector<std::pair<std::string, const Type*>> fields;
 
 		for (auto field : structure->fields) {
@@ -127,9 +126,9 @@ namespace {
 
 void Loader::load(std::istream& stream, VMState& vmState, Assembly& assembly) {
 	//Parse it
-	auto tokens = NewParser::tokenize(stream);
-	NewParser::Assembly parsedAssembly;
-    NewParser::parseTokens(tokens, parsedAssembly);
+	auto tokens = Parser::tokenize(stream);
+	Parser::Assembly parsedAssembly;
+    Parser::parseTokens(tokens, parsedAssembly);
 
     //Load
     for (auto currentStruct : parsedAssembly.structs) {

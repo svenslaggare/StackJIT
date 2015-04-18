@@ -22,51 +22,53 @@ std::string TypeChecker::typeToString(const Type* type) {
     return type->name();
 }
 
-void typeError(int instIndex, std::string errorMessage) {
-    throw std::runtime_error(std::to_string(instIndex) + ": " + errorMessage);
-}
-
-void assertOperandCount(int index, const InstructionTypes& stack, std::size_t count) {
-    if (stack.size() < count) {
-        typeError(index, "Expected " + std::to_string(count) + " operand(s) on the stack.");
-    }
-}
-
-std::string checkType(const Type* expectedType, const Type* actualType) {
-    if (expectedType == nullptr || *expectedType == *actualType || actualType->name() == "Ref.Null") {
-        return "";
-    } else {
-        return "Expected type '" + TypeChecker::typeToString(expectedType) + "' but got type '" + TypeChecker::typeToString(actualType) + "'.";
-    }
-}
-
-void assertNotVoidType(int index, const Type* type) {
-    if (type != nullptr && type->name() == "Void") {
-        typeError(index, "Void type not allowed.");
-    }
-}
-
-std::deque<const Type*> asVector(InstructionTypes types) {
-    std::deque<const Type*> typesList;
-
-    while (!types.empty()) {
-        typesList.push_back(types.top());
-        types.pop();
+namespace {
+    void typeError(int instIndex, std::string errorMessage) {
+        throw std::runtime_error(std::to_string(instIndex) + ": " + errorMessage);
     }
 
-    return typesList;
-}
-
-struct BranchCheck {
-    const std::size_t source;
-    const std::size_t target;
-    const InstructionTypes branchTypes;
-
-    BranchCheck(std::size_t source, std::size_t target, InstructionTypes branchTypes)
-        : source(source), target(target), branchTypes(branchTypes) {
-
+    void assertOperandCount(int index, const InstructionTypes& stack, std::size_t count) {
+        if (stack.size() < count) {
+            typeError(index, "Expected " + std::to_string(count) + " operand(s) on the stack.");
+        }
     }
-};
+
+    std::string checkType(const Type* expectedType, const Type* actualType) {
+        if (expectedType == nullptr || *expectedType == *actualType || actualType->name() == "Ref.Null") {
+            return "";
+        } else {
+            return "Expected type '" + TypeChecker::typeToString(expectedType) + "' but got type '" + TypeChecker::typeToString(actualType) + "'.";
+        }
+    }
+
+    void assertNotVoidType(int index, const Type* type) {
+        if (type != nullptr && type->name() == "Void") {
+            typeError(index, "Void type not allowed.");
+        }
+    }
+
+    std::deque<const Type*> asVector(InstructionTypes types) {
+        std::deque<const Type*> typesList;
+
+        while (!types.empty()) {
+            typesList.push_back(types.top());
+            types.pop();
+        }
+
+        return typesList;
+    }
+
+    struct BranchCheck {
+        const std::size_t source;
+        const std::size_t target;
+        const InstructionTypes branchTypes;
+
+        BranchCheck(std::size_t source, std::size_t target, InstructionTypes branchTypes)
+            : source(source), target(target), branchTypes(branchTypes) {
+
+        }
+    };
+}
 
 void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool showDebug) {
     InstructionTypes operandStack;
@@ -92,7 +94,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
     const auto nullType = vmState.typeProvider().makeType("Ref.Null");
     const auto stringType = vmState.typeProvider().makeType("Ref.Array[Char]");
     
-    //Set the local type if set
+    //Set the type of the locals
     std::vector<const Type*> locals(function.numLocals());
 
     for (std::size_t i = 0; i < locals.size(); i++) {
@@ -117,11 +119,11 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
 
     //Check the function definition
     if (function.returnType() == nullptr) {
-        throw std::runtime_error("The function cannot return type 'Untyped'.");
+        throw std::runtime_error("A function cannot have return type 'Untyped'.");
     }
 
     if (function.isConstructor() && function.returnType() != voidType) {
-        throw std::runtime_error("Constructors must be of return type 'Void'.");
+        throw std::runtime_error("Constructors must have return type 'Void'.");
     }
 
     int i = 0;
@@ -324,7 +326,9 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                 std::string signature = "";
 
                 if (!isInstance) {
-                    signature = vmState.binder().functionSignature(inst.strValue, inst.parameters);
+                    signature = vmState.binder().functionSignature(
+                        inst.strValue,
+                        inst.parameters);
                 } else {
                     signature = vmState.binder().memberFunctionSignature(
                         inst.calledStructType,
@@ -458,7 +462,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                 }
 
                 if (*elemType == *voidType) {
-                    typeError(index, "Array of type 'Void' is not allowed.");
+                    typeError(index, "Arrays of type 'Void' is not allowed.");
                 }
 
                 operandStack.push(vmState.typeProvider().makeType("Ref.Array[" + inst.strValue + "]"));
@@ -618,7 +622,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                     auto fieldType = structMetadata.getField(fieldName);
 
                     if (fieldType == nullptr) {
-                        typeError(index, "There exists no '" + fieldName + "' field in the '" + structName + "' struct.");
+                        typeError(index, "There exists no field '" + fieldName + "' in the '" + structName + "' struct.");
                     }
 
                     operandStack.push(fieldType);
@@ -653,7 +657,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                     auto fieldType = structMetadata.getField(fieldName);
 
                     if (fieldType == nullptr) {
-                        typeError(index, "There exists no '" + fieldName + "' field in the '" + structName + "' struct.");
+                        typeError(index, "There exists no field '" + fieldName + "' in the '" + structName + "' struct.");
                     }
 
                     auto structType = vmState.typeProvider().makeType("Ref.Struct." + structName);
@@ -667,7 +671,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                     }
 
                     if (*valueType != *fieldType) {
-                        typeError(index, "Expected second operand to be " + fieldType->name() + ".");
+                        typeError(index, "Expected the second operand to be of type " + fieldType->name() + ".");
                     }
                 } else {
                     typeError(index, "Invalid field reference.");

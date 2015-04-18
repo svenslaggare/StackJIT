@@ -181,7 +181,7 @@ public:
         TS_ASSERT_EQUALS(invokeVM("array/program2"), "4\n1337\n");
         TS_ASSERT_EQUALS(invokeVM("array/program3"), "1337\n4\n0\n");
 
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program1")), "what():  2: Array of type 'Void' is not allowed.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program1")), "what():  2: Arrays of type 'Void' is not allowed.");
 
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/boundscheck")), "what():  Array index is out of bounds.");
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/boundscheck2")), "what():  Array index is out of bounds.");
@@ -201,7 +201,7 @@ public:
 
         TS_ASSERT_EQUALS(invokeVM("struct/constructor1"), "1\n2\n0\n");
 
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_constructor1")), "what():  Constructors must be of return type 'Void'.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_constructor1")), "what():  Constructors must have return type 'Void'.");
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_constructor2")), "what():  1: The constructor \'Point::.constructor(Ref.Struct.Point)\' is not defined.");
 
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_memberfunction1")), "what():  Null reference error.");

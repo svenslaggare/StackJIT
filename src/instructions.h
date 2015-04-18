@@ -2,8 +2,8 @@
 #include <string>
 #include <vector>
 
-//The OP codes for the instuctios
-enum OpCodes : unsigned char {
+//The list of op codes
+enum class OpCodes : unsigned char {
     NOP,
     PUSH_INT,
     PUSH_FLOAT,
@@ -55,9 +55,12 @@ class Type;
 class StructType;
 
 //Represents an instruction
-struct Instruction {
+class Instruction {
+private:
+    bool mHasEliminatedNullCheck = false;
+public:
     //The op code
-    OpCodes opCode;
+    const OpCodes opCode;
 
     //Primitive values
     float floatValue;
@@ -70,30 +73,14 @@ struct Instruction {
 
     //Used by the objects instruction
     const StructType* calledStructType;
+
+    //Creates a new instruction
+    Instruction();
+    Instruction(OpCodes opCode);
+
+    //Indicates if the null check has been eliminated
+    bool hasEliminatedNullCheck() const;
+
+    //Eliminates the null check
+    void eliminateNullCheck();
 };
-
-namespace Instructions {
-    //Creates a new instruction with the given op code
-    Instruction make(OpCodes opCode);
-
-    //Creates a new instruction with an int as value
-    Instruction makeWithInt(OpCodes opCode, int value);
-
-    //Creates a new instruction with a float as value
-    Instruction makeWithFloat(OpCodes opCode, float value);
-
-    //Creates a new instruction with a char as value
-    Instruction makeWithChar(OpCodes opCode, char value);
-
-    //Creates a new instruction with a string as the value
-    Instruction makeWithStr(OpCodes opCode, std::string value);
-
-    //Creates a new call instruction
-    Instruction makeCall(std::string funcName, std::vector<const Type*> parameters);
-
-    //Creates a new call instance instruction
-    Instruction makeCallInstance(const StructType* structType, std::string funcName, std::vector<const Type*> parameters);
-
-    //Creates a new create object instruction
-    Instruction makeNewObject(const StructType* structType, std::vector<const Type*> parameters);
-}

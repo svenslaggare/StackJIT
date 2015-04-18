@@ -64,11 +64,6 @@ int main(int argc, char* argv[]) {
                 if (!fileStream.is_open()) {
                     std::cout << "Could not load library '" << libraryPath << "'." << std::endl;
                 }
-
-                // auto tokens = Parser::tokenize(fileStream);
-                // libraries.emplace_back(AssemblyType::LIBRARY);
-                // auto& lib = libraries[libraries.size() - 1];
-                // Parser::parseTokens(tokens, vmState, lib);
                 
                 libraries.emplace_back(AssemblyType::LIBRARY);
                 auto& lib = libraries[libraries.size() - 1];
@@ -109,31 +104,6 @@ int main(int argc, char* argv[]) {
     }
 
     std::cout << res << std::endl;
-
-    // //Tokenize the input
-    // auto tokens = Parser::tokenize(std::cin);
-
-    // //Parse it
-    // Assembly program(AssemblyType::PROGRAM);
-    // Parser::parseTokens(tokens, vmState, program);
-
-    // //Generate a function for the instructions
-    // engine.loadAssembly(program);
-    // auto programPtr = engine.entryPoint();
-
-    // if (vmState.enableDebug) {
-    //     std::cout << "Program output:" << std::endl;
-    // }
-
-    // //Execute the program
-    // engine.beginExecution();
-    // int res = programPtr();
-
-    // if (vmState.enableDebug) {
-    //     std::cout << "Return value: " << std::endl;
-    // }
-
-    // std::cout << res << std::endl;
 
     return 0;
 }
