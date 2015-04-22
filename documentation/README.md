@@ -2,5 +2,7 @@ Documentation
 ============
 This folder contains documentation about the VM.
 
-* [General](documentation/general.md)
-* [Instruction set](documentation/instructionset.md)
+* [Instruction set](instructionset.md)
+* [Types](types.md)
+* [Functions](functions.md)
+* [Objects](objects.md)
