@@ -11,20 +11,6 @@ VMState::~VMState() {
 
 }
 
-const std::deque<CallStackEntry>& VMState::callStack() const {
-    return mCallStack;
-}
-
-CallStackEntry VMState::popFunc() {
-    auto top = std::make_pair(mCallStack.front().first, mCallStack.front().second);
-    mCallStack.pop_front();
-    return top;
-}
-
-void VMState::pushFunc(Function* func, int instIndex) {
-    auto newEntry = std::make_pair(func, instIndex);
-    mCallStack.push_front(newEntry);
-}
 
 TypeProvider& VMState::typeProvider() {
     return mTypeProvider;

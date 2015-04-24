@@ -12,11 +12,11 @@
 extern VMState vmState;
 
 void Runtime::pushFunc(Function* func, int instIndex) {
-    vmState.pushFunc(func, instIndex);
+    vmState.engine().pushFunc(func, instIndex);
 }
 
 void Runtime::popFunc() {
-    vmState.popFunc();
+    vmState.engine().popFunc();
 }
 
 void Runtime::printStackFrame(long* basePtr, Function* func) {
@@ -177,7 +177,7 @@ void Runtime::garbageCollect(long* basePtr, Function* func, int instIndex) {
         markObjects(basePtr, func, instIndex);
 
         int topFuncIndex = 0;
-        for (auto callEntry : vmState.callStack()) {
+        for (auto callEntry : vmState.engine().callStack()) {
             auto topFunc = callEntry.first;
             auto callPoint = callEntry.second;
             auto callBasePtr = findBasePtr(basePtr, 0, topFuncIndex);

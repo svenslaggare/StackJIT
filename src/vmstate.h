@@ -1,16 +1,9 @@
 #pragma once
-#include <unordered_map>
-#include <string>
-#include <deque>
-
-#include "structmetadata.h"
-#include "function.h"
 #include "binder.h"
 #include "gc.h"
 #include "executionengine.h"
 #include "typeprovider.h"
-
-using CallStackEntry = std::pair<Function*, int>;
+#include "structmetadata.h"
 
 //Contains the state of the VM
 class VMState {
@@ -20,8 +13,6 @@ private:
 	StructMetadataProvider mStructProvider;
     GarbageCollector mGC;
     ExecutionEngine mEngine;
-
-	std::deque<CallStackEntry> mCallStack;
 public:
 	//Indicates if debugging is enabled
 	bool enableDebug = true;
@@ -45,15 +36,6 @@ public:
     //Prevent the VM state from being copied
     VMState(const VMState&) = delete;
     VMState& operator=(const VMState&) = delete;
-
-    //Returns the call stack
-    const std::deque<CallStackEntry>& callStack() const;
-
-    //Pops the top function
-    CallStackEntry popFunc();
-
-    //Pushes the given function to the top of the stack
-    void pushFunc(Function* func, int instIndex);
 
     //Returns the type provider
     TypeProvider& typeProvider();

@@ -74,3 +74,18 @@ void ExecutionEngine::loadAssembly(Assembly& assembly) {
 void ExecutionEngine::beginExecution() {
     mJIT.makeExecutable();
 }
+
+const std::deque<CallStackEntry>& ExecutionEngine::callStack() const {
+    return mCallStack;
+}
+
+CallStackEntry ExecutionEngine::popFunc() {
+    auto top = std::make_pair(mCallStack.front().first, mCallStack.front().second);
+    mCallStack.pop_front();
+    return top;
+}
+
+void ExecutionEngine::pushFunc(Function* func, int instIndex) {
+    auto newEntry = std::make_pair(func, instIndex);
+    mCallStack.push_front(newEntry);
+}
