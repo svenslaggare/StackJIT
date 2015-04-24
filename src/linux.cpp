@@ -204,61 +204,30 @@ void LinuxCallingConvention::callFunctionArgument(FunctionCompilationData& funct
 
 void LinuxCallingConvention::callFunctionArguments(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall, GetArugmentType getArgumentType) const {
     int numArgs = funcToCall.arguments().size();
-    auto& generatedCode = functionData.function.generatedCode;
 
     //Set the function arguments
     if (numArgs >= 6) {
-        auto argType = getArgumentType(5);
-        if (argType->name() == "Float") {    
-            Amd64Backend::popReg(generatedCode, FloatRegisters::XMM5);             
-        } else {
-            Amd64Backend::popReg(generatedCode, NumberedRegisters::R9); //pop r9
-        }
+        callFunctionArgument(functionData, 5, getArgumentType(5));
     }
 
     if (numArgs >= 5) {
-        auto argType = getArgumentType(4);
-        if (argType->name() == "Float") {    
-            Amd64Backend::popReg(generatedCode, FloatRegisters::XMM4);             
-        } else {
-            Amd64Backend::popReg(generatedCode, NumberedRegisters::R8); //pop r8
-        }
+        callFunctionArgument(functionData, 4, getArgumentType(4));
     }
 
     if (numArgs >= 4) {
-        auto argType = getArgumentType(3);
-        if (argType->name() == "Float") {    
-            Amd64Backend::popReg(generatedCode, FloatRegisters::XMM3);             
-        } else {
-            Amd64Backend::popReg(generatedCode, Registers::CX); //pop rcx
-        }
+        callFunctionArgument(functionData, 3, getArgumentType(3));
     }
 
     if (numArgs >= 3) {
-        auto argType = getArgumentType(2);
-        if (argType->name() == "Float") {   
-            Amd64Backend::popReg(generatedCode, FloatRegisters::XMM2);            
-        } else {
-            Amd64Backend::popReg(generatedCode, Registers::DX); //pop rdx
-        }
+        callFunctionArgument(functionData, 2, getArgumentType(2));
     }
 
     if (numArgs >= 2) {
-        auto argType = getArgumentType(1);
-        if (argType->name() == "Float") { 
-            Amd64Backend::popReg(generatedCode, FloatRegisters::XMM1);                 
-        } else {
-            Amd64Backend::popReg(generatedCode, Registers::SI); //pop rsi
-        }
+        callFunctionArgument(functionData, 1, getArgumentType(1));
     }
 
     if (numArgs >= 1) {
-        auto argType = getArgumentType(0);
-        if (argType->name() == "Float") {
-            Amd64Backend::popReg(generatedCode, FloatRegisters::XMM0);
-        } else {
-            Amd64Backend::popReg(generatedCode, Registers::DI); //pop rdi
-        }
+        callFunctionArgument(functionData, 0, getArgumentType(0));
     }
 }
 

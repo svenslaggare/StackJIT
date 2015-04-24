@@ -49,11 +49,11 @@ unsigned char* GarbageCollector::newArray(const Type* elementType, int length) {
 
     //Set the size of the array
     IntToBytes converter;
-    converter.IntValue = length;
-    arrayPtr[0] = converter.ByteValues[0];
-    arrayPtr[1] = converter.ByteValues[1];
-    arrayPtr[2] = converter.ByteValues[2];
-    arrayPtr[3] = converter.ByteValues[3];
+    converter.intValue = length;
+    arrayPtr[0] = converter.byteValues[0];
+    arrayPtr[1] = converter.byteValues[1];
+    arrayPtr[2] = converter.byteValues[2];
+    arrayPtr[3] = converter.byteValues[3];
 
     if (vmState.enableDebug) {
         std::cout
@@ -131,7 +131,7 @@ void GarbageCollector::markValue(long value, const Type* type) {
             markObject(mObjects.at(objPtr));
         } else {
             if (vmState.enableDebug) {
-                //Due to a bug in the root finding, its possible to mark invalid values.
+                //This should never happen if bug free
                 std::cout << "Marking invalid object (0x" << std::hex << value << std::dec << ")" << std::endl;
             }
         }

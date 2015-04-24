@@ -3,18 +3,18 @@
 
 //Converts to/from byte arrays
 union ShortToBytes {
-    short ShortValue;
-    unsigned char ByteValues[sizeof(short)];
+    short shortValue;
+    unsigned char byteValues[sizeof(short)];
 };
 
 union IntToBytes {
-    int IntValue;
-    unsigned char ByteValues[sizeof(int)];
+    int intValue;
+    unsigned char byteValues[sizeof(int)];
 };
 
 union LongToBytes {
-    long LongValue;
-    unsigned char ByteValues[sizeof(long)];
+    long longValue;
+    unsigned char byteValues[sizeof(long)];
 };
 
 //The registers

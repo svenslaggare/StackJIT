@@ -61,13 +61,13 @@ void JITCompiler::resolveBranches(FunctionCompilationData& functionData) {
 
         //Calculate the native jump location
         IntToBytes converter;
-        converter.IntValue = nativeTarget - source - branchTarget.instructionSize;
+        converter.intValue = nativeTarget - source - branchTarget.instructionSize;
 
         unsigned int sourceOffset = branchTarget.instructionSize - sizeof(int);
 
         //Update the source with the native target
         for (std::size_t i = 0; i < sizeof(int); i++) {
-            function.generatedCode[source + sourceOffset + i] = converter.ByteValues[i];
+            function.generatedCode[source + sourceOffset + i] = converter.byteValues[i];
         }
     }
 
@@ -164,19 +164,19 @@ void JITCompiler::resolveCallTargets() {
 	        //Update the call target
             if (callType == FunctionCallType::DIRECT) {
     	        LongToBytes converter;
-    	        converter.LongValue = calledFuncAddr;
+    	        converter.longValue = calledFuncAddr;
 
     	        std::size_t base = offset + 2;
     	        for (std::size_t i = 0; i < sizeof(long); i++) {
-    	            funcCodePtr[base + i] = converter.ByteValues[i];
+    	            funcCodePtr[base + i] = converter.byteValues[i];
     	        }
             } else if (callType == FunctionCallType::RELATIVE) {
                 IntToBytes converter;
-                converter.IntValue = (int)(calledFuncAddr - ((long)funcCodePtr + offset + 5));
+                converter.intValue = (int)(calledFuncAddr - ((long)funcCodePtr + offset + 5));
 
                 std::size_t base = offset + 1;
                 for (std::size_t i = 0; i < sizeof(int); i++) {
-                    funcCodePtr[base + i] = converter.ByteValues[i];
+                    funcCodePtr[base + i] = converter.byteValues[i];
                 }
             }
 	    }
