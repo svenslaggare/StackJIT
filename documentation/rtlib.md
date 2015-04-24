@@ -25,4 +25,4 @@ List of managed functions:
 * `std.math.abs(Int) Int`: Computes the absolute function.
 * `std.math.sqrt(Float) Float`: Computes the square root.
 * `std.math.sin(Float) Float`: Computes the sine function.
-* `std.math..cos(Float) Float`: Computes the cosine function.
+* `std.math.cos(Float) Float`: Computes the cosine function.
