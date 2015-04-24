@@ -22,7 +22,7 @@ public:
 	//Returns the type of the handled object
 	const Type* type() const;
 
-	//Returns the handle. Nullptr if deleted.
+	//Returns the handle.
 	const unsigned char* handle() const;
 
 	//Indicates if the object is marked

@@ -4,10 +4,10 @@ func println(Bool) Void
    PUSHTRUE
    BNE 6
    PUSHINT 1
-   CALL println(Int)
+   CALL rt.println(Int)
    BR 8
    PUSHINT 0
-   CALL println(Int)
+   CALL rt.println(Int)
    RET
 }
 

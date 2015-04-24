@@ -12,20 +12,20 @@ func println(Bool) Void
    PUSHTRUE
    BNE 6
    PUSHINT 1
-   CALL println(Int)
+   CALL rt.println(Int)
    BR 8
    PUSHINT 0
-   CALL println(Int)
+   CALL rt.println(Int)
    RET
 }
 
 func main() Int
 {
 	PUSHINT 4711
-	CALL println(Int)
+	CALL rt.println(Int)
 
 	PUSHFLOAT 13.37
-	CALL println(Float)
+	CALL rt.println(Float)
 
 	PUSHTRUE
 	CALL println(Bool)

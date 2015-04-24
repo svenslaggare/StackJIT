@@ -42,14 +42,14 @@ void NativeLibrary::add(VMState& vmState) {
 	void(*printlnInt)(int) = &println;
 	void(*printlnFloat)(float) = &println;
 
-	binder.define(FunctionDefinition("print", { intType }, voidType, (long)(&print)));
-	binder.define(FunctionDefinition("println", { intType }, voidType, (long)(printlnInt)));
-	binder.define(FunctionDefinition("println", { floatType }, voidType, (long)(printlnFloat)));
-	binder.define(FunctionDefinition("printchar", { charType }, voidType, (long)(&printchar)));
+	binder.define(FunctionDefinition("rt.print", { intType }, voidType, (long)(&print)));
+	binder.define(FunctionDefinition("rt.println", { intType }, voidType, (long)(printlnInt)));
+	binder.define(FunctionDefinition("rt.println", { floatType }, voidType, (long)(printlnFloat)));
+	binder.define(FunctionDefinition("rt.printchar", { charType }, voidType, (long)(&printchar)));
 
 	//Math
-	binder.define(FunctionDefinition("abs", { intType }, intType, (long)(&NativeLibrary::abs)));
-	binder.define(FunctionDefinition("sqrt", { floatType }, floatType, (long)(&sqrtf)));
-	binder.define(FunctionDefinition("sin", { floatType }, floatType, (long)(&sinf)));
-	binder.define(FunctionDefinition("cos", { floatType }, floatType, (long)(&cosf)));
+	binder.define(FunctionDefinition("rt.abs", { intType }, intType, (long)(&NativeLibrary::abs)));
+	binder.define(FunctionDefinition("rt.sqrt", { floatType }, floatType, (long)(&sqrtf)));
+	binder.define(FunctionDefinition("rt.sin", { floatType }, floatType, (long)(&sinf)));
+	binder.define(FunctionDefinition("rt.cos", { floatType }, floatType, (long)(&cosf)));
 }

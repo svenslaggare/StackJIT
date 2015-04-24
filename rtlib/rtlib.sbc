@@ -1,13 +1,13 @@
 #Defines the Runtime library.
 
 #Prints an int followed by a line break to standard output
-extern std.println :: println(Int) Void
+extern std.println :: rt.println(Int) Void
 
 #Prints a float followed by a line break to standard output
-extern std.println :: println(Float) Void
+extern std.println :: rt.println(Float) Void
 
 #Prints the given character
-extern std.printchar :: printchar(Char) Void
+extern std.printchar :: rt.printchar(Char) Void
 
 #Prints the given string followed by a new line
 func std.println(Ref.Array[Char]) Void
@@ -26,7 +26,7 @@ func std.println(Ref.Array[Char]) Void
 	LDARG 0
 	LDLOC 0
 	LDELEM Char
-	CALL printchar(Char)
+	CALL rt.printchar(Char)
 
 	LDLOC 0
 	PUSHINT 1
@@ -36,7 +36,7 @@ func std.println(Ref.Array[Char]) Void
 	BR 2
 	
 	PUSHCHAR 10
-	CALL printchar(Char)
+	CALL rt.printchar(Char)
 
 	RET
 }
@@ -49,57 +49,13 @@ func std.gc.collect() Void
 }
 
 #Computes the absolute function
-extern std.math.abs :: abs(Int) Int
+extern std.math.abs :: rt.abs(Int) Int
 
 #Computes the square root
-extern std.math.sqrt :: sqrt(Float) Float
+extern std.math.sqrt :: rt.sqrt(Float) Float
 
 #Computes the sine function
-extern std.math.sin :: sin(Float) Float
+extern std.math.sin :: rt.sin(Float) Float
 
 #Computes the cosine function
-extern std.math.cos :: cos(Float) Float
-
-#Represents a 2D vector
-struct Vector2
-{
-	x Float
-	y Float
-}
-
-member Vector2::.constructor(Float Float) Void
-{
-   LDARG 0
-   LDARG 1
-   STFIELD Vector2::x
-
-   LDARG 0
-   LDARG 2
-   STFIELD Vector2::y
-
-   RET
-}
-
-member Vector2::length() Float
-{
-   .locals 1
-   LDARG 0
-   STLOC 0
-
-   LDLOC 0
-   LDFIELD Vector2::x
-   LDLOC 0
-   LDFIELD Vector2::x
-   MUL
-
-   LDLOC 0
-   LDFIELD Vector2::y
-   LDLOC 0
-   LDFIELD Vector2::y
-   MUL
-
-   ADD
-   CALL sqrt(Float)
-
-   RET
-}
+extern std.math.cos :: rt.cos(Float) Float

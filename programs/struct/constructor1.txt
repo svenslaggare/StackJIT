@@ -29,11 +29,11 @@ func main() Int
 
    LDLOC 0
    LDFIELD Point::x
-   CALL println(Float)
+   CALL rt.println(Float)
 
    LDLOC 0
    LDFIELD Point::y
-   CALL println(Float)
+   CALL rt.println(Float)
 
    PUSHINT 0
    RET

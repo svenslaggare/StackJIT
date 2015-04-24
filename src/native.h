@@ -1,7 +1,7 @@
 #pragma once
 class VMState;
 
-//Represents the native library
+//The part of the runtime library exposed to programs
 namespace NativeLibrary {
 	//Prints the given integer
 	void print(int x);

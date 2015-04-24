@@ -28,7 +28,7 @@ member Point::length() Float
    MUL
 
    ADD
-   CALL sqrt(Float)
+   CALL rt.sqrt(Float)
 
    RET
 }
@@ -49,7 +49,7 @@ func main() Int
 
    LDLOC 0
    CALLINST Point::length()
-   CALL println(Float)
+   CALL rt.println(Float)
 
    PUSHINT 0
    RET

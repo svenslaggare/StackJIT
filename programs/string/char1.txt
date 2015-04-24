@@ -7,10 +7,10 @@ func main() Int
 	STLOC 0
 
 	LDLOC 0
-	CALL printchar(Char)
+	CALL rt.printchar(Char)
 
 	PUSHCHAR 10
-	CALL printchar(Char)
+	CALL rt.printchar(Char)
 
 	PUSHINT 0
 	RET

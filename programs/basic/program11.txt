@@ -23,7 +23,7 @@ func main() Int
    STLOC 0
 
    LDLOC 0
-   CALL println(Float)
+   CALL rt.println(Float)
 
    PUSHINT 0
    RET

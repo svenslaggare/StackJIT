@@ -14,11 +14,11 @@ func main() Int
 	LDLOC 0
 	PUSHINT 0
 	LDELEM Int
-	CALL println(Int)
+	CALL rt.println(Int)
 
 	LDLOC 0
 	LDLEN
-	CALL println(Int)
+	CALL rt.println(Int)
 
 	PUSHINT 0
 	RET

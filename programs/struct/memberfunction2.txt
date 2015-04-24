@@ -42,7 +42,7 @@ func main() Int
    LDLOC 0
    LDLOC 1
    CALLINST Point::addX(Ref.Struct.Point)
-   CALL println(Float)
+   CALL rt.println(Float)
 
    PUSHINT 0
    RET

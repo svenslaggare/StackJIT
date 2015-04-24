@@ -11,7 +11,7 @@ func main() Int
 	PUSHFLOAT 4
 	PUSHFLOAT 5
 	CALL add2(Float Float)
-	CALL println(Float)
+	CALL rt.println(Float)
 	PUSHINT 0
 	RET
 }
