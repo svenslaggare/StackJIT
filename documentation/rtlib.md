@@ -17,12 +17,12 @@ The native functions are implemented in the VM and are prefixed by "rt". These f
 The managed functions either wraps runtime and native functions or provide implementation in managed code for runtime functions. These functions are prefixed by "std".
 
 List of managed functions:
-* `std::println(Int) Void`: Prints an int followed by a line break to standard output.
+* `std.println(Int) Void`: Prints an int followed by a line break to standard output.
 * `std.println(Float) Void`: Prints a float followed by a line break to standard output.
 * `std.printchar(Char) Void`: Prints the given character.
 * `std.println(Ref.Array[Char]) Void`: Prints the given string followed by a new line.
 * `std.gc.collect() Void`: Invokes the garbage collector.
-* `std.math.abs(Int) Int`: Computes the absolute function.
+* `std.math.abs(Int) Int`: Computes the absolute value.
 * `std.math.sqrt(Float) Float`: Computes the square root.
-* `std.math.sin(Float) Float`: Computes the sine function.
-* `std.math.cos(Float) Float`: Computes the cosine function.
+* `std.math.sin(Float) Float`: The sine function.
+* `std.math.cos(Float) Float`: The cosine function.
