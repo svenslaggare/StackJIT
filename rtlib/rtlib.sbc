@@ -1,13 +1,13 @@
 #Defines the Runtime library.
 
 #Prints an int followed by a line break to standard output
-extern std.println :: rt.println(Int) Void
+extern std.println(Int) Void
 
 #Prints a float followed by a line break to standard output
-extern std.println :: rt.println(Float) Void
+extern std.println(Float) Void
 
 #Prints the given character
-extern std.printchar :: rt.printchar(Char) Void
+extern std.printchar(Char) Void
 
 #Prints the given string followed by a new line
 func std.println(Ref.Array[Char]) Void
@@ -26,7 +26,7 @@ func std.println(Ref.Array[Char]) Void
 	LDARG 0
 	LDLOC 0
 	LDELEM Char
-	CALL rt.printchar(Char)
+	CALL std.printchar(Char)
 
 	LDLOC 0
 	PUSHINT 1
@@ -36,7 +36,7 @@ func std.println(Ref.Array[Char]) Void
 	BR 2
 	
 	PUSHCHAR 10
-	CALL rt.printchar(Char)
+	CALL std.printchar(Char)
 
 	RET
 }
@@ -49,13 +49,13 @@ func std.gc.collect() Void
 }
 
 #Computes the absolute function
-extern std.math.abs :: rt.abs(Int) Int
+extern std.math.abs(Int) Int
 
 #Computes the square root
-extern std.math.sqrt :: rt.sqrt(Float) Float
+extern std.math.sqrt(Float) Float
 
 #Computes the sine function
-extern std.math.sin :: rt.sin(Float) Float
+extern std.math.sin(Float) Float
 
 #Computes the cosine function
-extern std.math.cos :: rt.cos(Float) Float
+extern std.math.cos(Float) Float

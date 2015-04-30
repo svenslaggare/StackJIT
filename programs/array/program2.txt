@@ -16,7 +16,7 @@ func getElement(Ref.Array[Int] Int) Int
 func printLine(Int) Void
 {
 	LDARG 0
-	CALL rt.println(Int)
+	CALL std.println(Int)
 	RET
 }
 

@@ -97,19 +97,23 @@ namespace {
 
 		auto signature = vmState.binder().functionSignature(function->name, parameters);
 
-        if (assembly.functions.count(signature) == 0 && !vmState.binder().isDefined(signature)) {
-            auto externSignature = vmState.binder().functionSignature(function->externalName, parameters);
-
-            if (vmState.binder().isDefined(externSignature)) {
-                if (!vmState.binder().defineExternal(signature, externSignature)) {
-                    throw std::runtime_error("'" + externSignature + "' is not an external function.");
-                }
-            } else {
-                throw std::runtime_error("The external function '" + externSignature + "' is not defined.");
-            }
-        } else {
-            throw std::runtime_error("The function '" + signature + "' is already defined.");
+		if (!vmState.binder().isDefined(signature)) {
+            throw std::runtime_error("The external function '" + signature + "' is not defined.");
         }
+
+        // if (assembly.functions.count(signature) == 0 && !vmState.binder().isDefined(signature)) {
+        //     auto externSignature = vmState.binder().functionSignature(function->externalName, parameters);
+
+        //     if (vmState.binder().isDefined(externSignature)) {
+        //         if (!vmState.binder().defineExternal(signature, externSignature)) {
+        //             throw std::runtime_error("'" + externSignature + "' is not an external function.");
+        //         }
+        //     } else {
+        //         throw std::runtime_error("The external function '" + externSignature + "' is not defined.");
+        //     }
+        // } else {
+        //     throw std::runtime_error("The function '" + signature + "' is already defined.");
+        // }
 	}
 
 	//Loads the given struct

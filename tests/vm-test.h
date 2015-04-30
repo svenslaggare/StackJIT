@@ -89,6 +89,8 @@ public:
         TS_ASSERT_EQUALS(invokeVM("basic/program11"), "60.48\n0\n");
         TS_ASSERT_EQUALS(invokeVM("basic/program12"), "0\n");
         TS_ASSERT_EQUALS(invokeVM("basic/program13"), "4711\n13.37\n1\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("basic/program14"), "2\n");
+        TS_ASSERT_EQUALS(invokeVM("basic/program15"), "-2\n");
 
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("basic/invalid_program1")), "what():  1: Locals of 'Void' type are not allowed.");
     }

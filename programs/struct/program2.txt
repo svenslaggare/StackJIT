@@ -35,7 +35,7 @@ func main() Int
 
 	LDLOC 0
 	LDLEN
-	CALL rt.println(Int)
+	CALL std.println(Int)
 
 	LDLOC 0
 	PUSHINT 0

@@ -50,7 +50,7 @@ func main() Int
 
 	LDLOC 0
 	CALL Point::length(Ref.Struct.Point)
-	CALL rt.println(Float)
+	CALL std.println(Float)
 
 	PUSHINT 0
 	RET

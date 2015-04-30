@@ -1,0 +1,7 @@
+func main() Int
+{
+	PUSHINT 5
+	PUSHINT 7
+	SUB
+	RET
+}

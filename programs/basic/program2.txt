@@ -3,6 +3,6 @@ func main() Int
 	PUSHINT -5
 	PUSHINT 2
 	ADD
-	CALL rt.abs(Int)
+	CALL std.math.abs(Int)
 	RET
 }

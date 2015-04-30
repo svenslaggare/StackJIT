@@ -171,7 +171,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             auto opType = function.preInstructionOperandTypes[instIndex][0];
             bool intOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Integer);
             bool floatOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Float);
-            bool is32bits = false;
+            bool is32bits = true;
 
             //Pop 2 operands
             if (intOp) {

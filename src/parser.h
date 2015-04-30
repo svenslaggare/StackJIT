@@ -61,7 +61,6 @@ namespace Parser {
 		std::string memberFunctionName;
 
 		bool isExternal;
-		std::string externalName;
 
 		std::vector<Instruction> instructions;
 		std::vector<std::string> localTypes;

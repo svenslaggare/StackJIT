@@ -524,16 +524,8 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Parser::Assembl
 
 		//Parse external function
         if (isExternFunc) {
-            auto funcName = nextToken(tokens, i);
-
-            if (nextToken(tokens, i) != "::") {
-                throw std::runtime_error("Expected '::' after extern function name.");
-            } 
-
             currentFunc = new Function;
-            parseFunctionDef(tokens, i, currentFunc); 
-            currentFunc->externalName = currentFunc->name;
-            currentFunc->name = funcName;
+            parseFunctionDef(tokens, i, currentFunc);
             currentFunc->isExternal = true;
             
             assembly.functions.push_back(currentFunc);

@@ -14,7 +14,7 @@ func println(Ref.Array[Char]) Void
 	LDARG 0
 	LDLOC 0
 	LDELEM Char
-	CALL rt.printchar(Char)
+	CALL std.printchar(Char)
 
 	LDLOC 0
 	PUSHINT 1
@@ -24,7 +24,7 @@ func println(Ref.Array[Char]) Void
 	BR 2
 	
 	PUSHCHAR 10
-	CALL rt.printchar(Char)
+	CALL std.printchar(Char)
 
 	RET
 }
