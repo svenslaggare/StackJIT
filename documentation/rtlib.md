@@ -11,12 +11,12 @@ The runtime library consists of three parts:
 The runtime functions are functions such as invoking the garbage collector, creating objects, arrays and other low level functions. These functions can not be called by user programs.
 
 ###Native functions###
-The native functions are implemented in the VM and are prefixed by "rt". These functions _should_ not be called, since there name may change in the future.
+The native functions are implemented in the VM and are exposed as normal functions.
 
-##Managed functions##
-The managed functions either wraps runtime and native functions or provide implementation in managed code for runtime functions. These functions are prefixed by "std".
+###Managed functions###
+The managed functions either wraps runtime and native functions or provide implementation in managed code for runtime functions.
 
-List of managed functions:
+##Callable runtime functions##
 * `std.println(Int) Void`: Prints an int followed by a line break to standard output.
 * `std.println(Float) Void`: Prints a float followed by a line break to standard output.
 * `std.printchar(Char) Void`: Prints the given character.
