@@ -14,7 +14,7 @@ The runtime functions are functions such as invoking the garbage collector, crea
 The native functions are implemented in the VM and are exposed as normal functions.
 
 ###Managed functions###
-The managed functions either wraps runtime and native functions or provide implementation in managed code for runtime functions.
+The managed functions either wraps runtime functions or provide implementation in managed code for runtime functions.
 
 ##Callable runtime functions##
 * `std.print(Int) Void`: Prints an int followed to standard output.
