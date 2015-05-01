@@ -6,6 +6,9 @@ namespace NativeLibrary {
 	//Prints the given integer
 	void print(int x);
 
+	//Prints the given float
+	void print(float x);
+
 	//Prints the given integer followed by a line break
 	void println(int x);
 

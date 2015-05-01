@@ -17,6 +17,8 @@ The native functions are implemented in the VM and are exposed as normal functio
 The managed functions either wraps runtime and native functions or provide implementation in managed code for runtime functions.
 
 ##Callable runtime functions##
+* `std.print(Int) Void`: Prints an int followed to standard output.
+* `std.print(Float) Void`: Prints a float followed to standard output.
 * `std.println(Int) Void`: Prints an int followed by a line break to standard output.
 * `std.println(Float) Void`: Prints a float followed by a line break to standard output.
 * `std.printchar(Char) Void`: Prints the given character.

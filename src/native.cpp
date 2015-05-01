@@ -10,6 +10,10 @@ void NativeLibrary::print(int x) {
 	std::cout << x;
 }
 
+void NativeLibrary::print(float x) {
+	std::cout << x;
+}
+
 void NativeLibrary::println(int x) {
 	std::cout << x << std::endl;
 }
@@ -39,10 +43,13 @@ void NativeLibrary::add(VMState& vmState) {
 	auto& binder = vmState.binder();
 
 	//Print
+	void(*printInt)(int) = &print;
+	void(*printFloat)(float) = &print;
 	void(*printlnInt)(int) = &println;
 	void(*printlnFloat)(float) = &println;
 
-	binder.define(FunctionDefinition("std.print", { intType }, voidType, (long)(&print)));
+	binder.define(FunctionDefinition("std.print", { intType }, voidType, (long)(&printInt)));
+	binder.define(FunctionDefinition("std.print", { floatType }, voidType, (long)(&printFloat)));
 	binder.define(FunctionDefinition("std.println", { intType }, voidType, (long)(printlnInt)));
 	binder.define(FunctionDefinition("std.println", { floatType }, voidType, (long)(printlnFloat)));
 	binder.define(FunctionDefinition("std.printchar", { charType }, voidType, (long)(&printchar)));

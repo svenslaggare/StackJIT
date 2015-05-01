@@ -1,5 +1,11 @@
 #Defines the Runtime library.
 
+#Prints an int followed to standard output
+extern std.print(Int) Void
+
+#Prints a float followed to standard output
+extern std.print(Float) Void
+
 #Prints an int followed by a line break to standard output
 extern std.println(Int) Void
 
