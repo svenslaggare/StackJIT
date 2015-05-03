@@ -23,10 +23,11 @@ private:
 	bool mIsMemberFunction;
 	bool mIsConstructor;
 public:
+	//The instructions
 	std::vector<Instruction> instructions;
+
+	//The generated code
 	std::vector<unsigned char> generatedCode;
-	std::vector<std::deque<const Type*>> preInstructionOperandTypes;	
-	std::vector<std::deque<const Type*>> postInstructionOperandTypes;	
 
 	//Creates a new function
 	Function(std::string name, std::vector<const Type*> arguments, const Type* returnType, bool isMemberFunction = false, bool isConstructor = false);

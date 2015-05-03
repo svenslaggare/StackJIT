@@ -83,8 +83,6 @@ JitFunction JITCompiler::generateFunction(Function* function) {
 	mFunctions.emplace(signature, FunctionCompilationData(*function));
 	auto& functionData = mFunctions.at(signature);
 
-    functionData.preInstructionOperandTypes = function->preInstructionOperandTypes;
-    functionData.postInstructionOperandTypes = function->postInstructionOperandTypes;
     functionData.operandStackSize = function->operandStackSize();
     
     //Initialize the function

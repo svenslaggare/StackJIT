@@ -8,12 +8,6 @@
 #include <iostream>
 #include <vector>
 
-const Type* TypeChecker::popType(InstructionTypes& stack) {
-    auto value = stack.top();
-    stack.pop();
-    return value;
-}
-
 std::string TypeChecker::typeToString(const Type* type) {
     if (type == nullptr) {
         return "Untyped";
@@ -23,6 +17,18 @@ std::string TypeChecker::typeToString(const Type* type) {
 }
 
 namespace {
+    const Type* popType(InstructionTypes& stack) {
+        auto value = stack.top();
+        stack.pop();
+        return value;
+    }
+
+    const Type* popType(std::deque<const Type*>& list) {
+        auto value = list.front();
+        list.pop_front();
+        return value;
+    }
+
     void typeError(int instIndex, std::string errorMessage) {
         throw std::runtime_error(std::to_string(instIndex) + ": " + errorMessage);
     }
@@ -47,7 +53,7 @@ namespace {
         }
     }
 
-    std::deque<const Type*> asVector(InstructionTypes types) {
+    std::deque<const Type*> asList(InstructionTypes types) {
         std::deque<const Type*> typesList;
 
         while (!types.empty()) {
@@ -78,12 +84,6 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
     if (numInsts == 0) {
         typeError(1, "Empty functions are not allowed.");
     }
-
-    std::vector<InstructionTypes> instructionsOperandTypes;
-    instructionsOperandTypes.reserve(numInsts);
-
-    std::vector<InstructionTypes> postInstructionsOperandTypes;
-    postInstructionsOperandTypes.reserve(numInsts);
 
     //Get common types
     const auto intType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Integer));
@@ -135,10 +135,16 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
         i++;
     }
 
-    for (auto inst : function.instructions) {
-        instructionsOperandTypes.push_back(operandStack);
+    for (auto& inst : function.instructions) {
+        inst.setOperandTypes(asList(operandStack));
 
-        switch (inst.opCode) {
+        //Calculate the maximum size of the stack
+        auto stackSize = inst.operandTypes().size();
+        if (stackSize > function.operandStackSize()) {
+            function.setOperandStackSize(stackSize);
+        }
+
+        switch (inst.opCode()) {
         case OpCodes::NOP:
             break;
         case OpCodes::PUSH_INT:
@@ -240,7 +246,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                 auto op1 = popType(operandStack);
                 auto op2 = popType(operandStack);
     
-                if (inst.opCode == OpCodes::COMPARE_EQUAL || inst.opCode == OpCodes::COMPARE_NOT_EQUAL) {
+                if (inst.opCode() == OpCodes::COMPARE_EQUAL || inst.opCode() == OpCodes::COMPARE_NOT_EQUAL) {
                     if (*op1 == *intType) {               
                         if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
                             operandStack.push(boolType);
@@ -321,7 +327,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
         case OpCodes::CALL:
         case OpCodes::CALL_INSTANCE:
             {
-                bool isInstance = inst.opCode == OpCodes::CALL_INSTANCE;
+                bool isInstance = inst.opCode() == OpCodes::CALL_INSTANCE;
 
                 std::string signature = "";
 
@@ -686,19 +692,18 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
         }
 
         if (index == numInsts) {
-            if (inst.opCode != OpCodes::RET) {
+            if (inst.opCode() != OpCodes::RET) {
                 typeError(index, "Functions must end with a 'RET' instruction.");
             }
         }
 
-        postInstructionsOperandTypes.push_back(operandStack);
         index++;
     }
 
     //Check that the branches are valid
     for (auto branch : branches) {
         auto postSourceTypes = branch.branchTypes;
-        auto preTargetTypes = instructionsOperandTypes[branch.target];
+        auto preTargetTypes = function.instructions[branch.target].operandTypes();
 
         if (postSourceTypes.size() == preTargetTypes.size()) {
             for (std::size_t i = 0; i < postSourceTypes.size(); i++) {
@@ -717,13 +722,13 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
 
     if (showDebug) {
         for (std::size_t i = 0; i < numInsts; i++) {
-            auto types = instructionsOperandTypes[i];
+            auto types = function.instructions[i].operandTypes();
 
             std::cout << i << ": ";
 
             while (!types.empty()) {
-                std::cout << typeToString(types.top()) << " ";
-                types.pop();
+                std::cout << typeToString(types.front()) << " ";
+                types.pop_front();
             }
 
             std::cout << std::endl;
@@ -738,18 +743,5 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
         if (function.getLocal(i) == nullptr) {
             typeError(1, "Local " + std::to_string(i) + " is not typed.");
         }
-    }
-
-    //Save the operand types
-    for (auto instTypes : instructionsOperandTypes) {
-        function.preInstructionOperandTypes.push_back(asVector(instTypes));
-
-        if (instTypes.size() > function.operandStackSize()) {
-            function.setOperandStackSize(instTypes.size());
-        }
-    }
-
-    for (auto instTypes : postInstructionsOperandTypes) {
-        function.postInstructionOperandTypes.push_back(asVector(instTypes));
     }
 }

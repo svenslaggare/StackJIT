@@ -69,12 +69,6 @@ struct FunctionCompilationData {
 	//Unresolved function calls						 
 	std::unordered_map<UnresolvedFunctionCall, std::string,	UnresolvedFunctionCall::Hash_t> unresolvedCalls;
 
-	//The types of the operands for the instruction
-	std::vector<std::deque<const Type*>> preInstructionOperandTypes;
-
-	//The types of the operands after an instruction has been executed
-	std::vector<std::deque<const Type*>> postInstructionOperandTypes;
-
 	//The size of the operand stack
 	int operandStackSize;
 

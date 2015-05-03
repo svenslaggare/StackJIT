@@ -138,7 +138,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     //Make the mapping
     functionData.instructionNumMapping.push_back(generatedCode.size());
 
-    switch (inst.opCode) {
+    switch (inst.opCode()) {
     case OpCodes::NOP:
         generatedCode.push_back(0x90); //nop
         break;
@@ -168,7 +168,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::MUL:
     case OpCodes::DIV:
         {
-            auto opType = function.preInstructionOperandTypes[instIndex][0];
+            auto opType = inst.operandTypes()[0];
             bool intOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Integer);
             bool floatOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Float);
             bool is32bits = true;
@@ -183,7 +183,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             }
 
             //Apply the operator
-            switch (inst.opCode) {
+            switch (inst.opCode()) {
                 case OpCodes::ADD:
                     if (intOp) {
                         Amd64Backend::addRegToReg(generatedCode, Registers::AX, Registers::CX, is32bits); //add eax, ecx
@@ -242,7 +242,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             bool is32bits = false;
 
             //Apply the operator
-            switch (inst.opCode) {
+            switch (inst.opCode()) {
                 case OpCodes::AND:
                     Amd64Backend::andRegToReg(generatedCode, Registers::AX, Registers::CX, is32bits); //and eax, ecx
                     break;
@@ -294,7 +294,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::COMPARE_LESS_THAN:
     case OpCodes::COMPARE_LESS_THAN_OR_EQUAL:
         {
-            auto opType = function.preInstructionOperandTypes[instIndex][0];
+            auto opType = inst.operandTypes()[0];
             bool intOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Integer);
             bool boolType = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Bool);
             bool floatOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Float);
@@ -320,7 +320,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             //Jump
             int target = 5 + 5;
 
-            switch (inst.opCode) {
+            switch (inst.opCode()) {
                 case OpCodes::COMPARE_EQUAL:
                     Amd64Backend::jumpEqual(generatedCode, target);
                     break;
@@ -399,7 +399,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         {   
             std::string calledSignature = "";
 
-            if (inst.opCode == OpCodes::CALL_INSTANCE) {
+            if (inst.opCode() == OpCodes::CALL_INSTANCE) {
                 calledSignature = vmState.binder().memberFunctionSignature(inst.calledStructType, inst.strValue, inst.parameters);
             } else {
                 calledSignature = vmState.binder().functionSignature(inst.strValue, inst.parameters);
@@ -419,13 +419,13 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             int numArgs = funcToCall.arguments().size();
 
             //Set the function arguments
-            auto opTypes = function.preInstructionOperandTypes[instIndex];
+            auto& opTypes = inst.operandTypes();
 
             mCallingConvention.callFunctionArguments(functionData, funcToCall, [&](int arg) {
                 return opTypes.at(numArgs - 1 - arg);
             });
 
-            if (inst.opCode == OpCodes::CALL_INSTANCE) {
+            if (inst.opCode() == OpCodes::CALL_INSTANCE) {
                 //Null check
                 Amd64Backend::pushReg(generatedCode, Registers::CX);
                 generateNullCheck(generatedCode, RegisterCallArguments::Arg0, Registers::CX);
@@ -535,7 +535,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::BRANCH_LESS_THAN:
     case OpCodes::BRANCH_LESS_THAN_OR_EQUAL:
         {           
-            auto opType = function.preInstructionOperandTypes[instIndex][0];
+            auto opType = inst.operandTypes()[0];
             bool intOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Integer);
             bool boolType = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Bool);
             bool floatOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Float);
@@ -558,7 +558,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 unsignedComparison = true;
             } 
 
-            switch (inst.opCode) {
+            switch (inst.opCode()) {
                 case OpCodes::BRANCH_EQUAL:
                     Amd64Backend::jumpEqual(generatedCode, 0); //je <target>
                     break;
@@ -791,7 +791,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             bool is32bits = elemSize == 4;
             bool is8bits = elemSize == 1;
 
-            if (inst.opCode == OpCodes::LOAD_FIELD) {
+            if (inst.opCode() == OpCodes::LOAD_FIELD) {
                 //Pop the operand
                 Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the object
 

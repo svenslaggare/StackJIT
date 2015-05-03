@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <deque>
 
 //The list of op codes
 enum class OpCodes : unsigned char {
@@ -57,11 +58,10 @@ class StructType;
 //Represents an instruction
 class Instruction {
 private:
+    const OpCodes mOpCode;
     bool mHasEliminatedNullCheck = false;
+    std::deque<const Type*> mOperandTypes;
 public:
-    //The op code
-    const OpCodes opCode;
-
     //Primitive values
     float floatValue;
     int intValue;
@@ -78,9 +78,18 @@ public:
     Instruction();
     Instruction(OpCodes opCode);
 
+    //Returns the OP code
+    OpCodes opCode() const;
+
     //Indicates if the null check has been eliminated
     bool hasEliminatedNullCheck() const;
 
     //Eliminates the null check
     void eliminateNullCheck();
+
+    //Returns the operand types
+    const std::deque<const Type*>& operandTypes() const;
+
+    //Sets the operand types
+    void setOperandTypes(std::deque<const Type*> operandTypes);
 };

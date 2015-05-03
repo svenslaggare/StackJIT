@@ -10,9 +10,6 @@ typedef std::stack<const Type*> InstructionTypes;
 
 //The type checker
 namespace TypeChecker {
-	//Pops a type from the given stack
-	const Type* popType(InstructionTypes& stack);
-
 	//Converts the given type to a string
 	std::string typeToString(const Type* type);
 
