@@ -160,7 +160,7 @@ void JITCompiler::resolveCallTargets() {
 	        unsigned char* funcCodePtr = (unsigned char*)(mVMState.binder().getFunction(funcName).entryPoint());
 
 	        //Update the call target
-            if (callType == FunctionCallType::DIRECT) {
+            if (callType == FunctionCallType::Absolute) {
     	        LongToBytes converter;
     	        converter.longValue = calledFuncAddr;
 
@@ -168,7 +168,7 @@ void JITCompiler::resolveCallTargets() {
     	        for (std::size_t i = 0; i < sizeof(long); i++) {
     	            funcCodePtr[base + i] = converter.byteValues[i];
     	        }
-            } else if (callType == FunctionCallType::RELATIVE) {
+            } else if (callType == FunctionCallType::Relative) {
                 IntToBytes converter;
                 converter.intValue = (int)(calledFuncAddr - ((long)funcCodePtr + offset + 5));
 

@@ -436,7 +436,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 //Mark that the function call needs to be patched with the entry point later
                 functionData.unresolvedCalls.insert({
                     UnresolvedFunctionCall(
-                        FunctionCallType::RELATIVE,
+                        FunctionCallType::Relative,
                         vmState.binder().functionSignature(function),
                         generatedCode.size()),
                     calledSignature
@@ -453,7 +453,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                     //Mark that the function call needs to be patched with the entry point later
                     functionData.unresolvedCalls.insert({
                         UnresolvedFunctionCall(
-                            FunctionCallType::DIRECT,
+                            FunctionCallType::Absolute,
                             vmState.binder().functionSignature(function),
                             generatedCode.size()),
                         calledSignature
@@ -760,7 +760,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 //Mark that the function call needs to be patched with the entry point later
                 functionData.unresolvedCalls.insert({
                     UnresolvedFunctionCall(
-                        FunctionCallType::DIRECT,
+                        FunctionCallType::Absolute,
                         vmState.binder().functionSignature(function),
                         generatedCode.size()),
                     calledSignature

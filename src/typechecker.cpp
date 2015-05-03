@@ -109,10 +109,6 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
         }
     }
 
-    std::vector<BranchCheck> branches;
-
-    std::size_t index = 1;
-
     if (showDebug) {
         std::cout << "----Type checking: " <<  function.name() << "----" << std::endl;
     }
@@ -134,6 +130,9 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
 
         i++;
     }
+
+    std::size_t index = 1;
+    std::vector<BranchCheck> branches;
 
     for (auto& inst : function.instructions) {
         inst.setOperandTypes(asList(operandStack));

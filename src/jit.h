@@ -30,9 +30,9 @@ struct BranchTarget {
 //The type of a function call
 enum class FunctionCallType {
 	//A direct address to the function is used
-	DIRECT,
+	Absolute,
 	//An address relative callee function to the function is used
-	RELATIVE
+	Relative
 };
 
 //Represents an unresolved function call
@@ -63,7 +63,7 @@ struct FunctionCompilationData {
 	//Unresolved branches
 	std::unordered_map<unsigned int, BranchTarget> unresolvedBranches;
 
-	//Mapping from instruction num to native instruction
+	//Mapping from instruction number to native instruction offset
 	std::vector<unsigned int> instructionNumMapping;			
 
 	//Unresolved function calls						 
