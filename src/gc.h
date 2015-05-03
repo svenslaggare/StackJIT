@@ -12,6 +12,8 @@ class GarbageCollector {
 private:
 	VMState& vmState;
 
+	std::size_t mNumAllocated = 0;
+	const std::size_t mAllocatedBeforeCollection = 0;
 	std::unordered_map<const unsigned char*, ObjectHandle*> mObjects;	
 	std::vector<ObjectHandle*> mObjectsToRemove;
 

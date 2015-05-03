@@ -20,6 +20,7 @@ GarbageCollector::~GarbageCollector() {
 
 void GarbageCollector::newObject(ObjectHandle* handle) {
     mObjects.insert({ handle->handle(), handle });
+    mNumAllocated++;
 }
 
 void GarbageCollector::deleteObject(ObjectHandle* handle) {
@@ -162,18 +163,23 @@ void GarbageCollector::sweepObjects() {
 }
 
 bool GarbageCollector::beginGC() {
-    if (vmState.enableDebug) {
-    	std::cout << "Alive objects: " << std::endl;
+    if (mNumAllocated >= mAllocatedBeforeCollection) {
+        if (vmState.enableDebug) {
+            std::cout << "Alive objects: " << std::endl;
 
-        for (auto objEntry : mObjects) {
-            auto obj = objEntry.second;
-            printObject(obj);
+            for (auto objEntry : mObjects) {
+                auto obj = objEntry.second;
+                printObject(obj);
+            }
         }
-    }
 
-    return true;
+        return true;
+    } else {
+        return false;
+    }
 }
 
 void GarbageCollector::endGC() {
 	sweepObjects();
+    mNumAllocated = 0;
 }

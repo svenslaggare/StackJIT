@@ -7,3 +7,4 @@ tests/runners/*
 *.s
 *.sublime-workspace
 *.sublime-project
+.idea
