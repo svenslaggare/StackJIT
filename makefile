@@ -8,6 +8,7 @@ EXECUTABLE=stackjit
 
 SOURCES=$(wildcard $(SRCDIR)/*.cpp)
 HEADERS=$(wildcard $(SRCDIR)/*.h)
+TEMPLATE_HEADERS=$(wildcard $(SRCDIR)/*.hpp)
 
 _OBJECTS=$(SOURCES:.cpp=.o)
 OBJECTS=$(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(_OBJECTS))
@@ -25,7 +26,7 @@ $(OBJDIR):
 $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(HEADERS)
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(HEADERS) $(TEMPLATE_HEADERS)
 	$(CC) $(CFLAGS) $< -o $@	
 
 test: test-amd64 test-vm

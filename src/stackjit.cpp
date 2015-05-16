@@ -1,14 +1,14 @@
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <string.h>
-
 #include "assembly.h"
 #include "loader.h"
 #include "parser.h"
 #include "native.h"
 #include "vmstate.h"
 #include "executionengine.h"
+
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string.h>
 
 //The global state for the VM
 VMState vmState;

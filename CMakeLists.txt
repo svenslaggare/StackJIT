@@ -53,4 +53,4 @@ set(SOURCE_FILES
     tests/amd64-test.h
     tests/vm-test.h)
 
-add_executable(stackjit ${SOURCE_FILES})
+add_executable(stackjit ${SOURCE_FILES} src/objectref.h src/objectref.cpp)

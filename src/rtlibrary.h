@@ -43,7 +43,7 @@ namespace Runtime {
 	//Signals that an invalid array creation has been made
 	void invalidArrayCreation();
 
-	//Signals that an inavlid array access has been made
+	//Signals that an invalid array access has been made
 	void arrayOutOfBoundsError();
 
 	//Signals that a null reference has been made

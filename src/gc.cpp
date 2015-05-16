@@ -94,10 +94,10 @@ void GarbageCollector::markObject(ObjectHandle* handle) {
 
             //Mark ref elements
             if (TypeSystem::isReferenceType(arrayType->elementType())) {
-                long* elemenetsPtr = (long*)(arrayHandle->handle() + 4);
+                long* elementsPtr = (long*)(arrayHandle->handle() + 4);
 
                 for (int i = 0; i < arrayHandle->length(); i++) {
-                    markValue(elemenetsPtr[i], arrayType->elementType());
+                    markValue(elementsPtr[i], arrayType->elementType());
                 }
             }
         } else if (TypeSystem::isStruct(handle->type())) {
@@ -182,4 +182,19 @@ bool GarbageCollector::beginGC() {
 void GarbageCollector::endGC() {
 	sweepObjects();
     mNumAllocated = 0;
+}
+
+ObjectHandle* GarbageCollector::getHandle(unsigned char* objectPtr) {
+    if (mObjects.count(objectPtr) > 0) {
+        return mObjects[objectPtr];
+    } else {
+        return nullptr;
+    }
+}
+
+StructRef GarbageCollector::getStructRef(RawStructRef structRef) {
+	auto handle = static_cast<StructHandle*>(getHandle(structRef));
+	auto structType = static_cast<const StructType*>(handle->type());
+	auto& structMetadata = vmState.structProvider()[structType->structName()];
+	return StructRef(handle, structMetadata);
 }

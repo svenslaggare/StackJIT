@@ -1,4 +1,6 @@
 #pragma once
+#include "objects.h"
+#include "objectref.h"
 #include <unordered_map>
 #include <vector>
 
@@ -31,6 +33,9 @@ private:
 
 	//Sweeps the object deleting unreachable objects.
 	void sweepObjects();
+
+	//Returns a handle for the given raw object pointer
+	ObjectHandle* getHandle(unsigned char* objectPtr);
 public:
 	//Creates a new GC
 	GarbageCollector(VMState& vmState);
@@ -55,4 +60,17 @@ public:
 
 	//Ends the garbage collection.
 	void endGC();
+
+	//Returns a reference to the given structure
+	StructRef getStructRef(RawStructRef structRef);
+
+	//Returns a reference to the given array
+	template<typename T>
+	ArrayRef<T> getArrayRef(RawArrayRef arrayRef);
 };
+
+template<typename T>
+ArrayRef<T> GarbageCollector::getArrayRef(RawArrayRef arrayRef) {
+	auto handle = static_cast<ArrayHandle*>(getHandle(arrayRef));
+	return ArrayRef<T>(handle);
+}
