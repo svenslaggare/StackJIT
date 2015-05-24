@@ -219,4 +219,9 @@ public:
     void testLibrary() {
         TS_ASSERT_EQUALS(invokeVM("rtlib/program1", "-nd --no-gc -i rtlib/rtlib.sbc"), "0.909297\n5\n0\n");
     }
+
+    void testAttributes() {
+        TS_ASSERT_EQUALS(invokeVM("attributes/func1"), "12\n");
+        TS_ASSERT_EQUALS(invokeVM("attributes/struct1"), "0\n");
+    }
 };

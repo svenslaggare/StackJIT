@@ -1,0 +1,17 @@
+func addInt(Int Int) Int
+{
+	@Modifiers(access=public const=yes)
+
+	LDARG 0
+	LDARG 1
+	ADD
+	RET
+}
+
+func main() Int
+{
+	PUSHINT 5
+	PUSHINT 7
+	CALL addInt(Int Int)
+	RET
+}

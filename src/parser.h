@@ -2,6 +2,7 @@
 #include "instructions.h"
 #include <vector>
 #include <string>
+#include <unordered_map>
 
 //The parser
 namespace Parser {
@@ -50,6 +51,17 @@ namespace Parser {
 	    static Instruction makeNewObject(std::string structType, std::vector<std::string> parameters);
 	};
 
+	//Represents an attribute
+	struct Attribute {
+		std::string name;
+		std::unordered_map<std::string, std::string> values;
+	};
+
+	//Represents an attributes container
+	struct AttributeContainer {
+		std::unordered_map<std::string, Attribute> attributes;
+	};
+
 	//Represents a function
 	struct Function {
 		std::string name;
@@ -64,6 +76,8 @@ namespace Parser {
 
 		std::vector<Instruction> instructions;
 		std::vector<std::string> localTypes;
+
+		AttributeContainer attributes;
 
 		//Creates a new function
 		Function();
@@ -85,6 +99,8 @@ namespace Parser {
 	struct Struct {
 		std::string name;
 		std::vector<Field> fields;
+
+		AttributeContainer attributes;
 
 		//Creates a new struct
 		Struct();

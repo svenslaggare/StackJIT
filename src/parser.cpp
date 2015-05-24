@@ -194,6 +194,44 @@ namespace {
 			parameters.push_back(param);
 		}
 	}
+
+	void parseAttribute(const std::vector<std::string>& tokens, std::size_t& tokenIndex, Parser::AttributeContainer& container) {
+		auto attributeName = nextToken(tokens, tokenIndex);
+
+		if (nextToken(tokens, tokenIndex) != "(") {
+			throw std::runtime_error("Expected '(' after attribute name");
+		}
+
+		if (container.attributes.count(attributeName) > 0) {
+			throw std::runtime_error("The attribute '" + attributeName + "' is already defined.'");
+		}
+
+		Parser::Attribute attribute;
+		attribute.name = attributeName;
+
+		while (true) {
+			auto key = nextToken(tokens, tokenIndex);
+
+			if (key == ")") {
+				break;
+			}
+
+			if (nextToken(tokens, tokenIndex) != "=") {
+				throw std::runtime_error("Expected '=' after name in attribute.");
+			}
+
+			auto value = nextToken(tokens, tokenIndex);
+
+			if (attribute.values.count(key) == 0) {
+				attribute.values.insert({ key, value });
+			} else {
+				throw std::runtime_error(
+					"The key '" + key + "' is already defined in the attribute '" + attributeName + "'.");
+			}
+		}
+
+		container.attributes.insert({ attributeName, attribute });
+	}
 }
 
 std::vector<std::string> Parser::tokenize(std::istream& stream) {
@@ -245,6 +283,16 @@ std::vector<std::string> Parser::tokenize(std::istream& stream) {
 				newIdentifier = true;
 			}
 
+			if (c == '@') {
+				newToken = true;
+				newIdentifier = true;
+			}
+
+			if (c == '=') {
+				newToken = true;
+				newIdentifier = true;
+			}
+
 			if (newToken) {
 				if (token != "") {
 					tokens.push_back(token);
@@ -290,6 +338,11 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Parser::Assembl
 
 		//Bodies
 		if (isFuncBody) {
+			if (currentToLower == "@") {
+				parseAttribute(tokens, i, currentFunc.attributes);
+				continue;
+			}
+
 			if (currentToLower == "pushint") {
 				int value = stoi(nextToken(tokens, i));
 				currentFunc.instructions.push_back(Instruction::makeWithInt(OpCodes::PUSH_INT, value));
@@ -460,6 +513,11 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Parser::Assembl
 		}
 
 		if (isStructBody) {
+			if (currentToLower == "@") {
+				parseAttribute(tokens, i, currentStruct.attributes);
+				continue;
+			}
+
 			if (currentToLower == "}") {
 				assembly.structs.push_back(currentStruct);
 				isStruct = false;
