@@ -85,12 +85,15 @@ namespace Parser {
 	struct Struct {
 		std::string name;
 		std::vector<Field> fields;
+
+		//Creates a new struct
+		Struct();
 	};
 
 	//Represents an assembly
 	struct Assembly {
-		std::vector<Function*> functions;
-		std::vector<Struct*> structs;
+		std::vector<Function> functions;
+		std::vector<Struct> structs;
 	};
 
 	//The maximum number of supported arguments

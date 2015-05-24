@@ -83,6 +83,10 @@ std::size_t Parser::Function::numLocals() const {
 	return localTypes.size();
 }
 
+Parser::Struct::Struct() {
+
+}
+
 namespace {
 	std::string toLower(std::string str) {
 		std::string newStr { "" };
@@ -159,8 +163,8 @@ namespace {
 		}
 	}
 
-	void parseFunctionDef(const std::vector<std::string>& tokens, std::size_t& tokenIndex, Parser::Function* func) {
-		func->name = nextToken(tokens, tokenIndex);
+	void parseFunctionDef(const std::vector<std::string>& tokens, std::size_t& tokenIndex, Parser::Function& func) {
+		func.name = nextToken(tokens, tokenIndex);
 
 		if (nextToken(tokens, tokenIndex) != "(") {
 			throw std::runtime_error("Expected '(' after function name.");
@@ -173,10 +177,10 @@ namespace {
 				break;
 			}
 
-			func->parameters.push_back(param);
+			func.parameters.push_back(param);
 		}
 
-		func->returnType = nextToken(tokens, tokenIndex);
+		func.returnType = nextToken(tokens, tokenIndex);
 	}
 
 	void readCallParameters(const std::vector<std::string>& tokens, std::size_t& tokenIndex, std::vector<std::string>& parameters) {
@@ -273,12 +277,12 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Parser::Assembl
 	bool isFuncBody = false;
 	bool localsSet = false;
 
-	Function* currentFunc = nullptr;
+	Function currentFunc;
 
 	bool isStruct = false;
 	bool isStructBody = false;
 	
-	Struct* currentStruct = nullptr;
+	Struct currentStruct;
 
 	for (std::size_t i = 0; i < tokens.size(); i++) {
 		std::string current = tokens[i];
@@ -288,29 +292,29 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Parser::Assembl
 		if (isFuncBody) {
 			if (currentToLower == "pushint") {
 				int value = stoi(nextToken(tokens, i));
-				currentFunc->instructions.push_back(Instruction::makeWithInt(OpCodes::PUSH_INT, value));
+				currentFunc.instructions.push_back(Instruction::makeWithInt(OpCodes::PUSH_INT, value));
 				continue;
 			}
 
 			if (currentToLower == "pushfloat") {
 				float value = stof(nextToken(tokens, i));
-				currentFunc->instructions.push_back(Instruction::makeWithFloat(OpCodes::PUSH_FLOAT, value));
+				currentFunc.instructions.push_back(Instruction::makeWithFloat(OpCodes::PUSH_FLOAT, value));
 				continue;
 			}
 
 			if (currentToLower == "pushchar") {
 				char value = (char)stoi(nextToken(tokens, i));
-				currentFunc->instructions.push_back(Instruction::makeWithChar(OpCodes::PUSH_CHAR, value));
+				currentFunc.instructions.push_back(Instruction::makeWithChar(OpCodes::PUSH_CHAR, value));
 				continue;
 			}
 
 			if (noOperandsInstructions.count(currentToLower) > 0) {
-				currentFunc->instructions.push_back(Instruction::make(noOperandsInstructions[currentToLower]));
+				currentFunc.instructions.push_back(Instruction::make(noOperandsInstructions[currentToLower]));
 			}
 
 			if (strOperandInstructions.count(currentToLower) > 0) {
 				std::string value = nextToken(tokens, i);
-				currentFunc->instructions.push_back(Instruction::makeWithStr(strOperandInstructions[currentToLower], value));
+				currentFunc.instructions.push_back(Instruction::makeWithStr(strOperandInstructions[currentToLower], value));
 				continue;
 			}
 
@@ -320,7 +324,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Parser::Assembl
 
 					if (localsCount >= 0) {
 						localsSet = true;
-						currentFunc->setNumLocals(localsCount);
+						currentFunc.setNumLocals(localsCount);
 					} else {
 						throw std::runtime_error("The number of locals must be >= 0.");
 					}
@@ -336,8 +340,8 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Parser::Assembl
 					int localIndex = stoi(nextToken(tokens, i));
 					auto localType = nextToken(tokens, i);
 
-					if (localIndex >= 0 && localIndex < (int)currentFunc->numLocals()) {
-						currentFunc->localTypes.at(localIndex) = localType;
+					if (localIndex >= 0 && localIndex < (int)currentFunc.numLocals()) {
+						currentFunc.localTypes.at(localIndex) = localType;
 					} else {
                     	throw std::runtime_error("Invalid local index.");
                     }
@@ -356,8 +360,8 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Parser::Assembl
 				int local = stoi(nextToken(tokens, i));
 				auto opCode = currentToLower == "ldloc" ? OpCodes::LOAD_LOCAL : OpCodes::STORE_LOCAL;
 				
-				if (local >= 0 && local < (int)currentFunc->numLocals()) {
-					currentFunc->instructions.push_back(Instruction::makeWithInt(opCode, local));
+				if (local >= 0 && local < (int)currentFunc.numLocals()) {
+					currentFunc.instructions.push_back(Instruction::makeWithInt(opCode, local));
 					continue;
 				} else {
                     throw std::runtime_error("The local index is out of range.");
@@ -390,9 +394,9 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Parser::Assembl
 				readCallParameters(tokens, i, parameters);
 
 				if (isInstance) {
-					currentFunc->instructions.push_back(Instruction::makeCallInstance(structType, funcName, parameters));
+					currentFunc.instructions.push_back(Instruction::makeCallInstance(structType, funcName, parameters));
 				} else {
-					currentFunc->instructions.push_back(Instruction::makeCall(funcName, parameters));
+					currentFunc.instructions.push_back(Instruction::makeCall(funcName, parameters));
 				}
 
 				continue;
@@ -401,8 +405,8 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Parser::Assembl
 			if (currentToLower == "ldarg") {
 				int argNum = stoi(nextToken(tokens, i));
 
-				if (argNum >= 0 && argNum < (int)currentFunc->parameters.size()) {
-                	currentFunc->instructions.push_back(Instruction::makeWithInt(OpCodes::LOAD_ARG, argNum));
+				if (argNum >= 0 && argNum < (int)currentFunc.parameters.size()) {
+                	currentFunc.instructions.push_back(Instruction::makeWithInt(OpCodes::LOAD_ARG, argNum));
                 } else {
                     throw std::runtime_error("The argument index is out of range.");
                 }
@@ -433,32 +437,31 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Parser::Assembl
 
 				std::vector<std::string> parameters;
 				readCallParameters(tokens, i, parameters);
-				currentFunc->instructions.push_back(Instruction::makeNewObject(structType, parameters));
-
+				currentFunc.instructions.push_back(Instruction::makeNewObject(structType, parameters));
 				continue;
 			}
 
 			if (currentToLower == "br") {
 				int target = stoi(nextToken(tokens, i));
-				currentFunc->instructions.push_back(Instruction::makeWithInt(OpCodes::BRANCH, target));
+				currentFunc.instructions.push_back(Instruction::makeWithInt(OpCodes::BRANCH, target));
 				continue;
 			}
 
 			if (branchInstructions.count(currentToLower) > 0) {
 				int target = stoi(nextToken(tokens, i));
-				currentFunc->instructions.push_back(Instruction::makeWithInt(branchInstructions[currentToLower], target));
+				currentFunc.instructions.push_back(Instruction::makeWithInt(branchInstructions[currentToLower], target));
 				continue;
 			}
 
 			if (currentToLower == "ldstr") {
 				auto str = nextToken(tokens, i);
-				currentFunc->instructions.push_back(Instruction::makeWithStr(OpCodes::LOAD_STRING, str));
+				currentFunc.instructions.push_back(Instruction::makeWithStr(OpCodes::LOAD_STRING, str));
 			}
 		}
 
 		if (isStructBody) {
 			if (currentToLower == "}") {
-				currentStruct = nullptr;
+				assembly.structs.push_back(currentStruct);
 				isStruct = false;
 				isStructBody = false;
 				continue;
@@ -468,7 +471,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Parser::Assembl
 			field.name = current;
 			field.type = nextToken(tokens, i);
 
-			currentStruct->fields.push_back(field);
+			currentStruct.fields.push_back(field);
 		}
 
 		//Definitions
@@ -481,10 +484,9 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Parser::Assembl
 				isFuncDef = true;
 				isFunc = true;
 			} else if (currentToLower == "struct") {
-				currentStruct = new Struct;
-				currentStruct->name = nextToken(tokens, i);
-				isStruct = true;
-				assembly.structs.push_back(currentStruct);
+				currentStruct = {};
+				currentStruct.name = nextToken(tokens, i);
+				isStruct = true;;
 			} else if (currentToLower == "extern") {
 				isExternFunc = true;
 			} else if (currentToLower == "member") {
@@ -504,19 +506,18 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Parser::Assembl
 
 		//Parse the function definition
 		if (isFuncDef) {
-			currentFunc = new Function;
+			currentFunc = {};
 			parseFunctionDef(tokens, i, currentFunc);            
 
-			if (currentFunc->name.find("::") != std::string::npos) {
+			if (currentFunc.name.find("::") != std::string::npos) {
 				throw std::runtime_error("'::' is only allowed in member functions.");
 			}
 
-			int numArgs = currentFunc->parameters.size();
+			int numArgs = currentFunc.parameters.size();
 
-			if (numArgs >= 0 && numArgs <= MAXIMUM_NUMBER_OF_ARGUMENTS) {
-				assembly.functions.push_back(currentFunc);
-			} else {
-				throw std::runtime_error("Maximum " + std::to_string(MAXIMUM_NUMBER_OF_ARGUMENTS) + " arguments are supported.");
+			if (!(numArgs >= 0 && numArgs <= MAXIMUM_NUMBER_OF_ARGUMENTS)) {
+				throw std::runtime_error(
+					"Maximum " + std::to_string(MAXIMUM_NUMBER_OF_ARGUMENTS) + " arguments are supported.");
 			}
 
 			localsSet = false;
@@ -524,19 +525,19 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Parser::Assembl
 
 		//Parse external function
         if (isExternFunc) {
-            currentFunc = new Function;
+            currentFunc = {};
             parseFunctionDef(tokens, i, currentFunc);
-            currentFunc->isExternal = true;
+            currentFunc.isExternal = true;
             
             assembly.functions.push_back(currentFunc);
         }
 
         //Parse the member function
         if (isMemberDef) {
-            currentFunc = new Function;
+            currentFunc = {};
             parseFunctionDef(tokens, i, currentFunc);            
 
-            auto funcName = currentFunc->name;
+            auto funcName = currentFunc.name;
 
             //Get the struct name
             auto structNamePos = funcName.find("::");
@@ -549,16 +550,16 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Parser::Assembl
             auto memberFunctionName = funcName.substr(structNamePos + 2);
 
             //Add the implicit this reference
-            currentFunc->parameters.insert(currentFunc->parameters.begin(), "Ref.Struct." + structTypeName);
+            currentFunc.parameters.insert(currentFunc.parameters.begin(), "Ref.Struct." + structTypeName);
 
-            int numArgs = currentFunc->parameters.size();
+            int numArgs = currentFunc.parameters.size();
 
             if (numArgs >= 0 && numArgs <= MAXIMUM_NUMBER_OF_ARGUMENTS) {
-            	currentFunc->structName = structTypeName;
-            	currentFunc->memberFunctionName = memberFunctionName;
-                assembly.functions.push_back(currentFunc);
+            	currentFunc.structName = structTypeName;
+            	currentFunc.memberFunctionName = memberFunctionName;
             } else {
-                throw std::runtime_error("Maximum " + std::to_string(MAXIMUM_NUMBER_OF_ARGUMENTS) + " arguments are supported.");
+                throw std::runtime_error(
+					"Maximum " + std::to_string(MAXIMUM_NUMBER_OF_ARGUMENTS) + " arguments are supported.");
             }
 
             localsSet = false;
@@ -568,7 +569,7 @@ void Parser::parseTokens(const std::vector<std::string>& tokens, Parser::Assembl
         if (isFuncBody && currentToLower == "}") {
             isFuncBody = false;
             isFunc = false;
-            currentFunc = nullptr;
+			assembly.functions.push_back(currentFunc);
         }
 	}
 }
