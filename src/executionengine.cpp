@@ -58,7 +58,9 @@ void ExecutionEngine::loadAssembly(Assembly& assembly) {
         auto funcPtr = mJIT.generateFunction(func);
 
         if (mVMState.enableDebug) {
-            std::cout << "Defined function '" << func->name() << "' at 0x" << std::hex << (long)funcPtr << std::dec << "." << std::endl;
+            std::cout <<
+                "Defined function '" << func->name() << "' at 0x" << std::hex << (long)funcPtr << std::dec << "."
+                << std::endl;
         }
 
         auto signature = mVMState.binder().functionSignature(func->name(), func->arguments());
@@ -67,8 +69,8 @@ void ExecutionEngine::loadAssembly(Assembly& assembly) {
         mVMState.binder().getFunction(signature).setFunctionBody((long)funcPtr, func->generatedCode.size());
     }
 
-    //Fix unresolved calls
-    mJIT.resolveCallTargets();
+    //Fix unresolved symbols
+    mJIT.resolveSymbols();
 }
 
 void ExecutionEngine::beginExecution() {

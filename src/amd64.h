@@ -126,7 +126,7 @@ namespace Amd64Backend {
 	//Calls the given function
 	void call(CodeGen&, int);
 
-	//The return instructiom
+	//The return instruction
 	void ret(CodeGen&);
 
 	//Adds the second register to the first
@@ -155,6 +155,9 @@ namespace Amd64Backend {
 
 	//OR's the second register to the first
 	void orRegToReg(CodeGen&, Registers, Registers, bool is32bits = false);
+
+	//XOR's the second register to the first
+	void xorRegToReg(CodeGen&, Registers, Registers, bool is32bits = false);
 
 	//NOT's the register
 	void notReg(CodeGen&, Registers, bool is32bits = false);

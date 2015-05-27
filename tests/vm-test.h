@@ -209,6 +209,12 @@ public:
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_memberfunction1")), "what():  Null reference error.");
     }
 
+    void testException() {
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/nullref1")), "what():  Null reference error.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/nullref2")), "what():  Null reference error.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/nullref3")), "what():  Null reference error.");
+    }
+
     void testGC() {
         TS_ASSERT_EQUALS(invokeVM("gc/program1"), "0\n");
         TS_ASSERT_EQUALS(invokeVM("gc/program2"), "0\n");

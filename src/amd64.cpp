@@ -7,7 +7,7 @@ void Amd64Backend::pushReg(CodeGen& codeGen, Registers reg) {
 }
 
 void Amd64Backend::pushReg(CodeGen& codeGen, FloatRegisters reg) {
-	Amd64Backend::subByteFromReg(codeGen, Registers::SP, Amd64Backend::REG_SIZE);   //sub rsp, <reg size>  
+	Amd64Backend::subByteFromReg(codeGen, Registers::SP, Amd64Backend::REG_SIZE);   //sub rsp, <reg size>
 	Amd64Backend::moveRegToMemoryRegWithOffset(codeGen, Registers::SP, 0, reg);     //movss [rsp+0], <float reg>
 }
 
@@ -33,7 +33,7 @@ void Amd64Backend::popReg(CodeGen& codeGen, NumberedRegisters reg) {
 
 void Amd64Backend::popReg(CodeGen& codeGen, FloatRegisters reg) {
     Amd64Backend::moveMemoryByRegToReg(codeGen, reg, Registers::SP); 			   //movss <reg>, [rsp]
-	Amd64Backend::addByteToReg(codeGen, Registers::SP, Amd64Backend::REG_SIZE);    //add rsp, <reg size> 
+	Amd64Backend::addByteToReg(codeGen, Registers::SP, Amd64Backend::REG_SIZE);    //add rsp, <reg size>
 }
 
 void Amd64Backend::moveRegToReg(CodeGen& codeGen, Registers dest, Registers src) {
@@ -160,9 +160,6 @@ void Amd64Backend::callInReg(CodeGen& codeGen, Registers func) {
 }
 
 void Amd64Backend::call(CodeGen& codeGen, int funcAddr) {
-	// codeGen.push_back(0xff);
-	// codeGen.push_back(0x14);
-	// codeGen.push_back(0x25);
 	codeGen.push_back(0xe8);
 
 	IntToBytes converter;
@@ -272,6 +269,15 @@ void Amd64Backend::orRegToReg(CodeGen& codeGen, Registers dest, Registers src, b
 
     codeGen.push_back(0x09);
     codeGen.push_back(0xc0 | dest | (src << 3));
+}
+
+void Amd64Backend::xorRegToReg(CodeGen& codeGen, Registers dest, Registers src, bool is32bits) {
+	if (!is32bits) {
+		codeGen.push_back(0x48);
+	}
+
+	codeGen.push_back(0x31);
+	codeGen.push_back(0xc0 | dest | (src << 3));
 }
 
 void Amd64Backend::notReg(CodeGen& codeGen, Registers reg, bool is32bits) {

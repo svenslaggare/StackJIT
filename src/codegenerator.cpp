@@ -5,15 +5,42 @@
 #include "rtlibrary.h"
 #include "function.h"
 #include "instructions.h"
-#include "amd64.h"
 
 #include <string.h>
 #include <iostream>
 
 void pushArray(std::vector<unsigned char>& dest, const std::vector<unsigned char>& values) {
-    for (auto current : values) {
-        dest.push_back(current);
-    }
+	for (auto current : values) {
+		dest.push_back(current);
+	}
+}
+
+//Exception handling
+void ExceptionHandling::generateHandlers(MemoryManager& memoryManger) {
+	std::vector<unsigned char> handlerCode;
+
+	//Null handler
+	auto nullHandlerOffset = handlerCode.size();
+	Amd64Backend::moveLongToReg(handlerCode, Registers::DI, (long)&Runtime::nullReferenceError); //mov rdi, <addr of func>
+	Amd64Backend::callInReg(handlerCode, Registers::DI); //call rdi
+
+	//Allocate and copy memory
+	auto handlerMemory = memoryManger.allocateMemory(handlerCode.size());
+	memcpy(handlerMemory, handlerCode.data(), handlerCode.size());
+
+	//Set the pointers to the handlers
+	mNullCheckHandler = (unsigned char*)handlerMemory + nullHandlerOffset;
+}
+
+void ExceptionHandling::addNullCheck(FunctionCompilationData& function, Registers refReg, Registers cmpReg) const {
+	auto& codeGen = function.function.generatedCode;
+
+	//Compare the reference with null
+	Amd64Backend::xorRegToReg(codeGen, cmpReg, cmpReg, true); //Zero the register
+	Amd64Backend::compareRegToReg(codeGen, refReg, cmpReg); //cmp <ref>, <cmp>
+
+	Amd64Backend::jumpEqual(codeGen, 0); //je <null handler>
+	function.unresolvedNativeBranches.insert({ codeGen.size() - 6, (long)mNullCheckHandler });
 }
 
 //Generates a call to the given function
@@ -36,20 +63,7 @@ void generateArrayBoundsCheck(CodeGen& codeGen) {
     Amd64Backend::callInReg(codeGen, Registers::DI); //call rdi
 }
 
-//Generates null check
-void generateNullCheck(CodeGen& codeGen, Registers refReg = Registers::AX, Registers cmpReg = Registers::SI) {
-    //Compare the reference with null
-    Amd64Backend::moveIntToReg(codeGen, cmpReg, 0); //mov <ref>, 0
-    Amd64Backend::compareRegToReg(codeGen, refReg, cmpReg); //cmp <ref>, <cmp>
-
-    pushArray(codeGen, { 0x75, 10 + 2 }); //jnz <after call>
-
-    //If null, call the error func
-    Amd64Backend::moveLongToReg(codeGen, Registers::DI, (long)&Runtime::nullReferenceError); //mov rdi, <addr of func>
-    Amd64Backend::callInReg(codeGen, Registers::DI); //call rdi
-}
-
-//Generates a call to the garabeCollect runtime function
+//Generates a call to the garbage collect runtime function
 void generateGCCall(CodeGen& generatedCode, Function& function, int instIndex, bool saveBSP = true) {
     if (saveBSP) {
         Amd64Backend::pushReg(generatedCode, Registers::BP);
@@ -65,12 +79,12 @@ void generateGCCall(CodeGen& generatedCode, Function& function, int instIndex, b
     }
 }
 
-CodeGenerator::CodeGenerator(const CallingConvention& callingConvention) 
-    : mCallingConvention(callingConvention) {
+CodeGenerator::CodeGenerator(const CallingConvention& callingConvention, const ExceptionHandling& exceptionHandling)
+    : mCallingConvention(callingConvention), mExceptionHandling(exceptionHandling) {
 
 }
 
-void CodeGenerator::initalizeFunction(FunctionCompilationData& functionData) {
+void CodeGenerator::initializeFunction(FunctionCompilationData& functionData) {
     auto& function = functionData.function;
 
     //Calculate the size of the stack aligned to 16 bytes
@@ -120,7 +134,7 @@ void CodeGenerator::zeroLocals(FunctionCompilationData& functionData) {
         Amd64Backend::moveIntToReg(function.generatedCode, Registers::CX, function.numLocals()); //mov rcx, <num locals>
 
         //Zero eax
-        pushArray(function.generatedCode, { 0x31, 0xC0 }); //xor eax, eax
+		Amd64Backend::xorRegToReg(function.generatedCode, Registers::AX, Registers::AX, true); //xor eax, eax
 
         //Execute the zeroing
         pushArray(function.generatedCode, { 0xF3, 0x48, 0xAB }); //rep stosq
@@ -158,7 +172,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             //Push the value
             Amd64Backend::pushInt(generatedCode, *floatData); //push <value>
         }
-        break;  
+        break;
      case OpCodes::PUSH_CHAR:
         //Push the value
         pushArray(generatedCode, { 0x6A, (unsigned char)inst.charValue }); //push <value>
@@ -188,19 +202,19 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                     if (intOp) {
                         Amd64Backend::addRegToReg(generatedCode, Registers::AX, Registers::CX, is32bits); //add eax, ecx
                     } else if (floatOp) {
-                        pushArray(generatedCode, { 0xF3, 0x0F, 0x58, 0xC1 }); //addss xmm0, xmm1  
+                        pushArray(generatedCode, { 0xF3, 0x0F, 0x58, 0xC1 }); //addss xmm0, xmm1
                     }
                     break;
                 case OpCodes::SUB:
                     if (intOp) {
-                        Amd64Backend::subRegFromReg(generatedCode, Registers::AX, Registers::CX, is32bits); //sub eax, ecx   
+                        Amd64Backend::subRegFromReg(generatedCode, Registers::AX, Registers::CX, is32bits); //sub eax, ecx
                     } else if (floatOp) {
-                        pushArray(generatedCode, { 0xF3, 0x0F, 0x5C, 0xC1 }); //subss xmm0, xmm1 
+                        pushArray(generatedCode, { 0xF3, 0x0F, 0x5C, 0xC1 }); //subss xmm0, xmm1
                     }
                     break;
                 case OpCodes::MUL:
                     if (intOp) {
-                       Amd64Backend::multRegToReg(generatedCode, Registers::AX, Registers::CX, is32bits); //imul eax, ecx 
+                       Amd64Backend::multRegToReg(generatedCode, Registers::AX, Registers::CX, is32bits); //imul eax, ecx
                     } else if (floatOp) {
                         pushArray(generatedCode, { 0xF3, 0x0F, 0x59, 0xC1 }); //mulss xmm0, xmm1
                     }
@@ -272,7 +286,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
 
         //Convert it
-        pushArray(generatedCode, { 0xF3, 0x48, 0x0F, 0x2A, 0xC0 }); //cvtsi2ss xmm0,rax 
+        pushArray(generatedCode, { 0xF3, 0x48, 0x0F, 0x2A, 0xC0 }); //cvtsi2ss xmm0,rax
 
         //Push it
         Amd64Backend::pushReg(generatedCode, FloatRegisters::XMM0); //push xmm0
@@ -313,7 +327,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 Amd64Backend::popReg(generatedCode, FloatRegisters::XMM0); //pop xmm0
 
                 //Compare
-                pushArray(generatedCode, { 0x0F, 0x2E, 0xC1 }); //ucomiss xmm0, xmm1 
+                pushArray(generatedCode, { 0x0F, 0x2E, 0xC1 }); //ucomiss xmm0, xmm1
                 unsignedComparison = true;
             }
 
@@ -329,7 +343,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                     break;
                 case OpCodes::COMPARE_GREATER_THAN:
                     if (unsignedComparison) {
-                        Amd64Backend::jumpGreaterThanUnsigned(generatedCode, target);                  
+                        Amd64Backend::jumpGreaterThanUnsigned(generatedCode, target);
                     } else {
                         Amd64Backend::jumpGreaterThan(generatedCode, target);
                     }
@@ -396,7 +410,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::CALL:
     case OpCodes::CALL_INSTANCE:
-        {   
+        {
             std::string calledSignature = "";
 
             if (inst.opCode() == OpCodes::CALL_INSTANCE) {
@@ -428,7 +442,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             if (inst.opCode() == OpCodes::CALL_INSTANCE) {
                 //Null check
                 Amd64Backend::pushReg(generatedCode, Registers::CX);
-                generateNullCheck(generatedCode, RegisterCallArguments::Arg0, Registers::CX);
+                mExceptionHandling.addNullCheck(functionData, RegisterCallArguments::Arg0, Registers::CX);
                 Amd64Backend::popReg(generatedCode, Registers::CX);
             }
 
@@ -480,7 +494,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 Amd64Backend::pushReg(generatedCode, Registers::BP);
                 Amd64Backend::moveRegToReg(generatedCode, Registers::DI, Registers::BP); //BP as the first argument
                 Amd64Backend::moveLongToReg(generatedCode, Registers::SI, (long)&function); //Address of the function as second argument
-                generateCall(generatedCode, (long)&Runtime::printStackFrame);    
+                generateCall(generatedCode, (long)&Runtime::printStackFrame);
                 Amd64Backend::popReg(generatedCode, Registers::BP);
             }
 
@@ -534,7 +548,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::BRANCH_GREATER_THAN_OR_EQUAL:
     case OpCodes::BRANCH_LESS_THAN:
     case OpCodes::BRANCH_LESS_THAN_OR_EQUAL:
-        {           
+        {
             auto opType = inst.operandTypes()[0];
             bool intOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Integer);
             bool boolType = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Bool);
@@ -556,7 +570,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 //Compare
                 pushArray(generatedCode, { 0x0F, 0x2E, 0xC1 }); //ucomiss xmm0, xmm1
                 unsignedComparison = true;
-            } 
+            }
 
             switch (inst.opCode()) {
                 case OpCodes::BRANCH_EQUAL:
@@ -614,7 +628,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             if (!vmState.disableGC) {
                 generateGCCall(generatedCode, function, instIndex);
             }
-            
+
             //The pointer to the type as the first arg
             Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)elemType); //mov rdi, <addr of type pointer>
 
@@ -649,7 +663,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the array
 
             //Null check
-            generateNullCheck(generatedCode);
+			mExceptionHandling.addNullCheck(functionData);
 
             //Bounds check
             generateArrayBoundsCheck(generatedCode);
@@ -679,7 +693,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the array
 
             //Null check
-            generateNullCheck(generatedCode);
+			mExceptionHandling.addNullCheck(functionData);
 
             //Bounds check
             generateArrayBoundsCheck(generatedCode);
@@ -708,7 +722,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
 
         //Null check
-        generateNullCheck(generatedCode);
+        mExceptionHandling.addNullCheck(functionData);
 
         //Get the size of the array (an int)
         Amd64Backend::moveMemoryByRegToReg(generatedCode, Registers::AX, Registers::AX, true); //mov eax, [rax]
@@ -730,7 +744,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (long)structType); //The pointer to the type as the first arg
             generateCall(generatedCode, (long)&Runtime::newObject);
             Amd64Backend::popReg(generatedCode, Registers::BP);
-     
+
             //Call the constructor
             std::string calledSignature = vmState.binder().memberFunctionSignature(
                 inst.calledStructType,
@@ -796,7 +810,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the object
 
                 //Null check
-                generateNullCheck(generatedCode);
+				mExceptionHandling.addNullCheck(functionData);
 
                 //Compute the address of the field
                 Amd64Backend::addByteToReg(generatedCode, Registers::AX, fieldOffset); //add rax, <field offset>
@@ -815,7 +829,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the object
 
                 //Null check
-                generateNullCheck(generatedCode);
+				mExceptionHandling.addNullCheck(functionData);
 
                 //Store the field
                 if (!is8bits) {
@@ -831,7 +845,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             if (!vmState.disableGC) {
                 generateGCCall(generatedCode, function, instIndex);
             }
-            
+
             //The pointer to the string as the first arg
             Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)inst.strValue.data()); //mov rdi, <addr of string>
 

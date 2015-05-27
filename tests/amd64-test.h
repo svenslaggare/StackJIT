@@ -578,6 +578,43 @@ public:
         generatedCode.clear();
     }
 
+    //Tests the xorRegToReg generator
+    void testXorRegToReg() {
+        CodeGen generatedCode;
+        Amd64Backend::xorRegToReg(generatedCode, Registers::AX, Registers::AX);
+        TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x48, 0x31, 0xC0 }));
+        generatedCode.clear();
+
+        Amd64Backend::xorRegToReg(generatedCode, Registers::AX, Registers::BX);
+        TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x48, 0x31, 0xD8 }));
+        generatedCode.clear();
+
+        Amd64Backend::xorRegToReg(generatedCode, Registers::BX, Registers::AX);
+        TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x48, 0x31, 0xC3 }));
+        generatedCode.clear();
+
+        Amd64Backend::xorRegToReg(generatedCode, Registers::BX, Registers::BX);
+        TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x48, 0x31, 0xDB }));
+        generatedCode.clear();
+
+        //32 bits
+        Amd64Backend::xorRegToReg(generatedCode, Registers::AX, Registers::AX, true);
+        TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x31, 0xC0 }));
+        generatedCode.clear();
+
+        Amd64Backend::xorRegToReg(generatedCode, Registers::AX, Registers::BX, true);
+        TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x31, 0xD8 }));
+        generatedCode.clear();
+
+        Amd64Backend::xorRegToReg(generatedCode, Registers::BX, Registers::AX, true);
+        TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x31, 0xC3 }));
+        generatedCode.clear();
+
+        Amd64Backend::xorRegToReg(generatedCode, Registers::BX, Registers::BX, true);
+        TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x31, 0xDB }));
+        generatedCode.clear();
+    }
+
     //Tests the notReg generator
     void testNotReg() {
         CodeGen generatedCode;

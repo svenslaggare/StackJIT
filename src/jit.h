@@ -21,7 +21,7 @@ struct BranchTarget {
 	//The target of the branch
 	const unsigned int target;
 
-	//The size of the bransh instruction
+	//The size of the branch instruction
 	const unsigned int instructionSize;
 
 	BranchTarget(unsigned int target, unsigned int instructionSize);
@@ -63,6 +63,9 @@ struct FunctionCompilationData {
 	//Unresolved branches
 	std::unordered_map<unsigned int, BranchTarget> unresolvedBranches;
 
+	//Unresolved native branches
+	std::unordered_map<unsigned int, long> unresolvedNativeBranches;
+
 	//Mapping from instruction number to native instruction offset
 	std::vector<unsigned int> instructionNumMapping;			
 
@@ -82,11 +85,18 @@ private:
 	VMState& mVMState;
 	LinuxMemoryManager mMemoryManager;
 	LinuxCallingConvention mCallingConvention;
+	ExceptionHandling mExceptionHandling;
 	CodeGenerator mCodeGen;
 	std::unordered_map<std::string, FunctionCompilationData> mFunctions;
 
 	//Resolves branches for the given function
 	void resolveBranches(FunctionCompilationData& functionData);
+
+	//Resolves native branches for the given function
+	void resolveNativeBranches(FunctionCompilationData& functionData);
+
+	//Resolves call targets. This function should only be called after all functions has been jitted.
+	void resolveCallTargets(FunctionCompilationData& functionData);
 public:
 	//Creates a new JIT compiler
 	JITCompiler(VMState& vmState);
@@ -101,8 +111,8 @@ public:
 	//JITs the given function
 	JitFunction generateFunction(Function* function);
 
-	//Resolves call targets. This function should only be called after all functions has been jitted.
-	void resolveCallTargets();
+	//Resolves symbols. This function should only be called after all functions has been jitted.
+	void resolveSymbols();
 
 	//Makes jitted functions executable.
 	void makeExecutable();

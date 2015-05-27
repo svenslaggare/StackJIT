@@ -9,6 +9,7 @@
 #include <fstream>
 #include <vector>
 #include <string.h>
+#include <chrono>
 
 //The global state for the VM
 VMState vmState;
@@ -96,11 +97,15 @@ int main(int argc, char* argv[]) {
     }
 
     //Execute the program
+    auto start = std::chrono::high_resolution_clock::now();
+
     engine.beginExecution();
     int res = programPtr();
 
     if (vmState.enableDebug) {
-        std::cout << "Return value: " << std::endl;
+        auto end = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+        std::cout << "Return value (executed " << duration << " ms): " << std::endl;
     }
 
     std::cout << res << std::endl;

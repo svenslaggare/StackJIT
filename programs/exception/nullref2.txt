@@ -1,0 +1,15 @@
+struct Point
+{
+	x Int
+	y Int
+}
+
+func main() Int
+{
+	PUSHNULL
+	PUSHINT 5
+	STFIELD Point::x
+
+	PUSHINT 0
+	RET
+}
