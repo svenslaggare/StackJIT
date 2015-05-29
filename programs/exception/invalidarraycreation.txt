@@ -1,0 +1,10 @@
+func main() Int
+{
+	.locals 1
+	PUSHINT -1
+	NEWARR Int
+	STLOC 0
+
+	PUSHINT 0
+	RET
+}

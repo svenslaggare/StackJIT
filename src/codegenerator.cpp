@@ -24,12 +24,24 @@ void ExceptionHandling::generateHandlers(MemoryManager& memoryManger) {
 	Amd64Backend::moveLongToReg(handlerCode, Registers::DI, (long)&Runtime::nullReferenceError); //mov rdi, <addr of func>
 	Amd64Backend::callInReg(handlerCode, Registers::DI); //call rdi
 
+	//Array bounds handler
+	auto arrayBoundsHandlerOffset = handlerCode.size();
+	Amd64Backend::moveLongToReg(handlerCode, Registers::DI, (long)&Runtime::arrayOutOfBoundsError); //mov rdi, <addr of func>
+	Amd64Backend::callInReg(handlerCode, Registers::DI); //call rdi
+
+	//Array creation handler
+	auto arrayCreationHandler = handlerCode.size();
+	Amd64Backend::moveLongToReg(handlerCode, Registers::DI, (long)&Runtime::invalidArrayCreation); //mov rdi, <addr of func>
+	Amd64Backend::callInReg(handlerCode, Registers::DI); //call rdi
+
 	//Allocate and copy memory
 	auto handlerMemory = memoryManger.allocateMemory(handlerCode.size());
 	memcpy(handlerMemory, handlerCode.data(), handlerCode.size());
 
 	//Set the pointers to the handlers
 	mNullCheckHandler = (unsigned char*)handlerMemory + nullHandlerOffset;
+	mArrayBoundsCheckHandler = (unsigned char*)handlerMemory + arrayBoundsHandlerOffset;
+	mArrayCreationCheckHandler = (unsigned char*)handlerMemory + arrayCreationHandler;
 }
 
 void ExceptionHandling::addNullCheck(FunctionCompilationData& function, Registers refReg, Registers cmpReg) const {
@@ -39,28 +51,41 @@ void ExceptionHandling::addNullCheck(FunctionCompilationData& function, Register
 	Amd64Backend::xorRegToReg(codeGen, cmpReg, cmpReg, true); //Zero the register
 	Amd64Backend::compareRegToReg(codeGen, refReg, cmpReg); //cmp <ref>, <cmp>
 
+	//Jump to handler if null
 	Amd64Backend::jumpEqual(codeGen, 0); //je <null handler>
 	function.unresolvedNativeBranches.insert({ codeGen.size() - 6, (long)mNullCheckHandler });
+}
+
+void ExceptionHandling::addArrayBoundsCheck(FunctionCompilationData& function) const {
+	auto& codeGen = function.function.generatedCode;
+
+	//Get the size of the array (an int)
+	Amd64Backend::moveMemoryByRegToReg(codeGen, Registers::SI, Registers::AX, true); //mov esi, [rax]
+
+	//Compare the index and size
+	Amd64Backend::compareRegToReg(codeGen, Registers::CX, Registers::SI); //cmp rcx, rsi
+
+	//Jump to handler if out of bounds. By using an unsigned comparison, we only need one check.
+    Amd64Backend::jumpGreaterThanOrEqualUnsigned(codeGen, 0); //jae <array bounds handler>.
+	function.unresolvedNativeBranches.insert({ codeGen.size() - 6, (long)mArrayBoundsCheckHandler });
+}
+
+void ExceptionHandling::addArrayCreationCheck(FunctionCompilationData& function) const {
+	auto& codeGen = function.function.generatedCode;
+
+	Amd64Backend::xorRegToReg(codeGen, Registers::CX, Registers::CX, true); //Zero the register
+	Amd64Backend::compareRegToReg(codeGen, Registers::CX, Registers::SI); //cmp rcx, rsi
+	//pushArray(codeGen, { 0x7E, 10 + 2 }); //jle <after call>.
+
+	//Jump to handler if invalid
+	Amd64Backend::jumpGreaterThan(codeGen, 0); //jg <array creation handler>
+	function.unresolvedNativeBranches.insert({ codeGen.size() - 6, (long)mArrayCreationCheckHandler });
 }
 
 //Generates a call to the given function
 void generateCall(CodeGen& codeGen, long funcPtr, Registers addrReg = Registers::AX) {
     Amd64Backend::moveLongToReg(codeGen, addrReg, funcPtr);
     Amd64Backend::callInReg(codeGen, addrReg);
-}
-
-//Generates array bounds checks
-void generateArrayBoundsCheck(CodeGen& codeGen) {
-    //Get the size of the array (an int)
-    Amd64Backend::moveMemoryByRegToReg(codeGen, Registers::SI, Registers::AX, true); //mov esi, [rax]
-
-    //Compare the index and size
-    Amd64Backend::compareRegToReg(codeGen, Registers::CX, Registers::SI); //cmp rcx, rsi
-    pushArray(codeGen, { 0x72, 10 + 2 }); //jb <after call>. By using an unsigned comparison, we only need one check.
-
-    //If out of bounds, call the error func
-    Amd64Backend::moveLongToReg(codeGen, Registers::DI, (long)&Runtime::arrayOutOfBoundsError); //mov rdi, <addr of func>
-    Amd64Backend::callInReg(codeGen, Registers::DI); //call rdi
 }
 
 //Generates a call to the garbage collect runtime function
@@ -635,14 +660,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             //Pop the size as the second arg
             Amd64Backend::popReg(generatedCode, Registers::SI); //pop rsi
 
-            //Check that the size >= 0
-            Amd64Backend::moveIntToReg(generatedCode, Registers::CX, 0); //mov rax, 0
-            Amd64Backend::compareRegToReg(generatedCode, Registers::CX, Registers::SI); //cmp rcx, rsi
-            pushArray(generatedCode, { 0x7E, 10 + 2 }); //jle <after call>.
-
-            //If invalid call the error func
-            Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)&Runtime::invalidArrayCreation); //mov rdi, <addr of func>
-            Amd64Backend::callInReg(generatedCode, Registers::DI); //call rdi
+			//Check that the size >= 0
+			mExceptionHandling.addArrayCreationCheck(functionData);
 
             //Call the newArray runtime function
             Amd64Backend::pushReg(generatedCode, Registers::BP);
@@ -666,7 +685,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			mExceptionHandling.addNullCheck(functionData);
 
             //Bounds check
-            generateArrayBoundsCheck(generatedCode);
+			mExceptionHandling.addArrayBoundsCheck(functionData);
 
             //Compute the address of the element
             pushArray(generatedCode, { 0x48, 0x6B, 0xC9, (unsigned char)TypeSystem::sizeOfType(elemType) }); //imul rcx, <size of type>
@@ -692,11 +711,11 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             Amd64Backend::popReg(generatedCode, Registers::CX); //The index of the element
             Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the array
 
-            //Null check
+			//Null check
 			mExceptionHandling.addNullCheck(functionData);
 
-            //Bounds check
-            generateArrayBoundsCheck(generatedCode);
+			//Bounds check
+			mExceptionHandling.addArrayBoundsCheck(functionData);
 
             //Compute the address of the element
             pushArray(generatedCode, { 0x48, 0x6B, 0xC9, (unsigned char)TypeSystem::sizeOfType(elemType) }); //imul rcx, <size of type>

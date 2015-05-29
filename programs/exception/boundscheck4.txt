@@ -1,0 +1,11 @@
+func main() Int
+{
+	PUSHINT 4
+	NEWARR Int
+	PUSHINT -1
+	PUSHINT 0
+	STELEM Int
+
+	PUSHINT 0
+	RET
+}

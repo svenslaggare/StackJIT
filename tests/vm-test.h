@@ -184,9 +184,6 @@ public:
         TS_ASSERT_EQUALS(invokeVM("array/program3"), "1337\n4\n0\n");
 
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program1")), "what():  2: Arrays of type 'Void' is not allowed.");
-
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/boundscheck")), "what():  Array index is out of bounds.");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/boundscheck2")), "what():  Array index is out of bounds.");
     }
 
     void testStruct() {
@@ -213,6 +210,15 @@ public:
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/nullref1")), "what():  Null reference error.");
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/nullref2")), "what():  Null reference error.");
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/nullref3")), "what():  Null reference error.");
+
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck")), "what():  Array index is out of bounds.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck2")), "what():  Array index is out of bounds.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck3")), "what():  Array index is out of bounds.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck4")), "what():  Array index is out of bounds.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck5")), "what():  Array index is out of bounds.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck6")), "what():  Array index is out of bounds.");
+
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/invalidarraycreation")), "what():  The length of the array must be >= 0.");
     }
 
     void testGC() {
