@@ -93,8 +93,8 @@ void NativeLibrary::add(VMState& vmState) {
 	binder.define(FunctionDefinition("std.math.sin", { floatType }, floatType, (long)(&sinf)));
 	binder.define(FunctionDefinition("std.math.cos", { floatType }, floatType, (long)(&cosf)));
 
-	auto pointType = vmState.typeProvider().makeType("Ref.Struct.Point");
-	binder.define(FunctionDefinition("rt.println", { pointType }, voidType, (long)(&printPoint)));
+//	auto pointType = vmState.typeProvider().makeType("Ref.Struct.Point");
+//	binder.define(FunctionDefinition("rt.println", { pointType }, voidType, (long)(&printPoint)));
 
 	auto charArrayType = vmState.typeProvider().makeType("Ref.Array[Char]");
 	binder.define(FunctionDefinition("rt.println", { charArrayType }, voidType, (long)(&printString)));

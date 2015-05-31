@@ -120,11 +120,12 @@ void Loader::load(std::istream& stream, VMState& vmState, Assembly& assembly) {
 	Parser::Assembly parsedAssembly;
     Parser::parseTokens(tokens, parsedAssembly);
 
-    //Load
+    //Load structs
     for (auto& currentStruct : parsedAssembly.structs) {
     	loadStruct(vmState, currentStruct);
     }
 
+	//Load functions
     for (auto& currentFunc : parsedAssembly.functions) {
     	auto loadedFunc = loadFunction(vmState, currentFunc);
 

@@ -8,9 +8,9 @@
 //Contains the state of the VM
 class VMState {
 private:
+    StructMetadataProvider mStructProvider;
 	TypeProvider mTypeProvider;
     Binder mBinder;
-	StructMetadataProvider mStructProvider;
     GarbageCollector mGC;
     ExecutionEngine mEngine;
 public:
@@ -23,7 +23,7 @@ public:
 	//Prints the info about the stack frame if debug is enabled
 	bool printStackFrame = false;
 
-	//Indicates if the generated code is outputed as a file
+	//Indicates if the generated code is outputted as a file
 	bool outputGeneratedCode = false;
 
     //Indicates if the GC is disabled

@@ -1,10 +1,9 @@
 #include "type.h"
+#include "structmetadata.h"
 
 #include <vector>
-#include <regex>
 #include <iostream>
 #include <unordered_map>
-#include <functional>
 
 Type::Type(std::string name)
 	: mName(name) {
@@ -99,48 +98,90 @@ std::string TypeSystem::toString(PrimitiveTypes primitiveType) {
 	return "";
 }
 
-Type* TypeSystem::makeTypeFromString(std::string typeName) {
-	//Split the type name
-	std::string token;
-	std::vector<std::string> typeParts;
+namespace {
+	//Splits the given type name
+	std::vector<std::string> splitTypeName(std::string typeName) {
+		std::string token;
+		std::vector<std::string> typeParts;
 
-	bool isInsideBrackets = false;
-	for (char c : typeName) {
-		if (!isInsideBrackets) {
-			if (c == '[') {
-				isInsideBrackets = true;
+		bool isInsideBrackets = false;
+		for (char c : typeName) {
+			if (!isInsideBrackets) {
+				if (c == '[') {
+					isInsideBrackets = true;
+				}
+			} else {
+				if (c == ']') {
+					isInsideBrackets = false;
+				}
 			}
-		} else {
-			if (c == ']') {
-				isInsideBrackets = false;
+
+			if (c == '.' && !isInsideBrackets) {
+				typeParts.push_back(token);
+				token = "";
+			} else {
+				token += c;
 			}
 		}
 
-		if (c == '.' && !isInsideBrackets) {
-			typeParts.push_back(token);
-			token = "";
-		} else {
-			token += c;
-		}
+		typeParts.push_back(token);
+
+		return typeParts;
 	}
 
-	typeParts.push_back(token);
+	//Extracts the element type from the given type part. Returns true if extracted.
+	bool extractElementType(std::string typePart, std::string& elementPart) {
+		std::string buffer;
+		bool foundArrayElement = false;
+		bool foundStart = false;
+		int bracketCount = 0;
 
-	std::string arrayPattern = "Array.(.*).";
-	std::regex arrayRegex(arrayPattern, std::regex_constants::extended);
-	PrimitiveTypes primType;
+		for (char c : typePart) {
+			if (c == '[') {
+				bracketCount++;
+			}
 
-	if (fromString(typeParts.at(0), primType)) {
+			if (c == ']') {
+				bracketCount--;
+			}
+
+			if (c == ']' && bracketCount == 0) {
+				if (foundStart) {
+					foundArrayElement = true;
+				}
+
+				break;
+			}
+
+			buffer += c;
+
+			if (buffer == "Array[" && !foundStart) {
+				foundStart = true;
+				buffer.clear();
+			}
+		}
+
+		if (foundArrayElement) {
+			elementPart = buffer;
+			return  true;
+		} else {
+			return false;
+		}
+	}
+}
+
+Type* TypeSystem::makeTypeFromString(std::string typeName, const StructMetadataProvider& structProvider) {
+	//Split the type name
+	std::vector<std::string> typeParts = splitTypeName(typeName);
+	PrimitiveTypes primitiveType;
+
+	if (fromString(typeParts.at(0), primitiveType)) {
 		return new Type(typeParts.at(0));
 	} else if (typeParts.at(0) == "Ref") {
-		std::smatch match;
-		bool foundArray = std::regex_match(typeParts.at(1), match, arrayRegex);
-
-		if (foundArray) {
-			std::string elementType = match[1].str();
-			elementType = elementType.substr(1, elementType.length() - 2);
-			return new ArrayType(makeTypeFromString(elementType));
-		} else if (typeParts[1] == "Struct") {
+		std::string elementType;
+		if (extractElementType(typeParts.at(1), elementType)) {
+			return new ArrayType(makeTypeFromString(elementType, structProvider));
+		} else if (typeParts.at(1) == "Struct") {
 			if (typeParts.size() >= 3) {
 				std::string structName = "";
 				bool isFirst = true;
@@ -152,10 +193,14 @@ Type* TypeSystem::makeTypeFromString(std::string typeName) {
 						structName += ".";
 					}
 
-					structName += typeParts[i];
+					structName += typeParts.at(i);
 				}
 
-				return new StructType(structName);
+				if (structProvider.isDefined(structName)) {
+					return new StructType(structName);
+				} else {
+					return nullptr;
+				}
 			}
 		} else if (typeParts.at(1) == "Null") {
 			return new NullReferenceType();

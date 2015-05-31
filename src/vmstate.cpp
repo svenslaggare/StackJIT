@@ -3,14 +3,13 @@
 #include "objects.h"
 
 VMState::VMState()
-    : mGC(*this), mEngine(*this) {
+    : mTypeProvider(mStructProvider), mGC(*this), mEngine(*this) {
 
 }
 
 VMState::~VMState() {
 
 }
-
 
 TypeProvider& VMState::typeProvider() {
     return mTypeProvider;

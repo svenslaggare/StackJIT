@@ -624,7 +624,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                         }
                     }
 
-                    auto fieldType = structMetadata.getField(fieldName);
+                    auto fieldType = structMetadata.fields().at(fieldName).type();
 
                     if (fieldType == nullptr) {
                         typeError(index, "There exists no field '" + fieldName + "' in the '" + structName + "' struct.");
@@ -659,7 +659,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                     }
 
                     auto structMetadata = vmState.structProvider()[structName];
-                    auto fieldType = structMetadata.getField(fieldName);
+                    auto fieldType = structMetadata.fields().at(fieldName).type();
 
                     if (fieldType == nullptr) {
                         typeError(index, "There exists no field '" + fieldName + "' in the '" + structName + "' struct.");

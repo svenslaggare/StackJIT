@@ -57,7 +57,7 @@ public:
 	virtual void makeMemoryExecutable() override;
 };
 
-//Represents the calling convetions for Linux
+//Represents the calling conventions for Linux x64
 class LinuxCallingConvention : public CallingConvention {
 public:
 	virtual void moveArgsToStack(FunctionCompilationData& functionData) const override;

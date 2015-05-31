@@ -29,22 +29,6 @@ StructMetadata::StructMetadata()
 
 }
 
-const Type* StructMetadata::getField(std::string fieldName) const {
-	if (mFields.count(fieldName) > 0) {
-		return mFields.at(fieldName).type();
-	} else {
-		return nullptr;
-	}
-}
-
-std::size_t StructMetadata::fieldOffset(std::string fieldName) const {
-	if (mFields.count(fieldName) > 0) {
-		return mFields.at(fieldName).offset();
-	} else {
-		throw std::out_of_range("The given field doesn't exist in the current type.");
-	}
-}
-
 std::size_t StructMetadata::size() const {
 	return mSize;
 }

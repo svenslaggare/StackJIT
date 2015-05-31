@@ -132,7 +132,7 @@ void GarbageCollector::markValue(long value, const Type* type) {
             markObject(mObjects.at(objPtr));
         } else {
             if (vmState.enableDebug) {
-                //This should never happen if bug free
+                //This should never happen
                 std::cout << "Marking invalid object (0x" << std::hex << value << std::dec << ")" << std::endl;
             }
         }

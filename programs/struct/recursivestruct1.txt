@@ -1,0 +1,11 @@
+struct ListNode
+{
+	data Int
+	next Ref.Struct.ListNode
+}
+
+func main() Int
+{
+	PUSHINT 0
+	RET
+}

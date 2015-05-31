@@ -1,7 +1,10 @@
 #include "typeprovider.h"
 #include "type.h"
 
-TypeProvider::TypeProvider() {
+#include <iostream>
+
+TypeProvider::TypeProvider(const StructMetadataProvider& structMetadataProvide)
+	: mStructMetadataProvider(structMetadataProvide) {
 
 }
 
@@ -15,7 +18,7 @@ const Type* TypeProvider::makeType(std::string name) {
 	if (mTypes.count(name) > 0) {
         return mTypes[name];
     } else {
-        auto type = TypeSystem::makeTypeFromString(name);
+        auto type = TypeSystem::makeTypeFromString(name, mStructMetadataProvider);
         mTypes.insert({ name, type });
         return type;
     }

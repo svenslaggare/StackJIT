@@ -817,10 +817,11 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             TypeSystem::getStructAndField(inst.strValue, structAndField);
 
             auto structMetadata = vmState.structProvider()[structAndField.first];
-            int fieldOffset = structMetadata.fieldOffset(structAndField.second);
+            auto& field = structMetadata.fields().at(structAndField.second);
+            int fieldOffset = field.offset();
 
             //Get the size of the field
-            auto elemSize = TypeSystem::sizeOfType(structMetadata.getField(structAndField.second));
+            auto elemSize = TypeSystem::sizeOfType(field.type());
             bool is32bits = elemSize == 4;
             bool is8bits = elemSize == 1;
 

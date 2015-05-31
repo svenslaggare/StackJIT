@@ -1,0 +1,25 @@
+func length(Ref.Array[Ref.Array[Int]]) Int
+{
+	LDARG 0
+	LDLEN
+	RET
+}
+
+func main() Int
+{
+	.locals 1
+
+	PUSHINT 4
+	NEWARR Ref.Array[Int]
+	STLOC 0
+
+	LDLOC 0
+	PUSHINT 0
+	PUSHINT 4
+	NEWARR Int
+	STELEM Ref.Array[Int]
+
+	LDLOC 0
+	CALL length(Ref.Array[Ref.Array[Int]])
+	RET
+}

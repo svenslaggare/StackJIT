@@ -70,6 +70,8 @@ enum PrimitiveTypes : unsigned char {
 	Char
 };
 
+class StructMetadataProvider;
+
 namespace TypeSystem {
 	//Converts the given string into a primitive type. True if correct type.
 	bool fromString(std::string typeName, PrimitiveTypes& primitiveType);
@@ -78,7 +80,7 @@ namespace TypeSystem {
 	std::string toString(PrimitiveTypes primitiveType);
 
 	//Creates a new type from the given string
-	Type* makeTypeFromString(std::string typeName);
+	Type* makeTypeFromString(std::string typeName, const StructMetadataProvider& structProvider);
 
 	//Indicates if the given type is of the given primitive type
 	bool isPrimitiveType(const Type* type, PrimitiveTypes primitiveType);
