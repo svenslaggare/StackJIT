@@ -104,13 +104,12 @@ namespace {
 
 	//Loads the given struct
 	void loadStruct(VMState& vmState, Parser::Struct& structure) {
-		std::vector<std::pair<std::string, const Type*>> fields;
+		vmState.structProvider().add(structure.name, StructMetadata());
+		StructMetadata& structMetadata = vmState.structProvider()[structure.name];
 
 		for (auto field : structure.fields) {
-			fields.push_back(std::make_pair(field.name, getType(vmState, field.type)));
+			structMetadata.addField(field.name, getType(vmState, field.type));
 		}
-
-		vmState.structProvider().add(structure.name, StructMetadata(fields));
 	}
 }
 

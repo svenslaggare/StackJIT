@@ -193,6 +193,8 @@ public:
         TS_ASSERT_EQUALS(invokeVM("struct/program2"), "4\n4711\n");
         TS_ASSERT_EQUALS(invokeVM("struct/program3"), "0\n");
 
+        TS_ASSERT_EQUALS(invokeVM("struct/recursivestruct1"), "0\n");
+
         TS_ASSERT_EQUALS(invokeVM("struct/memberfunction1"), "3.60555\n0\n");
         TS_ASSERT_EQUALS(invokeVM("struct/memberfunction2"), "5\n0\n");
         TS_ASSERT_EQUALS(invokeVM("struct/memberfunction3"), "2.5\n5.5\n0\n");

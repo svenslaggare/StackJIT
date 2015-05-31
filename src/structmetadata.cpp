@@ -37,6 +37,11 @@ const std::unordered_map<std::string, Field>& StructMetadata::fields() const {
 	return mFields;
 }
 
+void StructMetadata::addField(std::string name, const Type* type) {
+	mFields.insert({ name, Field(type, mSize) });
+	mSize += TypeSystem::sizeOfType(type);
+}
+
 //Provider
 void StructMetadataProvider::add(std::string structName, StructMetadata structMetadata) {
 	if (mStructsMetadata.count(structName) == 0) {
@@ -54,6 +59,14 @@ const StructMetadata& StructMetadataProvider::operator[](std::string structName)
     } else {
         throw std::out_of_range("The struct isn't defined.");
     }
+}
+
+StructMetadata& StructMetadataProvider::operator[](std::string structName) {
+	if (mStructsMetadata.count(structName) > 0) {
+		return mStructsMetadata.at(structName);
+	} else {
+		throw std::out_of_range("The struct isn't defined.");
+	}
 }
 
 const StructMetadata& StructMetadataProvider::metadataFor(const StructType* structType) const {

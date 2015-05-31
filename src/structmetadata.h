@@ -36,6 +36,9 @@ public:
 
 	//Returns the fields
 	const std::unordered_map<std::string, Field>& fields() const;
+
+	//Adds a new field to the struct
+	void addField(std::string name, const Type* type);
 };
 
 class StructType;
@@ -53,6 +56,7 @@ public:
 
     //Returns the metadata for the given struct
     const StructMetadata& operator[](std::string structName) const;
+    StructMetadata& operator[](std::string structName);
 
     //Returns the metadata for the given struct
     const StructMetadata& metadataFor(const StructType* structType) const;
