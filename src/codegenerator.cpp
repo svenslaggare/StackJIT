@@ -786,22 +786,17 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             //Push the reference to the created object
             Amd64Backend::pushReg(generatedCode, Registers::AX);
 
-            //Check if the constructor entry point is defined yet
-            if (funcToCall.entryPoint() != 0) {
-                funcAddr = funcToCall.entryPoint();
-            } else {
-                //Mark that the function call needs to be patched with the entry point later
-                functionData.unresolvedCalls.insert({
-                    UnresolvedFunctionCall(
-                        FunctionCallType::Absolute,
-                        vmState.binder().functionSignature(function),
-                        generatedCode.size()),
-                    calledSignature
-                });
-            }
+            //Mark that the function call needs to be patched with the entry point later
+            functionData.unresolvedCalls.insert({
+                UnresolvedFunctionCall(
+                    FunctionCallType::Relative,
+                    vmState.binder().functionSignature(function),
+                    generatedCode.size()),
+                calledSignature
+            });
 
             //Make the call
-            generateCall(generatedCode, funcAddr);
+            Amd64Backend::call(generatedCode, 0);
         }
         break;
     case OpCodes::GARBAGE_COLLECT:
