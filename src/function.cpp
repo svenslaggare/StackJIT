@@ -69,6 +69,23 @@ void Function::setOperandStackSize(std::size_t size) {
     mOperandStackSize = size;
 }
 
+
+MacroFunctionContext::MacroFunctionContext(
+	const VMState& vmState,
+	const CallingConvention& callingConvention,
+	const ExceptionHandling& exceptionHandling,
+	FunctionCompilationData& functionData,
+	const Instruction& inst,
+	const int instIndex)
+	: vmState(vmState),
+	  callingConvention(callingConvention),
+	  exceptionHandling(exceptionHandling),
+	  functionData(functionData),
+	  inst(inst),
+	  instIndex(instIndex) {
+
+}
+
 FunctionDefinition::FunctionDefinition(
     std::string name,
     std::vector<const Type*> parameters,
@@ -82,7 +99,8 @@ FunctionDefinition::FunctionDefinition(
       mEntryPoint(entryPoint),
       mFunctionSize(funcSize),
       mIsManaged(true),
-      mIsMemberFunction(isMemberFunction) {
+      mIsMemberFunction(isMemberFunction),
+	  mIsMacroFunction(false) {
 
 }
 
@@ -93,12 +111,28 @@ FunctionDefinition::FunctionDefinition(std::string name, std::vector<const Type*
       mEntryPoint(entryPoint),
       mFunctionSize(0),
       mIsManaged(false),
-      mIsMemberFunction(false) {
+      mIsMemberFunction(false),
+	  mIsMacroFunction(false) {
+
+}
+
+FunctionDefinition::FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, MacroFunction macroFunction)
+	: mName(name),
+	  mArguments(parameters),
+	  mReturnType(returnType),
+	  mEntryPoint(0),
+	  mFunctionSize(0),
+	  mIsManaged(false),
+	  mIsMemberFunction(false),
+	  mIsMacroFunction(true),
+	  mMacroFunction(macroFunction) {
 
 }
 
 FunctionDefinition::FunctionDefinition()
-    : mName(""), mReturnType(nullptr), mEntryPoint(0), mFunctionSize(0), mIsManaged(false), mIsMemberFunction(false) {
+    : mName(""), mReturnType(nullptr), mEntryPoint(0), mFunctionSize(0),
+	  mIsManaged(false), mIsMemberFunction(false),
+	  mIsMacroFunction(false) {
 
 }
 
@@ -135,4 +169,12 @@ long FunctionDefinition::entryPoint() const {
 
 int FunctionDefinition::functionSize() const {
     return mFunctionSize;
+}
+
+bool FunctionDefinition::isMacroFunction() const {
+	return mIsMacroFunction;
+}
+
+MacroFunction FunctionDefinition::macroFunction() const {
+	return mMacroFunction;
 }

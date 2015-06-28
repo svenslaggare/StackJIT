@@ -125,7 +125,9 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
     int i = 0;
     for (auto arg : function.arguments()) {
         if (arg == nullptr || TypeSystem::isPrimitiveType(arg, PrimitiveTypes::Void)) {
-            throw std::runtime_error("Argument: " + std::to_string(i) + " in function '" + function.name() + "' cannot be of type '" + typeToString(arg) + "'.");
+            throw std::runtime_error(
+                "Argument: " + std::to_string(i) + " in function '" + function.name()
+				+ "' cannot be of type '" + typeToString(arg) + "'.");
         }
 
         i++;
@@ -682,8 +684,6 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                     typeError(index, "Invalid field reference.");
                 }
             }
-            break;
-        case OpCodes::GARBAGE_COLLECT:
             break;
         case OpCodes::LOAD_STRING:
             operandStack.push(stringType);

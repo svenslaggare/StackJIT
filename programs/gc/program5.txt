@@ -22,8 +22,7 @@ func main() Int
    LDLOC 0
    CALL printLength(Ref.Array[Int])
 
-   #CALL std.gc.collect()
-   GC
+   CALL std.gc.collect()
 
    PUSHINT 0
    RET

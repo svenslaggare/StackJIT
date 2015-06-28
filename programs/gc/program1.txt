@@ -19,7 +19,7 @@ func main() Int
 	STLOC 0
 	STLOC 0
 
-	GC
+	CALL std.gc.collect()
 
 	PUSHINT 0
 	RET

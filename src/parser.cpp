@@ -130,8 +130,7 @@ namespace {
 		{ "cmple", OpCodes::COMPARE_LESS_THAN_OR_EQUAL },
 		{ "pushnull", OpCodes::PUSH_NULL },
 		{ "ldlen", OpCodes::LOAD_ARRAY_LENGTH },
-		{ "ret", OpCodes::RET },
-		{ "gc", OpCodes::GARBAGE_COLLECT },
+		{ "ret", OpCodes::RET }
 	};
 
 	std::unordered_map<std::string, OpCodes> branchInstructions

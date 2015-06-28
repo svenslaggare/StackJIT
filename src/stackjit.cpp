@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
                     std::cout << "Could not load library '" << libraryPath << "'." << std::endl;
                 }
                 
-                libraries.emplace_back(AssemblyType::LIBRARY);
+                libraries.emplace_back(AssemblyType::Library);
                 auto& lib = libraries[libraries.size() - 1];
                 Loader::load(fileStream, vmState, lib);
 
@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
     }
 
     //Load the program
-    Assembly program(AssemblyType::PROGRAM);
+    Assembly program(AssemblyType::Program);
     Loader::load(std::cin, vmState, program);
 
     //Generate a function for the instructions

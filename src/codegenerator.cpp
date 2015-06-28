@@ -82,31 +82,29 @@ void ExceptionHandling::addArrayCreationCheck(FunctionCompilationData& function)
 	function.unresolvedNativeBranches.insert({ codeGen.size() - 6, (long)mArrayCreationCheckHandler });
 }
 
-//Generates a call to the given function
-void generateCall(CodeGen& codeGen, long funcPtr, Registers addrReg = Registers::AX) {
-    Amd64Backend::moveLongToReg(codeGen, addrReg, funcPtr);
-    Amd64Backend::callInReg(codeGen, addrReg);
-}
-
-//Generates a call to the garbage collect runtime function
-void generateGCCall(CodeGen& generatedCode, Function& function, int instIndex, bool saveBSP = true) {
-    if (saveBSP) {
-        Amd64Backend::pushReg(generatedCode, Registers::BP);
-    }
-
-    Amd64Backend::moveRegToReg(generatedCode, Registers::DI, Registers::BP); //BP as the first argument
-    Amd64Backend::moveLongToReg(generatedCode, Registers::SI, (long)&function); //Address of the function as second argument
-    Amd64Backend::moveIntToReg(generatedCode, Registers::DX, instIndex); //Current inst index as third argument
-    generateCall(generatedCode, (long)&Runtime::garbageCollect);
-
-    if (saveBSP) {
-        Amd64Backend::popReg(generatedCode, Registers::BP);
-    }
-}
-
 CodeGenerator::CodeGenerator(const CallingConvention& callingConvention, const ExceptionHandling& exceptionHandling)
     : mCallingConvention(callingConvention), mExceptionHandling(exceptionHandling) {
 
+}
+
+void CodeGenerator::generateCall(CodeGen& codeGen, long funcPtr, Registers addrReg) {
+	Amd64Backend::moveLongToReg(codeGen, addrReg, funcPtr);
+	Amd64Backend::callInReg(codeGen, addrReg);
+}
+
+void CodeGenerator::generateGCCall(CodeGen& generatedCode, Function& function, int instIndex, bool saveBSP) {
+	if (saveBSP) {
+		Amd64Backend::pushReg(generatedCode, Registers::BP);
+	}
+
+	Amd64Backend::moveRegToReg(generatedCode, Registers::DI, Registers::BP); //BP as the first argument
+	Amd64Backend::moveLongToReg(generatedCode, Registers::SI, (long)&function); //Address of the function as second argument
+	Amd64Backend::moveIntToReg(generatedCode, Registers::DX, instIndex); //Current inst index as third argument
+	generateCall(generatedCode, (long)&Runtime::garbageCollect);
+
+	if (saveBSP) {
+		Amd64Backend::popReg(generatedCode, Registers::BP);
+	}
 }
 
 void CodeGenerator::initializeFunction(FunctionCompilationData& functionData) {
@@ -444,72 +442,79 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 calledSignature = vmState.binder().functionSignature(inst.strValue, inst.parameters);
             }
 
-            //Call the pushFunc runtime function
-            Amd64Backend::pushReg(generatedCode, Registers::BP);
-            Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)&function); //Address of the func handle as the target as first arg
-            Amd64Backend::moveLongToReg(generatedCode, Registers::SI, instIndex); //Current inst index as second arg
-            generateCall(generatedCode, (long)&Runtime::pushFunc);
-            Amd64Backend::popReg(generatedCode, Registers::BP);
-
-            //Get the address of the function to call
-            long funcAddr = 0;
-
             auto funcToCall = vmState.binder().getFunction(calledSignature);
-            int numArgs = funcToCall.arguments().size();
 
-            //Set the function arguments
-            auto& opTypes = inst.operandTypes();
+			if (!funcToCall.isMacroFunction()) {
+				//Call the pushFunc runtime function
+				Amd64Backend::pushReg(generatedCode, Registers::BP);
+				Amd64Backend::moveLongToReg(generatedCode, Registers::DI,
+											(long) &function); //Address of the func handle as the target as first arg
+				Amd64Backend::moveLongToReg(generatedCode, Registers::SI, instIndex); //Current inst index as second arg
+				generateCall(generatedCode, (long) &Runtime::pushFunc);
+				Amd64Backend::popReg(generatedCode, Registers::BP);
 
-            mCallingConvention.callFunctionArguments(functionData, funcToCall, [&](int arg) {
-                return opTypes.at(numArgs - 1 - arg);
-            });
+				//Get the address of the function to call
+				long funcAddr = 0;
+				int numArgs = funcToCall.arguments().size();
 
-            if (inst.opCode() == OpCodes::CALL_INSTANCE) {
-                //Null check
-                Amd64Backend::pushReg(generatedCode, Registers::CX);
-                mExceptionHandling.addNullCheck(functionData, RegisterCallArguments::Arg0, Registers::CX);
-                Amd64Backend::popReg(generatedCode, Registers::CX);
-            }
+				//Set the function arguments
+				auto& opTypes = inst.operandTypes();
 
-            if (funcToCall.isManaged()) {
-                //Mark that the function call needs to be patched with the entry point later
-                functionData.unresolvedCalls.insert({
-                    UnresolvedFunctionCall(
-                        FunctionCallType::Relative,
-                        vmState.binder().functionSignature(function),
-                        generatedCode.size()),
-                    calledSignature
-                });
+				mCallingConvention.callFunctionArguments(functionData, funcToCall, [&](int arg) {
+					return opTypes.at(numArgs - 1 - arg);
+				});
 
-                //Make the call
-                Amd64Backend::call(generatedCode, 0);
-            } else {
-                //Unmanaged functions are located beyond one int, direct addressing must be used.
-                //Check if the function entry point is defined yet
-                if (funcToCall.entryPoint() != 0) {
-                    funcAddr = funcToCall.entryPoint();
-                } else {
-                    //Mark that the function call needs to be patched with the entry point later
-                    functionData.unresolvedCalls.insert({
-                        UnresolvedFunctionCall(
-                            FunctionCallType::Absolute,
-                            vmState.binder().functionSignature(function),
-                            generatedCode.size()),
-                        calledSignature
-                    });
-                }
+				if (inst.opCode() == OpCodes::CALL_INSTANCE) {
+					//Null check
+					Amd64Backend::pushReg(generatedCode, Registers::CX);
+					mExceptionHandling.addNullCheck(functionData, RegisterCallArguments::Arg0, Registers::CX);
+					Amd64Backend::popReg(generatedCode, Registers::CX);
+				}
 
-                //Make the call
-                generateCall(generatedCode, funcAddr);
-            }
+				if (funcToCall.isManaged()) {
+					//Mark that the function call needs to be patched with the entry point later
+					functionData.unresolvedCalls.insert({
+						UnresolvedFunctionCall(
+							FunctionCallType::Relative,
+							vmState.binder().functionSignature(function),
+							generatedCode.size()),
+						calledSignature
+					});
 
-            //Push the result
-            mCallingConvention.returnValue(functionData, funcToCall);
+					//Make the call
+					Amd64Backend::call(generatedCode, 0);
+				} else {
+					//Unmanaged functions are located beyond one int, direct addressing must be used.
+					//Check if the function entry point is defined yet
+					if (funcToCall.entryPoint() != 0) {
+						funcAddr = funcToCall.entryPoint();
+					} else {
+						//Mark that the function call needs to be patched with the entry point later
+						functionData.unresolvedCalls.insert({
+							UnresolvedFunctionCall(
+								FunctionCallType::Absolute,
+								vmState.binder().functionSignature(function),
+								generatedCode.size()),
+							calledSignature
+						});
+					}
 
-            //Call the popFunc runtime function
-            Amd64Backend::pushReg(generatedCode, Registers::BP);
-            generateCall(generatedCode, (long)&Runtime::popFunc);
-            Amd64Backend::popReg(generatedCode, Registers::BP);
+					//Make the call
+					generateCall(generatedCode, funcAddr);
+				}
+
+				//Push the result
+				mCallingConvention.returnValue(functionData, funcToCall);
+
+				//Call the popFunc runtime function
+				Amd64Backend::pushReg(generatedCode, Registers::BP);
+				generateCall(generatedCode, (long) &Runtime::popFunc);
+				Amd64Backend::popReg(generatedCode, Registers::BP);
+			} else {
+				//Invoke the macro function
+				MacroFunctionContext context(vmState, mCallingConvention, mExceptionHandling, functionData, inst, instIndex);
+				funcToCall.macroFunction()(context);
+			}
         }
         break;
     case OpCodes::RET:
@@ -770,9 +775,6 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 inst.strValue,
                 inst.parameters);
 
-            //Get the address of the function to call
-            long funcAddr = 0;
-
             auto funcToCall = vmState.binder().getFunction(calledSignature);
             int numArgs = funcToCall.arguments().size() - 1;
 
@@ -797,11 +799,6 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
             //Make the call
             Amd64Backend::call(generatedCode, 0);
-        }
-        break;
-    case OpCodes::GARBAGE_COLLECT:
-        {
-            generateGCCall(generatedCode, function, instIndex, true);
         }
         break;
     case OpCodes::LOAD_FIELD:

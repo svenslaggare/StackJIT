@@ -48,10 +48,20 @@ FunctionCompilationData::FunctionCompilationData(Function& function)
 JITCompiler::JITCompiler(VMState& vmState)
 	: mVMState(vmState), mCodeGen(mCallingConvention, mExceptionHandling) {
 	mExceptionHandling.generateHandlers(mMemoryManager);
+	createMacros();
 }
 
 MemoryManager& JITCompiler::memoryManager() {
     return mMemoryManager;
+}
+
+void JITCompiler::createMacros() {
+	auto& binder = mVMState.binder();
+	auto voidType = mVMState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Void));
+	binder.define(FunctionDefinition("std.gc.collect", {}, voidType, [this](MacroFunctionContext context) {
+		auto& function = context.functionData.function;
+		mCodeGen.generateGCCall(function.generatedCode, function, context.instIndex, true);
+	}));
 }
 
 JitFunction JITCompiler::generateFunction(Function* function) {

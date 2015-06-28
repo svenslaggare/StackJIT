@@ -1,11 +1,17 @@
 #pragma once
 #include "instructions.h"
+#include "codegenerator.h"
 #include <vector>
 #include <deque>
 #include <string>
+#include <functional>
 
 class Type;
 class MemoryManager;
+class FunctionCompilationData;
+class VMState;
+class CallingConvention;
+class ExceptionHandling;
 
 //Represents an user defined function
 class Function {
@@ -75,6 +81,30 @@ public:
 	void setOperandStackSize(std::size_t size);
 };
 
+//Represents context for a macro function
+struct MacroFunctionContext {
+	const VMState& vmState;
+
+	const CallingConvention& callingConvention;
+	const ExceptionHandling& exceptionHandling;
+
+	FunctionCompilationData& functionData;
+
+	const Instruction& inst;
+	const int instIndex;
+
+	MacroFunctionContext(
+		const VMState& vmState,
+		const CallingConvention& callingConvention,
+		const ExceptionHandling& exceptionHandling,
+		FunctionCompilationData& functionData,
+		const Instruction& inst,
+		const int instIndex);
+};
+
+//Represents a macro function
+using MacroFunction = std::function<void (MacroFunctionContext)>;
+
 //Represents a definition for a function
 class FunctionDefinition {
 private:
@@ -87,12 +117,18 @@ private:
 
 	bool mIsManaged;
 	bool mIsMemberFunction;
+
+	bool mIsMacroFunction;
+	MacroFunction mMacroFunction;
 public:
 	//Creates a new managed function definition
 	FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, long entryPoint, int funcSize, bool isMemberFunction = false);
 
 	//Creates a new external function definition
 	FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, long entryPoint);
+
+	//Creates a new macro function definition
+	FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, MacroFunction macroFunction);
 
 	FunctionDefinition();
 
@@ -119,4 +155,10 @@ public:
 
 	//The size of the function
 	int functionSize() const;
+
+	//Indicates if the current function is macro
+	bool isMacroFunction() const;
+
+	//Returns the macro function
+	MacroFunction macroFunction() const;
 };

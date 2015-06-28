@@ -2,30 +2,31 @@
 #include "vmstate.h"
 #include "typechecker.h"
 #include "rtlibrary.h"
+#include "function.h"
 #include <iostream>
 #include <math.h>
 
-void NativeLibrary::print(int x) {
+void print(int x) {
 	std::cout << x;
 }
 
-void NativeLibrary::print(float x) {
+void print(float x) {
 	std::cout << x;
 }
 
-void NativeLibrary::println(int x) {
+void println(int x) {
 	std::cout << x << std::endl;
 }
 
-void NativeLibrary::println(float x) {
+void println(float x) {
 	std::cout << x << std::endl;
 }
 
-void NativeLibrary::printchar(char x) {
+void printchar(char x) {
 	std::cout << x;
 }
 
-int NativeLibrary::abs(int x) {
+int abs(int x) {
     if (x < 0) {
         return -x;
     } else {
@@ -88,7 +89,7 @@ void NativeLibrary::add(VMState& vmState) {
 	binder.define(FunctionDefinition("std.printchar", { charType }, voidType, (long)(&printchar)));
 
 	//Math
-	binder.define(FunctionDefinition("std.math.abs", { intType }, intType, (long)(&NativeLibrary::abs)));
+	binder.define(FunctionDefinition("std.math.abs", { intType }, intType, (long)(&abs)));
 	binder.define(FunctionDefinition("std.math.sqrt", { floatType }, floatType, (long)(&sqrtf)));
 	binder.define(FunctionDefinition("std.math.sin", { floatType }, floatType, (long)(&sinf)));
 	binder.define(FunctionDefinition("std.math.cos", { floatType }, floatType, (long)(&cosf)));

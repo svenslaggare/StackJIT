@@ -36,7 +36,7 @@ void ExecutionEngine::loadAssembly(Assembly& assembly) {
         binder.define(funcDef);
     }
 
-    if (assembly.type() == AssemblyType::PROGRAM) {
+    if (assembly.type() == AssemblyType::Program) {
         if (assembly.functions.count("main()") > 0) {
             auto mainFunc = assembly.functions["main()"];
 

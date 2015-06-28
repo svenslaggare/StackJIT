@@ -6,6 +6,7 @@ class VMState;
 struct Instruction;
 class CallingConvention;
 class MemoryManager;
+class Function;
 
 //Handles exceptions
 class ExceptionHandling {
@@ -39,9 +40,17 @@ public:
 	//Creates a new code generator
 	CodeGenerator(const CallingConvention& callingConvention, const ExceptionHandling& exceptionHandling);
 
+	//Generates a call to the given function
+	void generateCall(CodeGen& codeGen, long funcPtr, Registers addrReg = Registers::AX);
+
+	//Generates a call to the garbage collect runtime function
+	void generateGCCall(CodeGen& generatedCode, Function& function, int instIndex, bool saveBSP = true);
+
 	//Initializes the given function
 	void initializeFunction(FunctionCompilationData& functionData);
 
 	//Generates native instructions for the given VM instruction
 	void generateInstruction(FunctionCompilationData& functionData, const VMState& vmState, const Instruction& inst, int instIndex);
+
+
 };

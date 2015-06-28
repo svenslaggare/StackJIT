@@ -41,7 +41,6 @@ enum class OpCodes : unsigned char {
     BRANCH_LESS_THAN,
     BRANCH_LESS_THAN_OR_EQUAL,
     PUSH_NULL,
-    GARBAGE_COLLECT,
     NEW_ARRAY,
     LOAD_ELEMENT,
     STORE_ELEMENT,

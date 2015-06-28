@@ -89,6 +89,9 @@ private:
 	CodeGenerator mCodeGen;
 	std::unordered_map<std::string, FunctionCompilationData> mFunctions;
 
+	//Creates macro functions
+	void createMacros();
+
 	//Resolves branches for the given function
 	void resolveBranches(FunctionCompilationData& functionData);
 
