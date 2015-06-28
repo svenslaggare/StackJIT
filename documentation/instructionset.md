@@ -52,7 +52,6 @@ Defines the instruction set used by the VM.
 
 ###Reference types###
 * `PUSHNULL`: Pushes a null reference unto the operand stack.
-* `GC`: Invokes the garbage collector. This instruction may be removed in the future.
 
 ###Arrays###
 * `NEWARR <type>`: Pops the size of the array and creates a new array of the given type and pushes the reference on the stack.

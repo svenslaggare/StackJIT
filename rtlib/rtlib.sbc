@@ -48,11 +48,6 @@ func std.println(Ref.Array[Char]) Void
 }
 
 #Invokes the garbage collector
-#func std.gc.collect() Void
-#{
-#	GC
-#	RET
-#}
 extern std.gc.collect() Void
 
 #Computes the absolute function
