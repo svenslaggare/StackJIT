@@ -6,54 +6,54 @@
 #include <iostream>
 #include <unordered_map>
 
-Parser::Instruction::Instruction() {
+AssemblyParser::Instruction::Instruction() {
 
 }
 
-Parser::Instruction Parser::Instruction::make(OpCodes opCode) {
-	Parser::Instruction inst;
+AssemblyParser::Instruction AssemblyParser::Instruction::make(OpCodes opCode) {
+	AssemblyParser::Instruction inst;
 	inst.opCode = opCode;
 	return inst;
 }
 
-Parser::Instruction Parser::Instruction::makeWithInt(OpCodes opCode, int value) {
-	Parser::Instruction inst;
+AssemblyParser::Instruction AssemblyParser::Instruction::makeWithInt(OpCodes opCode, int value) {
+	AssemblyParser::Instruction inst;
 	inst.intValue = value;
 	inst.opCode = opCode;
 	return inst;
 }
 
-Parser::Instruction Parser::Instruction::makeWithFloat(OpCodes opCode, float value) {
-	Parser::Instruction inst;
+AssemblyParser::Instruction AssemblyParser::Instruction::makeWithFloat(OpCodes opCode, float value) {
+	AssemblyParser::Instruction inst;
 	inst.floatValue = value;
 	inst.opCode = opCode;
 	return inst;
 }
 
-Parser::Instruction Parser::Instruction::makeWithChar(OpCodes opCode, char value) {
-	Parser::Instruction inst;
+AssemblyParser::Instruction AssemblyParser::Instruction::makeWithChar(OpCodes opCode, char value) {
+	AssemblyParser::Instruction inst;
 	inst.charValue = value;
 	inst.opCode = opCode;
 	return inst;
 }
 
-Parser::Instruction Parser::Instruction::makeWithStr(OpCodes opCode, std::string value) {
-	Parser::Instruction inst;
+AssemblyParser::Instruction AssemblyParser::Instruction::makeWithStr(OpCodes opCode, std::string value) {
+	AssemblyParser::Instruction inst;
 	inst.strValue = value;
 	inst.opCode = opCode;
 	return inst;
 }
 
-Parser::Instruction Parser::Instruction::makeCall(std::string funcName, std::vector<std::string> parameters) {
-	Parser::Instruction inst;
+AssemblyParser::Instruction AssemblyParser::Instruction::makeCall(std::string funcName, std::vector<std::string> parameters) {
+	AssemblyParser::Instruction inst;
 	inst.strValue = funcName;
 	inst.parameters = parameters;
 	inst.opCode = OpCodes::CALL;
 	return inst;
 }
 
-Parser::Instruction Parser::Instruction::makeCallInstance(std::string structType, std::string funcName, std::vector<std::string> parameters) {
-	Parser::Instruction inst;
+AssemblyParser::Instruction AssemblyParser::Instruction::makeCallInstance(std::string structType, std::string funcName, std::vector<std::string> parameters) {
+	AssemblyParser::Instruction inst;
 	inst.calledStructType = structType;
 	inst.strValue = funcName;
 	inst.parameters = parameters;
@@ -61,8 +61,8 @@ Parser::Instruction Parser::Instruction::makeCallInstance(std::string structType
 	return inst;
 }
 
-Parser::Instruction Parser::Instruction::makeNewObject(std::string structType, std::vector<std::string> parameters) {
-	Parser::Instruction inst;
+AssemblyParser::Instruction AssemblyParser::Instruction::makeNewObject(std::string structType, std::vector<std::string> parameters) {
+	AssemblyParser::Instruction inst;
 	inst.calledStructType = structType;
 	inst.strValue = ".constructor";
 	inst.parameters = parameters;
@@ -70,20 +70,20 @@ Parser::Instruction Parser::Instruction::makeNewObject(std::string structType, s
 	return inst;
 }
 
-Parser::Function::Function()
+AssemblyParser::Function::Function()
 	: isMemberFunction(false), isExternal(false) {
 
 }
 
-void Parser::Function::setNumLocals(int num) {
+void AssemblyParser::Function::setNumLocals(int num) {
 	localTypes.resize(num);
 }
 
-std::size_t Parser::Function::numLocals() const {
+std::size_t AssemblyParser::Function::numLocals() const {
 	return localTypes.size();
 }
 
-Parser::Struct::Struct() {
+AssemblyParser::Struct::Struct() {
 
 }
 
@@ -162,7 +162,7 @@ namespace {
 		}
 	}
 
-	void parseFunctionDef(const std::vector<std::string>& tokens, std::size_t& tokenIndex, Parser::Function& func) {
+	void parseFunctionDef(const std::vector<std::string>& tokens, std::size_t& tokenIndex, AssemblyParser::Function& func) {
 		func.name = nextToken(tokens, tokenIndex);
 
 		if (nextToken(tokens, tokenIndex) != "(") {
@@ -194,7 +194,7 @@ namespace {
 		}
 	}
 
-	void parseAttribute(const std::vector<std::string>& tokens, std::size_t& tokenIndex, Parser::AttributeContainer& container) {
+	void parseAttribute(const std::vector<std::string>& tokens, std::size_t& tokenIndex, AssemblyParser::AttributeContainer& container) {
 		auto attributeName = nextToken(tokens, tokenIndex);
 
 		if (nextToken(tokens, tokenIndex) != "(") {
@@ -205,7 +205,7 @@ namespace {
 			throw std::runtime_error("The attribute '" + attributeName + "' is already defined.'");
 		}
 
-		Parser::Attribute attribute;
+		AssemblyParser::Attribute attribute;
 		attribute.name = attributeName;
 
 		while (true) {
@@ -233,7 +233,7 @@ namespace {
 	}
 }
 
-std::vector<std::string> Parser::tokenize(std::istream& stream) {
+std::vector<std::string> AssemblyParser::tokenize(std::istream& stream) {
 	std::vector<std::string> tokens;
 	std::string token;
 	bool isComment = false;
@@ -319,7 +319,7 @@ std::vector<std::string> Parser::tokenize(std::istream& stream) {
 	return tokens;
 }
 
-void Parser::parseTokens(const std::vector<std::string>& tokens, Parser::Assembly& assembly) {
+void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, AssemblyParser::Assembly& assembly) {
 	bool isFunc = false;
 	bool isFuncBody = false;
 	bool localsSet = false;

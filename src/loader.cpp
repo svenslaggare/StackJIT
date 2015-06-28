@@ -30,7 +30,7 @@ namespace {
 	}
 
 	//Loads the given instruction
-	Instruction loadInstruction(VMState& vmState, Function* function, Parser::Instruction inst) {
+	Instruction loadInstruction(VMState& vmState, Function* function, AssemblyParser::Instruction inst) {
 		Instruction newInst(inst.opCode);
 
 		newInst.intValue = inst.intValue;
@@ -52,7 +52,7 @@ namespace {
 	}
 
 	//Loads the given function
-	Function* loadFunction(VMState& vmState, Parser::Function& function) {
+	Function* loadFunction(VMState& vmState, AssemblyParser::Function& function) {
 		std::vector<const Type*> parameters;
 		const Type* returnType;
 
@@ -88,7 +88,7 @@ namespace {
 	}
 
 	//Loads the given external function
-	void loadExternalFunction(VMState& vmState, Assembly& assembly, Parser::Function& function) {
+	void loadExternalFunction(VMState& vmState, Assembly& assembly, AssemblyParser::Function& function) {
 		std::vector<const Type*> parameters;
 
 		for (auto param : function.parameters) {
@@ -103,7 +103,7 @@ namespace {
 	}
 
 	//Loads the given struct
-	void loadStruct(VMState& vmState, Parser::Struct& structure) {
+	void loadStruct(VMState& vmState, AssemblyParser::Struct& structure) {
 		vmState.structProvider().add(structure.name, StructMetadata());
 		StructMetadata& structMetadata = vmState.structProvider()[structure.name];
 
@@ -115,9 +115,9 @@ namespace {
 
 void Loader::load(std::istream& stream, VMState& vmState, Assembly& assembly) {
 	//Parse it
-	auto tokens = Parser::tokenize(stream);
-	Parser::Assembly parsedAssembly;
-    Parser::parseTokens(tokens, parsedAssembly);
+	auto tokens = AssemblyParser::tokenize(stream);
+	AssemblyParser::Assembly parsedAssembly;
+    AssemblyParser::parseTokens(tokens, parsedAssembly);
 
     //Load structs
     for (auto& currentStruct : parsedAssembly.structs) {

@@ -4,8 +4,8 @@
 #include <string>
 #include <unordered_map>
 
-//The parser
-namespace Parser {
+//The assembly parser
+namespace AssemblyParser {
 	//Represents a parsed but not bound instruction.
 	struct Instruction {
 	    //The op code
@@ -119,5 +119,5 @@ namespace Parser {
 	std::vector<std::string> tokenize(std::istream& stream);
 	
 	//Parses the given tokens into the given assembly
-	void parseTokens(const std::vector<std::string>& tokens, Parser::Assembly& assembly);
+	void parseTokens(const std::vector<std::string>& tokens, AssemblyParser::Assembly& assembly);
 }
