@@ -35,5 +35,5 @@ public:
 	StackFrameEntry getStackOperand(int index);
 
 	//Returns the size of the operand stack at the current instruction
-	int operandStackSize() const;
+	std::size_t operandStackSize() const;
 };

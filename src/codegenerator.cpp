@@ -776,7 +776,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 inst.parameters);
 
             auto funcToCall = vmState.binder().getFunction(calledSignature);
-            int numArgs = funcToCall.arguments().size() - 1;
+            int numArgs = (int)funcToCall.arguments().size() - 1;
 
             //Set the constructor arguments
             Amd64Backend::moveRegToReg(generatedCode, RegisterCallArguments::Arg0, Registers::AX);

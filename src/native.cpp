@@ -6,6 +6,8 @@
 #include <iostream>
 #include <math.h>
 
+extern VMState vmState;
+
 void print(int x) {
 	std::cout << x;
 }
@@ -33,8 +35,6 @@ int abs(int x) {
         return x;
     }
 }
-
-extern VMState vmState;
 
 void printPoint(RawStructRef objRef) {
 	if (objRef != nullptr) {

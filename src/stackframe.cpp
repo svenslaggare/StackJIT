@@ -1,5 +1,6 @@
 #include "stackframe.h"
 #include "function.h"
+#include "amd64.h"
 
 StackFrameEntry::StackFrameEntry(long value, const Type* type)
 	: value(value), type(type) {
@@ -26,10 +27,10 @@ StackFrameEntry StackFrame::getLocal(int index) {
 }
 
 StackFrameEntry StackFrame::getStackOperand(int index) {
-	long* stackStart = mBasePtr - 1 - (mFunction->stackSize() / 8);
+	long* stackStart = mBasePtr - 1 - (mFunction->stackSize() / Amd64Backend::REG_SIZE);
 	return StackFrameEntry(stackStart[-index], mOperandTypes[mOperandTypes.size() - 1 - index]);
 }
 
-int StackFrame::operandStackSize() const {
+std::size_t StackFrame::operandStackSize() const {
 	return mOperandTypes.size();
 }

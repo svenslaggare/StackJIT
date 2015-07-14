@@ -51,6 +51,4 @@ public:
 
 	//Generates native instructions for the given VM instruction
 	void generateInstruction(FunctionCompilationData& functionData, const VMState& vmState, const Instruction& inst, int instIndex);
-
-
 };

@@ -45,7 +45,7 @@ public:
 	const std::vector<const Type*>& arguments() const;
 
 	//The number of arguments
-	int numArgs() const;
+	std::size_t numArgs() const;
 
 	//The return type
 	const Type* returnType() const;
@@ -57,7 +57,7 @@ public:
 	bool isConstructor() const;
 
 	//The number of locals
-	int numLocals() const;
+	std::size_t numLocals() const;
 
 	//Sets the number of locals
 	void setNumLocals(int count);

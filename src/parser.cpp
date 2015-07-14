@@ -570,9 +570,9 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
 				throw std::runtime_error("'::' is only allowed in member functions.");
 			}
 
-			int numArgs = currentFunc.parameters.size();
+			auto numArgs = currentFunc.parameters.size();
 
-			if (!(numArgs >= 0 && numArgs <= MAXIMUM_NUMBER_OF_ARGUMENTS)) {
+			if (numArgs > MAXIMUM_NUMBER_OF_ARGUMENTS) {
 				throw std::runtime_error(
 					"Maximum " + std::to_string(MAXIMUM_NUMBER_OF_ARGUMENTS) + " arguments are supported.");
 			}
@@ -609,9 +609,9 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
             //Add the implicit this reference
             currentFunc.parameters.insert(currentFunc.parameters.begin(), "Ref.Struct." + structTypeName);
 
-            int numArgs = currentFunc.parameters.size();
+            auto numArgs = currentFunc.parameters.size();
 
-            if (numArgs >= 0 && numArgs <= MAXIMUM_NUMBER_OF_ARGUMENTS) {
+            if (numArgs <= MAXIMUM_NUMBER_OF_ARGUMENTS) {
             	currentFunc.structName = structTypeName;
             	currentFunc.memberFunctionName = memberFunctionName;
 				currentFunc.isMemberFunction = true;

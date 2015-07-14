@@ -21,7 +21,7 @@ const std::vector<const Type*>& Function::arguments() const {
 	return mArguments;
 }
 
-int Function::numArgs() const {
+std::size_t Function::numArgs() const {
 	return mArguments.size();
 }
 
@@ -37,7 +37,7 @@ bool Function::isConstructor() const {
     return mIsConstructor;
 }
 
-int Function::numLocals() const {
+std::size_t Function::numLocals() const {
 	return mLocalTypes.size();
 }
 

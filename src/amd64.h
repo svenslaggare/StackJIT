@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 
-//Converts to/from byte arrays
+//Converts between primitive types and char arrays
 union ShortToBytes {
     short shortValue;
     unsigned char byteValues[sizeof(short)];

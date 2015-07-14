@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-struct Function;
+class Function;
 class Type;
 class ObjectHandle;
 
@@ -29,13 +29,13 @@ namespace Runtime {
 	void garbageCollect(long* basePtr, Function* func, int instIndex);
 
 	//Creates a new array of the given type and length
-	long newArray(Type* elementType, int length);
+	unsigned char* newArray(const Type* elementType, int length);
 
 	//Creates a new struct of the given type
-	long newObject(Type* type);
+	unsigned char* newObject(const Type* type);
 
 	//Creates a new string of the given length
-	long newString(const char* string, int length);
+	unsigned char* newString(const char* string, int length);
 
 	//Stops the execution
 	void runtimeError(std::string errorMessage);
