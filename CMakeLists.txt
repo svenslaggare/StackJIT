@@ -48,9 +48,13 @@ set(SOURCE_FILES
     src/typeprovider.h
     src/vmstate.cpp
     src/vmstate.h
+    src/objectref.h
+    src/objectref.cpp
+    src/stackframe.h
+    src/stackframe.cpp
     tests/runners/amd64test_runner.cpp
     tests/runners/vmtest_runner.cpp
     tests/amd64-test.h
     tests/vm-test.h)
 
-add_executable(stackjit ${SOURCE_FILES} src/objectref.h src/objectref.cpp)
+add_executable(stackjit ${SOURCE_FILES})

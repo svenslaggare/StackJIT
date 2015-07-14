@@ -7,6 +7,7 @@
 #include "vmstate.h"
 #include "function.h"
 #include "type.h"
+#include "stackframe.h"
 #include "codegenerator.h"
 
 extern VMState vmState;
@@ -83,76 +84,68 @@ void printValue(long value, const Type* type) {
 }
 
 void Runtime::Internal::printAliveObjects(long* basePtr, Function* func, int instIndex, std::string indentation) {
-    int numArgs = func->numArgs();
-    int numLocals = func->numLocals();
-    auto& operandTypes = func->instructions[instIndex].operandTypes();
-    int stackSize = operandTypes.size();
+	StackFrame stackFrame(basePtr, func, instIndex);
+	int numArgs = func->numArgs();
+	int numLocals = func->numLocals();
+	int stackSize = stackFrame.operandStackSize();
 
-    long* argsStart = basePtr - 1;
-    long* localsStart = basePtr - 1 - numArgs;
-    long* stackStart = basePtr - 1 - (func->stackSize() / 8);
+	if (numArgs > 0) {
+		std::cout << indentation << "Args: " << std::endl;
+		for (int i = 0; i < numArgs; i++) {
+			std::cout << indentation << i << ": ";
+			auto arg = stackFrame.getArgument(i);
+			printValue(arg.value, arg.type);
+			std::cout << std::endl;
+		}
 
-    if (numArgs > 0) {
-        std::cout << indentation << "Args: " << std::endl;
-        for (int i = 0; i < numArgs; i++) {
-            std::cout << indentation << i << ": ";
-            printValue(argsStart[-i], func->arguments()[i]);
-            std::cout << std::endl;
-        }
+		std::cout << std::endl;
+	}
 
-        std::cout << std::endl;
-    }
+	if (numLocals > 0) {
+		std::cout << indentation << "Locals: " << std::endl;
+		for (int i = 0; i < numLocals; i++) {
+			std::cout << indentation << i << ": ";
+			auto local = stackFrame.getLocal(i);
+			printValue(local.value, local.type);
+			std::cout << std::endl;
+		}
 
-    if (numLocals > 0) {
-        std::cout << indentation << "Locals: " << std::endl;
-        for (int i = 0; i < numLocals; i++) {
-            std::cout << indentation << i << ": ";
-            printValue(localsStart[-i], func->getLocal(i));
-            std::cout << std::endl;
-        }
+		std::cout << std::endl;
+	}
 
-        std::cout << std::endl;
-    }
-
-    if (stackSize > 0) {
-        std::cout << indentation << "Stack: " << std::endl;
-        for (int i = 0; i < stackSize; i++) {
-            std::cout << indentation << i << ": ";
-            printValue(stackStart[-i], operandTypes[stackSize - 1 - i]);
-            std::cout << std::endl;
-        }
-    }
+	if (stackSize > 0) {
+		std::cout << indentation << "Stack: " << std::endl;
+		for (int i = 0; i < stackSize; i++) {
+			std::cout << indentation << i << ": ";
+			auto operand = stackFrame.getStackOperand(i);
+			printValue(operand.value, operand.type);
+			std::cout << std::endl;
+		}
+	}
 }
 
 void Runtime::Internal::markObjects(long* basePtr, Function* func, int instIndex) {
     auto& gc = vmState.gc();
 
-    int numArgs = func->numArgs();
+	StackFrame stackFrame(basePtr, func, instIndex);
+	int numArgs = func->numArgs();
     int numLocals = func->numLocals();
-    auto& operandTypes = func->instructions[instIndex].operandTypes();
-    int stackSize = operandTypes.size();
+    int stackSize = stackFrame.operandStackSize();
 
-    long* argsStart = basePtr - 1;
-    long* localsStart = basePtr - 1 - numArgs;
-    long* stackStart = basePtr - 1 - (func->stackSize() / 8);
+	for (int i = 0; i < numArgs; i++) {
+		auto arg = stackFrame.getArgument(i);
+		gc.markValue(arg.value, arg.type);
+	}
 
-    if (numArgs > 0) {
-        for (int i = 0; i < numArgs; i++) {
-            gc.markValue(argsStart[-i], func->arguments()[i]);
-        }
-    }
+	for (int i = 0; i < numLocals; i++) {
+		auto local = stackFrame.getLocal(i);
+		gc.markValue(local.value, local.type);
+	}
 
-    if (numLocals > 0) {
-        for (int i = 0; i < numLocals; i++) {
-            gc.markValue(localsStart[-i], func->getLocal(i));
-        }
-    }
-
-    if (stackSize > 0) {
-        for (int i = 0; i < stackSize; i++) {
-            gc.markValue(stackStart[-i], operandTypes[stackSize - 1 - i]);
-        }
-    }
+	for (int i = 0; i < stackSize; i++) {
+		auto operand = stackFrame.getStackOperand(i);
+		gc.markValue(operand.value, operand.type);
+	}
 }
 
 void Runtime::garbageCollect(long* basePtr, Function* func, int instIndex) {
