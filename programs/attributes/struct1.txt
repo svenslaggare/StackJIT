@@ -1,8 +1,12 @@
 struct Point
 {
-	@AccessModifiers(x=public y=public)
+	@Modifiers(access=public)
+
 	x Int
+	@Modifiers(access=public)
+
 	y Int
+	@Modifiers(access=public)
 }
 
 func main() Int

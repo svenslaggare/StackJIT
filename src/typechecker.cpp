@@ -738,7 +738,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
         std::cout << "----End type checking----" << std::endl;
     }
 
-    for (int i = 0; i < function.numLocals(); i++) {
+    for (std::size_t i = 0; i < function.numLocals(); i++) {
         if (function.getLocal(i) == nullptr) {
             typeError(1, "Local " + std::to_string(i) + " is not typed.");
         }

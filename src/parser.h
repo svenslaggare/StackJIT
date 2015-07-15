@@ -1,5 +1,5 @@
 #pragma once
-#include "instructions.h"
+#include "instructionset.h"
 #include <vector>
 #include <string>
 #include <unordered_map>
@@ -93,6 +93,8 @@ namespace AssemblyParser {
 	struct Field {
 		std::string name;
 		std::string type;
+
+		AttributeContainer attributes;
 	};
 
 	//Represents a structure

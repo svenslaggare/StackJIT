@@ -330,6 +330,7 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
 	bool isStructBody = false;
 	
 	Struct currentStruct;
+	Field* currentField = nullptr;
 
 	for (std::size_t i = 0; i < tokens.size(); i++) {
 		std::string current = tokens[i];
@@ -513,7 +514,13 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
 
 		if (isStructBody) {
 			if (currentToLower == "@") {
-				parseAttribute(tokens, i, currentStruct.attributes);
+				if (currentField == nullptr) {
+					//Struct attribute
+					parseAttribute(tokens, i, currentStruct.attributes);
+				} else {
+					//Field attribute
+					parseAttribute(tokens, i, currentField->attributes);
+				}
 				continue;
 			}
 
@@ -521,6 +528,7 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
 				assembly.structs.push_back(currentStruct);
 				isStruct = false;
 				isStructBody = false;
+				currentField = nullptr;
 				continue;
 			}
 
@@ -529,6 +537,7 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
 			field.type = nextToken(tokens, i);
 
 			currentStruct.fields.push_back(field);
+			currentField = &currentStruct.fields.back();
 		}
 
 		//Definitions

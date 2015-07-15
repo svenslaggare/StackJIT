@@ -9,10 +9,12 @@
 #include <string.h>
 #include <iostream>
 
-void pushArray(std::vector<unsigned char>& dest, const std::vector<unsigned char>& values) {
-	for (auto current : values) {
-		dest.push_back(current);
-	}
+namespace {
+    void pushArray(std::vector<unsigned char>& dest, const std::vector<unsigned char>& values) {
+        for (auto current : values) {
+            dest.push_back(current);
+        }
+    }
 }
 
 //Exception handling
