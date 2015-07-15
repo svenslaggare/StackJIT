@@ -449,15 +449,14 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			if (!funcToCall.isMacroFunction()) {
 				//Call the pushFunc runtime function
 				Amd64Backend::pushReg(generatedCode, Registers::BP);
-				Amd64Backend::moveLongToReg(generatedCode, Registers::DI,
-											(long) &function); //Address of the func handle as the target as first arg
+				Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long) &function); //Address of the func handle as the target as first arg
 				Amd64Backend::moveLongToReg(generatedCode, Registers::SI, instIndex); //Current inst index as second arg
 				generateCall(generatedCode, (long) &Runtime::pushFunc);
 				Amd64Backend::popReg(generatedCode, Registers::BP);
 
 				//Get the address of the function to call
 				long funcAddr = 0;
-				int numArgs = funcToCall.arguments().size();
+				int numArgs = (int)funcToCall.arguments().size();
 
 				//Set the function arguments
 				auto& opTypes = inst.operandTypes();

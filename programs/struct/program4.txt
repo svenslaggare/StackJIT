@@ -1,7 +1,7 @@
 struct Point
 {
-	x Float
-	y Float
+	x Int
+	y Int
 }
 
 member Point::.constructor() Void
@@ -9,26 +9,21 @@ member Point::.constructor() Void
    RET
 }
 
-func Point::length(Ref.Struct.Point) Float
+func printPoint(Ref.Struct.Point) Void
 {
-	.locals 1
 	LDARG 0
-	STLOC 0
-
-	LDLOC 0
 	LDFIELD Point::x
-	LDLOC 0
-	LDFIELD Point::x
-	MUL
+	CALL std.print(Int)
 
-	LDLOC 0
-	LDFIELD Point::y
-	LDLOC 0
-	LDFIELD Point::y
-	MUL
+	PUSHCHAR 58
+    CALL std.printchar(Char)
 
-	ADD
-	CALL sqrt(Float)
+	LDARG 0
+	LDFIELD Point::y
+	CALL std.print(Int)
+
+	PUSHCHAR 10
+	CALL std.printchar(Char)
 
 	RET
 }
@@ -36,21 +31,20 @@ func Point::length(Ref.Struct.Point) Float
 func main() Int
 {
 	.locals 1
-	
+
 	NEWOBJ Point::.constructor()
 	STLOC 0
 
 	LDLOC 0
-	PUSHFLOAT 1.23
+	PUSHINT 1337
 	STFIELD Point::x
 
 	LDLOC 0
-	PUSHFLOAT 2.23
+	PUSHINT 4711
 	STFIELD Point::y
 
 	LDLOC 0
-	CALL Point::length(Ref.Struct.Point)
-	CALL std.println(Float)
+	CALL printPoint(Ref.Struct.Point)
 
 	PUSHINT 0
 	RET

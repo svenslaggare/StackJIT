@@ -8,27 +8,27 @@
 
 extern VMState vmState;
 
-void print(int x) {
+void NativeLibrary::print(int x) {
 	std::cout << x;
 }
 
-void print(float x) {
+void NativeLibrary::print(float x) {
 	std::cout << x;
 }
 
-void println(int x) {
+void NativeLibrary::println(int x) {
 	std::cout << x << std::endl;
 }
 
-void println(float x) {
+void NativeLibrary::println(float x) {
 	std::cout << x << std::endl;
 }
 
-void printchar(char x) {
+void NativeLibrary::printchar(char x) {
 	std::cout << x;
 }
 
-int abs(int x) {
+int NativeLibrary::abs(int x) {
     if (x < 0) {
         return -x;
     } else {
@@ -77,13 +77,13 @@ void NativeLibrary::add(VMState& vmState) {
 	auto& binder = vmState.binder();
 
 	//Print
-	void(*printInt)(int) = &print;
-	void(*printFloat)(float) = &print;
-	void(*printlnInt)(int) = &println;
-	void(*printlnFloat)(float) = &println;
+	void(*printInt)(int) = &NativeLibrary::print;
+	void(*printFloat)(float) = &NativeLibrary::print;
+	void(*printlnInt)(int) = &NativeLibrary::println;
+	void(*printlnFloat)(float) = &NativeLibrary::println;
 
-	binder.define(FunctionDefinition("std.print", { intType }, voidType, (long)(&printInt)));
-	binder.define(FunctionDefinition("std.print", { floatType }, voidType, (long)(&printFloat)));
+	binder.define(FunctionDefinition("std.print", { intType }, voidType, (long)(printInt)));
+	binder.define(FunctionDefinition("std.print", { floatType }, voidType, (long)(printFloat)));
 	binder.define(FunctionDefinition("std.println", { intType }, voidType, (long)(printlnInt)));
 	binder.define(FunctionDefinition("std.println", { floatType }, voidType, (long)(printlnFloat)));
 	binder.define(FunctionDefinition("std.printchar", { charType }, voidType, (long)(&printchar)));

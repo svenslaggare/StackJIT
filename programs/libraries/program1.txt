@@ -1,0 +1,21 @@
+func main() Int
+{
+	.locals 1
+	
+	NEWOBJ Point::.constructor()
+	STLOC 0
+
+	LDLOC 0
+	PUSHINT 1337
+	STFIELD Point::x
+
+	LDLOC 0
+	PUSHINT 4711
+	STFIELD Point::y
+
+	LDLOC 0
+	CALL printPoint(Ref.Struct.Point)
+
+	PUSHINT 0
+	RET
+}
