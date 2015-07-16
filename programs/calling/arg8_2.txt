@@ -1,0 +1,21 @@
+func sub(Int Int Int Int Int Int Int Int) Int
+{
+	LDARG 6
+	LDARG 7
+	SUB
+	RET
+}
+
+func main() Int
+{
+	PUSHINT 9
+	PUSHINT 2
+	PUSHINT 0
+	PUSHINT 0
+	PUSHINT 0
+	PUSHINT 0
+	PUSHINT 0
+	PUSHINT 0
+	CALL sub(Int Int Int Int Int Int Int Int)
+	RET
+}

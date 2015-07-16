@@ -409,7 +409,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::LOAD_LOCAL:
         {
             //Load rax with the locals offset
-            int localOffset = (inst.intValue + function.numParams() + stackOffset) * -Amd64Backend::REG_SIZE;
+            int localOffset = (inst.intValue + (int)function.numParams() + stackOffset) * -Amd64Backend::REG_SIZE;
             Amd64Backend::moveIntToReg(generatedCode, Registers::AX, localOffset); //mov rax, <local>
 
             //Now add the base pointer
@@ -427,10 +427,10 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             //Pop the top operand
             Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
 
-            int localOffset = (inst.intValue + function.numParams() + stackOffset) * -Amd64Backend::REG_SIZE;
+            int localOffset = (inst.intValue + (int)function.numParams() + stackOffset) * -Amd64Backend::REG_SIZE;
 
             //Store the operand at the given local
-            Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::BP, localOffset, Registers::AX); //mov [rbp-local], rax
+            Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::BP, (char)localOffset, Registers::AX); //mov [rbp-local], rax
         }
         break;
     case OpCodes::CALL:

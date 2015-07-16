@@ -581,10 +581,10 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
 
 			auto numArgs = currentFunc.parameters.size();
 
-			if (numArgs > MAXIMUM_NUMBER_OF_ARGUMENTS) {
-				throw std::runtime_error(
-					"Maximum " + std::to_string(MAXIMUM_NUMBER_OF_ARGUMENTS) + " arguments are supported.");
-			}
+//			if (numArgs > MAXIMUM_NUMBER_OF_ARGUMENTS) {
+//				throw std::runtime_error(
+//					"Maximum " + std::to_string(MAXIMUM_NUMBER_OF_ARGUMENTS) + " arguments are supported.");
+//			}
 
 			localsSet = false;
 		}
@@ -620,14 +620,14 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
 
             auto numArgs = currentFunc.parameters.size();
 
-            if (numArgs <= MAXIMUM_NUMBER_OF_ARGUMENTS) {
+//            if (numArgs <= MAXIMUM_NUMBER_OF_ARGUMENTS) {
             	currentFunc.structName = structTypeName;
             	currentFunc.memberFunctionName = memberFunctionName;
 				currentFunc.isMemberFunction = true;
-            } else {
-                throw std::runtime_error(
-					"Maximum " + std::to_string(MAXIMUM_NUMBER_OF_ARGUMENTS) + " arguments are supported.");
-            }
+//            } else {
+//                throw std::runtime_error(
+//					"Maximum " + std::to_string(MAXIMUM_NUMBER_OF_ARGUMENTS) + " arguments are supported.");
+//            }
 
             localsSet = false;
             isFunc = true;

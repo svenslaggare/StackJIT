@@ -100,6 +100,21 @@ void LinuxCallingConvention::moveArgsToStack(FunctionCompilationData& functionDa
     auto& function = functionData.function;
 
     if (function.numParams() > 0) {
+		if (function.numParams() >= 7) {
+			int numStackArgs = (int)function.numParams() - 6;
+
+			for (int i = 0; i < numStackArgs; i++) {
+				Amd64Backend::moveMemoryRegWithOffsetToReg(
+					function.generatedCode,
+					Registers::AX,
+					Registers::BP, (char)(Amd64Backend::REG_SIZE * (numStackArgs - i + 1))); //mov rax, [rbp+REG_SIZE*<arg offset>]
+
+				Amd64Backend::moveRegToMemoryRegWithOffset(
+					function.generatedCode,
+					Registers::BP, -(7 + i) * Amd64Backend::REG_SIZE, Registers::AX); //mov [rbp-<arg offset>*REG_SIZE], rax
+			}
+		}
+
         if (function.numParams() >= 6) {
             if (TypeSystem::isPrimitiveType(function.parameters()[5], PrimitiveTypes::Float)) {
                 Amd64Backend::moveRegToMemoryRegWithOffset(
@@ -107,20 +122,20 @@ void LinuxCallingConvention::moveArgsToStack(FunctionCompilationData& functionDa
 					Registers::BP, -6 * Amd64Backend::REG_SIZE, FloatRegisters::XMM5); //movss [rbp-6*REG_SIZE], xmm5
             } else {
                 Amd64Backend::moveRegToMemoryRegWithOffset(
-					function.generatedCode, Registers::BP,
-					-6 * Amd64Backend::REG_SIZE, NumberedRegisters::R9); //mov [rbp-6*REG_SIZE], r9
+					function.generatedCode,
+					Registers::BP, -6 * Amd64Backend::REG_SIZE, NumberedRegisters::R9); //mov [rbp-6*REG_SIZE], r9
             }
         }
 
         if (function.numParams() >= 5) {
             if (TypeSystem::isPrimitiveType(function.parameters()[4], PrimitiveTypes::Float)) {
                 Amd64Backend::moveRegToMemoryRegWithOffset(
-					function.generatedCode, Registers::BP,
-					-5 * Amd64Backend::REG_SIZE, FloatRegisters::XMM4); //movss [rbp-5*REG_SIZE], xmm4
+					function.generatedCode,
+					Registers::BP, -5 * Amd64Backend::REG_SIZE, FloatRegisters::XMM4); //movss [rbp-5*REG_SIZE], xmm4
             } else {
                 Amd64Backend::moveRegToMemoryRegWithOffset(
-					function.generatedCode, Registers::BP,
-					-5 * Amd64Backend::REG_SIZE, NumberedRegisters::R8); //mov [rbp-5*REG_SIZE], r8
+					function.generatedCode,
+					Registers::BP, -5 * Amd64Backend::REG_SIZE, NumberedRegisters::R8); //mov [rbp-5*REG_SIZE], r8
             }
         }
 
@@ -177,6 +192,20 @@ void LinuxCallingConvention::moveArgsToStack(FunctionCompilationData& functionDa
 void LinuxCallingConvention::callFunctionArgument(FunctionCompilationData& functionData, int argIndex, const Type* argType) const {
     auto& generatedCode = functionData.function.generatedCode;
 
+	//For arguments of index >= 6, they are already on the stack, so need to pop and push them.
+	if (argIndex >= 6) {
+		Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+
+		Amd64Backend::subIntFromReg(
+			generatedCode,
+			Registers::SP, Amd64Backend::REG_SIZE); //sub rsp, REG_SIZE
+
+		Amd64Backend::moveRegToMemoryRegWithOffset(
+			generatedCode,
+			Registers::SP,
+			(char)((6 - argIndex) * Amd64Backend::REG_SIZE), Registers::AX); //mov [rsp+<arg offset>], rax
+	}
+
     if (argIndex == 5) {
         if (argType->name() == "Float") {    
             Amd64Backend::popReg(generatedCode, FloatRegisters::XMM5);             
@@ -210,8 +239,8 @@ void LinuxCallingConvention::callFunctionArgument(FunctionCompilationData& funct
     }
 
     if (argIndex == 1) {
-        if (argType->name() == "Float") { 
-            Amd64Backend::popReg(generatedCode, FloatRegisters::XMM1);                 
+        if (argType->name() == "Float") {
+            Amd64Backend::popReg(generatedCode, FloatRegisters::XMM1);
         } else {
             Amd64Backend::popReg(generatedCode, Registers::SI); //pop rsi
         }
@@ -227,9 +256,16 @@ void LinuxCallingConvention::callFunctionArgument(FunctionCompilationData& funct
 }
 
 void LinuxCallingConvention::callFunctionArguments(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall, GetArugmentType getArgumentType) const {
-    int numArgs = funcToCall.arguments().size();
+    int numArgs = (int)funcToCall.arguments().size();
 
-    //Set the function arguments
+	//For arguments of index >= 6, they are already on the stack, so need to pop and push them.
+	if (numArgs >= 7) {
+		for (int arg = numArgs - 1; arg >= 6; arg--) {
+			callFunctionArgument(functionData, arg, getArgumentType(arg));
+		}
+	}
+
+	//Set the function arguments
     if (numArgs >= 6) {
         callFunctionArgument(functionData, 5, getArgumentType(5));
     }

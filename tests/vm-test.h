@@ -98,10 +98,14 @@ public:
     void testCall() {
         TS_ASSERT_EQUALS(invokeVM("calling/arg1"), "4\n");
         TS_ASSERT_EQUALS(invokeVM("calling/arg2"), "9\n");
+        TS_ASSERT_EQUALS(invokeVM("calling/arg2_2"), "7\n");
         TS_ASSERT_EQUALS(invokeVM("calling/arg3"), "12\n");
         TS_ASSERT_EQUALS(invokeVM("calling/arg4"), "14\n");
         TS_ASSERT_EQUALS(invokeVM("calling/arg5"), "20\n");
         TS_ASSERT_EQUALS(invokeVM("calling/arg6"), "27\n");
+        TS_ASSERT_EQUALS(invokeVM("calling/arg7"), "35\n");
+        TS_ASSERT_EQUALS(invokeVM("calling/arg8"), "44\n");
+        TS_ASSERT_EQUALS(invokeVM("calling/arg8_2"), "7\n");
 
         TS_ASSERT_EQUALS(invokeVM("calling/arg1_float"), "4\n0\n");
         TS_ASSERT_EQUALS(invokeVM("calling/arg2_float"), "9\n0\n");

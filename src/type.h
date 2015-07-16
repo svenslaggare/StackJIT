@@ -49,7 +49,7 @@ public:
 	const Type* elementType() const;
 };
 
-//Representa a struct type
+//Represents a struct type
 class StructType : public ReferenceType {
 private:
 	const std::string mStructName;

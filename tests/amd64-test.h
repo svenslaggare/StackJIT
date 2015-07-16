@@ -144,6 +144,14 @@ public:
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x48, 0x89, 0x4D, 0xF0 }));
         generatedCode.clear();
 
+		Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::SP, 8, Registers::AX);
+		TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x48, 0x89, 0x44, 0x24, 0x08 } ));
+		generatedCode.clear();
+
+		Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::SP, 8, Registers::CX);
+		TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x48, 0x89, 0x4C, 0x24, 0x08 }));
+		generatedCode.clear();
+
         //Numbered registers
         Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::BP, -16, NumberedRegisters::R8);
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x4C, 0x89, 0x45, 0xF0 }));
@@ -153,6 +161,26 @@ public:
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x4C, 0x89, 0x48, 0xF0 }));
         generatedCode.clear();
     }
+
+	//Tests moveMemoryRegWithOffsetToReg
+    void testMoveMemoryRegWithOffsetToReg() {
+		CodeGen generatedCode;
+		Amd64Backend::moveMemoryRegWithOffsetToReg(generatedCode, Registers::AX, Registers::AX, 16);
+		TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x48, 0x8B, 0x40, 0x10 }));
+		generatedCode.clear();
+
+		Amd64Backend::moveMemoryRegWithOffsetToReg(generatedCode, Registers::AX, Registers::CX, 16);
+		TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x48, 0x8B, 0x41, 0x10 }));
+		generatedCode.clear();
+
+		Amd64Backend::moveMemoryRegWithOffsetToReg(generatedCode, Registers::CX, Registers::AX, 16);
+		TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x48, 0x8B, 0x48, 0x10 }));
+		generatedCode.clear();
+
+		Amd64Backend::moveMemoryRegWithOffsetToReg(generatedCode, Registers::AX, Registers::BP, 16);
+		TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x48, 0x8B, 0x45, 0x10 }));
+		generatedCode.clear();
+	}
 
     //Tests moveIntToReg
     void testMoveIntToReg() {

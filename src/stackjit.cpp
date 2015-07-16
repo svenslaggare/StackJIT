@@ -87,14 +87,14 @@ int main(int argc, char* argv[]) {
     Loader::load(std::cin, vmState, *program);
     engine.loadAssembly(*program, AssemblyType::Program);
 
-    if (vmState.enableDebug) {
-        std::cout << "Program output:" << std::endl;
-    }
-
 	//Compile all functions to native code
 	engine.compile();
 
     //Execute the program
+	if (vmState.enableDebug) {
+		std::cout << "Program output:" << std::endl;
+	}
+
 	auto programPtr = engine.entryPoint();
 
 	auto start = std::chrono::high_resolution_clock::now();
