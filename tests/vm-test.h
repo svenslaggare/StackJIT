@@ -233,6 +233,17 @@ public:
         TS_ASSERT_EQUALS(invokeVM("gc/program4"), "0\n");
     }
 
+    void testFunction() {
+		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("function/no_main")), "what():  The main function must be defined.");
+		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("function/invalid_main")), "what():  The main function must have the following signature: 'main() Int'.");
+		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("function/invalid_main2")), "what():  The main function must have the following signature: 'main() Int'.");
+
+		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("function/already_defined")), "what():  The function 'test()' is already defined.");
+
+		TS_ASSERT_EQUALS(invokeVM("function/overload"), "0\n");
+		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("function/invalid_overload")), "what():  The function 'test(Int)' is already defined.");
+    }
+
     void testLibrary() {
         TS_ASSERT_EQUALS(invokeVM("rtlib/program1", "-nd --no-gc -i rtlib/rtlib.sbc"), "0.909297\n5\n0\n");
 

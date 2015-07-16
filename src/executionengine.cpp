@@ -51,7 +51,7 @@ void ExecutionEngine::loadAssembly(AssemblyParser::Assembly& assembly, AssemblyT
 		if (mainFunc != nullptr) {
 			if (!(mainFunc->parameters.size() == 0
 				  && mainFunc->returnType == TypeSystem::toString(PrimitiveTypes::Integer))) {
-				throw std::runtime_error("The main function must have the following signature: 'main() Int'");
+				throw std::runtime_error("The main function must have the following signature: 'main() Int'.");
 			}
 		} else {
 			throw std::runtime_error("The main function must be defined.");

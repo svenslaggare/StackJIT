@@ -1,0 +1,17 @@
+func test(Int) Int
+{
+	PUSHINT 0
+	RET
+}
+
+func test(Float) Int
+{
+	PUSHINT 0
+	RET
+}
+
+func main() Int
+{
+	PUSHINT 0
+	RET
+}

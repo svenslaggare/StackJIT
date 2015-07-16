@@ -1,0 +1,5 @@
+func test() Int
+{
+	PUSHINT 0
+	RET
+}
