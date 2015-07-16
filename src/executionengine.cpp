@@ -64,11 +64,7 @@ void ExecutionEngine::loadAssembly(AssemblyParser::Assembly& assembly, AssemblyT
 
 void ExecutionEngine::load() {
 	//Load structs
-	for (auto assembly : mAssemblies) {
-		for (auto& currentStruct : assembly->structs) {
-			Loader::loadStruct(mVMState, currentStruct);
-		}
-	}
+	Loader::loadStructs(mVMState, mAssemblies);
 
 	//Load functions
 	for (auto assembly : mAssemblies) {

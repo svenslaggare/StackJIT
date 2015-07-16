@@ -130,6 +130,26 @@ void Loader::loadStruct(VMState& vmState, AssemblyParser::Struct& structure) {
 	}
 }
 
+void Loader::loadStructs(VMState& vmState, std::vector<AssemblyParser::Assembly*>& assemblies) {
+	//First, create the structs
+	for (auto assembly : assemblies) {
+		for (auto& structure : assembly->structs) {
+			vmState.structProvider().add(structure.name, StructMetadata());
+		}
+	}
+
+	//Then add the fields
+	for (auto assembly : assemblies) {
+		for (auto& structure : assembly->structs) {
+			StructMetadata& structMetadata = vmState.structProvider()[structure.name];
+
+			for (auto field : structure.fields) {
+				structMetadata.addField(field.name, getType(vmState, field.type));
+			}
+		}
+	}
+}
+
 void Loader::load(std::istream& stream, VMState& vmState, AssemblyParser::Assembly& assembly) {
 	auto tokens = AssemblyParser::tokenize(stream);
 	AssemblyParser::parseTokens(tokens, assembly);

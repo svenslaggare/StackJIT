@@ -1,7 +1,7 @@
-func main() Int
+func createAndPrintPoint() Void
 {
 	.locals 1
-
+	
 	NEWOBJ Point::.constructor()
 	STLOC 0
 
@@ -16,6 +16,5 @@ func main() Int
 	LDLOC 0
 	CALL printPoint(Ref.Struct.Point)
 
-	PUSHINT 0
 	RET
 }

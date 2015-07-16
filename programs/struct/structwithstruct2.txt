@@ -1,0 +1,17 @@
+struct ListNode
+{
+	data Ref.Struct.Point
+	next Ref.Struct.ListNode
+}
+
+struct Point
+{
+	x Int
+	y Int
+}
+
+func main() Int
+{
+	PUSHINT 0
+	RET
+}

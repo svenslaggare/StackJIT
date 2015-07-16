@@ -195,6 +195,8 @@ public:
         TS_ASSERT_EQUALS(invokeVM("struct/program4"), "1337:4711\n0\n");
 
         TS_ASSERT_EQUALS(invokeVM("struct/recursivestruct1"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("struct/structwithstruct1"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("struct/structwithstruct2"), "0\n");
 
         TS_ASSERT_EQUALS(invokeVM("struct/memberfunction1"), "3.60555\n0\n");
         TS_ASSERT_EQUALS(invokeVM("struct/memberfunction2"), "5\n0\n");
@@ -247,8 +249,38 @@ public:
     void testLibrary() {
         TS_ASSERT_EQUALS(invokeVM("rtlib/program1", "-nd --no-gc -i rtlib/rtlib.sbc"), "0.909297\n5\n0\n");
 
-        TS_ASSERT_EQUALS(invokeVM("libraries/program1", "-nd --no-gc -i programs/libraries/lib1.txt -i programs/libraries/lib2.txt"), "1337:4711\n0\n");
-        TS_ASSERT_EQUALS(invokeVM("libraries/program1", "-nd --no-gc -i programs/libraries/lib2.txt -i programs/libraries/lib1.txt"), "1337:4711\n0\n");
+		TS_ASSERT_EQUALS(invokeVM("libraries/program1", "-nd --no-gc -i programs/libraries/lib1.txt -i programs/libraries/lib2.txt"), "1337:4711\n0\n");
+		TS_ASSERT_EQUALS(invokeVM("libraries/program1", "-nd --no-gc -i programs/libraries/lib2.txt -i programs/libraries/lib1.txt"), "1337:4711\n0\n");
+
+		TS_ASSERT_EQUALS(invokeVM(
+			"libraries/program2",
+			"-nd --no-gc -i programs/libraries/lib1.txt -i programs/libraries/lib2.txt -i programs/libraries/lib3.txt"),
+				"1337:4711\n0\n");
+
+		TS_ASSERT_EQUALS(invokeVM(
+			"libraries/program2",
+			"-nd --no-gc -i programs/libraries/lib1.txt -i programs/libraries/lib3.txt -i programs/libraries/lib2.txt"),
+				"1337:4711\n0\n");
+
+        TS_ASSERT_EQUALS(invokeVM(
+            "libraries/program2",
+            "-nd --no-gc -i programs/libraries/lib3.txt -i programs/libraries/lib1.txt -i programs/libraries/lib2.txt"),
+                "1337:4711\n0\n");
+
+        TS_ASSERT_EQUALS(invokeVM(
+            "libraries/program2",
+            "-nd --no-gc -i programs/libraries/lib3.txt -i programs/libraries/lib2.txt -i programs/libraries/lib1.txt"),
+                "1337:4711\n0\n");
+
+        TS_ASSERT_EQUALS(invokeVM(
+            "libraries/program2",
+            "-nd --no-gc -i programs/libraries/lib2.txt -i programs/libraries/lib1.txt -i programs/libraries/lib3.txt"),
+                "1337:4711\n0\n");
+
+        TS_ASSERT_EQUALS(invokeVM(
+            "libraries/program2",
+            "-nd --no-gc -i programs/libraries/lib2.txt -i programs/libraries/lib3.txt -i programs/libraries/lib1.txt"),
+                "1337:4711\n0\n");
     }
 
     void testAttributes() {

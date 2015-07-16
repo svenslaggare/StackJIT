@@ -343,17 +343,13 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                         inst.parameters);
                 }
 
-                if (!vmState.binder().isDefined(signature)) {
-                    typeError(index, "The function '" + signature + "' is not defined.");
-                }
-
                 auto calledFunc = vmState.binder().getFunction(signature);
 
                 if (!isInstance && calledFunc.isMemberFunction()) {
                     typeError(index, "Member functions must be called with the 'CALLINST' instruction.");
                 }
 
-                int calledFuncNumArgs = calledFunc.arguments().size();
+                int calledFuncNumArgs = (int)calledFunc.arguments().size();
                 assertOperandCount(index, operandStack, calledFuncNumArgs);
 
                 //Check the arguments

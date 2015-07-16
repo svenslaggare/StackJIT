@@ -1,0 +1,6 @@
+func main() Int
+{
+	CALL createAndPrintPoint()
+	PUSHINT 0
+	RET
+}
