@@ -18,11 +18,11 @@ StackFrame::StackFrame(long* basePtr, const Function* function, const int instIn
 
 StackFrameEntry StackFrame::getArgument(int index) {
 	long* argsStart = mBasePtr - 1;
-	return StackFrameEntry(argsStart[-index], mFunction->arguments()[index]);
+	return StackFrameEntry(argsStart[-index], mFunction->parameters()[index]);
 }
 
 StackFrameEntry StackFrame::getLocal(int index) {
-	long* localsStart = mBasePtr - 1 - mFunction->numArgs();
+	long* localsStart = mBasePtr - 1 - mFunction->numParams();
 	return StackFrameEntry(localsStart[-index], mFunction->getLocal(index));
 }
 

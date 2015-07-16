@@ -23,7 +23,7 @@ void Runtime::popFunc() {
 void Runtime::printStackFrame(long* basePtr, Function* func) {
     using namespace Runtime::Internal;
 
-    auto numArgs = func->numArgs();
+    auto numArgs = func->numParams();
     auto numLocals = func->numLocals();
 
     std::cout << "----Start StackFrame----" << std::endl;
@@ -87,7 +87,7 @@ namespace {
 
 void Runtime::Internal::printAliveObjects(long* basePtr, Function* func, int instIndex, std::string indentation) {
 	StackFrame stackFrame(basePtr, func, instIndex);
-	auto numArgs = func->numArgs();
+	auto numArgs = func->numParams();
 	auto numLocals = func->numLocals();
 	auto stackSize = stackFrame.operandStackSize();
 
@@ -130,7 +130,7 @@ void Runtime::Internal::markObjects(long* basePtr, Function* func, int instIndex
     auto& gc = vmState.gc();
 
 	StackFrame stackFrame(basePtr, func, instIndex);
-	auto numArgs = func->numArgs();
+	auto numArgs = func->numParams();
 	auto numLocals = func->numLocals();
     auto stackSize = stackFrame.operandStackSize();
 

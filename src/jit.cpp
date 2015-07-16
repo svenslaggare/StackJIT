@@ -92,7 +92,7 @@ JitFunction JITCompiler::generateFunction(Function* function) {
         std::string argsStr = "";
         bool isFirst = true;
 
-        for (auto param : function->arguments()) {
+        for (auto param : function->parameters()) {
             if (isFirst) {
                 isFirst = false;
             } else {

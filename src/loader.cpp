@@ -109,7 +109,7 @@ Function* Loader::loadFunction(VMState& vmState, AssemblyParser::Function& funct
 	if (!function.isExternal) {
 		auto signature = vmState.binder().functionSignature(
 			loadedFunc->name(),
-			loadedFunc->arguments());
+			loadedFunc->parameters());
 
 		if (vmState.binder().isDefined(signature)) {
 			throw std::runtime_error("The function '" + signature + "' is already defined.");

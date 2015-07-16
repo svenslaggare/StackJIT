@@ -123,10 +123,10 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
     }
 
     int i = 0;
-    for (auto arg : function.arguments()) {
+    for (auto arg : function.parameters()) {
         if (arg == nullptr || TypeSystem::isPrimitiveType(arg, PrimitiveTypes::Void)) {
             throw std::runtime_error(
-                "Argument: " + std::to_string(i) + " in function '" + function.name()
+                "Parameter: " + std::to_string(i) + " in function '" + function.name()
 				+ "' cannot be of type '" + typeToString(arg) + "'.");
         }
 
@@ -397,7 +397,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
             }
             break;
         case OpCodes::LOAD_ARG:
-            operandStack.push(function.arguments()[inst.intValue]);
+            operandStack.push(function.parameters()[inst.intValue]);
             break;
         case OpCodes::BRANCH_EQUAL:
         case OpCodes::BRANCH_NOT_EQUAL:

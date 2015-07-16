@@ -77,7 +77,7 @@ void ExecutionEngine::load() {
 
 			FunctionDefinition funcDef(
 				func->name(),
-				func->arguments(),
+				func->parameters(),
 				func->returnType(),
 				0, 0, func->isMemberFunction());
 
@@ -101,7 +101,7 @@ void ExecutionEngine::generateCode() {
 			<< std::endl;
 		}
 
-		auto signature = mVMState.binder().functionSignature(func->name(), func->arguments());
+		auto signature = mVMState.binder().functionSignature(func->name(), func->parameters());
 
 		//Set the entry point & size for the function
 		mVMState.binder().getFunction(signature).setFunctionBody((long)funcPtr, (int)func->generatedCode.size());

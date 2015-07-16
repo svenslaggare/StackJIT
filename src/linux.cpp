@@ -99,52 +99,76 @@ void LinuxMemoryManager::makeMemoryExecutable() {
 void LinuxCallingConvention::moveArgsToStack(FunctionCompilationData& functionData) const {
     auto& function = functionData.function;
 
-    if (function.numArgs() > 0) {
-        if (function.numArgs() >= 6) {
-            if (TypeSystem::isPrimitiveType(function.arguments()[5], PrimitiveTypes::Float)) {
-                Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -6 * Amd64Backend::REG_SIZE, FloatRegisters::XMM5); //movss [rbp-6*REG_SIZE], xmm5
+    if (function.numParams() > 0) {
+        if (function.numParams() >= 6) {
+            if (TypeSystem::isPrimitiveType(function.parameters()[5], PrimitiveTypes::Float)) {
+                Amd64Backend::moveRegToMemoryRegWithOffset(
+                    function.generatedCode,
+					Registers::BP, -6 * Amd64Backend::REG_SIZE, FloatRegisters::XMM5); //movss [rbp-6*REG_SIZE], xmm5
             } else {
-                Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -6 * Amd64Backend::REG_SIZE, NumberedRegisters::R9); //mov [rbp-6*REG_SIZE], r9
+                Amd64Backend::moveRegToMemoryRegWithOffset(
+					function.generatedCode, Registers::BP,
+					-6 * Amd64Backend::REG_SIZE, NumberedRegisters::R9); //mov [rbp-6*REG_SIZE], r9
             }
         }
 
-        if (function.numArgs() >= 5) {
-            if (TypeSystem::isPrimitiveType(function.arguments()[4], PrimitiveTypes::Float)) {
-                Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -5 * Amd64Backend::REG_SIZE, FloatRegisters::XMM4); //movss [rbp-5*REG_SIZE], xmm4
+        if (function.numParams() >= 5) {
+            if (TypeSystem::isPrimitiveType(function.parameters()[4], PrimitiveTypes::Float)) {
+                Amd64Backend::moveRegToMemoryRegWithOffset(
+					function.generatedCode, Registers::BP,
+					-5 * Amd64Backend::REG_SIZE, FloatRegisters::XMM4); //movss [rbp-5*REG_SIZE], xmm4
             } else {
-                Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -5 * Amd64Backend::REG_SIZE, NumberedRegisters::R8); //mov [rbp-5*REG_SIZE], r8
+                Amd64Backend::moveRegToMemoryRegWithOffset(
+					function.generatedCode, Registers::BP,
+					-5 * Amd64Backend::REG_SIZE, NumberedRegisters::R8); //mov [rbp-5*REG_SIZE], r8
             }
         }
 
-        if (function.numArgs() >= 4) {
-            if (TypeSystem::isPrimitiveType(function.arguments()[3], PrimitiveTypes::Float)) {
-                Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -4 * Amd64Backend::REG_SIZE, FloatRegisters::XMM3); //movss [rbp-4*REG_SIZE], xmm3
+        if (function.numParams() >= 4) {
+            if (TypeSystem::isPrimitiveType(function.parameters()[3], PrimitiveTypes::Float)) {
+                Amd64Backend::moveRegToMemoryRegWithOffset(
+					function.generatedCode,
+					Registers::BP, -4 * Amd64Backend::REG_SIZE, FloatRegisters::XMM3); //movss [rbp-4*REG_SIZE], xmm3
             } else {
-                Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -4 * Amd64Backend::REG_SIZE, Registers::CX); //mov [rbp-4*REG_SIZE], rcx
+                Amd64Backend::moveRegToMemoryRegWithOffset(
+					function.generatedCode,
+					Registers::BP, -4 * Amd64Backend::REG_SIZE, Registers::CX); //mov [rbp-4*REG_SIZE], rcx
             }
         }
 
-        if (function.numArgs() >= 3) {
-            if (TypeSystem::isPrimitiveType(function.arguments()[2], PrimitiveTypes::Float)) {
-                Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -3 * Amd64Backend::REG_SIZE, FloatRegisters::XMM2); //movss [rbp-3*REG_SIZE], xmm2
+        if (function.numParams() >= 3) {
+            if (TypeSystem::isPrimitiveType(function.parameters()[2], PrimitiveTypes::Float)) {
+                Amd64Backend::moveRegToMemoryRegWithOffset(
+					function.generatedCode,
+					Registers::BP, -3 * Amd64Backend::REG_SIZE, FloatRegisters::XMM2); //movss [rbp-3*REG_SIZE], xmm2
             } else {
-                Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -3 * Amd64Backend::REG_SIZE, Registers::DX); //mov [rbp-3*REG_SIZE], rdx
+                Amd64Backend::moveRegToMemoryRegWithOffset(
+					function.generatedCode,
+					Registers::BP, -3 * Amd64Backend::REG_SIZE, Registers::DX); //mov [rbp-3*REG_SIZE], rdx
             }
         }
 
-        if (function.numArgs() >= 2) {
-            if (TypeSystem::isPrimitiveType(function.arguments()[1], PrimitiveTypes::Float)) {
-                Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -2 * Amd64Backend::REG_SIZE, FloatRegisters::XMM1); //movss [rbp-2*REG_SIZE], xmm1
+        if (function.numParams() >= 2) {
+            if (TypeSystem::isPrimitiveType(function.parameters()[1], PrimitiveTypes::Float)) {
+                Amd64Backend::moveRegToMemoryRegWithOffset(
+					function.generatedCode,
+					Registers::BP, -2 * Amd64Backend::REG_SIZE, FloatRegisters::XMM1); //movss [rbp-2*REG_SIZE], xmm1
             } else {
-                Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -2 * Amd64Backend::REG_SIZE , Registers::SI); //mov [rbp-2*REG_SIZE], rsi
+                Amd64Backend::moveRegToMemoryRegWithOffset(
+					function.generatedCode,
+					Registers::BP, -2 * Amd64Backend::REG_SIZE , Registers::SI); //mov [rbp-2*REG_SIZE], rsi
             }
         }
 
-        if (function.numArgs() >= 1) {
-            if (TypeSystem::isPrimitiveType(function.arguments()[0], PrimitiveTypes::Float)) {
-                Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -Amd64Backend::REG_SIZE, FloatRegisters::XMM0); //movss [rbp-REG_SIZE], xmm0
+        if (function.numParams() >= 1) {
+            if (TypeSystem::isPrimitiveType(function.parameters()[0], PrimitiveTypes::Float)) {
+                Amd64Backend::moveRegToMemoryRegWithOffset(
+					function.generatedCode,
+					Registers::BP, -Amd64Backend::REG_SIZE, FloatRegisters::XMM0); //movss [rbp-REG_SIZE], xmm0
             } else {
-                Amd64Backend::moveRegToMemoryRegWithOffset(function.generatedCode, Registers::BP, -Amd64Backend::REG_SIZE, Registers::DI); //mov [rbp-REG_SIZE], rdi
+                Amd64Backend::moveRegToMemoryRegWithOffset(
+					function.generatedCode,
+					Registers::BP, -Amd64Backend::REG_SIZE, Registers::DI); //mov [rbp-REG_SIZE], rdi
             }
         }
     }

@@ -2,9 +2,9 @@
 #include "codegenerator.h"
 #include "memory.h"
 
-Function::Function(std::string name, std::vector<const Type*> arguments, const Type* returnType, bool isMemberFunction, bool isConstructor)
+Function::Function(std::string name, std::vector<const Type*> parameters, const Type* returnType, bool isMemberFunction, bool isConstructor)
 	: mName(name),
-      mArguments(arguments),
+      mParameters(parameters),
       mReturnType(returnType),
       mStackSize(0), 
       mOperandStackSize(0),
@@ -17,12 +17,12 @@ std::string Function::name() const {
 	return mName;
 }
 
-const std::vector<const Type*>& Function::arguments() const {
-	return mArguments;
+const std::vector<const Type*>& Function::parameters() const {
+	return mParameters;
 }
 
-std::size_t Function::numArgs() const {
-	return mArguments.size();
+std::size_t Function::numParams() const {
+	return mParameters.size();
 }
 
 const Type* Function::returnType() const {

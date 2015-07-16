@@ -18,7 +18,7 @@ class Function {
 private:
 	std::string mName;
 
-	const std::vector<const Type*> mArguments;
+	const std::vector<const Type*> mParameters;
 	const Type* mReturnType;
 
 	std::vector<const Type*> mLocalTypes;
@@ -36,16 +36,16 @@ public:
 	std::vector<unsigned char> generatedCode;
 
 	//Creates a new function
-	Function(std::string name, std::vector<const Type*> arguments, const Type* returnType, bool isMemberFunction = false, bool isConstructor = false);
+	Function(std::string name, std::vector<const Type*> parameters, const Type* returnType, bool isMemberFunction = false, bool isConstructor = false);
 
 	//The name of the function
 	std::string name() const;
 
-	//The arguments
-	const std::vector<const Type*>& arguments() const;
+	//The parameters
+	const std::vector<const Type*>& parameters() const;
 
-	//The number of arguments
-	std::size_t numArgs() const;
+	//The number of parameters
+	std::size_t numParams() const;
 
 	//The return type
 	const Type* returnType() const;

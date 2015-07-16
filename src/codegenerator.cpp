@@ -113,7 +113,7 @@ void CodeGenerator::initializeFunction(FunctionCompilationData& functionData) {
     auto& function = functionData.function;
 
     //Calculate the size of the stack aligned to 16 bytes
-    std::size_t neededStackSize = (function.numArgs() + function.numLocals() + functionData.operandStackSize) * Amd64Backend::REG_SIZE;
+    std::size_t neededStackSize = (function.numParams() + function.numLocals() + functionData.operandStackSize) * Amd64Backend::REG_SIZE;
     std::size_t stackSize = ((neededStackSize + 15) / 16) * 16;
     // std::size_t stackSize = neededStackSize;
 
@@ -153,7 +153,7 @@ void CodeGenerator::zeroLocals(FunctionCompilationData& functionData) {
 
         //Set the address where the locals starts
         Amd64Backend::moveRegToReg(function.generatedCode, Registers::DI, Registers::BP); //mov rdi, rbp
-        Amd64Backend::addByteToReg(function.generatedCode, Registers::DI, (function.numArgs() + 1) * -Amd64Backend::REG_SIZE); //add rdi, <locals offset>
+        Amd64Backend::addByteToReg(function.generatedCode, Registers::DI, (function.numParams() + 1) * -Amd64Backend::REG_SIZE); //add rdi, <locals offset>
 
         //Set the number of locals
         Amd64Backend::moveIntToReg(function.generatedCode, Registers::CX, function.numLocals()); //mov rcx, <num locals>
@@ -409,7 +409,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::LOAD_LOCAL:
         {
             //Load rax with the locals offset
-            int localOffset = (inst.intValue + function.numArgs() + stackOffset) * -Amd64Backend::REG_SIZE;
+            int localOffset = (inst.intValue + function.numParams() + stackOffset) * -Amd64Backend::REG_SIZE;
             Amd64Backend::moveIntToReg(generatedCode, Registers::AX, localOffset); //mov rax, <local>
 
             //Now add the base pointer
@@ -427,7 +427,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             //Pop the top operand
             Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
 
-            int localOffset = (inst.intValue + function.numArgs() + stackOffset) * -Amd64Backend::REG_SIZE;
+            int localOffset = (inst.intValue + function.numParams() + stackOffset) * -Amd64Backend::REG_SIZE;
 
             //Store the operand at the given local
             Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::BP, localOffset, Registers::AX); //mov [rbp-local], rax
