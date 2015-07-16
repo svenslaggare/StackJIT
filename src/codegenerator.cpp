@@ -128,7 +128,7 @@ void CodeGenerator::initializeFunction(FunctionCompilationData& functionData) {
         if (stackSize < 128) {
             Amd64Backend::subByteFromReg(function.generatedCode, Registers::SP, (char)stackSize); //sub rsp, <size of stack>
         } else {
-            Amd64Backend::subIntFromReg(function.generatedCode, Registers::SP, stackSize); //sub rsp, <size of stack>
+            Amd64Backend::subIntFromReg(function.generatedCode, Registers::SP, (int)stackSize); //sub rsp, <size of stack>
         }
     }
 

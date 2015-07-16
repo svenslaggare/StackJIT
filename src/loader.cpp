@@ -51,7 +51,7 @@ namespace {
 		return newInst;
 	}
 
-	//Loads the given managed function
+	//Loads the given function
 	Function* loadManagedFunction(VMState& vmState, AssemblyParser::Function& function) {
 		std::vector<const Type*> parameters;
 		const Type* returnType;
@@ -119,15 +119,6 @@ Function* Loader::loadFunction(VMState& vmState, AssemblyParser::Function& funct
 	}
 
 	return loadedFunc;
-}
-
-void Loader::loadStruct(VMState& vmState, AssemblyParser::Struct& structure) {
-	vmState.structProvider().add(structure.name, StructMetadata());
-	StructMetadata& structMetadata = vmState.structProvider()[structure.name];
-
-	for (auto field : structure.fields) {
-		structMetadata.addField(field.name, getType(vmState, field.type));
-	}
 }
 
 void Loader::loadStructs(VMState& vmState, std::vector<AssemblyParser::Assembly*>& assemblies) {

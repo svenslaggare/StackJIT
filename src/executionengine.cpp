@@ -104,7 +104,7 @@ void ExecutionEngine::generateCode() {
 		auto signature = mVMState.binder().functionSignature(func->name(), func->arguments());
 
 		//Set the entry point & size for the function
-		mVMState.binder().getFunction(signature).setFunctionBody((long)funcPtr, func->generatedCode.size());
+		mVMState.binder().getFunction(signature).setFunctionBody((long)funcPtr, (int)func->generatedCode.size());
 	}
 
 	//Fix unresolved symbols

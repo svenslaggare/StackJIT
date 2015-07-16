@@ -23,8 +23,8 @@ void Runtime::popFunc() {
 void Runtime::printStackFrame(long* basePtr, Function* func) {
     using namespace Runtime::Internal;
 
-    int numArgs = func->numArgs();
-    int numLocals = func->numLocals();
+    auto numArgs = func->numArgs();
+    auto numLocals = func->numLocals();
 
     std::cout << "----Start StackFrame----" << std::endl;
     std::cout << "Func: " << func->name() << std::endl;
