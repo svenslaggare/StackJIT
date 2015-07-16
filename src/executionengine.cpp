@@ -5,6 +5,7 @@
 #include "function.h"
 #include "typechecker.h"
 #include "type.h"
+#include "loader.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -12,6 +13,16 @@
 ExecutionEngine::ExecutionEngine(VMState& vmState)
 	: mVMState(vmState), mJIT(vmState) {
 
+}
+
+ExecutionEngine::~ExecutionEngine() {
+	for (auto assembly : mAssemblies) {
+		delete assembly;
+	}
+
+	for (auto func : mLoadedFunctions) {
+		delete func;
+	}
 }
 
 EntryPointFunction ExecutionEngine::entryPoint() const {
@@ -22,58 +33,91 @@ EntryPointFunction ExecutionEngine::entryPoint() const {
     }
 }
 
-void ExecutionEngine::loadAssembly(Assembly& assembly) {
-	//Add the functions to the func table
-    for (auto currentFunc : assembly.functions) {
-        auto func = currentFunc.second;
-        FunctionDefinition funcDef(
-            func->name(),
-            func->arguments(),
-            func->returnType(),
-            0, 0, func->isMemberFunction());
+//Returns the function with the given name
+AssemblyParser::Function* getFunction(AssemblyParser::Assembly& assembly, std::string funcName) {
+	for (auto& func : assembly.functions) {
+		if (func.name == funcName) {
+			return &func;
+		}
+	}
 
-        auto& binder = mVMState.binder();
-        binder.define(funcDef);
-    }
-
-    if (assembly.type() == AssemblyType::Program) {
-        if (assembly.functions.count("main()") > 0) {
-            auto mainFunc = assembly.functions["main()"];
-
-            if (mainFunc->arguments().size() != 0 || !TypeSystem::isPrimitiveType(mainFunc->returnType(), PrimitiveTypes::Integer)) {
-               throw std::runtime_error("The main function must have the following signature: 'main() Int'"); 
-            }
-        } else {
-            throw std::runtime_error("The main function must be defined.");
-        }
-    }
-
-    //Generate instructions for all functions
-    for (auto currentFunc : assembly.functions) {
-        auto func = currentFunc.second;
-
-        //Type check the function
-        TypeChecker::typeCheckFunction(*func, mVMState, mVMState.enableDebug && mVMState.printTypeChecking);
-
-        auto funcPtr = mJIT.generateFunction(func);
-
-        if (mVMState.enableDebug) {
-            std::cout <<
-                "Defined function '" << func->name() << "' at 0x" << std::hex << (long)funcPtr << std::dec << "."
-                << std::endl;
-        }
-
-        auto signature = mVMState.binder().functionSignature(func->name(), func->arguments());
-
-        //Set the entry point & size for the function
-        mVMState.binder().getFunction(signature).setFunctionBody((long)funcPtr, func->generatedCode.size());
-    }
-
-    //Fix unresolved symbols
-    mJIT.resolveSymbols();
+	return nullptr;
 }
 
-void ExecutionEngine::beginExecution() {
+void ExecutionEngine::loadAssembly(AssemblyParser::Assembly& assembly, AssemblyType assemblyType) {
+    if (assemblyType == AssemblyType::Program) {
+		auto mainFunc = getFunction(assembly, "main");
+
+		if (mainFunc != nullptr) {
+			if (!(mainFunc->parameters.size() == 0
+				  && mainFunc->returnType == TypeSystem::toString(PrimitiveTypes::Integer))) {
+				throw std::runtime_error("The main function must have the following signature: 'main() Int'");
+			}
+		} else {
+			throw std::runtime_error("The main function must be defined.");
+		}
+    }
+
+	//Add the loaded assembly
+	mAssemblies.push_back(&assembly);
+}
+
+void ExecutionEngine::load() {
+	//Load structs
+	for (auto assembly : mAssemblies) {
+		for (auto& currentStruct : assembly->structs) {
+			Loader::loadStruct(mVMState, currentStruct);
+		}
+	}
+
+	//Load functions
+	for (auto assembly : mAssemblies) {
+		for (auto& currentFunc : assembly->functions) {
+			auto func = Loader::loadFunction(mVMState, currentFunc);
+
+			if (!currentFunc.isExternal) {
+				mLoadedFunctions.push_back(func);
+			}
+
+			FunctionDefinition funcDef(
+				func->name(),
+				func->arguments(),
+				func->returnType(),
+				0, 0, func->isMemberFunction());
+
+			auto& binder = mVMState.binder();
+			binder.define(funcDef);
+		}
+	}
+}
+
+void ExecutionEngine::generateCode() {
+	//Generate instructions for all functions
+	for (auto func : mLoadedFunctions) {
+		//Type check the function
+		TypeChecker::typeCheckFunction(*func, mVMState, mVMState.enableDebug && mVMState.printTypeChecking);
+
+		auto funcPtr = mJIT.generateFunction(func);
+
+		if (mVMState.enableDebug) {
+			std::cout <<
+			"Defined function '" << func->name() << "' at 0x" << std::hex << (long)funcPtr << std::dec << "."
+			<< std::endl;
+		}
+
+		auto signature = mVMState.binder().functionSignature(func->name(), func->arguments());
+
+		//Set the entry point & size for the function
+		mVMState.binder().getFunction(signature).setFunctionBody((long)funcPtr, func->generatedCode.size());
+	}
+
+	//Fix unresolved symbols
+	mJIT.resolveSymbols();
+}
+
+void ExecutionEngine::compile() {
+	load();
+	generateCode();
     mJIT.makeExecutable();
 }
 

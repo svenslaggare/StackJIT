@@ -31,7 +31,6 @@ public:
 
     //Creates a new VM State
     VMState();
-	~VMState();
 
     //Prevent the VM state from being copied
     VMState(const VMState&) = delete;

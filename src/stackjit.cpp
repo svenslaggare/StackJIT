@@ -14,10 +14,9 @@
 //The global state for the VM
 VMState vmState;
 
-void handleOptions(int argc, char* argv[], ExecutionEngine& engine, std::vector<Assembly>& libraries) {
+void handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
 	for (int i = 1; i < argc; i++) {
 		std::string switchStr = argv[i];
-		bool handled = false;
 
 		if (switchStr == "-d" || switchStr == "--debug") {
 			vmState.enableDebug = true;
@@ -61,11 +60,9 @@ void handleOptions(int argc, char* argv[], ExecutionEngine& engine, std::vector<
 					std::cout << "Could not load library '" << libraryPath << "'." << std::endl;
 				}
 
-				libraries.emplace_back(AssemblyType::Library);
-				auto& lib = libraries[libraries.size() - 1];
-				Loader::load(fileStream, vmState, lib);
-
-				engine.loadAssembly(lib);
+				auto lib = new AssemblyParser::Assembly;
+				Loader::load(fileStream, vmState, *lib);
+				engine.loadAssembly(*lib, AssemblyType::Library);
 				i++;
 			} else {
 				std::cout << "Expected a library file after '-i' option." << std::endl;
@@ -74,34 +71,33 @@ void handleOptions(int argc, char* argv[], ExecutionEngine& engine, std::vector<
 			continue;
 		}
 
-		if (!handled) {
-			std::cout << "Unhandled option: " << switchStr << std::endl;
-		}
+		std::cout << "Unhandled option: " << switchStr << std::endl;
 	}
 }
 
 int main(int argc, char* argv[]) {
-    std::vector<Assembly> libraries;
     auto& engine = vmState.engine();
     NativeLibrary::add(vmState);
 
     //Handle options
-	handleOptions(argc, argv, engine, libraries);
+	handleOptions(argc, argv, engine);
 
     //Load the program
-    Assembly program(AssemblyType::Program);
-    Loader::load(std::cin, vmState, program);
-    engine.loadAssembly(program);
+	auto program = new AssemblyParser::Assembly;
+    Loader::load(std::cin, vmState, *program);
+    engine.loadAssembly(*program, AssemblyType::Program);
 
     if (vmState.enableDebug) {
         std::cout << "Program output:" << std::endl;
     }
 
-    //Execute the program
-    auto start = std::chrono::high_resolution_clock::now();
+	//Compile all functions to native code
+	engine.compile();
 
-    engine.beginExecution();
+    //Execute the program
 	auto programPtr = engine.entryPoint();
+
+	auto start = std::chrono::high_resolution_clock::now();
     int res = programPtr();
 
     if (vmState.enableDebug) {

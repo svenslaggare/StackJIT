@@ -7,10 +7,6 @@ VMState::VMState()
 
 }
 
-VMState::~VMState() {
-
-}
-
 TypeProvider& VMState::typeProvider() {
     return mTypeProvider;
 }

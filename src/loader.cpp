@@ -51,8 +51,8 @@ namespace {
 		return newInst;
 	}
 
-	//Loads the given function
-	Function* loadFunction(VMState& vmState, AssemblyParser::Function& function) {
+	//Loads the given managed function
+	Function* loadManagedFunction(VMState& vmState, AssemblyParser::Function& function) {
 		std::vector<const Type*> parameters;
 		const Type* returnType;
 
@@ -88,7 +88,7 @@ namespace {
 	}
 
 	//Loads the given external function
-	void loadExternalFunction(VMState& vmState, Assembly& assembly, AssemblyParser::Function& function) {
+	void loadExternalFunction(VMState& vmState, AssemblyParser::Function& function) {
 		std::vector<const Type*> parameters;
 
 		for (auto param : function.parameters) {
@@ -101,45 +101,36 @@ namespace {
             throw std::runtime_error("The external function '" + signature + "' is not defined.");
         }
 	}
+}
 
-	//Loads the given struct
-	void loadStruct(VMState& vmState, AssemblyParser::Struct& structure) {
-		vmState.structProvider().add(structure.name, StructMetadata());
-		StructMetadata& structMetadata = vmState.structProvider()[structure.name];
+Function* Loader::loadFunction(VMState& vmState, AssemblyParser::Function& function) {
+	auto loadedFunc = loadManagedFunction(vmState, function);
 
-		for (auto field : structure.fields) {
-			structMetadata.addField(field.name, getType(vmState, field.type));
+	if (!function.isExternal) {
+		auto signature = vmState.binder().functionSignature(
+			loadedFunc->name(),
+			loadedFunc->arguments());
+
+		if (vmState.binder().isDefined(signature)) {
+			throw std::runtime_error("The function '" + signature + "' is already defined.");
 		}
+	} else {
+		loadExternalFunction(vmState, function);
+	}
+
+	return loadedFunc;
+}
+
+void Loader::loadStruct(VMState& vmState, AssemblyParser::Struct& structure) {
+	vmState.structProvider().add(structure.name, StructMetadata());
+	StructMetadata& structMetadata = vmState.structProvider()[structure.name];
+
+	for (auto field : structure.fields) {
+		structMetadata.addField(field.name, getType(vmState, field.type));
 	}
 }
 
-void Loader::load(std::istream& stream, VMState& vmState, Assembly& assembly) {
-	//Parse it
+void Loader::load(std::istream& stream, VMState& vmState, AssemblyParser::Assembly& assembly) {
 	auto tokens = AssemblyParser::tokenize(stream);
-	AssemblyParser::Assembly parsedAssembly;
-    AssemblyParser::parseTokens(tokens, parsedAssembly);
-
-    //Load structs
-    for (auto& currentStruct : parsedAssembly.structs) {
-    	loadStruct(vmState, currentStruct);
-    }
-
-	//Load functions
-    for (auto& currentFunc : parsedAssembly.functions) {
-    	auto loadedFunc = loadFunction(vmState, currentFunc);
-
-    	if (!currentFunc.isExternal) {
-	    	auto signature = vmState.binder().functionSignature(
-	    		loadedFunc->name(),
-	    		loadedFunc->arguments());
-
-	    	if (assembly.functions.count(signature) == 0 && !vmState.binder().isDefined(signature)) {
-	            assembly.functions[signature] = loadedFunc;
-	        } else {
-	            throw std::runtime_error("The function '" + signature + "' is already defined.");
-	        }
-	    } else {
-	    	loadExternalFunction(vmState, assembly, currentFunc);
-	    }
-    }
+	AssemblyParser::parseTokens(tokens, assembly);
 }

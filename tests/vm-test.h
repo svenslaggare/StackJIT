@@ -237,7 +237,7 @@ public:
         TS_ASSERT_EQUALS(invokeVM("rtlib/program1", "-nd --no-gc -i rtlib/rtlib.sbc"), "0.909297\n5\n0\n");
 
         TS_ASSERT_EQUALS(invokeVM("libraries/program1", "-nd --no-gc -i programs/libraries/lib1.txt -i programs/libraries/lib2.txt"), "1337:4711\n0\n");
-//        TS_ASSERT_EQUALS(invokeVM("libraries/program1", "-nd --no-gc -i programs/libraries/lib2.txt -i programs/libraries/lib1.txt"), "1337:4711\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("libraries/program1", "-nd --no-gc -i programs/libraries/lib2.txt -i programs/libraries/lib1.txt"), "1337:4711\n0\n");
     }
 
     void testAttributes() {

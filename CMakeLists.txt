@@ -6,7 +6,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(SOURCE_FILES
     src/amd64.cpp
     src/amd64.h
-    src/assembly.cpp
     src/assembly.h
     src/binder.cpp
     src/binder.h

@@ -1,7 +1,10 @@
 #pragma once
 #include "binder.h"
 #include "jit.h"
+#include "assembly.h"
+#include "parser.h"
 #include <deque>
+#include <vector>
 
 typedef int (*EntryPointFunction)();
 
@@ -17,9 +20,19 @@ private:
 	VMState& mVMState;
 	JITCompiler mJIT;
 	std::deque<CallStackEntry> mCallStack;
+
+	std::vector<AssemblyParser::Assembly*> mAssemblies;
+	std::vector<Function*> mLoadedFunctions;
+
+	//Loads the assemblies
+	void load();
+
+	//Generates code for loaded functions
+	void generateCode();
 public:
 	//Creates a new execution engine
 	ExecutionEngine(VMState& vmState);
+	~ExecutionEngine();
 
 	//Prevent it from being copied
 	ExecutionEngine(const ExecutionEngine&) = delete;
@@ -29,10 +42,10 @@ public:
 	EntryPointFunction entryPoint() const; 
 
 	//Loads the given assembly
-	void loadAssembly(Assembly& assembly);
+	void loadAssembly(AssemblyParser::Assembly& assembly, AssemblyType assemblyType);
 
-	//Begins the execution of the program
-	void beginExecution();
+	//Compiles the functions
+	void compile();
 
 	//Returns the call stack
     const std::deque<CallStackEntry>& callStack() const;
