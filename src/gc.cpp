@@ -58,7 +58,9 @@ unsigned char* GarbageCollector::newArray(const Type* elementType, int length) {
 
     if (vmState.enableDebug) {
         std::cout
-            << "Allocated array (size: " << memSize << " bytes, length: " << length << ", type: " << elementType->name()
+            << "Allocated array ("
+            << "size: " << memSize << " bytes, "
+			<< "length: " << length << ", type: " << elementType->name()
             << ") at 0x" << std::hex << (long)arrayPtr << std::dec
             << std::endl;
     }

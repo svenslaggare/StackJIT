@@ -43,7 +43,10 @@ namespace {
         if (expectedType == nullptr || *expectedType == *actualType || actualType->name() == "Ref.Null") {
             return "";
         } else {
-            return "Expected type '" + TypeChecker::typeToString(expectedType) + "' but got type '" + TypeChecker::typeToString(actualType) + "'.";
+            return
+				"Expected type '" + TypeChecker::typeToString(expectedType)
+				+ "' but got type '"
+				+ TypeChecker::typeToString(actualType) + "'.";
         }
     }
 

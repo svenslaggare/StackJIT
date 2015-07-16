@@ -5,7 +5,7 @@ class FunctionCompilationData;
 class FunctionDefinition;
 class Type;
 
-//Represents a function for the getting the type of an arugment
+//Represents a function for the getting the type of an argument
 using GetArugmentType = std::function<const Type*(int)>;
 
 //Represents a calling convention
