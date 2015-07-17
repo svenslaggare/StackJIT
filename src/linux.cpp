@@ -218,37 +218,37 @@ namespace {
         if (relativeArgIndex == 5) {
 			Amd64Backend::moveRegToMemoryRegWithOffset(
 				function.generatedCode,
-				Registers::BP, argStackOffset, NumberedRegisters::R9); //mov [rbp+<arg offset>], r9
+				Registers::BP, argStackOffset, RegisterCallArguments::Arg5); //mov [rbp+<arg offset>], r9
         }
 
         if (relativeArgIndex == 4) {
 			Amd64Backend::moveRegToMemoryRegWithOffset(
 				function.generatedCode,
-				Registers::BP, argStackOffset, NumberedRegisters::R8); //mov [rbp+<arg offset>], r8
+				Registers::BP, argStackOffset, RegisterCallArguments::Arg4); //mov [rbp+<arg offset>], r8
         }
 
         if (relativeArgIndex == 3) {
 			Amd64Backend::moveRegToMemoryRegWithOffset(
 				function.generatedCode,
-				Registers::BP, argStackOffset, Registers::CX); //mov [rbp+<arg offset>], rcx
+				Registers::BP, argStackOffset, RegisterCallArguments::Arg3); //mov [rbp+<arg offset>], rcx
         }
 
         if (relativeArgIndex == 2) {
 			Amd64Backend::moveRegToMemoryRegWithOffset(
 				function.generatedCode,
-				Registers::BP, argStackOffset, Registers::DX); //mov [rbp+<arg offset>], rdx
+				Registers::BP, argStackOffset, RegisterCallArguments::Arg2); //mov [rbp+<arg offset>], rdx
         }
 
         if (relativeArgIndex == 1) {
 			Amd64Backend::moveRegToMemoryRegWithOffset(
 				function.generatedCode,
-				Registers::BP, argStackOffset, Registers::SI); //mov [rbp+<arg offset>], rsi
+				Registers::BP, argStackOffset, RegisterCallArguments::Arg1); //mov [rbp+<arg offset>], rsi
         }
 
         if (relativeArgIndex == 0) {
 			Amd64Backend::moveRegToMemoryRegWithOffset(
 				function.generatedCode,
-				Registers::BP, argStackOffset, Registers::DI); //mov [rbp+<arg offset>], rdi
+				Registers::BP, argStackOffset, RegisterCallArguments::Arg0); //mov [rbp+<arg offset>], rdi
         }
 	}
 
@@ -266,49 +266,49 @@ namespace {
 		if (relativeArgIndex == 7) {
 			Amd64Backend::moveRegToMemoryRegWithOffset(
 				function.generatedCode,
-				Registers::BP, argStackOffset, FloatRegisters::XMM7); //movss [rbp+<arg offset>], xmm7
+				Registers::BP, argStackOffset, FloatRegisterCallArguments::Arg7); //movss [rbp+<arg offset>], xmm7
 		}
 
 		if (relativeArgIndex == 6) {
 			Amd64Backend::moveRegToMemoryRegWithOffset(
 				function.generatedCode,
-				Registers::BP, argStackOffset, FloatRegisters::XMM6); //movss [rbp+<arg offset>], xmm6
+				Registers::BP, argStackOffset, FloatRegisterCallArguments::Arg6); //movss [rbp+<arg offset>], xmm6
 		}
 
 		if (relativeArgIndex == 5) {
 			Amd64Backend::moveRegToMemoryRegWithOffset(
 				function.generatedCode,
-				Registers::BP, argStackOffset, FloatRegisters::XMM5); //movss [rbp+<arg offset>], xmm5
+				Registers::BP, argStackOffset, FloatRegisterCallArguments::Arg5); //movss [rbp+<arg offset>], xmm5
 		}
 
 		if (relativeArgIndex == 4) {
 			Amd64Backend::moveRegToMemoryRegWithOffset(
 				function.generatedCode,
-				Registers::BP, argStackOffset, FloatRegisters::XMM4); //movss [rbp+<arg offset>], xmm4
+				Registers::BP, argStackOffset, FloatRegisterCallArguments::Arg4); //movss [rbp+<arg offset>], xmm4
 		}
 
 		if (relativeArgIndex == 3) {
 			Amd64Backend::moveRegToMemoryRegWithOffset(
 				function.generatedCode,
-				Registers::BP, argStackOffset, FloatRegisters::XMM3); //movss [rbp+<arg offset>], xmm3
+				Registers::BP, argStackOffset, FloatRegisterCallArguments::Arg3); //movss [rbp+<arg offset>], xmm3
 		}
 
 		if (relativeArgIndex == 2) {
 			Amd64Backend::moveRegToMemoryRegWithOffset(
 				function.generatedCode,
-				Registers::BP, argStackOffset, FloatRegisters::XMM2); //movss [rbp+<arg offset>], xmm2
+				Registers::BP, argStackOffset, FloatRegisterCallArguments::Arg2); //movss [rbp+<arg offset>], xmm2
 		}
 
 		if (relativeArgIndex == 1) {
 			Amd64Backend::moveRegToMemoryRegWithOffset(
 				function.generatedCode,
-				Registers::BP, argStackOffset, FloatRegisters::XMM1); //movss [rbp+<arg offset>], xmm1
+				Registers::BP, argStackOffset, FloatRegisterCallArguments::Arg1); //movss [rbp+<arg offset>], xmm1
 		}
 
 		if (relativeArgIndex == 0) {
 			Amd64Backend::moveRegToMemoryRegWithOffset(
 				function.generatedCode,
-				Registers::BP, argStackOffset, FloatRegisters::XMM0); //movss [rbp+<arg offset>], xmm0
+				Registers::BP, argStackOffset, FloatRegisterCallArguments::Arg0); //movss [rbp+<arg offset>], xmm0
 		}
 	}
 }
@@ -336,62 +336,62 @@ void LinuxCallingConvention::callFunctionArgument(FunctionCompilationData& funct
 		int relativeIndex = getFloatArgIndex(funcToCall.arguments(), argIndex);
 
 		if (relativeIndex == 7) {
-			Amd64Backend::popReg(generatedCode, FloatRegisters::XMM7);
+			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg7);
 		}
 
 		if (relativeIndex == 6) {
-			Amd64Backend::popReg(generatedCode, FloatRegisters::XMM6);
+			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg6);
 		}
 
 		if (relativeIndex == 5) {
-			Amd64Backend::popReg(generatedCode, FloatRegisters::XMM5);
+			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg5);
 		}
 
 		if (relativeIndex == 4) {
-			Amd64Backend::popReg(generatedCode, FloatRegisters::XMM4);
+			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg4);
 		}
 
 		if (relativeIndex == 3) {
-			Amd64Backend::popReg(generatedCode, FloatRegisters::XMM3);
+			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg3);
 		}
 
 		if (relativeIndex == 2) {
-			Amd64Backend::popReg(generatedCode, FloatRegisters::XMM2);
+			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg2);
 		}
 
 		if (relativeIndex == 1) {
-			Amd64Backend::popReg(generatedCode, FloatRegisters::XMM1);
+			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg1);
 		}
 
 		if (relativeIndex == 0) {
-			Amd64Backend::popReg(generatedCode, FloatRegisters::XMM0);
+			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg0);
 		}
 	} else {
 		//Arguments of index >= 6 are already on the stack.
 		int relativeIndex = getNoneFloatArgIndex(funcToCall.arguments(), argIndex);
 
 		if (relativeIndex == 5) {
-			Amd64Backend::popReg(generatedCode, NumberedRegisters::R9); //pop r9
+			Amd64Backend::popReg(generatedCode, RegisterCallArguments::Arg5); //pop r9
 		}
 
 		if (relativeIndex == 4) {
-			Amd64Backend::popReg(generatedCode, NumberedRegisters::R8); //pop r8
+			Amd64Backend::popReg(generatedCode, RegisterCallArguments::Arg4); //pop r8
 		}
 
 		if (relativeIndex == 3) {
-			Amd64Backend::popReg(generatedCode, Registers::CX); //pop rcx
+			Amd64Backend::popReg(generatedCode, RegisterCallArguments::Arg3); //pop rcx
 		}
 
 		if (relativeIndex == 2) {
-			Amd64Backend::popReg(generatedCode, Registers::DX); //pop rdx
+			Amd64Backend::popReg(generatedCode, RegisterCallArguments::Arg2); //pop rdx
 		}
 
 		if (relativeIndex == 1) {
-			Amd64Backend::popReg(generatedCode, Registers::SI); //pop rsi
+			Amd64Backend::popReg(generatedCode, RegisterCallArguments::Arg1); //pop rsi
 		}
 
 		if (relativeIndex == 0) {
-			Amd64Backend::popReg(generatedCode, Registers::DI); //pop rdi
+			Amd64Backend::popReg(generatedCode, RegisterCallArguments::Arg0); //pop rdi
 		}
 	}
 }
@@ -409,8 +409,8 @@ void LinuxCallingConvention::callFunctionArguments(FunctionCompilationData& func
 void LinuxCallingConvention::returnValue(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall) const {
     auto& generatedCode = functionData.function.generatedCode;
 
-    if (funcToCall.returnType()->name() != "Void") {
-        if (funcToCall.returnType()->name() == "Float") {
+    if (!TypeSystem::isPrimitiveType(funcToCall.returnType(), PrimitiveTypes::Void)) {
+        if (TypeSystem::isPrimitiveType(funcToCall.returnType(), PrimitiveTypes::Float)) {
             Amd64Backend::pushReg(generatedCode, FloatRegisters::XMM0); //push xmm0
         } else {
             Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax

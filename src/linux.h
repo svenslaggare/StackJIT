@@ -61,9 +61,12 @@ public:
 class LinuxCallingConvention : public CallingConvention {
 public:
 	virtual void moveArgsToStack(FunctionCompilationData& functionData) const override;
+
 	virtual void callFunctionArgument(FunctionCompilationData& functionData,
 									  int argIndex, const Type* argType, const FunctionDefinition& funcToCall) const override;
+
 	virtual void callFunctionArguments(FunctionCompilationData& functionData,
 									   const FunctionDefinition& funcToCall, GetArgumentType getArgumentType) const override;
+
 	virtual void returnValue(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall) const override;
 };

@@ -99,9 +99,9 @@ void CodeGenerator::generateGCCall(CodeGen& generatedCode, Function& function, i
 		Amd64Backend::pushReg(generatedCode, Registers::BP);
 	}
 
-	Amd64Backend::moveRegToReg(generatedCode, Registers::DI, Registers::BP); //BP as the first argument
-	Amd64Backend::moveLongToReg(generatedCode, Registers::SI, (long)&function); //Address of the function as second argument
-	Amd64Backend::moveIntToReg(generatedCode, Registers::DX, instIndex); //Current inst index as third argument
+	Amd64Backend::moveRegToReg(generatedCode, RegisterCallArguments::Arg0, Registers::BP); //BP as the first argument
+	Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg1, (long)&function); //Address of the function as second argument
+	Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg2, instIndex); //Current inst index as third argument
 	generateCall(generatedCode, (long)&Runtime::garbageCollect);
 
 	if (saveBSP) {
@@ -449,8 +449,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			if (!funcToCall.isMacroFunction()) {
 				//Call the pushFunc runtime function
 				Amd64Backend::pushReg(generatedCode, Registers::BP);
-				Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long) &function); //Address of the func handle as the target as first arg
-				Amd64Backend::moveLongToReg(generatedCode, Registers::SI, instIndex); //Current inst index as second arg
+				Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (long) &function); //Address of the func handle as the target as first arg
+				Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg1, instIndex); //Current inst index as second arg
 				generateCall(generatedCode, (long) &Runtime::pushFunc);
 				Amd64Backend::popReg(generatedCode, Registers::BP);
 
@@ -523,8 +523,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             //If debug is enabled, print the stack frame before return
             if (vmState.enableDebug && vmState.printStackFrame) {
                 Amd64Backend::pushReg(generatedCode, Registers::BP);
-                Amd64Backend::moveRegToReg(generatedCode, Registers::DI, Registers::BP); //BP as the first argument
-                Amd64Backend::moveLongToReg(generatedCode, Registers::SI, (long)&function); //Address of the function as second argument
+                Amd64Backend::moveRegToReg(generatedCode, RegisterCallArguments::Arg0, Registers::BP); //BP as the first argument
+                Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg1, (long)&function); //Address of the function as second argument
                 generateCall(generatedCode, (long)&Runtime::printStackFrame);
                 Amd64Backend::popReg(generatedCode, Registers::BP);
             }
@@ -661,10 +661,10 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             }
 
             //The pointer to the type as the first arg
-            Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)elemType); //mov rdi, <addr of type pointer>
+            Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (long)elemType); //mov rdi, <addr of type pointer>
 
             //Pop the size as the second arg
-            Amd64Backend::popReg(generatedCode, Registers::SI); //pop rsi
+            Amd64Backend::popReg(generatedCode, RegisterCallArguments::Arg1); //pop rsi
 
 			//Check that the size >= 0
 			mExceptionHandling.addArrayCreationCheck(functionData);

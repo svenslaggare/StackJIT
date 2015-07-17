@@ -64,6 +64,8 @@ namespace FloatRegisterCallArguments {
 	const FloatRegisters Arg3 = FloatRegisters::XMM3;
 	const FloatRegisters Arg4 = FloatRegisters::XMM4;
 	const FloatRegisters Arg5 = FloatRegisters::XMM5;
+	const FloatRegisters Arg6 = FloatRegisters::XMM6;
+	const FloatRegisters Arg7 = FloatRegisters::XMM7;
 }
 
 typedef std::vector<unsigned char> CodeGen;
