@@ -657,7 +657,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             auto elemType = vmState.typeProvider().getType(inst.strValue);
 
             if (!vmState.disableGC) {
-                generateGCCall(generatedCode, function, instIndex);
+                generateGCCall(generatedCode, function, instIndex, true);
             }
 
             //The pointer to the type as the first arg
@@ -789,7 +789,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             //Push the reference to the created object
             Amd64Backend::pushReg(generatedCode, Registers::AX);
 
-            //Mark that the function call needs to be patched with the entry point later
+            //Mark that the constructor needs to be patched with the entry point later
             functionData.unresolvedCalls.insert({
                 UnresolvedFunctionCall(
                     FunctionCallType::Relative,
@@ -798,7 +798,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 calledSignature
             });
 
-            //Make the call
+            //Call the constructor
             Amd64Backend::call(generatedCode, 0);
         }
         break;
@@ -856,7 +856,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::LOAD_STRING:
         {
             if (!vmState.disableGC) {
-                generateGCCall(generatedCode, function, instIndex);
+                generateGCCall(generatedCode, function, instIndex, true);
             }
 
             //The pointer to the string as the first arg
