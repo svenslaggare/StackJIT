@@ -783,7 +783,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             Amd64Backend::moveRegToReg(generatedCode, RegisterCallArguments::Arg0, Registers::AX);
 
             for (int i = numArgs - 1; i >= 0; i--) {
-                mCallingConvention.callFunctionArgument(functionData, i + 1, inst.parameters.at(i));
+                mCallingConvention.callFunctionArgument(functionData, i + 1, inst.parameters.at(i), funcToCall);
             }
 
             //Push the reference to the created object

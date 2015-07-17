@@ -116,6 +116,8 @@ public:
         TS_ASSERT_EQUALS(invokeVM("calling/arg5_float"), "20\n0\n");
         TS_ASSERT_EQUALS(invokeVM("calling/arg6_float"), "27\n0\n");
         TS_ASSERT_EQUALS(invokeVM("calling/arg6_float_2"), "6\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("calling/arg7_float"), "35\n0\n");
+		TS_ASSERT_EQUALS(invokeVM("calling/arg8_float"), "44\n0\n");
 
         TS_ASSERT_EQUALS(invokeVM("calling/arg6_float_and_int"), "27\n0\n");
         TS_ASSERT_EQUALS(invokeVM("calling/arg6_float_and_int_2"), "27\n0\n");
