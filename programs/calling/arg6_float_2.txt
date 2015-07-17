@@ -1,0 +1,20 @@
+func print(Float Float Float Float Float Float) Void
+{
+	LDARG 5
+	CALL std.println(Float)
+	RET
+}
+
+func main() Int
+{
+	PUSHFLOAT 1
+	PUSHFLOAT 2
+	PUSHFLOAT 3
+	PUSHFLOAT 4
+	PUSHFLOAT 5
+	PUSHFLOAT 6
+	CALL print(Float Float Float Float Float Float)
+
+	PUSHINT 0
+	RET
+}

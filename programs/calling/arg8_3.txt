@@ -1,0 +1,26 @@
+func print(Int Int Int Int Int Int Int Int) Void
+{
+	LDARG 6
+	CALL std.println(Int)
+
+	LDARG 7
+	CALL std.println(Int)
+
+	RET
+}
+
+func main() Int
+{
+	PUSHINT 6
+	PUSHINT 7
+	PUSHINT 0
+	PUSHINT 0
+	PUSHINT 0
+	PUSHINT 0
+	PUSHINT 0
+	PUSHINT 0
+	CALL print(Int Int Int Int Int Int Int Int)
+
+	PUSHINT 0
+	RET
+}

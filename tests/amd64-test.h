@@ -59,6 +59,14 @@ public:
         Amd64Backend::moveRegToReg(generatedCode, Registers::CX, Registers::CX);
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x48, 0x89, 0xC9 }));
         generatedCode.clear();
+
+        Amd64Backend::moveRegToReg(generatedCode, Registers::AX, Registers::SP);
+        TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x48, 0x89, 0xE0 } ));
+        generatedCode.clear();
+
+		Amd64Backend::moveRegToReg(generatedCode, Registers::SP, Registers::AX);
+        TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x48, 0x89, 0xC4 }));
+        generatedCode.clear();
     }
 
     //Tests moveRegToMemory

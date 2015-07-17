@@ -13,7 +13,7 @@ func main() Int
 	PUSHFLOAT 5
 	PUSHFLOAT 6
 	PUSHFLOAT 7
-	PUSHFLOAT 8
+	PUSHFLOAT 1337
 	CALL print(Float Float Float Float Float Float Float)
 
 	PUSHINT 0

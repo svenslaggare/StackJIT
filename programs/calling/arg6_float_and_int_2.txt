@@ -1,0 +1,32 @@
+func add6(Int Float Int Float Int Float) Float
+{
+	LDARG 0
+	CONVINTTOFLOAT
+	LDARG 1
+	ADD
+	LDARG 2
+	CONVINTTOFLOAT
+	ADD
+	LDARG 3
+	ADD
+	LDARG 4
+	CONVINTTOFLOAT
+	ADD
+	LDARG 5
+	ADD
+	RET
+}
+
+func main() Int
+{
+	PUSHINT 2
+	PUSHFLOAT 3
+	PUSHINT 4
+	PUSHFLOAT 5
+	PUSHINT 6
+	PUSHFLOAT 7
+	CALL add6(Int Float Int Float Int Float)
+	CALL std.println(Float)
+	PUSHINT 0
+	RET
+}

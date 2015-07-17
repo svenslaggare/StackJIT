@@ -114,9 +114,6 @@ namespace AssemblyParser {
 		std::vector<Struct> structs;
 	};
 
-//	//The maximum number of supported arguments
-//	const int MAXIMUM_NUMBER_OF_ARGUMENTS = 7;
-
 	//Tokenizes from the given stream
 	std::vector<std::string> tokenize(std::istream& stream);
 	

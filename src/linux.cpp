@@ -101,6 +101,7 @@ void LinuxCallingConvention::moveArgsToStack(FunctionCompilationData& functionDa
 
     if (function.numParams() > 0) {
 		if (function.numParams() >= 7) {
+			//For float arguments, this don't work.
 			int numStackArgs = (int)function.numParams() - 6;
 
 			for (int i = 0; i < numStackArgs; i++) {
@@ -192,20 +193,7 @@ void LinuxCallingConvention::moveArgsToStack(FunctionCompilationData& functionDa
 void LinuxCallingConvention::callFunctionArgument(FunctionCompilationData& functionData, int argIndex, const Type* argType) const {
     auto& generatedCode = functionData.function.generatedCode;
 
-	//For arguments of index >= 6, they are already on the stack, so need to pop and push them.
-	if (argIndex >= 6) {
-		Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
-
-		Amd64Backend::subIntFromReg(
-			generatedCode,
-			Registers::SP, Amd64Backend::REG_SIZE); //sub rsp, REG_SIZE
-
-		Amd64Backend::moveRegToMemoryRegWithOffset(
-			generatedCode,
-			Registers::SP,
-			(char)((6 - argIndex) * Amd64Backend::REG_SIZE), Registers::AX); //mov [rsp+<arg offset>], rax
-	}
-
+	//For arguments of index >= 6, they are already on the stack.
     if (argIndex == 5) {
         if (argType->name() == "Float") {    
             Amd64Backend::popReg(generatedCode, FloatRegisters::XMM5);             
@@ -258,37 +246,10 @@ void LinuxCallingConvention::callFunctionArgument(FunctionCompilationData& funct
 void LinuxCallingConvention::callFunctionArguments(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall, GetArugmentType getArgumentType) const {
     int numArgs = (int)funcToCall.arguments().size();
 
-	//For arguments of index >= 6, they are already on the stack, so need to pop and push them.
-	if (numArgs >= 7) {
-		for (int arg = numArgs - 1; arg >= 6; arg--) {
-			callFunctionArgument(functionData, arg, getArgumentType(arg));
-		}
-	}
-
 	//Set the function arguments
-    if (numArgs >= 6) {
-        callFunctionArgument(functionData, 5, getArgumentType(5));
-    }
-
-    if (numArgs >= 5) {
-        callFunctionArgument(functionData, 4, getArgumentType(4));
-    }
-
-    if (numArgs >= 4) {
-        callFunctionArgument(functionData, 3, getArgumentType(3));
-    }
-
-    if (numArgs >= 3) {
-        callFunctionArgument(functionData, 2, getArgumentType(2));
-    }
-
-    if (numArgs >= 2) {
-        callFunctionArgument(functionData, 1, getArgumentType(1));
-    }
-
-    if (numArgs >= 1) {
-        callFunctionArgument(functionData, 0, getArgumentType(0));
-    }
+    for (int arg = numArgs - 1; arg >= 0; arg--) {
+		callFunctionArgument(functionData, arg, getArgumentType(arg));
+	}
 }
 
 void LinuxCallingConvention::returnValue(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall) const {
