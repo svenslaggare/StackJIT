@@ -10,7 +10,7 @@ The number of locals a function has _should_ be defined in the beginning of the 
 syntax: `.locals <count>`. If the number of locals isn't defined, zero is chosen.
 
 ###Function calls###
-The arguments to call with are popped from the evaluation stack where the top operand is the last argument and so on. Only 6 arguments are supported. The VM supports function overloads. The signature of a function is defined as: `<name>(<type 1> <type 2> ...)`.
+The arguments to call with are popped from the evaluation stack where the top operand is the last argument and so on. The VM supports function overloads. The signature of a function is defined as: `<name>(<type 1> <type 2> ...)`.
 
 ###Functions###
 Functions can be defined using the following syntax:

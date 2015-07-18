@@ -104,6 +104,7 @@ public:
         TS_ASSERT_EQUALS(invokeVM("calling/arg5"), "20\n");
         TS_ASSERT_EQUALS(invokeVM("calling/arg6"), "27\n");
         TS_ASSERT_EQUALS(invokeVM("calling/arg7"), "35\n");
+        TS_ASSERT_EQUALS(invokeVM("calling/arg7_2"), "1337\n0\n");
         TS_ASSERT_EQUALS(invokeVM("calling/arg8"), "44\n");
         TS_ASSERT_EQUALS(invokeVM("calling/arg8_2"), "7\n");
         TS_ASSERT_EQUALS(invokeVM("calling/arg8_3"), "6\n7\n0\n");

@@ -2,7 +2,7 @@
 Defines the instruction set used by the VM.
 
 ###Basic###
-* `POP`: Pops the top value from the evalutation stack.
+* `POP`: Pops the top value from the evaluation stack.
 
 ###Int & Float###
 * `PUSHINT <value>`: Pushes a 32-bits integer to the evaluation stack.
@@ -30,7 +30,7 @@ Defines the instruction set used by the VM.
 ###Functions###
 * `CALL <signature>`: Calls the given function. The arguments are popped from the evaluation stack.
 * `CALLINST <struct name>::<signature>`: Calls the given member function. The first argument must be a reference of the called Struct. The arguments are popped from the evaluation stack.
-* `RET`: Returns from the current function, popping the return value from the evalutation stack.
+* `RET`: Returns from the current function, popping the return value from the evaluation stack.
 * `LDARG <arg>`: Loads the given function argument and pushes it to the evaluation stack.
 
 ###Branch###
