@@ -1,38 +1,22 @@
-func add9(Float Float Float Float Float Float Float Float Float) Float
+func print(Float Float Float Float Float Float Float Float Float) Void
 {
 	LDARG 0
-	LDARG 1
-	ADD
-	LDARG 2
-	ADD
-	LDARG 3
-	ADD
-	LDARG 4
-	ADD
-	LDARG 5
-	ADD
-	LDARG 6
-	ADD
-	LDARG 7
-    ADD
-    LDARG 8
-    ADD
+	CALL std.println(Float)
 	RET
 }
 
 func main() Int
 {
-	PUSHFLOAT 2
-	PUSHFLOAT 3
-	PUSHFLOAT 4
-	PUSHFLOAT 5
-	PUSHFLOAT 6
-	PUSHFLOAT 7
-	PUSHFLOAT 8
-	PUSHFLOAT 9
-	PUSHFLOAT 10
-	CALL rt.add(Float Float Float Float Float Float Float Float Float)
-	CALL std.println(Float)
+	PUSHFLOAT 1337
+	PUSHFLOAT 0
+	PUSHFLOAT 0
+	PUSHFLOAT 0
+	PUSHFLOAT 0
+	PUSHFLOAT 0
+	PUSHFLOAT 0
+	PUSHFLOAT 0
+	PUSHFLOAT 0
+	CALL print(Float Float Float Float Float Float Float Float Float)
     PUSHINT 0
 	RET
 }
