@@ -20,7 +20,7 @@ func <name>(<arg type 1> <arg type 2> ...) <return type>
     <function body>
 }
 ```
-When a function returns, there must be only _one_ (zero if void) operand on the evalutation stack.
+When a function returns, there must be only _one_ (zero if void) operand on the evaluation stack.
 
 __Main function__
 
