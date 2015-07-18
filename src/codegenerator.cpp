@@ -848,7 +848,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 if (!is8bits) {
                     Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::AX, fieldOffset, Registers::DX, is32bits); //mov [rax+<fieldOffset>], r/edx
                 } else {
-                    pushArray(generatedCode, { 0x88, 0x50, (unsigned char)fieldOffset }); //mov [rax+4], dl
+                    pushArray(generatedCode, { 0x88, 0x50, (unsigned char)fieldOffset }); //mov [rax+<fieldOffset>], dl
                 }
             }
         }

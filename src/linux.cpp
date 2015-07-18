@@ -147,9 +147,8 @@ namespace {
 	}
 
 	//Calculates the number of arguments that are passed via the stack
-	int numStackArguments(FunctionCompilationData& functionData) {
+	int numStackArguments(const std::vector<const Type*>& parameters) {
 		int stackArgs = 0;
-		auto& parameters = functionData.function.parameters();
 
 		int argIndex = 0;
 		for (auto param : parameters) {
@@ -253,15 +252,28 @@ namespace {
 	}
 
 	//Moves a relative float argument to the stack. The argument is relative to the type of the register.
-	void moveFloatArgToStack(FunctionCompilationData& functionData, int argIndex, int relativeArgIndex) {
+	void moveFloatArgToStack(FunctionCompilationData& functionData, int argIndex, int relativeArgIndex, int numStackArgs) {
 		auto& function = functionData.function;
 
 		//The code that are used for none float arguments should work, but doesn't :(.
-		if (relativeArgIndex > 7) {
-			throw std::runtime_error("Internal limitation: Only 8 float arguments are supported.");
-		}
+//		if (relativeArgIndex > 7) {
+//			throw std::runtime_error("Internal limitation: Only 8 float arguments are supported.");
+//		}
 
 		char argStackOffset = -(char)((1 + argIndex) * Amd64Backend::REG_SIZE);
+
+		if (relativeArgIndex >= 8) {
+			int stackArgIndex = getStackArgumentIndex(functionData, argIndex);
+			Amd64Backend::moveMemoryRegWithOffsetToReg(
+				function.generatedCode,
+				Registers::AX,
+				Registers::BP,
+				(char)(Amd64Backend::REG_SIZE * (numStackArgs - stackArgIndex + 1))); //mov rax, [rbp+REG_SIZE*<arg offset>]
+
+			Amd64Backend::moveRegToMemoryRegWithOffset(
+				function.generatedCode,
+				Registers::BP, argStackOffset, Registers::AX); //mov [rbp+<arg offset>], rax
+		}
 
 		if (relativeArgIndex == 7) {
 			Amd64Backend::moveRegToMemoryRegWithOffset(
@@ -317,10 +329,10 @@ void LinuxCallingConvention::moveArgsToStack(FunctionCompilationData& functionDa
     auto& function = functionData.function;
 	auto& parameters = function.parameters();
 
-	int numStackArgs = numStackArguments(functionData);
+	int numStackArgs = numStackArguments(parameters);
 	for (int arg = (int)function.numParams() - 1; arg >= 0; arg--) {
 		if (TypeSystem::isPrimitiveType(function.parameters()[arg], PrimitiveTypes::Float)) {
-			moveFloatArgToStack(functionData, arg, getFloatArgIndex(parameters, arg));
+			moveFloatArgToStack(functionData, arg, getFloatArgIndex(parameters, arg), numStackArgs);
 		} else {
 			moveNoneFloatArgToStack(functionData, arg, getNoneFloatArgIndex(parameters, arg), numStackArgs);
 		}
@@ -408,6 +420,13 @@ void LinuxCallingConvention::callFunctionArguments(FunctionCompilationData& func
 
 void LinuxCallingConvention::returnValue(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall) const {
     auto& generatedCode = functionData.function.generatedCode;
+
+	//If we have passed arguments via the stack, adjust the stack pointer.
+	int numStackArgs = numStackArguments(funcToCall.arguments());
+
+	if (numStackArgs > 0) {
+		Amd64Backend::addByteToReg(generatedCode, Registers::SP, numStackArgs * Amd64Backend::REG_SIZE);
+	}
 
     if (!TypeSystem::isPrimitiveType(funcToCall.returnType(), PrimitiveTypes::Void)) {
         if (TypeSystem::isPrimitiveType(funcToCall.returnType(), PrimitiveTypes::Float)) {
