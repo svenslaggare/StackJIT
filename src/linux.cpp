@@ -207,7 +207,7 @@ namespace {
 				function.generatedCode,
 				Registers::AX,
 				Registers::BP,
-				(char)(Amd64Backend::REG_SIZE * (numStackArgs - stackArgIndex + 1))); //mov rax, [rbp+REG_SIZE*<arg offset>]
+				(char)(Amd64Backend::REG_SIZE * (stackArgIndex + 2))); //mov rax, [rbp+REG_SIZE*<arg offset>]
 
 			Amd64Backend::moveRegToMemoryRegWithOffset(
 				function.generatedCode,
@@ -255,11 +255,6 @@ namespace {
 	void moveFloatArgToStack(FunctionCompilationData& functionData, int argIndex, int relativeArgIndex, int numStackArgs) {
 		auto& function = functionData.function;
 
-		//The code that are used for none float arguments should work, but doesn't :(.
-//		if (relativeArgIndex > 7) {
-//			throw std::runtime_error("Internal limitation: Only 8 float arguments are supported.");
-//		}
-
 		char argStackOffset = -(char)((1 + argIndex) * Amd64Backend::REG_SIZE);
 
 		if (relativeArgIndex >= 8) {
@@ -268,7 +263,7 @@ namespace {
 				function.generatedCode,
 				Registers::AX,
 				Registers::BP,
-				(char)(Amd64Backend::REG_SIZE * (numStackArgs - stackArgIndex + 1))); //mov rax, [rbp+REG_SIZE*<arg offset>]
+				(char)(Amd64Backend::REG_SIZE * (stackArgIndex + 2))); //mov rax, [rbp+REG_SIZE*<arg offset>]
 
 			Amd64Backend::moveRegToMemoryRegWithOffset(
 				function.generatedCode,
@@ -347,6 +342,10 @@ void LinuxCallingConvention::callFunctionArgument(FunctionCompilationData& funct
 		//Arguments of index >= 8 are already on the stack.
 		int relativeIndex = getFloatArgIndex(funcToCall.arguments(), argIndex);
 
+		if (relativeIndex >= 8) {
+			Amd64Backend::addByteToReg(generatedCode, Registers::SP, Amd64Backend::REG_SIZE);
+		}
+
 		if (relativeIndex == 7) {
 			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg7);
 		}
@@ -382,6 +381,10 @@ void LinuxCallingConvention::callFunctionArgument(FunctionCompilationData& funct
 		//Arguments of index >= 6 are already on the stack.
 		int relativeIndex = getNoneFloatArgIndex(funcToCall.arguments(), argIndex);
 
+		if (relativeIndex >= 6) {
+			Amd64Backend::addByteToReg(generatedCode, Registers::SP, Amd64Backend::REG_SIZE);
+		}
+
 		if (relativeIndex == 5) {
 			Amd64Backend::popReg(generatedCode, RegisterCallArguments::Arg5); //pop r9
 		}
@@ -411,10 +414,24 @@ void LinuxCallingConvention::callFunctionArgument(FunctionCompilationData& funct
 void LinuxCallingConvention::callFunctionArguments(FunctionCompilationData& functionData,
 												   const FunctionDefinition& funcToCall, GetArgumentType getArgumentType) const {
     int numArgs = (int)funcToCall.arguments().size();
+	int numStackArgs = numStackArguments(funcToCall.arguments());
 
 	//Set the function arguments
     for (int arg = numArgs - 1; arg >= 0; arg--) {
 		callFunctionArgument(functionData, arg, getArgumentType(arg), funcToCall);
+	}
+
+	if (numStackArgs > 0) {
+		//As the stack arguments are before (on the stack) the register arguments, we must set the arguments after.
+		auto& generatedCode = functionData.function.generatedCode;
+
+		for (int i = 0; i < numStackArgs; i++) {
+			Amd64Backend::moveMemoryRegWithOffsetToReg(
+				generatedCode,
+				Registers::AX, Registers::SP, -(numArgs - i * 2) * Amd64Backend::REG_SIZE);
+
+			Amd64Backend::pushReg(generatedCode, Registers::AX);
+		}
 	}
 }
 

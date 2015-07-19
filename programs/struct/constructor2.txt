@@ -1,0 +1,44 @@
+struct SumContainer
+{
+	sum Int
+}
+
+member SumContainer::.constructor(Int Int Int Int Int Int) Void
+{
+	LDARG 0
+
+	LDARG 1
+	LDARG 2
+	ADD
+	LDARG 3
+	ADD
+	LDARG 4
+	ADD
+	LDARG 5
+	ADD
+	LDARG 6
+	ADD
+
+	STFIELD SumContainer::sum
+
+	RET
+}
+
+func main() Int
+{
+	.locals 1
+	.local 0 Ref.Struct.SumContainer
+
+	PUSHINT 1
+	PUSHINT 2
+	PUSHINT 3
+	PUSHINT 4
+	PUSHINT 5
+	PUSHINT 6
+	NEWOBJ SumContainer::.constructor(Int Int Int Int Int Int)
+	STLOC 0
+
+	LDLOC 0
+	LDFIELD SumContainer::sum
+	RET
+}

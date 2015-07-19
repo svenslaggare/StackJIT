@@ -8,14 +8,14 @@ func sub(Int Int Int Int Int Int Int Int) Int
 
 func main() Int
 {
+	PUSHINT 0
+	PUSHINT 0
+	PUSHINT 0
+	PUSHINT 0
+	PUSHINT 0
+	PUSHINT 0
 	PUSHINT 9
 	PUSHINT 2
-	PUSHINT 0
-	PUSHINT 0
-	PUSHINT 0
-	PUSHINT 0
-	PUSHINT 0
-	PUSHINT 0
 	CALL sub(Int Int Int Int Int Int Int Int)
 	RET
 }

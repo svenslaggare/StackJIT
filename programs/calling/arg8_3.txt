@@ -11,14 +11,14 @@ func print(Int Int Int Int Int Int Int Int) Void
 
 func main() Int
 {
+	PUSHINT 0
+	PUSHINT 0
+	PUSHINT 0
+	PUSHINT 0
+	PUSHINT 0
+	PUSHINT 0
 	PUSHINT 6
 	PUSHINT 7
-	PUSHINT 0
-	PUSHINT 0
-	PUSHINT 0
-	PUSHINT 0
-	PUSHINT 0
-	PUSHINT 0
 	CALL print(Int Int Int Int Int Int Int Int)
 
 	PUSHINT 0

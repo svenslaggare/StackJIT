@@ -220,6 +220,7 @@ public:
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_program2")), "what():  2: \'Point\' is not a struct type.");
 
         TS_ASSERT_EQUALS(invokeVM("struct/constructor1"), "1\n2\n0\n");
+//        TS_ASSERT_EQUALS(invokeVM("struct/constructor2"), "21\n");
 
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_constructor1")), "what():  Constructors must have return type 'Void'.");
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_constructor2")), "what():  1: The constructor \'Point::.constructor(Ref.Struct.Point)\' is not defined.");

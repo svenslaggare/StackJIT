@@ -113,9 +113,10 @@ void CodeGenerator::initializeFunction(FunctionCompilationData& functionData) {
     auto& function = functionData.function;
 
     //Calculate the size of the stack aligned to 16 bytes
-    std::size_t neededStackSize = (function.numParams() + function.numLocals() + functionData.operandStackSize) * Amd64Backend::REG_SIZE;
+//    std::size_t neededStackSize = (function.numParams() + function.numLocals() + functionData.operandStackSize) * Amd64Backend::REG_SIZE;
+    std::size_t neededStackSize = (function.numParams() + function.numLocals()) * Amd64Backend::REG_SIZE;
     std::size_t stackSize = ((neededStackSize + 15) / 16) * 16;
-    // std::size_t stackSize = neededStackSize;
+//     std::size_t stackSize = neededStackSize;
 
     function.setStackSize(stackSize);
 
@@ -782,6 +783,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             //Set the constructor arguments
             Amd64Backend::moveRegToReg(generatedCode, RegisterCallArguments::Arg0, Registers::AX);
 
+            //Constructor arguments are not passed correctly of the stack, fix later.
             for (int i = numArgs - 1; i >= 0; i--) {
                 mCallingConvention.callFunctionArgument(functionData, i + 1, inst.parameters.at(i), funcToCall);
             }
