@@ -564,7 +564,6 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             //Restore the base pointer
             Amd64Backend::moveRegToReg(generatedCode, Registers::SP, Registers::BP); //mov rsp, rbp
             Amd64Backend::popReg(generatedCode, Registers::BP); //pop rbp
-            //pushArray(generatedCode, { 0xC9 }); //leave
 
             //Make the return
             Amd64Backend::ret(generatedCode); //ret
