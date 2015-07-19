@@ -758,7 +758,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         }
         break;
     case OpCodes::PUSH_NULL:
-        Amd64Backend::pushInt(generatedCode, 0); //push 0
+//        Amd64Backend::pushInt(generatedCode, 0); //push 0
+		OperandStack::pushInt(function, (int)inst.operandTypes().size(), 0);
         break;
     case OpCodes::NEW_ARRAY:
         {
@@ -772,7 +773,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (long)elemType); //mov rdi, <addr of type pointer>
 
             //Pop the size as the second arg
-            Amd64Backend::popReg(generatedCode, RegisterCallArguments::Arg1); //pop rsi
+//            Amd64Backend::popReg(generatedCode, RegisterCallArguments::Arg1); //pop rsi
+			OperandStack::popReg(function, (int)inst.operandTypes().size() - 1, RegisterCallArguments::Arg1);
 
 			//Check that the size >= 0
 			mExceptionHandling.addArrayCreationCheck(functionData);
@@ -783,7 +785,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             Amd64Backend::popReg(generatedCode, Registers::BP);
 
             //Push the returned pointer
-            Amd64Backend::pushReg(generatedCode, Registers::AX);
+//            Amd64Backend::pushReg(generatedCode, Registers::AX);
+			OperandStack::pushReg(function, (int)inst.operandTypes().size() - 1, Registers::AX);
         }
         break;
     case OpCodes::STORE_ELEMENT:
@@ -791,9 +794,12 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             auto elemType = vmState.typeProvider().getType(inst.strValue);
 
             //Pop the operands
-            Amd64Backend::popReg(generatedCode, Registers::DX); //The value to store
-            Amd64Backend::popReg(generatedCode, Registers::CX); //The index of the element
-            Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the array
+//            Amd64Backend::popReg(generatedCode, Registers::DX); //The value to store
+//            Amd64Backend::popReg(generatedCode, Registers::CX); //The index of the element
+//            Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the array
+			OperandStack::popReg(function, (int)inst.operandTypes().size() - 1, Registers::DX);
+			OperandStack::popReg(function, (int)inst.operandTypes().size() - 2, Registers::CX);
+			OperandStack::popReg(function, (int)inst.operandTypes().size() - 3, Registers::AX);
 
             //Null check
 			mExceptionHandling.addNullCheck(functionData);
@@ -824,8 +830,10 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             auto elemType = vmState.typeProvider().getType(inst.strValue);
 
             //Pop the operands
-            Amd64Backend::popReg(generatedCode, Registers::CX); //The index of the element
-            Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the array
+//            Amd64Backend::popReg(generatedCode, Registers::CX); //The index of the element
+//            Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the array
+			OperandStack::popReg(function, (int)inst.operandTypes().size() - 1, Registers::CX);
+			OperandStack::popReg(function, (int)inst.operandTypes().size() - 2, Registers::AX);
 
 			//Null check
 			mExceptionHandling.addNullCheck(functionData);
@@ -849,12 +857,14 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 pushArray(generatedCode, { 0x8A, 0x08 }); //mov cl, [rax]
             }
 
-            Amd64Backend::pushReg(generatedCode, Registers::CX); //pop rcx
+//            Amd64Backend::pushReg(generatedCode, Registers::CX); //push rcx
+			OperandStack::pushReg(function, (int)inst.operandTypes().size() - 2, Registers::CX);
         }
         break;
     case OpCodes::LOAD_ARRAY_LENGTH:
         //Pop the array ref
-        Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+//        Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+			OperandStack::popReg(function, (int)inst.operandTypes().size() - 1, Registers::AX);
 
         //Null check
         mExceptionHandling.addNullCheck(functionData);
@@ -863,7 +873,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         Amd64Backend::moveMemoryByRegToReg(generatedCode, Registers::AX, Registers::AX, true); //mov eax, [rax]
 
         //Push the size
-        Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
+//        Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
+		OperandStack::pushReg(function, (int)inst.operandTypes().size() - 1, Registers::AX);
         break;
     case OpCodes::NEW_OBJECT:
         {

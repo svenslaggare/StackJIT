@@ -196,15 +196,15 @@ public:
 //        TS_ASSERT_EQUALS(invokeVM("string/loadstring"), "Hello, World!\n0\n");
 //    }
 //
-//    void testArray() {
-//        TS_ASSERT_EQUALS(invokeVM("array/program1"), "1337\n");
-//        TS_ASSERT_EQUALS(invokeVM("array/program2"), "4\n1337\n");
-//        TS_ASSERT_EQUALS(invokeVM("array/program3"), "1337\n4\n0\n");
-//
-//        TS_ASSERT_EQUALS(invokeVM("array/nested"), "4\n");
-//
-//        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program1")), "what():  2: Arrays of type 'Void' is not allowed.");
-//    }
+    void testArray() {
+        TS_ASSERT_EQUALS(invokeVM("array/program1"), "1337\n");
+        TS_ASSERT_EQUALS(invokeVM("array/program2"), "4\n1337\n");
+        TS_ASSERT_EQUALS(invokeVM("array/program3"), "1337\n4\n0\n");
+
+        TS_ASSERT_EQUALS(invokeVM("array/nested"), "4\n");
+
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program1")), "what():  2: Arrays of type 'Void' is not allowed.");
+    }
 //
 //    void testStruct() {
 //        TS_ASSERT_EQUALS(invokeVM("struct/program1"), "1337\n");
