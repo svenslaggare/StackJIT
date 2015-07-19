@@ -254,7 +254,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
      case OpCodes::PUSH_CHAR:
         //Push the value
-        pushArray(generatedCode, { 0x6A, (unsigned char)inst.charValue }); //push <value>
+//        pushArray(generatedCode, { 0x6A, (unsigned char)inst.charValue }); //push <value>
+		OperandStack::pushInt(function, (int)inst.operandTypes().size(), inst.charValue);
         break;
     case OpCodes::ADD:
     case OpCodes::SUB:
@@ -914,7 +915,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             }
 
             //Push the reference to the created object
-            Amd64Backend::pushReg(generatedCode, Registers::AX);
+//            Amd64Backend::pushReg(generatedCode, Registers::AX);
+			OperandStack::pushReg(function, (int)inst.operandTypes().size() - (numArgs), Registers::AX);
 
             //Mark that the constructor needs to be patched with the entry point later
             functionData.unresolvedCalls.insert({
@@ -947,7 +949,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
             if (inst.opCode() == OpCodes::LOAD_FIELD) {
                 //Pop the operand
-                Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the object
+//                Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the object
+				OperandStack::popReg(function, (int)inst.operandTypes().size() - 1, Registers::AX);
 
                 //Null check
 				mExceptionHandling.addNullCheck(functionData);
@@ -962,11 +965,14 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                     pushArray(generatedCode, { 0x8A, 0x08 }); //mov cl, [rax]
                 }
 
-                Amd64Backend::pushReg(generatedCode, Registers::CX); //pop rcx
+//                Amd64Backend::pushReg(generatedCode, Registers::CX); //push rcx
+				OperandStack::pushReg(function, (int)inst.operandTypes().size() - 1, Registers::CX);
             } else {
                 //Pop the operand
-                Amd64Backend::popReg(generatedCode, Registers::DX); //The value to store
-                Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the object
+//                Amd64Backend::popReg(generatedCode, Registers::DX); //The value to store
+//                Amd64Backend::popReg(generatedCode, Registers::AX); //The address of the object
+				OperandStack::popReg(function, (int)inst.operandTypes().size() - 1, Registers::DX);
+				OperandStack::popReg(function, (int)inst.operandTypes().size() - 2, Registers::AX);
 
                 //Null check
 				mExceptionHandling.addNullCheck(functionData);
@@ -998,7 +1004,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             Amd64Backend::popReg(generatedCode, Registers::BP);
 
             //Push the returned pointer
-            Amd64Backend::pushReg(generatedCode, Registers::AX);
+//            Amd64Backend::pushReg(generatedCode, Registers::AX);
+			OperandStack::pushReg(function, (int)inst.operandTypes().size(), Registers::AX);
         }
         break;
     }
