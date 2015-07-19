@@ -78,11 +78,61 @@ void ExceptionHandling::addArrayCreationCheck(FunctionCompilationData& function)
 
 	Amd64Backend::xorRegToReg(codeGen, Registers::CX, Registers::CX, true); //Zero the register
 	Amd64Backend::compareRegToReg(codeGen, Registers::CX, Registers::SI); //cmp rcx, rsi
-	//pushArray(codeGen, { 0x7E, 10 + 2 }); //jle <after call>.
 
 	//Jump to handler if invalid
 	Amd64Backend::jumpGreaterThan(codeGen, 0); //jg <array creation handler>
 	function.unresolvedNativeBranches.insert({ codeGen.size() - 6, (long)mArrayCreationCheckHandler });
+}
+
+namespace {
+	//Get the offset for the stack operand
+	int getStackOperandOffset(Function& function, int operandStackIndex) {
+		return -(int)(Amd64Backend::REG_SIZE * (1 + function.numLocals() + function.numParams() + operandStackIndex));
+	}
+}
+
+void OperandStack::popReg(Function& function, int operandStackIndex, Registers reg) {
+	Amd64Backend::moveMemoryRegWithOffsetToReg(
+		function.generatedCode,
+		reg, Registers::BP, getStackOperandOffset(function, operandStackIndex)); //mov <reg> [rbp+<operand offset>]
+}
+
+void OperandStack::popReg(Function& function, int operandStackIndex, NumberedRegisters reg) {
+	pushArray(
+		function.generatedCode,
+		{ 0x4C, 0x8B, (unsigned char)(0x45 | (reg << 3)),
+		(unsigned char)getStackOperandOffset(function, operandStackIndex) }); //mov <reg> [rbp+<operand offset>]
+}
+
+void OperandStack::popReg(Function& function, int operandStackIndex, FloatRegisters reg) {
+	pushArray(
+		function.generatedCode,
+		{ 0xF3, 0x0F, 0x10, (unsigned char)(0x45 | (reg << 3)),
+		(unsigned char)getStackOperandOffset(function, operandStackIndex) }); //mov <reg> [rbp+<operand offset>]
+}
+
+void OperandStack::pushReg(Function& function, int operandStackIndex, Registers reg) {
+	Amd64Backend::moveRegToMemoryRegWithOffset(
+		function.generatedCode,
+		Registers::BP, getStackOperandOffset(function, operandStackIndex), reg); //mov [rbp+<operand offset>], <reg>
+}
+
+void OperandStack::pushReg(Function& function, int operandStackIndex, FloatRegisters reg) {
+	Amd64Backend::moveRegToMemoryRegWithOffset(
+		function.generatedCode,
+		Registers::BP,
+		getStackOperandOffset(function, operandStackIndex), reg); //movss [rbp+<operand offset>0], <float reg>
+}
+
+void OperandStack::pushInt(Function& function, int operandStackIndex, int value) {
+	//mov [rbp+<operand offset>], value
+	pushArray(function.generatedCode, { 0x48, 0xC7, 0x45, (unsigned char)(getStackOperandOffset(function, operandStackIndex)) });
+
+	IntToBytes intToBytes;
+	intToBytes.intValue = value;
+	for (std::size_t i = 0; i < sizeof(int); i++) {
+		function.generatedCode.push_back(intToBytes.byteValues[i]);
+	}
 }
 
 CodeGenerator::CodeGenerator(const CallingConvention& callingConvention, const ExceptionHandling& exceptionHandling)
@@ -114,10 +164,9 @@ void CodeGenerator::initializeFunction(FunctionCompilationData& functionData) {
     auto& function = functionData.function;
 
     //Calculate the size of the stack aligned to 16 bytes
-//    std::size_t neededStackSize = (function.numParams() + function.numLocals() + functionData.operandStackSize) * Amd64Backend::REG_SIZE;
-    std::size_t neededStackSize = (function.numParams() + function.numLocals()) * Amd64Backend::REG_SIZE;
+    std::size_t neededStackSize = (function.numParams() + function.numLocals() + functionData.operandStackSize) * Amd64Backend::REG_SIZE;
+//    std::size_t neededStackSize = (function.numParams() + function.numLocals()) * Amd64Backend::REG_SIZE;
     std::size_t stackSize = ((neededStackSize + 15) / 16) * 16;
-//     std::size_t stackSize = neededStackSize;
 
     function.setStackSize(stackSize);
 
@@ -185,11 +234,13 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::POP:
         //Pop the value
-        Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+//        Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+		OperandStack::popReg(function, (int)inst.operandTypes().size() - 1, Registers::AX);
         break;
     case OpCodes::PUSH_INT:
         //Push the value
-        Amd64Backend::pushInt(generatedCode, inst.intValue); //push <value>
+//        Amd64Backend::pushInt(generatedCode, inst.intValue); //push <value>
+		OperandStack::pushInt(function, (int)inst.operandTypes().size(), inst.intValue);
         break;
     case OpCodes::PUSH_FLOAT:
         {
@@ -197,7 +248,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             const int* floatData = reinterpret_cast<const int*>(&inst.floatValue);
 
             //Push the value
-            Amd64Backend::pushInt(generatedCode, *floatData); //push <value>
+//            Amd64Backend::pushInt(generatedCode, *floatData); //push <value>
+			OperandStack::pushInt(function, (int)inst.operandTypes().size(), *floatData);
         }
         break;
      case OpCodes::PUSH_CHAR:
@@ -216,11 +268,15 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
             //Pop 2 operands
             if (intOp) {
-                Amd64Backend::popReg(generatedCode, Registers::CX); //pop rcx
-                Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+//                Amd64Backend::popReg(generatedCode, Registers::CX); //pop rcx
+//                Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+				OperandStack::popReg(function, (int)inst.operandTypes().size() - 1, Registers::CX);
+				OperandStack::popReg(function, (int)inst.operandTypes().size() - 2, Registers::AX);
             } else if (floatOp) {
-                Amd64Backend::popReg(generatedCode, FloatRegisters::XMM0);
-                Amd64Backend::popReg(generatedCode, FloatRegisters::XMM1);
+//                Amd64Backend::popReg(generatedCode, FloatRegisters::XMM0);
+//                Amd64Backend::popReg(generatedCode, FloatRegisters::XMM1);
+				OperandStack::popReg(function, (int)inst.operandTypes().size() - 1, FloatRegisters::XMM0);
+				OperandStack::popReg(function, (int)inst.operandTypes().size() - 2, FloatRegisters::XMM1);
             }
 
             //Apply the operator
@@ -260,26 +316,32 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
             //Push the result
             if (intOp) {
-                Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
+//                Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
+				OperandStack::pushReg(function, (int)inst.operandTypes().size() - 2, Registers::AX);
             } else if (floatOp) {
-                Amd64Backend::pushReg(generatedCode, FloatRegisters::XMM0);
+//                Amd64Backend::pushReg(generatedCode, FloatRegisters::XMM0);
+				OperandStack::pushReg(function, (int)inst.operandTypes().size() - 2, FloatRegisters::XMM0);
             }
         }
         break;
     case OpCodes::PUSH_TRUE:
         //Push the value
-        Amd64Backend::pushInt(generatedCode, 1); //push 1
+//        Amd64Backend::pushInt(generatedCode, 1); //push 1
+		OperandStack::pushInt(function, (int)inst.operandTypes().size(), 1);
         break;
     case OpCodes::PUSH_FALSE:
         //Push the value
-        Amd64Backend::pushInt(generatedCode, 0); //push 0
+//        Amd64Backend::pushInt(generatedCode, 0); //push 0
+		OperandStack::pushInt(function, (int)inst.operandTypes().size(), 0);
         break;
     case OpCodes::AND:
     case OpCodes::OR:
         {
             //Pop 2 operands
-            Amd64Backend::popReg(generatedCode, Registers::CX); //pop rcx
-            Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+//            Amd64Backend::popReg(generatedCode, Registers::CX); //pop rcx
+//            Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+			OperandStack::popReg(function, (int)inst.operandTypes().size() - 1, Registers::CX);
+			OperandStack::popReg(function, (int)inst.operandTypes().size() - 2, Registers::AX);
             bool is32bits = false;
 
             //Apply the operator
@@ -295,38 +357,45 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             }
 
             //Push the result
-            Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
+//            Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
+			OperandStack::pushReg(function, (int)inst.operandTypes().size() - 2, Registers::AX);
         }
         break;
     case OpCodes::NOT:
         //Pop 1 operand
-        Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+//        Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+		OperandStack::popReg(function, (int)inst.operandTypes().size() - 1, Registers::AX);
 
         //NOT the value
         Amd64Backend::notReg(generatedCode, Registers::AX); //not rax
 
         //Push the result
-        Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
+//        Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
+		OperandStack::pushReg(function, (int)inst.operandTypes().size() - 1, Registers::AX);
         break;
     case OpCodes::CONVERT_INT_TO_FLOAT:
         //Pop 1 operand
-        Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+//        Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+		OperandStack::popReg(function, (int)inst.operandTypes().size() - 1, Registers::AX);
 
         //Convert it
         pushArray(generatedCode, { 0xF3, 0x48, 0x0F, 0x2A, 0xC0 }); //cvtsi2ss xmm0,rax
 
         //Push it
-        Amd64Backend::pushReg(generatedCode, FloatRegisters::XMM0); //push xmm0
+//        Amd64Backend::pushReg(generatedCode, FloatRegisters::XMM0); //push xmm0
+		OperandStack::pushReg(function, (int)inst.operandTypes().size() - 1, FloatRegisters::XMM0);
         break;
     case OpCodes::CONVERT_FLOAT_TO_INT:
         //Pop 1 operand
-        Amd64Backend::popReg(generatedCode, FloatRegisters::XMM0); //pop xmm0
+//        Amd64Backend::popReg(generatedCode, FloatRegisters::XMM0); //pop xmm0
+		OperandStack::popReg(function, (int)inst.operandTypes().size() - 1, FloatRegisters::XMM0);
 
         //Convert it
         pushArray(generatedCode, { 0xF3, 0x48, 0x0F, 0x2C, 0xC0 }); //cvttss2si rax,xmm0
 
         //Push it
-        Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
+//        Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
+		OperandStack::pushReg(function, (int)inst.operandTypes().size() - 1, Registers::AX);
         break;
     case OpCodes::COMPARE_EQUAL:
     case OpCodes::COMPARE_NOT_EQUAL:
@@ -343,15 +412,19 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
             if (intOp || boolType) {
                 //Pop 2 operands
-                Amd64Backend::popReg(generatedCode, Registers::CX); //pop rcx
-                Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+//                Amd64Backend::popReg(generatedCode, Registers::CX); //pop rcx
+//                Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+				OperandStack::popReg(function, (int)inst.operandTypes().size() - 1, Registers::CX);
+				OperandStack::popReg(function, (int)inst.operandTypes().size() - 2, Registers::AX);
 
                 //Compare
                 Amd64Backend::compareRegToReg(generatedCode, Registers::AX, Registers::CX); //cmp rax, rcx
             } else if (floatOp) {
                 //Pop 2 operands
-                Amd64Backend::popReg(generatedCode, FloatRegisters::XMM1); //pop xmm1
-                Amd64Backend::popReg(generatedCode, FloatRegisters::XMM0); //pop xmm0
+//                Amd64Backend::popReg(generatedCode, FloatRegisters::XMM1); //pop xmm1
+//                Amd64Backend::popReg(generatedCode, FloatRegisters::XMM0); //pop xmm0
+				OperandStack::popReg(function, (int)inst.operandTypes().size() - 1, FloatRegisters::XMM1);
+				OperandStack::popReg(function, (int)inst.operandTypes().size() - 2, FloatRegisters::XMM0);
 
                 //Compare
                 pushArray(generatedCode, { 0x0F, 0x2E, 0xC1 }); //ucomiss xmm0, xmm1
@@ -359,7 +432,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             }
 
             //Jump
-            int target = 5 + 5;
+//            int target = 5 + 5;
+			int target = 8 + 5;
 
             switch (inst.opCode()) {
                 case OpCodes::COMPARE_EQUAL:
@@ -401,11 +475,14 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             }
 
             //False
-            Amd64Backend::pushInt(generatedCode, 0);
-            Amd64Backend::jump(generatedCode, 5);
+//            Amd64Backend::pushInt(generatedCode, 0);
+			OperandStack::pushInt(function, (int)inst.operandTypes().size() - 2, 0);
+//            Amd64Backend::jump(generatedCode, 5);
+            Amd64Backend::jump(generatedCode, 8);
 
             //True
-            Amd64Backend::pushInt(generatedCode, 1);
+//            Amd64Backend::pushInt(generatedCode, 1);
+			OperandStack::pushInt(function, (int)inst.operandTypes().size() - 2, 1);
         }
         break;
     case OpCodes::LOAD_LOCAL:
@@ -421,13 +498,15 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             Amd64Backend::moveMemoryByRegToReg(generatedCode, Registers::AX, Registers::AX); //mov rax, [rax]
 
             //Push the loaded value
-            Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
+//            Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
+			OperandStack::pushReg(function, (int)inst.operandTypes().size(), Registers::AX);
         }
         break;
     case OpCodes::STORE_LOCAL:
         {
             //Pop the top operand
-            Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+//            Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+			OperandStack::popReg(function, (int)inst.operandTypes().size() - 1, Registers::AX);
 
             int localOffset = (inst.intValue + (int)function.numParams() + stackOffset) * -Amd64Backend::REG_SIZE;
 
@@ -465,7 +544,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
 				mCallingConvention.callFunctionArguments(functionData, funcToCall, [&](int arg) {
 					return opTypes.at(numArgs - 1 - arg);
-				});
+				}, (int)inst.operandTypes().size());
 
                 //Align stack the stack
 				int stackAlignment = mCallingConvention.calculateStackAlignment(
@@ -528,7 +607,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 				}
 
 				//Push the result
-				mCallingConvention.returnValue(functionData, funcToCall);
+				mCallingConvention.returnValue(functionData, funcToCall, (int)inst.operandTypes().size() - numArgs);
 
 				//Call the popFunc runtime function
 				Amd64Backend::pushReg(generatedCode, Registers::BP);
@@ -554,10 +633,12 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
             if (!TypeSystem::isPrimitiveType(function.returnType(), PrimitiveTypes::Void)) {
                 //Pop the return value
-                if (function.returnType()->name() == "Float") {
-                    Amd64Backend::popReg(generatedCode, FloatRegisters::XMM0);
+                if (TypeSystem::isPrimitiveType(function.returnType(), PrimitiveTypes::Float)) {
+//                    Amd64Backend::popReg(generatedCode, FloatRegisters::XMM0);
+					OperandStack::popReg(function, (int)inst.operandTypes().size() - 1, FloatRegisters::XMM0);
                 } else {
-                    Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+//                    Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+					OperandStack::popReg(function, (int)inst.operandTypes().size() - 1, Registers::AX);
                 }
             }
 
@@ -581,7 +662,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             Amd64Backend::moveMemoryByRegToReg(generatedCode, Registers::AX, Registers::AX); //mov rax, [rax]
 
             //Push the loaded value
-            Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
+//            Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
+			OperandStack::pushReg(function, (int)inst.operandTypes().size(), Registers::AX);
         }
         break;
     case OpCodes::BRANCH:
@@ -610,15 +692,19 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
             if (intOp || boolType) {
                 //Pop 2 operands
-                Amd64Backend::popReg(generatedCode, Registers::CX); //pop rcx
-                Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+//                Amd64Backend::popReg(generatedCode, Registers::CX); //pop rcx
+//                Amd64Backend::popReg(generatedCode, Registers::AX); //pop rax
+				OperandStack::popReg(function, (int)inst.operandTypes().size() - 1, Registers::CX);
+				OperandStack::popReg(function, (int)inst.operandTypes().size() - 2, Registers::AX);
 
                 //Compare
                 Amd64Backend::compareRegToReg(generatedCode, Registers::AX, Registers::CX); //cmp rax, rcx
             } else if (floatOp) {
                 //Pop 2 operands
-                Amd64Backend::popReg(generatedCode, FloatRegisters::XMM1); //pop xmm1
-                Amd64Backend::popReg(generatedCode, FloatRegisters::XMM0); //pop xmm0
+//                Amd64Backend::popReg(generatedCode, FloatRegisters::XMM1); //pop xmm1
+//                Amd64Backend::popReg(generatedCode, FloatRegisters::XMM0); //pop xmm0
+				OperandStack::popReg(function, (int)inst.operandTypes().size() - 1, FloatRegisters::XMM1);
+				OperandStack::popReg(function, (int)inst.operandTypes().size() - 2, FloatRegisters::XMM0);
 
                 //Compare
                 pushArray(generatedCode, { 0x0F, 0x2E, 0xC1 }); //ucomiss xmm0, xmm1
@@ -808,7 +894,12 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
             //Constructor arguments are not passed correctly of the stack, fix later.
             for (int i = numArgs - 1; i >= 0; i--) {
-                mCallingConvention.callFunctionArgument(functionData, i + 1, inst.parameters.at(i), funcToCall);
+                mCallingConvention.callFunctionArgument(
+					functionData,
+					i + 1,
+					inst.parameters.at(i),
+					funcToCall,
+					(int)inst.operandTypes().size());
             }
 
             //Push the reference to the created object

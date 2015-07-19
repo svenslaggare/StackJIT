@@ -335,8 +335,10 @@ void LinuxCallingConvention::moveArgsToStack(FunctionCompilationData& functionDa
 }
 
 void LinuxCallingConvention::callFunctionArgument(FunctionCompilationData& functionData,
-												  int argIndex, const Type* argType, const FunctionDefinition& funcToCall) const {
+												  int argIndex, const Type* argType, const FunctionDefinition& funcToCall,
+												  int numStackOperands) const {
     auto& generatedCode = functionData.function.generatedCode;
+	int numArgs = (int)funcToCall.arguments().size();
 
 	if (TypeSystem::isPrimitiveType(argType, PrimitiveTypes::Float)) {
 		//Arguments of index >= 8 are already on the stack.
@@ -347,35 +349,43 @@ void LinuxCallingConvention::callFunctionArgument(FunctionCompilationData& funct
 		}
 
 		if (relativeIndex == 7) {
-			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg7);
+//			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg7);
+			OperandStack::popReg(functionData.function, numStackOperands - (numArgs - argIndex), FloatRegisterCallArguments::Arg7);
 		}
 
 		if (relativeIndex == 6) {
-			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg6);
+//			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg6);
+			OperandStack::popReg(functionData.function, numStackOperands - (numArgs - argIndex), FloatRegisterCallArguments::Arg6);
 		}
 
 		if (relativeIndex == 5) {
-			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg5);
+//			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg5);
+			OperandStack::popReg(functionData.function, numStackOperands - (numArgs - argIndex), FloatRegisterCallArguments::Arg5);
 		}
 
 		if (relativeIndex == 4) {
-			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg4);
+//			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg4);
+			OperandStack::popReg(functionData.function, numStackOperands - (numArgs - argIndex), FloatRegisterCallArguments::Arg4);
 		}
 
 		if (relativeIndex == 3) {
-			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg3);
+//			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg3);
+			OperandStack::popReg(functionData.function, numStackOperands - (numArgs - argIndex), FloatRegisterCallArguments::Arg3);
 		}
 
 		if (relativeIndex == 2) {
-			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg2);
+//			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg2);
+			OperandStack::popReg(functionData.function, numStackOperands - (numArgs - argIndex), FloatRegisterCallArguments::Arg2);
 		}
 
 		if (relativeIndex == 1) {
-			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg1);
+//			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg1);
+			OperandStack::popReg(functionData.function, numStackOperands - (numArgs - argIndex), FloatRegisterCallArguments::Arg1);
 		}
 
 		if (relativeIndex == 0) {
-			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg0);
+//			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg0);
+			OperandStack::popReg(functionData.function, numStackOperands - (numArgs - argIndex), FloatRegisterCallArguments::Arg0);
 		}
 	} else {
 		//Arguments of index >= 6 are already on the stack.
@@ -386,39 +396,46 @@ void LinuxCallingConvention::callFunctionArgument(FunctionCompilationData& funct
 		}
 
 		if (relativeIndex == 5) {
-			Amd64Backend::popReg(generatedCode, RegisterCallArguments::Arg5); //pop r9
+//			Amd64Backend::popReg(generatedCode, RegisterCallArguments::Arg5); //pop r9
+			OperandStack::popReg(functionData.function, numStackOperands - (numArgs - argIndex), RegisterCallArguments::Arg5);
 		}
 
 		if (relativeIndex == 4) {
-			Amd64Backend::popReg(generatedCode, RegisterCallArguments::Arg4); //pop r8
+//			Amd64Backend::popReg(generatedCode, RegisterCallArguments::Arg4); //pop r8
+			OperandStack::popReg(functionData.function, numStackOperands - (numArgs - argIndex), RegisterCallArguments::Arg4);
 		}
 
 		if (relativeIndex == 3) {
-			Amd64Backend::popReg(generatedCode, RegisterCallArguments::Arg3); //pop rcx
+//			Amd64Backend::popReg(generatedCode, RegisterCallArguments::Arg3); //pop rcx
+			OperandStack::popReg(functionData.function, numStackOperands - (numArgs - argIndex), RegisterCallArguments::Arg3);
 		}
 
 		if (relativeIndex == 2) {
-			Amd64Backend::popReg(generatedCode, RegisterCallArguments::Arg2); //pop rdx
+//			Amd64Backend::popReg(generatedCode, RegisterCallArguments::Arg2); //pop rdx
+			OperandStack::popReg(functionData.function, numStackOperands - (numArgs - argIndex), RegisterCallArguments::Arg2);
 		}
 
 		if (relativeIndex == 1) {
-			Amd64Backend::popReg(generatedCode, RegisterCallArguments::Arg1); //pop rsi
+//			Amd64Backend::popReg(generatedCode, RegisterCallArguments::Arg1); //pop rsi
+			OperandStack::popReg(functionData.function, numStackOperands - (numArgs - argIndex), RegisterCallArguments::Arg1);
 		}
 
 		if (relativeIndex == 0) {
-			Amd64Backend::popReg(generatedCode, RegisterCallArguments::Arg0); //pop rdi
+//			Amd64Backend::popReg(generatedCode, RegisterCallArguments::Arg0); //pop rdi
+			OperandStack::popReg(functionData.function, numStackOperands - (numArgs - argIndex), RegisterCallArguments::Arg0);
 		}
 	}
 }
 
 void LinuxCallingConvention::callFunctionArguments(FunctionCompilationData& functionData,
-												   const FunctionDefinition& funcToCall, GetArgumentType getArgumentType) const {
+												   const FunctionDefinition& funcToCall, GetArgumentType getArgumentType,
+												   int numStackOperands) const {
     int numArgs = (int)funcToCall.arguments().size();
 	int numStackArgs = numStackArguments(funcToCall.arguments());
 
 	//Set the function arguments
     for (int arg = numArgs - 1; arg >= 0; arg--) {
-		callFunctionArgument(functionData, arg, getArgumentType(arg), funcToCall);
+		callFunctionArgument(functionData, arg, getArgumentType(arg), funcToCall, numStackOperands);
 	}
 
 	if (numStackArgs > 0) {
@@ -443,7 +460,8 @@ int LinuxCallingConvention::calculateStackAlignment(FunctionCompilationData& fun
 	return 0;
 }
 
-void LinuxCallingConvention::returnValue(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall) const {
+void LinuxCallingConvention::returnValue(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall,
+										 int numStackOperands) const {
     auto& generatedCode = functionData.function.generatedCode;
 
 	//If we have passed arguments via the stack, adjust the stack pointer.
@@ -455,9 +473,11 @@ void LinuxCallingConvention::returnValue(FunctionCompilationData& functionData, 
 
     if (!TypeSystem::isPrimitiveType(funcToCall.returnType(), PrimitiveTypes::Void)) {
         if (TypeSystem::isPrimitiveType(funcToCall.returnType(), PrimitiveTypes::Float)) {
-            Amd64Backend::pushReg(generatedCode, FloatRegisters::XMM0); //push xmm0
+//            Amd64Backend::pushReg(generatedCode, FloatRegisters::XMM0); //push xmm0
+			OperandStack::pushReg(functionData.function, numStackOperands, FloatRegisters::XMM0);
         } else {
-            Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
+//            Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
+			OperandStack::pushReg(functionData.function, numStackOperands, Registers::AX);
         }
     }
 }

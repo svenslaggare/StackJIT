@@ -28,6 +28,21 @@ public:
 	void addArrayCreationCheck(FunctionCompilationData& function) const;
 };
 
+//Manages the operand stack
+namespace OperandStack {
+	//Pops an operand from the operand stack to the given register
+	void popReg(Function& function, int operandStackIndex, Registers reg);
+	void popReg(Function& function, int operandStackIndex, NumberedRegisters reg);
+	void popReg(Function& function, int operandStackIndex, FloatRegisters reg);
+
+	//Pushes the given register to the operand stack
+	void pushReg(Function& function, int operandStackIndex, Registers reg);
+	void pushReg(Function& function, int operandStackIndex, FloatRegisters reg);
+
+	//Pushes the given value to the operand stack
+	void pushInt(Function& function, int operandStackIndex, int value);
+}
+
 //Represents a code generator
 class CodeGenerator {
 private:

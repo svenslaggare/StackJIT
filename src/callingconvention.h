@@ -16,16 +16,19 @@ public:
 
 	//Generates code for calling with the given argument
 	virtual void callFunctionArgument(FunctionCompilationData& functionData,
-									  int argIndex, const Type* argType, const FunctionDefinition& funcToCall) const = 0;
+									  int argIndex, const Type* argType, const FunctionDefinition& funcToCall,
+									  int numStackOperands) const = 0;
 
 	//Generates code for calling the given function
 	virtual void callFunctionArguments(FunctionCompilationData& functionData,
-									   const FunctionDefinition& funcToCall, GetArgumentType getArgumentType) const = 0;
+									   const FunctionDefinition& funcToCall, GetArgumentType getArgumentType,
+									   int numStackOperands) const = 0;
 
 	//Calculates how much the stack must be aligned to perform the call
 	virtual int calculateStackAlignment(FunctionCompilationData& functionData,
 								   const FunctionDefinition& funcToCall, int operandsOnStack) const = 0;
 
 	//Generates code for returning a value from a function
-	virtual void returnValue(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall) const = 0;
+	virtual void returnValue(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall,
+							 int numStackOperands) const = 0;
 };
