@@ -435,6 +435,13 @@ void LinuxCallingConvention::callFunctionArguments(FunctionCompilationData& func
 	}
 }
 
+int LinuxCallingConvention::calculateStackAlignment(FunctionCompilationData& functionData,
+													const FunctionDefinition& funcToCall, int operandsOnStack) const {
+//	int numStackArgs = numStackArguments(funcToCall.arguments());
+	int numStackArgs = 0;
+	return ((operandsOnStack + numStackArgs) % 2) * Amd64Backend::REG_SIZE;
+}
+
 void LinuxCallingConvention::returnValue(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall) const {
     auto& generatedCode = functionData.function.generatedCode;
 

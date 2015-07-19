@@ -466,6 +466,17 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 					return opTypes.at(numArgs - 1 - arg);
 				});
 
+                //Align stack the stack
+				int stackAlignment = mCallingConvention.calculateStackAlignment(
+					functionData,
+					funcToCall,
+					(int)opTypes.size() - numArgs);
+
+                Amd64Backend::addByteToReg(
+                    generatedCode,
+                    Registers::SP,
+					-stackAlignment);
+
 				if (inst.opCode() == OpCodes::CALL_INSTANCE) {
 					//Null check
 					Amd64Backend::pushReg(generatedCode, Registers::CX);
@@ -504,6 +515,12 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 					//Make the call
 					generateCall(generatedCode, funcAddr);
 				}
+
+				//Unalign the stack
+				Amd64Backend::addByteToReg(
+					generatedCode,
+					Registers::SP,
+					stackAlignment);
 
 				//Push the result
 				mCallingConvention.returnValue(functionData, funcToCall);

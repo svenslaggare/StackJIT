@@ -1,0 +1,42 @@
+func print() Void
+{
+	PUSHFLOAT 12
+	PUSHFLOAT 13
+	CALL std.println(Float)
+	POP
+	RET
+}
+
+func print2() Void
+{
+	.locals 1
+	.local 0 Float
+
+	PUSHFLOAT 12
+	PUSHFLOAT 13
+	CALL std.println(Float)
+	POP
+	RET
+}
+
+func print3() Void
+{
+	.locals 2
+	.local 0 Float
+	.local 1 Float
+
+	PUSHFLOAT 12
+	PUSHFLOAT 13
+	CALL std.println(Float)
+	POP
+	RET
+}
+
+func main() Int
+{
+	CALL print()
+	CALL print2()
+	CALL print3()
+    PUSHINT 0
+	RET
+}

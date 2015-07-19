@@ -1,0 +1,22 @@
+struct Point
+{
+	x Int
+	y Int
+}
+
+member Point::.constructor() Void
+{
+   RET
+}
+
+func main() Int
+{
+	NEWOBJ Point::.constructor()
+	NEWOBJ Point::.constructor()
+	CALL std.gc.collect()
+	POP
+	POP
+
+	PUSHINT 0
+	RET
+}

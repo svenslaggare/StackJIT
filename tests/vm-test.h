@@ -92,6 +92,9 @@ public:
         TS_ASSERT_EQUALS(invokeVM("basic/program14"), "2\n");
         TS_ASSERT_EQUALS(invokeVM("basic/program15"), "-2\n");
 
+        TS_ASSERT_EQUALS(invokeVM("basic/call_preserve_stack"), "17\n");
+        TS_ASSERT_EQUALS(invokeVM("basic/float_alignment"), "13\n13\n13\n0\n");
+
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("basic/invalid_program1")), "what():  1: Locals of 'Void' type are not allowed.");
     }
 
@@ -248,6 +251,7 @@ public:
         TS_ASSERT_EQUALS(invokeVM("gc/program2"), "0\n");
         TS_ASSERT_EQUALS(invokeVM("gc/program3"), "0\n");
         TS_ASSERT_EQUALS(invokeVM("gc/program4"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program5"), "0\n");
     }
 
     void testFunction() {

@@ -68,5 +68,8 @@ public:
 	virtual void callFunctionArguments(FunctionCompilationData& functionData,
 									   const FunctionDefinition& funcToCall, GetArgumentType getArgumentType) const override;
 
+	virtual int calculateStackAlignment(FunctionCompilationData& functionData,
+										const FunctionDefinition& funcToCall, int operandsOnStack) const override;
+
 	virtual void returnValue(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall) const override;
 };
