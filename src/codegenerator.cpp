@@ -5,6 +5,7 @@
 #include "rtlibrary.h"
 #include "function.h"
 #include "instructions.h"
+#include "stackjit.h"
 
 #include <string.h>
 #include <iostream>
@@ -472,10 +473,12 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 					funcToCall,
 					(int)opTypes.size() - numArgs);
 
-                Amd64Backend::addByteToReg(
-                    generatedCode,
-                    Registers::SP,
-					-stackAlignment);
+				if (stackAlignment > 0) {
+					Amd64Backend::addByteToReg(
+						generatedCode,
+						Registers::SP,
+						-stackAlignment);
+				}
 
 				if (inst.opCode() == OpCodes::CALL_INSTANCE) {
 					//Null check
@@ -517,10 +520,12 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 				}
 
 				//Unalign the stack
-				Amd64Backend::addByteToReg(
-					generatedCode,
-					Registers::SP,
-					stackAlignment);
+				if (stackAlignment > 0) {
+					Amd64Backend::addByteToReg(
+						generatedCode,
+						Registers::SP,
+						stackAlignment);
+				}
 
 				//Push the result
 				mCallingConvention.returnValue(functionData, funcToCall);
@@ -568,7 +573,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::LOAD_ARG:
         {
             //Load rax with the arg offset
-            Amd64Backend::moveIntToReg(generatedCode, Registers::AX, (inst.intValue + stackOffset) * -Amd64Backend::REG_SIZE); //mov rax, <int>
+            Amd64Backend::moveIntToReg(generatedCode, Registers::AX, (inst.intValue + stackOffset) * -Amd64Backend::REG_SIZE); //mov rax, <arg offset>
 
             //Now add the base pointer
             Amd64Backend::addRegToReg(generatedCode, Registers::AX, Registers::BP); //add rax, rbp
@@ -721,9 +726,11 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             bool is8bits = elemSize == 1;
 
             if (!is8bits) {
-                Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::AX, 4, Registers::DX, is32bits); //mov [rax+4], r/edx
+                Amd64Backend::moveRegToMemoryRegWithOffset(
+                    generatedCode,
+                    Registers::AX, StackJIT::ARRAY_LENGTH_SIZE, Registers::DX, is32bits); //mov [rax+<element offset>], r/edx
             } else {
-                pushArray(generatedCode, { 0x88, 0x50, 0x04 }); //mov [rax+4], dl
+                pushArray(generatedCode, { 0x88, 0x50, StackJIT::ARRAY_LENGTH_SIZE }); //mov [rax+<element offset>], dl
             }
         }
         break;
@@ -744,7 +751,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             //Compute the address of the element
             pushArray(generatedCode, { 0x48, 0x6B, 0xC9, (unsigned char)TypeSystem::sizeOfType(elemType) }); //imul rcx, <size of type>
             Amd64Backend::addRegToReg(generatedCode, Registers::AX, Registers::CX); //add rax, rcx
-            Amd64Backend::addByteToReg(generatedCode, Registers::AX, 4); //add rax, 4
+            Amd64Backend::addByteToReg(generatedCode, Registers::AX, StackJIT::ARRAY_LENGTH_SIZE); //add rax, <element offset>
 
             //Load the element
             auto elemSize = TypeSystem::sizeOfType(elemType);

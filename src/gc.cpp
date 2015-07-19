@@ -3,6 +3,7 @@
 #include "vmstate.h"
 #include "objects.h"
 #include "amd64.h"
+#include "stackjit.h"
 
 #include <iostream>
 #include <string.h>
@@ -96,7 +97,7 @@ void GarbageCollector::markObject(ObjectHandle* handle) {
 
             //Mark ref elements
             if (TypeSystem::isReferenceType(arrayType->elementType())) {
-                long* elementsPtr = (long*)(arrayHandle->handle() + 4);
+                long* elementsPtr = (long*)(arrayHandle->handle() + StackJIT::ARRAY_LENGTH_SIZE);
 
                 for (int i = 0; i < arrayHandle->length(); i++) {
                     markValue(elementsPtr[i], arrayType->elementType());
