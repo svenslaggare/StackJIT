@@ -13,5 +13,14 @@ struct <name>
 }
 ```
 
+To create a struct, a constructor must be called. A constructor is defined as:
+```
+member <name>::.constructor(<arg type 1> <arg type 1>) Void
+{
+
+}
+```
+A constructor works like a member function (eg arg 0 is the 'this' reference).
+
 ###Null ref###
 Dereferencing a null reference will result in a null reference error. Both array and object instructions can result in a null reference error.

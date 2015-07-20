@@ -60,7 +60,7 @@ Defines the instruction set used by the VM.
 * `LDLEN`: Pops an array reference from the stack and pushes the length of the array.
 
 ###Structs###
-* `NEWOBJ <type>` Creates a new object of the given type and pushes the reference to the stack.
+* `NEWOBJ <type>::<constructor>` Creates a new object of the given type and pushes the reference to the stack.
 * `LDFIELD <field>` Pops a struct ref from the stack and loads a value from the given field pushing unto the stack.
 * `STFIELD <field>` Pops a struct ref from the stack, a value and stores the value at the given field.
 
