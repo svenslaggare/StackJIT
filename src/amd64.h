@@ -33,6 +33,8 @@ enum Registers : unsigned char {
 enum NumberedRegisters : unsigned char {
 	R8 = 0b000,
 	R9 = 0b001,
+	R10 = 0b010,
+	R11 = 0b011,
 };
 
 //The floating point registers

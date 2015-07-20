@@ -18,8 +18,6 @@ To run the VM, supply a program via stdin:
 * `-i <library file>`: Loads a library.
 
 ##Build##
-At the moment, the VM only works properly when compiled with G++. Using Clang++ gives strange errors when using the GC.
-
 To build:
 ```
 make all

@@ -106,12 +106,12 @@ public:
         TS_ASSERT_EQUALS(invokeVM("calling/arg4"), "14\n");
         TS_ASSERT_EQUALS(invokeVM("calling/arg5"), "20\n");
         TS_ASSERT_EQUALS(invokeVM("calling/arg6"), "27\n");
-//        TS_ASSERT_EQUALS(invokeVM("calling/arg7"), "35\n");
-//        TS_ASSERT_EQUALS(invokeVM("calling/arg7_2"), "1337\n0\n");
-//        TS_ASSERT_EQUALS(invokeVM("calling/arg8"), "44\n");
-//        TS_ASSERT_EQUALS(invokeVM("calling/arg8_2"), "7\n");
-//        TS_ASSERT_EQUALS(invokeVM("calling/arg8_3"), "6\n7\n0\n");
-//		TS_ASSERT_EQUALS(invokeVM("calling/arg9"), "54\n");
+        TS_ASSERT_EQUALS(invokeVM("calling/arg7"), "35\n");
+        TS_ASSERT_EQUALS(invokeVM("calling/arg7_2"), "1337\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("calling/arg8"), "44\n");
+        TS_ASSERT_EQUALS(invokeVM("calling/arg8_2"), "7\n");
+        TS_ASSERT_EQUALS(invokeVM("calling/arg8_3"), "6\n7\n0\n");
+		TS_ASSERT_EQUALS(invokeVM("calling/arg9"), "54\n");
 
         TS_ASSERT_EQUALS(invokeVM("calling/arg1_float"), "4\n0\n");
         TS_ASSERT_EQUALS(invokeVM("calling/arg2_float"), "9\n0\n");
@@ -123,7 +123,7 @@ public:
         TS_ASSERT_EQUALS(invokeVM("calling/arg7_float"), "35\n0\n");
         TS_ASSERT_EQUALS(invokeVM("calling/arg7_float_2"), "1337\n0\n");
 		TS_ASSERT_EQUALS(invokeVM("calling/arg8_float"), "44\n0\n");
-//		TS_ASSERT_EQUALS(invokeVM("calling/arg9_float"), "54\n0\n");
+		TS_ASSERT_EQUALS(invokeVM("calling/arg9_float"), "54\n0\n");
 
         TS_ASSERT_EQUALS(invokeVM("calling/arg6_float_and_int"), "27\n0\n");
         TS_ASSERT_EQUALS(invokeVM("calling/arg6_float_and_int_2"), "27\n0\n");
@@ -224,7 +224,8 @@ public:
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_program2")), "what():  2: \'Point\' is not a struct type.");
 
         TS_ASSERT_EQUALS(invokeVM("struct/constructor1"), "1\n2\n0\n");
-//        TS_ASSERT_EQUALS(invokeVM("struct/constructor2"), "21\n");
+        TS_ASSERT_EQUALS(invokeVM("struct/constructor2"), "15\n");
+        TS_ASSERT_EQUALS(invokeVM("struct/constructor3"), "21\n");
 
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_constructor1")), "what():  Constructors must have return type 'Void'.");
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_constructor2")), "what():  1: The constructor \'Point::.constructor(Ref.Struct.Point)\' is not defined.");
@@ -248,11 +249,19 @@ public:
     }
 
     void testGC() {
+		//Without GC enabled
         TS_ASSERT_EQUALS(invokeVM("gc/program1"), "0\n");
         TS_ASSERT_EQUALS(invokeVM("gc/program2"), "0\n");
         TS_ASSERT_EQUALS(invokeVM("gc/program3"), "0\n");
         TS_ASSERT_EQUALS(invokeVM("gc/program4"), "0\n");
         TS_ASSERT_EQUALS(invokeVM("gc/program5"), "0\n");
+
+		//With GC enabled
+        TS_ASSERT_EQUALS(invokeVM("gc/program1", "-nd"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program2", "-nd"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program3", "-nd"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program4", "-nd"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program5", "-nd"), "0\n");
     }
 
     void testFunction() {

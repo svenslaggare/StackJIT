@@ -27,7 +27,7 @@ StackFrameEntry StackFrame::getLocal(int index) {
 }
 
 StackFrameEntry StackFrame::getStackOperand(int index) {
-	long* stackStart = mBasePtr - 1 - (mFunction->stackSize() / Amd64Backend::REG_SIZE);
+	long* stackStart = mBasePtr - 1 - mFunction->numParams() - mFunction->numLocals();
 	return StackFrameEntry(stackStart[-index], mOperandTypes[mOperandTypes.size() - 1 - index]);
 }
 

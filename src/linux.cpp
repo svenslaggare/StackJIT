@@ -341,88 +341,81 @@ void LinuxCallingConvention::callFunctionArgument(FunctionCompilationData& funct
 	int numArgs = (int)funcToCall.arguments().size();
 
 	if (TypeSystem::isPrimitiveType(argType, PrimitiveTypes::Float)) {
-		//Arguments of index >= 8 are already on the stack.
+		//Arguments of index >= 8 are passed via the stack.
 		int relativeIndex = getFloatArgIndex(funcToCall.arguments(), argIndex);
 
+		int argOperandOffset = numStackOperands - (numArgs - argIndex);
+
 		if (relativeIndex >= 8) {
-			Amd64Backend::addByteToReg(generatedCode, Registers::SP, Amd64Backend::REG_SIZE);
+			//Move from the operand stack to the normal stack
+			OperandStack::popReg(functionData.function, argOperandOffset, Registers::AX);
+			Amd64Backend::pushReg(generatedCode, Registers::AX);
 		}
 
 		if (relativeIndex == 7) {
-//			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg7);
-			OperandStack::popReg(functionData.function, numStackOperands - (numArgs - argIndex), FloatRegisterCallArguments::Arg7);
+			OperandStack::popReg(functionData.function, argOperandOffset, FloatRegisterCallArguments::Arg7);
 		}
 
 		if (relativeIndex == 6) {
-//			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg6);
-			OperandStack::popReg(functionData.function, numStackOperands - (numArgs - argIndex), FloatRegisterCallArguments::Arg6);
+			OperandStack::popReg(functionData.function, argOperandOffset, FloatRegisterCallArguments::Arg6);
 		}
 
 		if (relativeIndex == 5) {
-//			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg5);
-			OperandStack::popReg(functionData.function, numStackOperands - (numArgs - argIndex), FloatRegisterCallArguments::Arg5);
+			OperandStack::popReg(functionData.function, argOperandOffset, FloatRegisterCallArguments::Arg5);
 		}
 
 		if (relativeIndex == 4) {
-//			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg4);
-			OperandStack::popReg(functionData.function, numStackOperands - (numArgs - argIndex), FloatRegisterCallArguments::Arg4);
+			OperandStack::popReg(functionData.function, argOperandOffset, FloatRegisterCallArguments::Arg4);
 		}
 
 		if (relativeIndex == 3) {
-//			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg3);
-			OperandStack::popReg(functionData.function, numStackOperands - (numArgs - argIndex), FloatRegisterCallArguments::Arg3);
+			OperandStack::popReg(functionData.function, argOperandOffset, FloatRegisterCallArguments::Arg3);
 		}
 
 		if (relativeIndex == 2) {
-//			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg2);
-			OperandStack::popReg(functionData.function, numStackOperands - (numArgs - argIndex), FloatRegisterCallArguments::Arg2);
+			OperandStack::popReg(functionData.function, argOperandOffset, FloatRegisterCallArguments::Arg2);
 		}
 
 		if (relativeIndex == 1) {
-//			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg1);
-			OperandStack::popReg(functionData.function, numStackOperands - (numArgs - argIndex), FloatRegisterCallArguments::Arg1);
+			OperandStack::popReg(functionData.function, argOperandOffset, FloatRegisterCallArguments::Arg1);
 		}
 
 		if (relativeIndex == 0) {
-//			Amd64Backend::popReg(generatedCode, FloatRegisterCallArguments::Arg0);
-			OperandStack::popReg(functionData.function, numStackOperands - (numArgs - argIndex), FloatRegisterCallArguments::Arg0);
+			OperandStack::popReg(functionData.function, argOperandOffset, FloatRegisterCallArguments::Arg0);
 		}
 	} else {
-		//Arguments of index >= 6 are already on the stack.
+		//Arguments of index >= 6 are passed via the stack
 		int relativeIndex = getNoneFloatArgIndex(funcToCall.arguments(), argIndex);
+		int argOperandOffset = numStackOperands - (numArgs - argIndex);
 
 		if (relativeIndex >= 6) {
-			Amd64Backend::addByteToReg(generatedCode, Registers::SP, Amd64Backend::REG_SIZE);
+			//Move from the operand stack to the normal stack
+			OperandStack::popReg(functionData.function, argOperandOffset, Registers::AX);
+			Amd64Backend::pushReg(generatedCode, Registers::AX);
 		}
 
 		if (relativeIndex == 5) {
-//			Amd64Backend::popReg(generatedCode, RegisterCallArguments::Arg5); //pop r9
-			OperandStack::popReg(functionData.function, numStackOperands - (numArgs - argIndex), RegisterCallArguments::Arg5);
+			OperandStack::popReg(functionData.function, argOperandOffset, RegisterCallArguments::Arg5);
 		}
 
 		if (relativeIndex == 4) {
-//			Amd64Backend::popReg(generatedCode, RegisterCallArguments::Arg4); //pop r8
-			OperandStack::popReg(functionData.function, numStackOperands - (numArgs - argIndex), RegisterCallArguments::Arg4);
+			OperandStack::popReg(functionData.function, argOperandOffset, RegisterCallArguments::Arg4);
 		}
 
 		if (relativeIndex == 3) {
-//			Amd64Backend::popReg(generatedCode, RegisterCallArguments::Arg3); //pop rcx
-			OperandStack::popReg(functionData.function, numStackOperands - (numArgs - argIndex), RegisterCallArguments::Arg3);
+			OperandStack::popReg(functionData.function, argOperandOffset, RegisterCallArguments::Arg3);
 		}
 
 		if (relativeIndex == 2) {
-//			Amd64Backend::popReg(generatedCode, RegisterCallArguments::Arg2); //pop rdx
-			OperandStack::popReg(functionData.function, numStackOperands - (numArgs - argIndex), RegisterCallArguments::Arg2);
+			OperandStack::popReg(functionData.function, argOperandOffset, RegisterCallArguments::Arg2);
 		}
 
 		if (relativeIndex == 1) {
-//			Amd64Backend::popReg(generatedCode, RegisterCallArguments::Arg1); //pop rsi
-			OperandStack::popReg(functionData.function, numStackOperands - (numArgs - argIndex), RegisterCallArguments::Arg1);
+			OperandStack::popReg(functionData.function, argOperandOffset, RegisterCallArguments::Arg1);
 		}
 
 		if (relativeIndex == 0) {
-//			Amd64Backend::popReg(generatedCode, RegisterCallArguments::Arg0); //pop rdi
-			OperandStack::popReg(functionData.function, numStackOperands - (numArgs - argIndex), RegisterCallArguments::Arg0);
+			OperandStack::popReg(functionData.function, argOperandOffset, RegisterCallArguments::Arg0);
 		}
 	}
 }
@@ -431,33 +424,16 @@ void LinuxCallingConvention::callFunctionArguments(FunctionCompilationData& func
 												   const FunctionDefinition& funcToCall, GetArgumentType getArgumentType,
 												   int numStackOperands) const {
     int numArgs = (int)funcToCall.arguments().size();
-	int numStackArgs = numStackArguments(funcToCall.arguments());
 
 	//Set the function arguments
     for (int arg = numArgs - 1; arg >= 0; arg--) {
 		callFunctionArgument(functionData, arg, getArgumentType(arg), funcToCall, numStackOperands);
 	}
-
-	if (numStackArgs > 0) {
-		//As the stack arguments are before (on the stack) the register arguments, we must set the arguments after.
-		auto& generatedCode = functionData.function.generatedCode;
-
-		for (int i = 0; i < numStackArgs; i++) {
-			Amd64Backend::moveMemoryRegWithOffsetToReg(
-				generatedCode,
-				Registers::AX, Registers::SP, -(numArgs - i * 2) * Amd64Backend::REG_SIZE);
-
-			Amd64Backend::pushReg(generatedCode, Registers::AX);
-		}
-	}
 }
 
-int LinuxCallingConvention::calculateStackAlignment(FunctionCompilationData& functionData,
-													const FunctionDefinition& funcToCall, int operandsOnStack) const {
-//	int numStackArgs = numStackArguments(funcToCall.arguments());
-//	int numStackArgs = 0;
-//	return ((operandsOnStack + numStackArgs) % 2) * Amd64Backend::REG_SIZE;
-	return 0;
+int LinuxCallingConvention::calculateStackAlignment(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall) const {
+	int numStackArgs = numStackArguments(funcToCall.arguments());
+	return (numStackArgs % 2) * Amd64Backend::REG_SIZE;
 }
 
 void LinuxCallingConvention::returnValue(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall,
@@ -473,10 +449,8 @@ void LinuxCallingConvention::returnValue(FunctionCompilationData& functionData, 
 
     if (!TypeSystem::isPrimitiveType(funcToCall.returnType(), PrimitiveTypes::Void)) {
         if (TypeSystem::isPrimitiveType(funcToCall.returnType(), PrimitiveTypes::Float)) {
-//            Amd64Backend::pushReg(generatedCode, FloatRegisters::XMM0); //push xmm0
 			OperandStack::pushReg(functionData.function, numStackOperands, FloatRegisters::XMM0);
         } else {
-//            Amd64Backend::pushReg(generatedCode, Registers::AX); //push rax
 			OperandStack::pushReg(functionData.function, numStackOperands, Registers::AX);
         }
     }

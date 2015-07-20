@@ -3,7 +3,7 @@ struct SumContainer
 	sum Int
 }
 
-member SumContainer::.constructor(Int Int Int Int Int) Void
+member SumContainer::.constructor(Int Int Int Int Int Int) Void
 {
 	LDARG 0
 
@@ -15,6 +15,8 @@ member SumContainer::.constructor(Int Int Int Int Int) Void
 	LDARG 4
 	ADD
 	LDARG 5
+	ADD
+	LDARG 6
 	ADD
 
 	STFIELD SumContainer::sum
@@ -32,7 +34,8 @@ func main() Int
 	PUSHINT 3
 	PUSHINT 4
 	PUSHINT 5
-	NEWOBJ SumContainer::.constructor(Int Int Int Int Int)
+	PUSHINT 6
+	NEWOBJ SumContainer::.constructor(Int Int Int Int Int Int)
 	STLOC 0
 
 	LDLOC 0

@@ -1,0 +1,14 @@
+func main() Int
+{
+	PUSHINT 1
+	PUSHINT 2
+	PUSHINT 3
+	PUSHINT 4
+	PUSHINT 5
+	PUSHINT 6
+	PUSHINT 7
+	CALL rt.print(Int Int Int Int Int Int Int)
+
+	PUSHINT 0
+	RET
+}
