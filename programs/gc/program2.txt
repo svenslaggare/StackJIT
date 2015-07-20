@@ -28,7 +28,7 @@ func main2() Int
 	NEWOBJ Point::.constructor()
 	STELEM Ref.Struct.Point
 
-	PUSHNULL
+	LDNULL
 	STLOC 0
     CALL std.gc.collect()
 

@@ -27,7 +27,7 @@ func main() Int
 	LDLOC 0
     CALL rt.println(Ref.Struct.Point)
 
-	#PUSHNULL
+	#LDNULL
 	#CALL rt.println(Ref.Struct.Point)
 
 	LDINT 0

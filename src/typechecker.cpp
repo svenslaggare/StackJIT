@@ -191,8 +191,8 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                 }
             }
             break;
-        case OpCodes::PUSH_TRUE:
-        case OpCodes::PUSH_FALSE:
+        case OpCodes::LOAD_TRUE:
+        case OpCodes::LOAD_FALSE:
             {
                 operandStack.push(boolType);
             }
@@ -450,7 +450,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
 
             branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
             break;
-        case OpCodes::PUSH_NULL:
+        case OpCodes::LOAD_NULL:
             {
                 operandStack.push(nullType);
             }

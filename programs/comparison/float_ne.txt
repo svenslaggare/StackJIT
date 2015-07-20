@@ -1,7 +1,7 @@
 func println(Bool) Void
 {
    LDARG 0
-   PUSHTRUE
+   LDTRUE
    BNE 6
    LDINT 1
    CALL std.println(Int)

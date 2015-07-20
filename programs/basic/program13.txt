@@ -9,7 +9,7 @@ func addInt(Int Int) Int
 func println(Bool) Void
 {
    LDARG 0
-   PUSHTRUE
+   LDTRUE
    BNE 6
    LDINT 1
    CALL std.println(Int)
@@ -27,7 +27,7 @@ func main() Int
 	LDFLOAT 13.37
 	CALL std.println(Float)
 
-	PUSHTRUE
+	LDTRUE
 	CALL println(Bool)
 
 	LDINT 0

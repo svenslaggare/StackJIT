@@ -107,8 +107,8 @@ namespace {
 		{ "sub", OpCodes::SUB },
 		{ "mul", OpCodes::MUL },
 		{ "div", OpCodes::DIV },
-		{ "pushtrue", OpCodes::PUSH_TRUE },
-		{ "pushfalse", OpCodes::PUSH_FALSE },
+		{ "ldtrue", OpCodes::LOAD_TRUE},
+		{ "ldfalse", OpCodes::LOAD_FALSE},
 		{ "and", OpCodes::AND },
 		{ "or", OpCodes::OR },
 		{ "not", OpCodes::NOT },
@@ -120,7 +120,7 @@ namespace {
 		{ "cmpge", OpCodes::COMPARE_GREATER_THAN_OR_EQUAL },
 		{ "cmplt", OpCodes::COMPARE_LESS_THAN },
 		{ "cmple", OpCodes::COMPARE_LESS_THAN_OR_EQUAL },
-		{ "pushnull", OpCodes::PUSH_NULL },
+		{ "ldnull", OpCodes::LOAD_NULL},
 		{ "ldlen", OpCodes::LOAD_ARRAY_LENGTH },
 		{ "ret", OpCodes::RET }
 	};

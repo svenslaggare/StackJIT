@@ -32,7 +32,7 @@ func main3() Int
 	NEWOBJ Point::.constructor()
 	STFIELD Pair::first
 
-	PUSHNULL
+	LDNULL
 	STLOC 0
     CALL std.gc.collect()
 

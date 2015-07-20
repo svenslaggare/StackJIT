@@ -306,11 +306,11 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             }
         }
         break;
-    case OpCodes::PUSH_TRUE:
+    case OpCodes::LOAD_TRUE:
         //Push the value
 		OperandStack::pushInt(function, (int)inst.operandTypes().size(), 1);
         break;
-    case OpCodes::PUSH_FALSE:
+    case OpCodes::LOAD_FALSE:
         //Push the value
 		OperandStack::pushInt(function, (int)inst.operandTypes().size(), 0);
         break;
@@ -698,7 +698,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             });
         }
         break;
-    case OpCodes::PUSH_NULL:
+    case OpCodes::LOAD_NULL:
 		OperandStack::pushInt(function, (int)inst.operandTypes().size(), 0);
         break;
     case OpCodes::NEW_ARRAY:

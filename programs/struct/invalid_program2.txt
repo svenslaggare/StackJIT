@@ -2,7 +2,7 @@ func main() Int
 {
 	.locals 1
 	
-	PUSHNULL
+	LDNULL
 	LDFIELD Point::x
 	STLOC 0
 

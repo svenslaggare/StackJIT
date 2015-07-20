@@ -6,7 +6,7 @@ struct Point
 
 func main() Int
 {
-	PUSHNULL
+	LDNULL
 	LDINT 5
 	STFIELD Point::x
 

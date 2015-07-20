@@ -17,8 +17,8 @@ Defines the instruction set used by the VM.
 * `DIV`: Pops two operands, divides the first one with the second one and pushes the result to the evaluation stack.
 
 ###Boolean###
-* `PUSHTRUE`: Pushes the boolean value _true_ to the evaluation stack.
-* `PUSHFALSE`: Pushes the boolean value false to the evaluation stack.
+* `LDTRUE`: Pushes the boolean value _true_ to the evaluation stack.
+* `LDFALSE`: Pushes the boolean value false to the evaluation stack.
 * `AND`: Pops two boolean operands, ands them and pushes the result to the evaluation stack.
 * `OR`: Pops two boolean operands, ors them and pushes the result to the evaluation stack.
 * `NOT`: Pops one boolean operand, inverts it and pushes the result to the evaluation stack.
@@ -51,7 +51,7 @@ Defines the instruction set used by the VM.
 * `CMPLE`: Pops two operands, if the first operand is less than or equal to the second pushes _true_ else _false_.
 
 ###Reference types###
-* `PUSHNULL`: Pushes a null reference unto the operand stack.
+* `LDNULL`: Pushes a null reference unto the operand stack.
 
 ###Arrays###
 * `NEWARR <type>`: Pops the size of the array and creates a new array of the given type and pushes the reference on the stack.

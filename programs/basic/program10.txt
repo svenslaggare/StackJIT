@@ -3,7 +3,7 @@ func bool_to_int(Bool) Int
    .locals 1
 
    LDARG 0
-   PUSHTRUE
+   LDTRUE
    BNE 6
 
    LDINT 1

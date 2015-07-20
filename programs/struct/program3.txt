@@ -14,7 +14,7 @@ func main() Int
 	.locals 1
 	.local 0 Ref.Struct.Point
 
-	PUSHNULL
+	LDNULL
 	STLOC 0
 
 	NEWOBJ Point::.constructor()
