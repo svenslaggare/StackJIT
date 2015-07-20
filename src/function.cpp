@@ -94,7 +94,7 @@ FunctionDefinition::FunctionDefinition(
     int funcSize,
     bool isMemberFunction)
     : mName(name),
-      mArguments(parameters),
+      mParameters(parameters),
       mReturnType(returnType),
       mEntryPoint(entryPoint),
       mFunctionSize(funcSize),
@@ -106,7 +106,7 @@ FunctionDefinition::FunctionDefinition(
 
 FunctionDefinition::FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, long entryPoint)
     : mName(name),
-      mArguments(parameters),
+      mParameters(parameters),
       mReturnType(returnType),
       mEntryPoint(entryPoint),
       mFunctionSize(0),
@@ -118,7 +118,7 @@ FunctionDefinition::FunctionDefinition(std::string name, std::vector<const Type*
 
 FunctionDefinition::FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, MacroFunction macroFunction)
 	: mName(name),
-	  mArguments(parameters),
+	  mParameters(parameters),
 	  mReturnType(returnType),
 	  mEntryPoint(0),
 	  mFunctionSize(0),
@@ -144,8 +144,8 @@ const Type* FunctionDefinition::returnType() const {
     return mReturnType;
 }
 
-const std::vector<const Type*>& FunctionDefinition::arguments() const {
-    return mArguments;
+const std::vector<const Type*>& FunctionDefinition::parameters() const {
+    return mParameters;
 }
 
 bool FunctionDefinition::isMemberFunction() const {

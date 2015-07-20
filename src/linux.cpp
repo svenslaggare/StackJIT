@@ -338,11 +338,11 @@ void LinuxCallingConvention::callFunctionArgument(FunctionCompilationData& funct
 												  int argIndex, const Type* argType, const FunctionDefinition& funcToCall,
 												  int numStackOperands) const {
     auto& generatedCode = functionData.function.generatedCode;
-	int numArgs = (int)funcToCall.arguments().size();
+	int numArgs = (int) funcToCall.parameters().size();
 
 	if (TypeSystem::isPrimitiveType(argType, PrimitiveTypes::Float)) {
 		//Arguments of index >= 8 are passed via the stack.
-		int relativeIndex = getFloatArgIndex(funcToCall.arguments(), argIndex);
+		int relativeIndex = getFloatArgIndex(funcToCall.parameters(), argIndex);
 
 		int argOperandOffset = numStackOperands - (numArgs - argIndex);
 
@@ -385,7 +385,7 @@ void LinuxCallingConvention::callFunctionArgument(FunctionCompilationData& funct
 		}
 	} else {
 		//Arguments of index >= 6 are passed via the stack
-		int relativeIndex = getNoneFloatArgIndex(funcToCall.arguments(), argIndex);
+		int relativeIndex = getNoneFloatArgIndex(funcToCall.parameters(), argIndex);
 		int argOperandOffset = numStackOperands - (numArgs - argIndex);
 
 		if (relativeIndex >= 6) {
@@ -422,16 +422,16 @@ void LinuxCallingConvention::callFunctionArgument(FunctionCompilationData& funct
 
 void LinuxCallingConvention::callFunctionArguments(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall,
 												   int numStackOperands) const {
-    int numArgs = (int)funcToCall.arguments().size();
+    int numArgs = (int) funcToCall.parameters().size();
 
 	//Set the function arguments
     for (int arg = numArgs - 1; arg >= 0; arg--) {
-		callFunctionArgument(functionData, arg, funcToCall.arguments().at(arg), funcToCall, numStackOperands);
+		callFunctionArgument(functionData, arg, funcToCall.parameters().at(arg), funcToCall, numStackOperands);
 	}
 }
 
 int LinuxCallingConvention::calculateStackAlignment(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall) const {
-	int numStackArgs = numStackArguments(funcToCall.arguments());
+	int numStackArgs = numStackArguments(funcToCall.parameters());
 	return (numStackArgs % 2) * Amd64Backend::REG_SIZE;
 }
 
@@ -440,7 +440,7 @@ void LinuxCallingConvention::returnValue(FunctionCompilationData& functionData, 
     auto& generatedCode = functionData.function.generatedCode;
 
 	//If we have passed arguments via the stack, adjust the stack pointer.
-	int numStackArgs = numStackArguments(funcToCall.arguments());
+	int numStackArgs = numStackArguments(funcToCall.parameters());
 
 	if (numStackArgs > 0) {
 		Amd64Backend::addByteToReg(generatedCode, Registers::SP, numStackArgs * Amd64Backend::REG_SIZE);

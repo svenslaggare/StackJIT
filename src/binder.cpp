@@ -31,7 +31,7 @@ std::string Binder::memberFunctionSignature(const StructType* structType, std::s
 }
 
 std::string Binder::functionSignature(const FunctionDefinition& funcDef) const {
-	return functionSignature(funcDef.name(), funcDef.arguments());
+	return functionSignature(funcDef.name(), funcDef.parameters());
 }
 
 std::string Binder::functionSignature(const Function& func) const {

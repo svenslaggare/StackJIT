@@ -109,7 +109,7 @@ using MacroFunction = std::function<void (MacroFunctionContext)>;
 class FunctionDefinition {
 private:
 	std::string mName;
-	std::vector<const Type*> mArguments;
+	std::vector<const Type*> mParameters;
 	const Type* mReturnType;
 
 	long mEntryPoint;
@@ -139,7 +139,7 @@ public:
 	const Type* returnType() const;
 
 	//Returns the types of the arguments
-	const std::vector<const Type*>& arguments() const;
+	const std::vector<const Type*>& parameters() const;
 
 	//Indicates if the function is implemented in managed code
 	bool isManaged() const;

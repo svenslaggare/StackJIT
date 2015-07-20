@@ -356,13 +356,13 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                     typeError(index, "Member functions must be called with the 'CALLINST' instruction.");
                 }
 
-                int calledFuncNumArgs = (int)calledFunc.arguments().size();
+                int calledFuncNumArgs = (int) calledFunc.parameters().size();
                 assertOperandCount(index, operandStack, calledFuncNumArgs);
 
                 //Check the arguments
                 for (int i = calledFuncNumArgs - 1; i >= 0; i--) {
                     auto argType = popType(operandStack);
-                    auto error = checkType(calledFunc.arguments()[i], argType);
+                    auto error = checkType(calledFunc.parameters()[i], argType);
 
                     if (error != "") {
                         typeError(index, error);
@@ -580,13 +580,13 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
 
                 auto calledFunc = vmState.binder().getFunction(signature);
 
-                int calledFuncNumArgs = calledFunc.arguments().size();
+                int calledFuncNumArgs = calledFunc.parameters().size();
                 assertOperandCount(index, operandStack, calledFuncNumArgs - 1);
 
                 //Check the arguments
                 for (int i = calledFuncNumArgs - 1; i >= 1; i--) {
                     auto argType = popType(operandStack);
-                    auto error = checkType(calledFunc.arguments()[i], argType);
+                    auto error = checkType(calledFunc.parameters()[i], argType);
 
                     if (error != "") {
                         typeError(index, error);

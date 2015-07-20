@@ -496,7 +496,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
 				//Get the address of the function to call
 				long funcAddr = 0;
-				int numArgs = (int)funcToCall.arguments().size();
+				int numArgs = (int) funcToCall.parameters().size();
 
                 //Align the stack
                 int stackAlignment = mCallingConvention.calculateStackAlignment(functionData, funcToCall);
@@ -827,7 +827,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 inst.parameters);
 
             auto funcToCall = vmState.binder().getFunction(calledSignature);
-            int numArgs = (int)funcToCall.arguments().size() - 1;
+            int numArgs = (int) funcToCall.parameters().size() - 1;
 
             //Align the stack
             int stackAlignment = mCallingConvention.calculateStackAlignment(functionData, funcToCall);
