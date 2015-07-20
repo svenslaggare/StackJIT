@@ -5,9 +5,6 @@ class FunctionCompilationData;
 class FunctionDefinition;
 class Type;
 
-//Represents a function for returning the type of an argument
-using GetArgumentType = std::function<const Type*(int)>;
-
 //Represents a calling convention
 class CallingConvention {
 public:
@@ -21,8 +18,7 @@ public:
 
 	//Generates code for calling the given function
 	virtual void callFunctionArguments(FunctionCompilationData& functionData,
-									   const FunctionDefinition& funcToCall, GetArgumentType getArgumentType,
-									   int numStackOperands) const = 0;
+									   const FunctionDefinition& funcToCall, int numStackOperands) const = 0;
 
 	//Calculates how much the stack must be aligned to perform the call
 	virtual int calculateStackAlignment(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall) const = 0;

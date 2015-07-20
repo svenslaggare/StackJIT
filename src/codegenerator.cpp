@@ -145,19 +145,11 @@ void CodeGenerator::generateCall(CodeGen& codeGen, long funcPtr, Registers addrR
 	Amd64Backend::callInReg(codeGen, addrReg);
 }
 
-void CodeGenerator::generateGCCall(CodeGen& generatedCode, Function& function, int instIndex, bool saveBSP) {
-	if (saveBSP) {
-		Amd64Backend::pushReg(generatedCode, Registers::BP);
-	}
-
+void CodeGenerator::generateGCCall(CodeGen& generatedCode, Function& function, int instIndex) {
 	Amd64Backend::moveRegToReg(generatedCode, RegisterCallArguments::Arg0, Registers::BP); //BP as the first argument
 	Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg1, (long)&function); //Address of the function as second argument
 	Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg2, instIndex); //Current inst index as third argument
 	generateCall(generatedCode, (long)&Runtime::garbageCollect);
-
-	if (saveBSP) {
-		Amd64Backend::popReg(generatedCode, Registers::BP);
-	}
 }
 
 void CodeGenerator::initializeFunction(FunctionCompilationData& functionData) {
@@ -506,9 +498,6 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 				long funcAddr = 0;
 				int numArgs = (int)funcToCall.arguments().size();
 
-                //Set the function arguments
-                auto& opTypes = inst.operandTypes();
-
                 //Align the stack
                 int stackAlignment = mCallingConvention.calculateStackAlignment(functionData, funcToCall);
 
@@ -519,9 +508,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                         -stackAlignment);
                 }
 
-				mCallingConvention.callFunctionArguments(functionData, funcToCall, [&](int arg) {
-					return opTypes.at(numArgs - 1 - arg);
-				}, (int)inst.operandTypes().size());
+                //Set the function arguments
+				mCallingConvention.callFunctionArguments(functionData, funcToCall, (int)inst.operandTypes().size());
 
 				if (inst.opCode() == OpCodes::CALL_INSTANCE) {
 					//Null check
@@ -718,7 +706,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             auto elemType = vmState.typeProvider().getType(inst.strValue);
 
             if (!vmState.disableGC) {
-                generateGCCall(generatedCode, function, instIndex, false);
+                generateGCCall(generatedCode, function, instIndex);
             }
 
             //The pointer to the type as the first arg
@@ -822,7 +810,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
             //Call the garbageCollect runtime function
             if (!vmState.disableGC) {
-                generateGCCall(generatedCode, function, instIndex, false);
+                generateGCCall(generatedCode, function, instIndex);
             }
 
             //Call the newObject runtime function
@@ -945,7 +933,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::LOAD_STRING:
         {
             if (!vmState.disableGC) {
-                generateGCCall(generatedCode, function, instIndex, false);
+                generateGCCall(generatedCode, function, instIndex);
             }
 
             //The pointer to the string as the first arg

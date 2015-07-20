@@ -67,8 +67,7 @@ public:
 									  int numStackOperands) const override;
 
 	virtual void callFunctionArguments(FunctionCompilationData& functionData,
-									   const FunctionDefinition& funcToCall, GetArgumentType getArgumentType,
-									   int numStackOperands) const override;
+									   const FunctionDefinition& funcToCall, int numStackOperands) const override;
 
 	virtual int calculateStackAlignment(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall) const override;
 

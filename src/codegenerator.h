@@ -59,7 +59,7 @@ public:
 	void generateCall(CodeGen& codeGen, long funcPtr, Registers addrReg = Registers::AX);
 
 	//Generates a call to the garbage collect runtime function
-	void generateGCCall(CodeGen& generatedCode, Function& function, int instIndex, bool saveBSP = true);
+	void generateGCCall(CodeGen& generatedCode, Function& function, int instIndex);
 
 	//Initializes the given function
 	void initializeFunction(FunctionCompilationData& functionData);

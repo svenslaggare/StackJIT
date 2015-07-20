@@ -420,14 +420,13 @@ void LinuxCallingConvention::callFunctionArgument(FunctionCompilationData& funct
 	}
 }
 
-void LinuxCallingConvention::callFunctionArguments(FunctionCompilationData& functionData,
-												   const FunctionDefinition& funcToCall, GetArgumentType getArgumentType,
+void LinuxCallingConvention::callFunctionArguments(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall,
 												   int numStackOperands) const {
     int numArgs = (int)funcToCall.arguments().size();
 
 	//Set the function arguments
     for (int arg = numArgs - 1; arg >= 0; arg--) {
-		callFunctionArgument(functionData, arg, getArgumentType(arg), funcToCall, numStackOperands);
+		callFunctionArgument(functionData, arg, funcToCall.arguments().at(arg), funcToCall, numStackOperands);
 	}
 }
 

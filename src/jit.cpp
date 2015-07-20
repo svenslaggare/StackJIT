@@ -60,7 +60,7 @@ void JITCompiler::createMacros() {
 	auto voidType = mVMState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Void));
 	binder.define(FunctionDefinition("std.gc.collect", {}, voidType, [this](MacroFunctionContext context) {
 		auto& function = context.functionData.function;
-		mCodeGen.generateGCCall(function.generatedCode, function, context.instIndex, false);
+		mCodeGen.generateGCCall(function.generatedCode, function, context.instIndex);
 	}));
 }
 
