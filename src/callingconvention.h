@@ -1,7 +1,7 @@
 #pragma once
 #include <functional>
 
-class FunctionCompilationData;
+struct FunctionCompilationData;
 class FunctionDefinition;
 class Type;
 

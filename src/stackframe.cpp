@@ -11,7 +11,6 @@ StackFrameEntry::StackFrameEntry(long value, const Type* type)
 StackFrame::StackFrame(long* basePtr, const Function* function, const int instIndex)
 	: mBasePtr(basePtr),
 	  mFunction(function),
-	  mInstIndex(instIndex),
 	  mOperandTypes(function->instructions[instIndex].operandTypes()) {
 
 }

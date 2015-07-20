@@ -19,7 +19,6 @@ class StackFrame {
 private:
 	long* mBasePtr;
 	const Function* mFunction;
-	const int mInstIndex;
 	const std::deque<const Type*>& mOperandTypes;
 public:
 	//Creates a new stack frame

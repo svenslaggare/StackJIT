@@ -1,9 +1,9 @@
 #pragma once
 #include "amd64.h"
 
-class FunctionCompilationData;
+struct FunctionCompilationData;
 class VMState;
-struct Instruction;
+class Instruction;
 class CallingConvention;
 class MemoryManager;
 class Function;

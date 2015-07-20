@@ -8,7 +8,7 @@
 
 class Type;
 class MemoryManager;
-class FunctionCompilationData;
+struct FunctionCompilationData;
 class VMState;
 class CallingConvention;
 class ExceptionHandling;

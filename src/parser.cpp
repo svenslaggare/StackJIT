@@ -99,14 +99,6 @@ namespace {
 		return newStr;
 	}
 
-	void assertTokenCount(const std::vector<std::string>& tokens, int index, int count) {
-		int left = tokens.size() - (index + 1);
-
-		if (left < count) {
-			throw std::runtime_error("Expected '" + std::to_string(count) + "' tokens.");
-		}
-	}
-
 	std::unordered_map<std::string, OpCodes> noOperandsInstructions
 	{
 		{ "nop", OpCodes::NOP },
