@@ -29,8 +29,7 @@ $(EXECUTABLE): $(OBJECTS)
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(HEADERS) $(TEMPLATE_HEADERS)
 	$(CC) $(CFLAGS) $< -o $@	
 
-#test: test-amd64 test-vm
-test: test-vm
+test: test-amd64 test-vm
 
 test-amd64: $(TESTS_DIR)/amd64-test.h $(OBJDIR) $(OBJDIR)/amd64.o
 	mkdir -p $(TEST_RUNNERS_DIR)

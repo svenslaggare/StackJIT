@@ -1,0 +1,39 @@
+func add10(Int Int Int Int Int Int Int Int Int Int) Int
+{
+	LDARG 0
+	LDARG 1
+	ADD
+	LDARG 2
+	ADD
+	LDARG 3
+	ADD
+	LDARG 4
+	ADD
+	LDARG 5
+	ADD
+	LDARG 6
+	ADD
+	LDARG 7
+    ADD
+    LDARG 8
+    ADD
+    LDARG 9
+    ADD
+	RET
+}
+
+func main() Int
+{
+	LDINT 2
+	LDINT 3
+	LDINT 4
+	LDINT 5
+	LDINT 6
+	LDINT 7
+	LDINT 8
+	LDINT 9
+	LDINT 10
+	LDINT 11
+	CALL add10(Int Int Int Int Int Int Int Int Int Int)
+	RET
+}

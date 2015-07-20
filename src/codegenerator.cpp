@@ -89,44 +89,120 @@ namespace {
 	int getStackOperandOffset(Function& function, int operandStackIndex) {
 		return -(int)(Amd64Backend::REG_SIZE * (1 + function.numLocals() + function.numParams() + operandStackIndex));
 	}
+
+	//Indicates if the given value fits in a char
+	bool validCharValue(int value) {
+		return value >= -128 && value < 128;
+	}
 }
 
 void OperandStack::popReg(Function& function, int operandStackIndex, Registers reg) {
-	Amd64Backend::moveMemoryRegWithOffsetToReg(
-		function.generatedCode,
-		reg, Registers::BP, getStackOperandOffset(function, operandStackIndex)); //mov <reg> [rbp+<operand offset>]
+	int stackOffset = getStackOperandOffset(function, operandStackIndex);
+
+	if (validCharValue(stackOffset)) {
+		Amd64Backend::moveMemoryRegWithOffsetToReg(
+			function.generatedCode,
+			reg, Registers::BP, stackOffset); //mov <reg>, [rbp+<operand offset>]
+	} else {
+		Amd64Backend::moveMemoryRegWithIntOffsetToReg(
+			function.generatedCode,
+			reg, Registers::BP, stackOffset); //mov <reg>, [rbp+<operand offset>]
+	}
 }
 
 void OperandStack::popReg(Function& function, int operandStackIndex, NumberedRegisters reg) {
-	pushArray(
-		function.generatedCode,
-		{ 0x4C, 0x8B, (unsigned char)(0x45 | (reg << 3)),
-		(unsigned char)getStackOperandOffset(function, operandStackIndex) }); //mov <reg> [rbp+<operand offset>]
+	int stackOffset = getStackOperandOffset(function, operandStackIndex);
+
+	if (validCharValue(stackOffset)) {
+		pushArray(
+			function.generatedCode,
+			{ 0x4C, 0x8B, (unsigned char)(0x45 | (reg << 3)),
+			(unsigned char)stackOffset }); //mov <reg>, [rbp+<operand offset>]
+	} else {
+		pushArray(
+			function.generatedCode,
+			{ 0x4C, 0x8B, (unsigned char)(0x85 | (reg << 3)) });
+
+		IntToBytes converter;
+		converter.intValue = stackOffset;
+
+		for (std::size_t i = 0; i < sizeof(int); i++) {
+			function.generatedCode.push_back(converter.byteValues[i]);
+		}
+	}
 }
 
 void OperandStack::popReg(Function& function, int operandStackIndex, FloatRegisters reg) {
-	pushArray(
-		function.generatedCode,
-		{ 0xF3, 0x0F, 0x10, (unsigned char)(0x45 | (reg << 3)),
-		(unsigned char)getStackOperandOffset(function, operandStackIndex) }); //mov <reg> [rbp+<operand offset>]
+	int stackOffset = getStackOperandOffset(function, operandStackIndex);
+
+	if (validCharValue(stackOffset)) {
+		pushArray(
+			function.generatedCode,
+			{ 0xF3, 0x0F, 0x10, (unsigned char)(0x45 | (reg << 3)),
+			  (unsigned char)getStackOperandOffset(function, operandStackIndex) }); //movss <reg>, [rbp+<operand offset>]
+	} else {
+		pushArray(
+			function.generatedCode,
+			{ 0xF3, 0x0F, 0x10, (unsigned char)(0x85 | (reg << 3)) });
+
+		IntToBytes converter;
+		converter.intValue = stackOffset;
+
+		for (std::size_t i = 0; i < sizeof(int); i++) {
+			function.generatedCode.push_back(converter.byteValues[i]);
+		}
+	}
 }
 
 void OperandStack::pushReg(Function& function, int operandStackIndex, Registers reg) {
-	Amd64Backend::moveRegToMemoryRegWithOffset(
-		function.generatedCode,
-		Registers::BP, getStackOperandOffset(function, operandStackIndex), reg); //mov [rbp+<operand offset>], <reg>
+	int stackOffset = getStackOperandOffset(function, operandStackIndex);
+
+	if (validCharValue(stackOffset)) {
+		Amd64Backend::moveRegToMemoryRegWithOffset(
+			function.generatedCode,
+			Registers::BP, stackOffset, reg); //mov [rbp+<operand offset>], <reg>
+	} else {
+		Amd64Backend::moveRegToMemoryRegWithIntOffset(
+			function.generatedCode,
+			Registers::BP, stackOffset, reg); //mov [rbp+<operand offset>], <reg>
+	}
 }
 
 void OperandStack::pushReg(Function& function, int operandStackIndex, FloatRegisters reg) {
-	Amd64Backend::moveRegToMemoryRegWithOffset(
-		function.generatedCode,
-		Registers::BP,
-		getStackOperandOffset(function, operandStackIndex), reg); //movss [rbp+<operand offset>0], <float reg>
+	int stackOffset = getStackOperandOffset(function, operandStackIndex);
+
+	if (validCharValue(stackOffset)) {
+		Amd64Backend::moveRegToMemoryRegWithOffset(
+			function.generatedCode,
+			Registers::BP,
+			stackOffset, reg); //movss [rbp+<operand offset>], <float reg>
+	} else {
+		Amd64Backend::moveRegToMemoryRegWithIntOffset(
+			function.generatedCode,
+			Registers::BP,
+			stackOffset, reg); //movss [rbp+<operand offset>], <float reg>
+	}
 }
 
 void OperandStack::pushInt(Function& function, int operandStackIndex, int value) {
+	int stackOffset = getStackOperandOffset(function, operandStackIndex);
+
 	//mov [rbp+<operand offset>], value
-	pushArray(function.generatedCode, { 0x48, 0xC7, 0x45, (unsigned char)(getStackOperandOffset(function, operandStackIndex)) });
+	if (validCharValue(stackOffset)) {
+		pushArray(
+			function.generatedCode,
+			{ 0x48, 0xC7, 0x45, (unsigned char)stackOffset});
+	} else {
+		pushArray(
+			function.generatedCode,
+			{ 0x48, 0xC7, 0x85 });
+
+		IntToBytes intToBytes;
+		intToBytes.intValue = stackOffset;
+		for (std::size_t i = 0; i < sizeof(int); i++) {
+			function.generatedCode.push_back(intToBytes.byteValues[i]);
+		}
+	}
 
 	IntToBytes intToBytes;
 	intToBytes.intValue = value;
@@ -167,7 +243,7 @@ void CodeGenerator::initializeFunction(FunctionCompilationData& functionData) {
 
     if (stackSize > 0) {
         //Make room for the variables on the stack
-        if (stackSize < 128) {
+        if (validCharValue(stackSize)) {
             Amd64Backend::subByteFromReg(function.generatedCode, Registers::SP, (char)stackSize); //sub rsp, <size of stack>
         } else {
             Amd64Backend::subIntFromReg(function.generatedCode, Registers::SP, (int)stackSize); //sub rsp, <size of stack>
@@ -195,10 +271,17 @@ void CodeGenerator::zeroLocals(FunctionCompilationData& functionData) {
 
         //Set the address where the locals starts
         Amd64Backend::moveRegToReg(function.generatedCode, Registers::DI, Registers::BP); //mov rdi, rbp
-        Amd64Backend::addByteToReg(function.generatedCode, Registers::DI, (function.numParams() + 1) * -Amd64Backend::REG_SIZE); //add rdi, <locals offset>
+
+		int localsOffset = (int)((function.numParams() + 1) * -Amd64Backend::REG_SIZE);
+
+		if (validCharValue(localsOffset)) {
+			Amd64Backend::addByteToReg(function.generatedCode, Registers::DI, localsOffset); //add rdi, <locals offset>
+		} else {
+			Amd64Backend::addIntToReg(function.generatedCode, Registers::DI, localsOffset); //add rdi, <locals offset>
+		}
 
         //Set the number of locals
-        Amd64Backend::moveIntToReg(function.generatedCode, Registers::CX, function.numLocals()); //mov rcx, <num locals>
+        Amd64Backend::moveIntToReg(function.generatedCode, Registers::CX, (int)function.numLocals()); //mov rcx, <num locals>
 
         //Zero eax
 		Amd64Backend::xorRegToReg(function.generatedCode, Registers::AX, Registers::AX, true); //xor eax, eax
@@ -217,7 +300,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     int stackOffset = 1; //The offset for variables allocated on the stack
 
     //Make the mapping
-    functionData.instructionNumMapping.push_back(generatedCode.size());
+    functionData.instructionNumMapping.push_back((int)generatedCode.size());
 
     switch (inst.opCode()) {
     case OpCodes::NOP:
@@ -471,8 +554,16 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
             int localOffset = (stackOffset + inst.intValue + (int)function.numParams()) * -Amd64Backend::REG_SIZE;
 
-            //Store the operand at the given local
-            Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::BP, (char)localOffset, Registers::AX); //mov [rbp-local], rax
+			//Store the operand at the given local
+			if (validCharValue(localOffset)) {
+				Amd64Backend::moveRegToMemoryRegWithOffset(
+					generatedCode,
+					Registers::BP, (char)localOffset, Registers::AX); //mov [rbp+<local offset>], rax
+			} else {
+				Amd64Backend::moveRegToMemoryRegWithIntOffset(
+					generatedCode,
+					Registers::BP, localOffset, Registers::AX); //mov [rbp+<local offset>], rax
+			}
         }
         break;
     case OpCodes::CALL:
@@ -599,7 +690,9 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::LOAD_ARG:
         {
             //Load rax with the arg offset
-            Amd64Backend::moveIntToReg(generatedCode, Registers::AX, (inst.intValue + stackOffset) * -Amd64Backend::REG_SIZE); //mov rax, <arg offset>
+            Amd64Backend::moveIntToReg(
+				generatedCode,
+				Registers::AX, (inst.intValue + stackOffset) * -Amd64Backend::REG_SIZE); //mov rax, <arg offset>
 
             //Now add the base pointer
             Amd64Backend::addRegToReg(generatedCode, Registers::AX, Registers::BP); //add rax, rbp
@@ -903,7 +996,11 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 				mExceptionHandling.addNullCheck(functionData);
 
                 //Compute the address of the field
-                Amd64Backend::addByteToReg(generatedCode, Registers::AX, fieldOffset); //add rax, <field offset>
+				if (validCharValue(fieldOffset)) {
+					Amd64Backend::addByteToReg(generatedCode, Registers::AX, fieldOffset); //add rax, <field offset>
+				} else {
+					Amd64Backend::addIntToReg(generatedCode, Registers::AX, fieldOffset); //add rax, <field offset>
+				}
 
                 //Load the field
                 if (!is8bits) {
@@ -922,11 +1019,28 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 				mExceptionHandling.addNullCheck(functionData);
 
                 //Store the field
-                if (!is8bits) {
-                    Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::AX, fieldOffset, Registers::DX, is32bits); //mov [rax+<fieldOffset>], r/edx
-                } else {
-                    pushArray(generatedCode, { 0x88, 0x50, (unsigned char)fieldOffset }); //mov [rax+<fieldOffset>], dl
-                }
+                if (validCharValue(fieldOffset)) {
+					if (!is8bits) {
+						Amd64Backend::moveRegToMemoryRegWithOffset(
+							generatedCode,
+							Registers::AX, fieldOffset, Registers::DX, is32bits); //mov [rax+<fieldOffset>], r/edx
+					} else {
+						pushArray(
+							generatedCode,
+							{0x88, 0x50, (unsigned char) fieldOffset}); //mov [rax+<fieldOffset>], dl
+					}
+				} else {
+					//Compute the address of the field
+					Amd64Backend::addIntToReg(generatedCode, Registers::AX, fieldOffset); //add rax, <field offset>
+
+					if (!is8bits) {
+						Amd64Backend::moveRegToMemoryRegWithOffset(
+							generatedCode,
+							Registers::AX, 0, Registers::DX, is32bits); //mov [rax], r/edx
+					} else {
+						pushArray(generatedCode, { 0x88, 0x50, 0 }); //mov [rax], dl
+					}
+				}
             }
         }
         break;

@@ -9,6 +9,7 @@
 #include "type.h"
 #include "stackframe.h"
 #include "codegenerator.h"
+#include "stackjit.h"
 
 extern VMState vmState;
 
@@ -93,6 +94,7 @@ void Runtime::Internal::printAliveObjects(long* basePtr, Function* func, int ins
 
 	if (numArgs > 0) {
 		std::cout << indentation << "Args: " << std::endl;
+
 		for (std::size_t i = 0; i < numArgs; i++) {
 			std::cout << indentation << i << ": ";
 			auto arg = stackFrame.getArgument(i);
@@ -105,6 +107,7 @@ void Runtime::Internal::printAliveObjects(long* basePtr, Function* func, int ins
 
 	if (numLocals > 0) {
 		std::cout << indentation << "Locals: " << std::endl;
+
 		for (std::size_t i = 0; i < numLocals; i++) {
 			std::cout << indentation << i << ": ";
 			auto local = stackFrame.getLocal(i);
@@ -117,6 +120,7 @@ void Runtime::Internal::printAliveObjects(long* basePtr, Function* func, int ins
 
 	if (stackSize > 0) {
 		std::cout << indentation << "Stack: " << std::endl;
+
 		for (std::size_t i = 0; i < stackSize; i++) {
 			std::cout << indentation << i << ": ";
 			auto operand = stackFrame.getStackOperand(i);
@@ -215,7 +219,7 @@ unsigned char* Runtime::newString(const char* string, int length) {
     auto strPtr = vmState.gc().newArray(elemType, length);
     
     for (int i = 0; i < length; i++) {
-        strPtr[i + 4] = (unsigned char)string[i];
+        strPtr[i + StackJIT::ARRAY_LENGTH_SIZE] = (unsigned char)string[i];
     }
 
     return strPtr;

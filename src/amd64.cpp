@@ -105,6 +105,52 @@ void Amd64Backend::moveRegToMemoryRegWithOffset(CodeGen& codeGen, Registers dest
 	codeGen.push_back(offset);
 }
 
+void Amd64Backend::moveRegToMemoryRegWithIntOffset(CodeGen& codeGen, Registers destMemReg, int offset, Registers src, bool is32bits) {
+	if (destMemReg != Registers::SP) {
+		if (!is32bits) {
+			codeGen.push_back(0x48);
+		}
+
+		codeGen.push_back(0x89);
+		codeGen.push_back(0x80 | destMemReg | (src << 3));
+	} else {
+		if (!is32bits) {
+			codeGen.push_back(0x48);
+		}
+
+		codeGen.push_back(0x89);
+		codeGen.push_back(0x84 | (src << 3));
+		codeGen.push_back(0x24);
+	}
+
+	IntToBytes converter;
+	converter.intValue = offset;
+
+	for (std::size_t i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.byteValues[i]);
+	}
+}
+
+void Amd64Backend::moveRegToMemoryRegWithIntOffset(CodeGen& codeGen, Registers destMemReg, int offset, NumberedRegisters src) {
+	if (destMemReg != Registers::SP) {
+		codeGen.push_back(0x4c);
+		codeGen.push_back(0x89);
+		codeGen.push_back(0x80 | destMemReg | (src << 3));
+	} else {
+		codeGen.push_back(0x4c);
+		codeGen.push_back(0x89);
+		codeGen.push_back(0x84 | (src << 3));
+		codeGen.push_back(0x24);
+	}
+
+	IntToBytes converter;
+	converter.intValue = offset;
+
+	for (std::size_t i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.byteValues[i]);
+	}
+}
+
 void Amd64Backend::moveMemoryRegWithOffsetToReg(CodeGen& codeGen, Registers dest, Registers srcMemReg, char offset) {
 	if (srcMemReg != Registers::SP) {
 		codeGen.push_back(0x48);
@@ -117,6 +163,26 @@ void Amd64Backend::moveMemoryRegWithOffsetToReg(CodeGen& codeGen, Registers dest
 		codeGen.push_back(0x44 | (dest << 3));
 		codeGen.push_back(0x24);
 		codeGen.push_back(offset);
+	}
+}
+
+void Amd64Backend::moveMemoryRegWithIntOffsetToReg(CodeGen& codeGen, Registers dest, Registers srcMemReg, int offset) {
+	if (srcMemReg != Registers::SP) {
+		codeGen.push_back(0x48);
+		codeGen.push_back(0x8b);
+		codeGen.push_back(0x80 | srcMemReg | (dest << 3));
+	} else {
+		codeGen.push_back(0x48);
+		codeGen.push_back(0x8b);
+		codeGen.push_back(0x84 | (dest << 3));
+		codeGen.push_back(0x24);
+	}
+
+	IntToBytes converter;
+	converter.intValue = offset;
+
+	for (std::size_t i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.byteValues[i]);
 	}
 }
 
@@ -180,6 +246,26 @@ void Amd64Backend::moveRegToMemoryRegWithOffset(CodeGen& codeGen, Registers dest
 	}
 }
 
+void Amd64Backend::moveRegToMemoryRegWithIntOffset(CodeGen& codeGen, Registers destMemReg, int offset, FloatRegisters src) {
+	codeGen.push_back(0xf3);
+	codeGen.push_back(0x0f);
+	codeGen.push_back(0x11);
+
+	if (destMemReg != Registers::SP) {
+		codeGen.push_back(0x80 | destMemReg | (src << 3));
+	} else {
+		codeGen.push_back(0x84 | (src << 3));
+		codeGen.push_back(0x24);
+	}
+
+	IntToBytes converter;
+	converter.intValue = offset;
+
+	for (std::size_t i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.byteValues[i]);
+	}
+}
+
 void Amd64Backend::callInReg(CodeGen& codeGen, Registers func) {
 	codeGen.push_back(0xff);
     codeGen.push_back(0xd0 | func);
@@ -217,6 +303,26 @@ void Amd64Backend::addByteToReg(CodeGen& codeGen, Registers destReg, char srcVal
     codeGen.push_back(0x83);
     codeGen.push_back(0xc0 | destReg);
     codeGen.push_back(srcValue);
+}
+
+void Amd64Backend::addIntToReg(CodeGen& codeGen, Registers destReg, int srcValue, bool is32bits) {
+	if (!is32bits) {
+		codeGen.push_back(0x48);
+	}
+
+	if (destReg == Registers::AX) {
+		codeGen.push_back(0x05);
+	} else {
+		codeGen.push_back(0x81);
+		codeGen.push_back(0xc1 | destReg);
+	}
+
+	IntToBytes converter;
+	converter.intValue = srcValue;
+
+	for (std::size_t i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.byteValues[i]);
+	}
 }
 
 void Amd64Backend::subRegFromReg(CodeGen& codeGen, Registers dest, Registers src, bool is32bits) {

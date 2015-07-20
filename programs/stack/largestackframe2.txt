@@ -1,0 +1,36 @@
+func main() Int
+{
+	.locals 25
+	.local 0 Ref.Array[Char]
+	.local 1 Ref.Array[Char]
+	.local 2 Ref.Array[Char]
+	.local 3 Ref.Array[Char]
+	.local 4 Ref.Array[Char]
+	.local 5 Ref.Array[Char]
+	.local 6 Ref.Array[Char]
+	.local 7 Ref.Array[Char]
+	.local 8 Ref.Array[Char]
+	.local 9 Ref.Array[Char]
+	.local 10 Ref.Array[Char]
+	.local 11 Ref.Array[Char]
+	.local 12 Ref.Array[Char]
+	.local 13 Ref.Array[Char]
+	.local 14 Ref.Array[Char]
+	.local 15 Ref.Array[Char]
+	.local 16 Ref.Array[Char]
+	.local 17 Ref.Array[Char]
+	.local 18 Ref.Array[Char]
+	.local 19 Ref.Array[Char]
+	.local 20 Ref.Array[Char]
+	.local 21 Ref.Array[Char]
+	.local 22 Ref.Array[Char]
+	.local 23 Ref.Array[Char]
+	.local 24 Ref.Array[Char]
+
+	LDINT 4
+	NEWARR Char
+	STLOC 24
+
+	LDINT 0
+	RET
+}

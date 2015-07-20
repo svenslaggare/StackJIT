@@ -111,8 +111,15 @@ namespace Amd64Backend {
 	void moveRegToMemoryRegWithOffset(CodeGen&, Registers, char, Registers, bool is32bits = false);
 	void moveRegToMemoryRegWithOffset(CodeGen&, Registers, char, NumberedRegisters);
 
+	//Moves the content from a register to memory where the address is in a register + int offset
+	void moveRegToMemoryRegWithIntOffset(CodeGen&, Registers, int, Registers, bool is32bits = false);
+	void moveRegToMemoryRegWithIntOffset(CodeGen&, Registers, int, NumberedRegisters);
+
 	//Moves the content from a memory where the address is a register + offset to a register
 	void moveMemoryRegWithOffsetToReg(CodeGen&, Registers, Registers, char);
+
+	//Moves the content from a memory where the address is a register + offset to a register
+	void moveMemoryRegWithIntOffsetToReg(CodeGen&, Registers , Registers, int);
 
 	//Moves the given integer (32-bits) to the given register
 	void moveIntToReg(CodeGen&, Registers, int);
@@ -125,6 +132,9 @@ namespace Amd64Backend {
 
 	//Moves the content from a register to memory where the address is in a register + offset
 	void moveRegToMemoryRegWithOffset(CodeGen&, Registers, char, FloatRegisters);
+
+	//Moves the content from a register to memory where the address is in a register + int offset
+	void moveRegToMemoryRegWithIntOffset(CodeGen&, Registers, int, FloatRegisters);
 
 	//Calls the given function where the entry points is in a register
 	void callInReg(CodeGen&, Registers);
@@ -140,6 +150,9 @@ namespace Amd64Backend {
 
 	//Adds the given byte to the given register
 	void addByteToReg(CodeGen&, Registers, char, bool is32bits = false);
+
+	//Adds the given int to the given register
+	void addIntToReg(CodeGen&, Registers, int, bool is32bits = false);
 
 	//Subtracts the second register from the first
 	void subRegFromReg(CodeGen&, Registers, Registers, bool is32bits = false);

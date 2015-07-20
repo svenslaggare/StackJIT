@@ -1,0 +1,55 @@
+func addInternal(Int Int Int Int Int Int Int Int Int Int) Int
+{
+	LDARG 0
+	LDARG 1
+	ADD
+	LDARG 2
+	ADD
+	LDARG 3
+	ADD
+	LDARG 4
+	ADD
+	LDARG 5
+	ADD
+	LDARG 6
+	ADD
+	LDARG 7
+    ADD
+    LDARG 8
+    ADD
+    LDARG 9
+    ADD
+	RET
+}
+
+func add(Int Int Int Int Int Int Int Int Int Int) Int
+{
+	LDARG 0
+	LDARG 1
+	LDARG 2
+	LDARG 3
+	LDARG 4
+	LDARG 5
+	LDARG 6
+	LDARG 7
+	LDARG 8
+	LDARG 9
+	CALL addInternal(Int Int Int Int Int Int Int Int Int Int)
+	RET
+}
+
+func main() Int
+{
+	LDINT 1
+	LDINT 2
+	LDINT 3
+	LDINT 4
+	LDINT 5
+	LDINT 6
+	LDINT 7
+	LDINT 8
+	LDINT 9
+	LDINT 10
+	CALL add(Int Int Int Int Int Int Int Int Int Int)
+	RET
+}

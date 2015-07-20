@@ -92,11 +92,16 @@ public:
         TS_ASSERT_EQUALS(invokeVM("basic/program14"), "2\n");
         TS_ASSERT_EQUALS(invokeVM("basic/program15"), "-2\n");
 
-        TS_ASSERT_EQUALS(invokeVM("basic/call_preserve_stack"), "17\n");
-        TS_ASSERT_EQUALS(invokeVM("basic/float_alignment"), "13\n13\n13\n0\n");
-
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("basic/invalid_program1")), "what():  1: Locals of 'Void' type are not allowed.");
     }
+
+	void testStack() {
+		TS_ASSERT_EQUALS(invokeVM("stack/call_preserve_stack"), "17\n");
+		TS_ASSERT_EQUALS(invokeVM("stack/float_alignment"), "13\n13\n13\n0\n");
+		TS_ASSERT_EQUALS(invokeVM("stack/largestackframe1"), "55\n");
+		TS_ASSERT_EQUALS(invokeVM("stack/largestackframe2"), "0\n");
+		TS_ASSERT_EQUALS(invokeVM("stack/largestackframe3"), "0\n");
+	}
 
     void testCall() {
         TS_ASSERT_EQUALS(invokeVM("calling/arg1"), "4\n");
@@ -112,6 +117,7 @@ public:
         TS_ASSERT_EQUALS(invokeVM("calling/arg8_2"), "7\n");
         TS_ASSERT_EQUALS(invokeVM("calling/arg8_3"), "6\n7\n0\n");
 		TS_ASSERT_EQUALS(invokeVM("calling/arg9"), "54\n");
+		TS_ASSERT_EQUALS(invokeVM("calling/arg10"), "65\n");
 
         TS_ASSERT_EQUALS(invokeVM("calling/arg1_float"), "4\n0\n");
         TS_ASSERT_EQUALS(invokeVM("calling/arg2_float"), "9\n0\n");
@@ -201,6 +207,8 @@ public:
         TS_ASSERT_EQUALS(invokeVM("array/program2"), "4\n1337\n");
         TS_ASSERT_EQUALS(invokeVM("array/program3"), "1337\n4\n0\n");
 
+        TS_ASSERT_EQUALS(invokeVM("array/largearray1"), "1337\n");
+
         TS_ASSERT_EQUALS(invokeVM("array/nested"), "4\n");
 
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program1")), "what():  2: Arrays of type 'Void' is not allowed.");
@@ -226,6 +234,8 @@ public:
         TS_ASSERT_EQUALS(invokeVM("struct/constructor1"), "1\n2\n0\n");
         TS_ASSERT_EQUALS(invokeVM("struct/constructor2"), "15\n");
         TS_ASSERT_EQUALS(invokeVM("struct/constructor3"), "21\n");
+
+        TS_ASSERT_EQUALS(invokeVM("struct/largestruct1"), "1337\n");
 
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_constructor1")), "what():  Constructors must have return type 'Void'.");
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_constructor2")), "what():  1: The constructor \'Point::.constructor(Ref.Struct.Point)\' is not defined.");
