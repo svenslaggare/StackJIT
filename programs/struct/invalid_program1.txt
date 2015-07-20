@@ -5,6 +5,6 @@ func main() Int
 	NEWOBJ Point::.constructor()
 	STLOC 0
 
-	PUSHINT 0
+	LDINT 0
 	RET
 }

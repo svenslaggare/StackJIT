@@ -227,11 +227,11 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         //Pop the value
 		OperandStack::popReg(function, (int)inst.operandTypes().size() - 1, Registers::AX);
         break;
-    case OpCodes::PUSH_INT:
+    case OpCodes::LOAD_INT:
         //Push the value
 		OperandStack::pushInt(function, (int)inst.operandTypes().size(), inst.intValue);
         break;
-    case OpCodes::PUSH_FLOAT:
+    case OpCodes::LOAD_FLOAT:
         {
             //Extract the byte pattern for the float
             const int* floatData = reinterpret_cast<const int*>(&inst.floatValue);
@@ -240,7 +240,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			OperandStack::pushInt(function, (int)inst.operandTypes().size(), *floatData);
         }
         break;
-     case OpCodes::PUSH_CHAR:
+     case OpCodes::LOAD_CHAR:
         //Push the value
 		OperandStack::pushInt(function, (int)inst.operandTypes().size(), inst.charValue);
         break;

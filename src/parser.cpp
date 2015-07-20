@@ -335,21 +335,21 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
 				continue;
 			}
 
-			if (currentToLower == "pushint") {
+			if (currentToLower == "ldint") {
 				int value = stoi(nextToken(tokens, i));
-				currentFunc.instructions.push_back(Instruction::makeWithInt(OpCodes::PUSH_INT, value));
+				currentFunc.instructions.push_back(Instruction::makeWithInt(OpCodes::LOAD_INT, value));
 				continue;
 			}
 
-			if (currentToLower == "pushfloat") {
+			if (currentToLower == "ldfloat") {
 				float value = stof(nextToken(tokens, i));
-				currentFunc.instructions.push_back(Instruction::makeWithFloat(OpCodes::PUSH_FLOAT, value));
+				currentFunc.instructions.push_back(Instruction::makeWithFloat(OpCodes::LOAD_FLOAT, value));
 				continue;
 			}
 
-			if (currentToLower == "pushchar") {
+			if (currentToLower == "ldchar") {
 				char value = (char)stoi(nextToken(tokens, i));
-				currentFunc.instructions.push_back(Instruction::makeWithChar(OpCodes::PUSH_CHAR, value));
+				currentFunc.instructions.push_back(Instruction::makeWithChar(OpCodes::LOAD_CHAR, value));
 				continue;
 			}
 

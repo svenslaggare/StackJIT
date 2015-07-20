@@ -1,5 +1,5 @@
 func test() Int
 {
-	PUSHINT 0
+	LDINT 0
 	RET
 }

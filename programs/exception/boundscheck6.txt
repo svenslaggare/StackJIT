@@ -1,11 +1,11 @@
 func main() Int
 {
-	PUSHINT 0
+	LDINT 0
 	NEWARR Int
-	PUSHINT 0
-	PUSHINT 0
+	LDINT 0
+	LDINT 0
 	STELEM Int
 
-	PUSHINT 0
+	LDINT 0
 	RET
 }

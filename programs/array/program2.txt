@@ -24,13 +24,13 @@ func main() Int
 {
 	.locals 1
 	
-	PUSHINT 4
+	LDINT 4
 	CALL newArray(Int)
 	STLOC 0
 
 	LDLOC 0
-	PUSHINT 0
-	PUSHINT 1337
+	LDINT 0
+	LDINT 1337
 	STELEM Int
 
 	LDLOC 0
@@ -38,7 +38,7 @@ func main() Int
 	CALL printLine(Int)
 
 	LDLOC 0
-	PUSHINT 0
+	LDINT 0
 	CALL getElement(Ref.Array[Int] Int)
 	RET
 }

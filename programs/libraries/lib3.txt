@@ -6,11 +6,11 @@ func createAndPrintPoint() Void
 	STLOC 0
 
 	LDLOC 0
-	PUSHINT 1337
+	LDINT 1337
 	STFIELD Point::x
 
 	LDLOC 0
-	PUSHINT 4711
+	LDINT 4711
 	STFIELD Point::y
 
 	LDLOC 0

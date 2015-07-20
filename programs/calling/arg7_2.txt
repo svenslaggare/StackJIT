@@ -7,15 +7,15 @@ func print(Int Int Int Int Int Int Int) Void
 
 func main() Int
 {
-	PUSHINT 0
-	PUSHINT 0
-	PUSHINT 0
-	PUSHINT 0
-	PUSHINT 0
-	PUSHINT 0
-	PUSHINT 1337
+	LDINT 0
+	LDINT 0
+	LDINT 0
+	LDINT 0
+	LDINT 0
+	LDINT 0
+	LDINT 1337
 	CALL print(Int Int Int Int Int Int Int)
 
-	PUSHINT 0
+	LDINT 0
 	RET
 }

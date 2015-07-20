@@ -5,8 +5,8 @@ Defines the instruction set used by the VM.
 * `POP`: Pops the top value from the evaluation stack.
 
 ###Int & Float###
-* `PUSHINT <value>`: Pushes a 32-bits integer to the evaluation stack.
-* `PUSHFLOAT <value>`: Pushes a 32-bits floating point to the evaluation stack.
+* `LDINT <value>`: Pushes a 32-bits integer to the evaluation stack.
+* `LDFLOAT <value>`: Pushes a 32-bits floating point to the evaluation stack.
 * `CONVINTTOFLOAT`: Pops an int from the evaluation stack and converts it to a float, pushing the result to the evaluation stack.
 * `CONVFLOATTOINT`: Pops a float from the evaluation stack and converts it to a int, pushing the result to the evaluation stack.
 
@@ -66,4 +66,4 @@ Defines the instruction set used by the VM.
 
 ###String###
 * `LDSTR <string>` Creates a new string and pushes the reference to the string to the evaluation stack.
-* `PUSHCHAR <char value>` Pushes a char to the evaluation stack.
+* `LDCHAR <char value>` Pushes a char to the evaluation stack.

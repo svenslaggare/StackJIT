@@ -3,7 +3,7 @@ func println(Ref.Array[Char]) Void
 	.locals 1
 	.local 0 Int
 	
-	PUSHINT 0
+	LDINT 0
 	STLOC 0
 
 	LDLOC 0
@@ -17,13 +17,13 @@ func println(Ref.Array[Char]) Void
 	CALL std.printchar(Char)
 
 	LDLOC 0
-	PUSHINT 1
+	LDINT 1
 	ADD
 	STLOC 0
 
 	BR 2
 	
-	PUSHCHAR 10
+	LDCHAR 10
 	CALL std.printchar(Char)
 
 	RET
@@ -34,6 +34,6 @@ func main() Int
 	LDSTR "Hello, World!"
 	CALL println(Ref.Array[Char])
 
-	PUSHINT 0
+	LDINT 0
 	RET
 }

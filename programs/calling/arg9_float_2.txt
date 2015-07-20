@@ -7,16 +7,16 @@ func print(Float Float Float Float Float Float Float Float Float) Void
 
 func main() Int
 {
-	PUSHFLOAT 1337
-	PUSHFLOAT 0
-	PUSHFLOAT 0
-	PUSHFLOAT 0
-	PUSHFLOAT 0
-	PUSHFLOAT 0
-	PUSHFLOAT 0
-	PUSHFLOAT 0
-	PUSHFLOAT 0
+	LDFLOAT 1337
+	LDFLOAT 0
+	LDFLOAT 0
+	LDFLOAT 0
+	LDFLOAT 0
+	LDFLOAT 0
+	LDFLOAT 0
+	LDFLOAT 0
+	LDFLOAT 0
 	CALL print(Float Float Float Float Float Float Float Float Float)
-    PUSHINT 0
+    LDINT 0
 	RET
 }

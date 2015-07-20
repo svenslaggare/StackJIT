@@ -8,10 +8,10 @@ func int_add(Int Int) Int
 
 func main() Int
 {
-	PUSHINT 3
-	PUSHINT 6
+	LDINT 3
+	LDINT 6
 	CALL int_add(Int Int)
-	PUSHINT 12
+	LDINT 12
 	CALL int_add(Int Int)
 	RET
 }

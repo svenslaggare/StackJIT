@@ -22,17 +22,17 @@ func add9(Float Float Float Float Float Float Float Float Float) Float
 
 func main() Int
 {
-	PUSHFLOAT 2
-	PUSHFLOAT 3
-	PUSHFLOAT 4
-	PUSHFLOAT 5
-	PUSHFLOAT 6
-	PUSHFLOAT 7
-	PUSHFLOAT 8
-	PUSHFLOAT 9
-	PUSHFLOAT 10
+	LDFLOAT 2
+	LDFLOAT 3
+	LDFLOAT 4
+	LDFLOAT 5
+	LDFLOAT 6
+	LDFLOAT 7
+	LDFLOAT 8
+	LDFLOAT 9
+	LDFLOAT 10
 	CALL add9(Float Float Float Float Float Float Float Float Float)
 	CALL std.println(Float)
-    PUSHINT 0
+    LDINT 0
 	RET
 }

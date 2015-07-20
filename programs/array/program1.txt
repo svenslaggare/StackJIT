@@ -2,17 +2,17 @@ func main() Int
 {
 	.locals 1
 	
-	PUSHINT 4
+	LDINT 4
 	NEWARR Int
 	STLOC 0
 
 	LDLOC 0
-	PUSHINT 0
-	PUSHINT 1337
+	LDINT 0
+	LDINT 1337
 	STELEM Int
 
 	LDLOC 0
-	PUSHINT 0
+	LDINT 0
 	LDELEM Int
 	RET
 }

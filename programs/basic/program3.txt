@@ -20,9 +20,9 @@ func int_mul(Int Int Int) Int
 
 func main() Int
 {
-	PUSHINT 4
-	PUSHINT 6
-	PUSHINT 5
+	LDINT 4
+	LDINT 6
+	LDINT 5
 	CALL int_add(Int Int Int)
 	RET
 }

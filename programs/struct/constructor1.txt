@@ -22,8 +22,8 @@ func main() Int
    .locals 1
    .local 0 Ref.Struct.Point
 
-   PUSHFLOAT 1.000000
-   PUSHFLOAT 2.000000
+   LDFLOAT 1.000000
+   LDFLOAT 2.000000
    NEWOBJ Point::.constructor(Float Float)
    STLOC 0
 
@@ -35,6 +35,6 @@ func main() Int
    LDFIELD Point::y
    CALL std.println(Float)
 
-   PUSHINT 0
+   LDINT 0
    RET
 }

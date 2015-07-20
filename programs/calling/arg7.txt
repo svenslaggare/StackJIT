@@ -18,13 +18,13 @@ func add7(Int Int Int Int Int Int Int) Int
 
 func main() Int
 {
-	PUSHINT 2
-	PUSHINT 3
-	PUSHINT 4
-	PUSHINT 5
-	PUSHINT 6
-	PUSHINT 7
-	PUSHINT 8
+	LDINT 2
+	LDINT 3
+	LDINT 4
+	LDINT 5
+	LDINT 6
+	LDINT 7
+	LDINT 8
 	CALL add7(Int Int Int Int Int Int Int)
 	RET
 }

@@ -5,21 +5,21 @@ func main() Int
 	LDSTR "Hello, World!"
 	STLOC 1
 
-	PUSHINT 30000
+	LDINT 30000
 	STLOC 0
 
 	LDLOC 1
 	CALL rt.println(Ref.Array[Char])
 
 	LDLOC 0
-	PUSHINT 1
+	LDINT 1
 	SUB
 	STLOC 0
 
 	LDLOC 0
-	PUSHINT 0
+	LDINT 0
 	BNE 4
 
-	PUSHINT 0
+	LDINT 0
 	RET
 }

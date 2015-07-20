@@ -3,31 +3,31 @@ func println(Bool) Void
    LDARG 0
    PUSHTRUE
    BNE 6
-   PUSHINT 1
+   LDINT 1
    CALL std.println(Int)
    BR 8
-   PUSHINT 0
+   LDINT 0
    CALL std.println(Int)
    RET
 }
 
 func main() Int
 {
-   PUSHINT 30
-   PUSHINT 40
+   LDINT 30
+   LDINT 40
    CMPLT
    CALL println(Bool)
 
-   PUSHINT 40
-   PUSHINT 40
+   LDINT 40
+   LDINT 40
    CMPLT
    CALL println(Bool)
 
-   PUSHINT 50
-   PUSHINT 40
+   LDINT 50
+   LDINT 40
    CMPLT
    CALL println(Bool)
 
-   PUSHINT 4711
+   LDINT 4711
    RET
 }

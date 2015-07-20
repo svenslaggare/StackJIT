@@ -12,6 +12,6 @@ struct ListNode
 
 func main() Int
 {
-	PUSHINT 0
+	LDINT 0
 	RET
 }

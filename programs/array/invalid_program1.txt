@@ -2,10 +2,10 @@ func main() Int
 {
 	.locals 1
 	
-	PUSHINT 4
+	LDINT 4
 	NEWARR Void
 	STLOC 0
 
-	PUSHINT 0
+	LDINT 0
 	RET
 }

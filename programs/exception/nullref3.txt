@@ -6,7 +6,7 @@ struct Point
 
 member Point::length() Int
 {
-	PUSHINT 0
+	LDINT 0
 	RET
 }
 

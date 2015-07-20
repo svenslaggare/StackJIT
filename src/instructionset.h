@@ -2,9 +2,9 @@
 //The list of op codes
 enum class OpCodes : unsigned char {
 	NOP,
-	PUSH_INT,
-	PUSH_FLOAT,
-	PUSH_CHAR,
+	LOAD_INT,
+	LOAD_FLOAT,
+	LOAD_CHAR,
 	POP,
 	ADD,
 	SUB,

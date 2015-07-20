@@ -3,6 +3,6 @@ func main() Int
 	ldstr "Hello, World!"
 	CALL rt.println(Ref.Array[Char])
 
-	PUSHINT 0
+	LDINT 0
     RET
 }

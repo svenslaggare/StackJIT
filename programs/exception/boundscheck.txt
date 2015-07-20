@@ -1,8 +1,8 @@
 func main() Int
 {
-	PUSHINT 4
+	LDINT 4
 	NEWARR Int
-	PUSHINT -1
+	LDINT -1
 	LDELEM Int
 	RET
 }

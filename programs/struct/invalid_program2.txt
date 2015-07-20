@@ -6,6 +6,6 @@ func main() Int
 	LDFIELD Point::x
 	STLOC 0
 
-	PUSHINT 0
+	LDINT 0
 	RET
 }

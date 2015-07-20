@@ -6,9 +6,9 @@ func add1(Float) Float
 
 func main() Int
 {
-	PUSHFLOAT 4
+	LDFLOAT 4
 	CALL add1(Float)
 	CALL std.println(Float)
-	PUSHINT 0
+	LDINT 0
 	RET
 }

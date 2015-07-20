@@ -21,6 +21,6 @@ func main() Int
 
 	CALL std.gc.collect()
 
-	PUSHINT 0
+	LDINT 0
 	RET
 }

@@ -14,17 +14,17 @@ func main2() Int
 	.locals 1
 	.local 0 Ref.Array[Ref.Struct.Point]
 
-	PUSHINT 2
+	LDINT 2
 	NEWARR Ref.Struct.Point
 	STLOC 0
 
 	LDLOC 0
-	PUSHINT 0
+	LDINT 0
 	NEWOBJ Point::.constructor()
 	STELEM Ref.Struct.Point
 
 	LDLOC 0
-	PUSHINT 1
+	LDINT 1
 	NEWOBJ Point::.constructor()
 	STELEM Ref.Struct.Point
 
@@ -32,7 +32,7 @@ func main2() Int
 	STLOC 0
     CALL std.gc.collect()
 
-	PUSHINT 0
+	LDINT 0
 	RET
 }
 

@@ -17,6 +17,6 @@ func main() Int
 	POP
 	POP
 
-	PUSHINT 0
+	LDINT 0
 	RET
 }

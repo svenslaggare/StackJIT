@@ -8,8 +8,8 @@ func sub(Int Int) Int
 
 func main() Int
 {
-	PUSHINT 9
-	PUSHINT 2
+	LDINT 9
+	LDINT 2
 	CALL sub(Int Int)
 	RET
 }

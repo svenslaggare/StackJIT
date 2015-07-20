@@ -40,17 +40,17 @@ func main() Int
    STLOC 0
 
    LDLOC 0
-   PUSHFLOAT 2
+   LDFLOAT 2
    STFIELD Point::x
 
    LDLOC 0
-   PUSHFLOAT 3
+   LDFLOAT 3
    STFIELD Point::y
 
    LDLOC 0
    CALLINST Point::length()
    CALL std.println(Float)
 
-   PUSHINT 0
+   LDINT 0
    RET
 }

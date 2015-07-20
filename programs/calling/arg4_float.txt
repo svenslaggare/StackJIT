@@ -12,12 +12,12 @@ func add4(Float Float Float Float) Float
 
 func main() Int
 {
-	PUSHFLOAT 2
-	PUSHFLOAT 3
-	PUSHFLOAT 4
-	PUSHFLOAT 5
+	LDFLOAT 2
+	LDFLOAT 3
+	LDFLOAT 4
+	LDFLOAT 5
 	CALL add4(Float Float Float Float)
 	CALL std.println(Float)
-	PUSHINT 0
+	LDINT 0
 	RET
 }

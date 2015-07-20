@@ -1,7 +1,7 @@
 func main() Int
 {
-	PUSHINT -5
-	PUSHINT 2
+	LDINT -5
+	LDINT 2
 	ADD
 	CALL std.math.abs(Int)
 	RET

@@ -8,7 +8,7 @@ func main() Int
    .locals 1
    .local 0 Ref.Array[Int]
 
-   PUSHINT 5
+   LDINT 5
    NEWARR Int
    STLOC 0
 
@@ -17,6 +17,6 @@ func main() Int
 
    CALL std.gc.collect()
 
-   PUSHINT 0
+   LDINT 0
    RET
 }

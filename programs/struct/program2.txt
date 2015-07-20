@@ -13,24 +13,24 @@ func main() Int
 {
 	.locals 1
 	
-	PUSHINT 4
+	LDINT 4
 	NEWARR Ref.Struct.Point
 	STLOC 0
 
 	LDLOC 0
-	PUSHINT 0
+	LDINT 0
 	NEWOBJ Point::.constructor()
 	STELEM Ref.Struct.Point
 
 	LDLOC 0
-	PUSHINT 1
+	LDINT 1
 	NEWOBJ Point::.constructor()
 	STELEM Ref.Struct.Point
 
 	LDLOC 0
-	PUSHINT 0
+	LDINT 0
 	LDELEM Ref.Struct.Point
-	PUSHINT 4711
+	LDINT 4711
 	STFIELD Point::x
 
 	LDLOC 0
@@ -38,7 +38,7 @@ func main() Int
 	CALL std.println(Int)
 
 	LDLOC 0
-	PUSHINT 0
+	LDINT 0
 	LDELEM Ref.Struct.Point
 	LDFIELD Point::x
 

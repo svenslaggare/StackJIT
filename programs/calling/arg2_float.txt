@@ -8,10 +8,10 @@ func add2(Float Float) Float
 
 func main() Int
 {
-	PUSHFLOAT 4
-	PUSHFLOAT 5
+	LDFLOAT 4
+	LDFLOAT 5
 	CALL add2(Float Float)
 	CALL std.println(Float)
-	PUSHINT 0
+	LDINT 0
 	RET
 }

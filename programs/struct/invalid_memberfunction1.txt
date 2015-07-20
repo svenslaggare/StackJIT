@@ -11,7 +11,7 @@ member Point::.constructor() Void
 
 member Point::length() Float
 {
-   PUSHFLOAT 0
+   LDFLOAT 0
    RET
 }
 
@@ -22,6 +22,6 @@ func main() Int
    CALLINST Point::length()
    STLOC 0
 
-   PUSHINT 0
+   LDINT 0
    RET
 }

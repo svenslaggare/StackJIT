@@ -29,8 +29,8 @@ func main() Int
    STLOC 0
 
    LDLOC 0
-   PUSHFLOAT 2.5
-   PUSHFLOAT 5.5
+   LDFLOAT 2.5
+   LDFLOAT 5.5
    CALLINST Point::set(Float Float)
 
    LDLOC 0
@@ -41,6 +41,6 @@ func main() Int
    LDFIELD Point::y
    CALL std.println(Float)
 
-   PUSHINT 0
+   LDINT 0
    RET
 }

@@ -151,13 +151,13 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
         switch (inst.opCode()) {
         case OpCodes::NOP:
             break;
-        case OpCodes::PUSH_INT:
+        case OpCodes::LOAD_INT:
             operandStack.push(intType);
             break;
-        case OpCodes::PUSH_FLOAT:
+        case OpCodes::LOAD_FLOAT:
             operandStack.push(floatType);
             break;
-        case OpCodes::PUSH_CHAR:
+        case OpCodes::LOAD_CHAR:
             operandStack.push(charType);
             break;
         case OpCodes::POP:

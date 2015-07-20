@@ -6,7 +6,7 @@ func add1(Int) Int
 
 func main() Int
 {
-	PUSHINT 4
+	LDINT 4
 	CALL add1(Int)
 	RET
 }

@@ -36,7 +36,7 @@ func main3() Int
 	STLOC 0
     CALL std.gc.collect()
 
-	PUSHINT 0
+	LDINT 0
 	RET
 }
 

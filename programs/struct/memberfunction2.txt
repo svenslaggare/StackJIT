@@ -32,11 +32,11 @@ func main() Int
    STLOC 1
 
    LDLOC 0
-   PUSHFLOAT 2
+   LDFLOAT 2
    STFIELD Point::x
 
    LDLOC 1
-   PUSHFLOAT 3
+   LDFLOAT 3
    STFIELD Point::x
 
    LDLOC 0
@@ -44,6 +44,6 @@ func main() Int
    CALLINST Point::addX(Ref.Struct.Point)
    CALL std.println(Float)
 
-   PUSHINT 0
+   LDINT 0
    RET
 }

@@ -1,6 +1,6 @@
 func main() Int
 {
 	CALL createAndPrintPoint()
-	PUSHINT 0
+	LDINT 0
 	RET
 }

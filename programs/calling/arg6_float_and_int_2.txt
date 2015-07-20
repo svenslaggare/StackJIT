@@ -19,14 +19,14 @@ func add6(Int Float Int Float Int Float) Float
 
 func main() Int
 {
-	PUSHINT 2
-	PUSHFLOAT 3
-	PUSHINT 4
-	PUSHFLOAT 5
-	PUSHINT 6
-	PUSHFLOAT 7
+	LDINT 2
+	LDFLOAT 3
+	LDINT 4
+	LDFLOAT 5
+	LDINT 6
+	LDFLOAT 7
 	CALL add6(Int Float Int Float Int Float)
 	CALL std.println(Float)
-	PUSHINT 0
+	LDINT 0
 	RET
 }

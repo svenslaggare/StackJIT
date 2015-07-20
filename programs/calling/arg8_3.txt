@@ -11,16 +11,16 @@ func print(Int Int Int Int Int Int Int Int) Void
 
 func main() Int
 {
-	PUSHINT 0
-	PUSHINT 0
-	PUSHINT 0
-	PUSHINT 0
-	PUSHINT 0
-	PUSHINT 0
-	PUSHINT 6
-	PUSHINT 7
+	LDINT 0
+	LDINT 0
+	LDINT 0
+	LDINT 0
+	LDINT 0
+	LDINT 0
+	LDINT 6
+	LDINT 7
 	CALL print(Int Int Int Int Int Int Int Int)
 
-	PUSHINT 0
+	LDINT 0
 	RET
 }

@@ -1,7 +1,7 @@
 func main() Int
 {
-	PUSHINT 6
-	PUSHINT 3
+	LDINT 6
+	LDINT 3
 	DIV
 	RET
 }

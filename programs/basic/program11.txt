@@ -17,14 +17,14 @@ func main() Int
    .locals 1
    .local 0 Float
 
-   PUSHFLOAT 13.37
-   PUSHFLOAT 47.11
+   LDFLOAT 13.37
+   LDFLOAT 47.11
    CALL addFloat(Float Float)
    STLOC 0
 
    LDLOC 0
    CALL std.println(Float)
 
-   PUSHINT 0
+   LDINT 0
    RET
 }

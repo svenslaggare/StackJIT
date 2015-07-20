@@ -8,9 +8,9 @@ func addInt(Int Int) Int
 
 func main() Int
 {
-	PUSHINT 7
-	PUSHINT 4
-	PUSHINT 6
+	LDINT 7
+	LDINT 4
+	LDINT 6
 	CALL addInt(Int Int)
 	ADD
 	RET

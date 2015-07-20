@@ -15,14 +15,14 @@ func printPoint(Ref.Struct.Point) Void
 	LDFIELD Point::x
 	CALL std.print(Int)
 
-	PUSHCHAR 58
+	LDCHAR 58
     CALL std.printchar(Char)
 
 	LDARG 0
 	LDFIELD Point::y
 	CALL std.print(Int)
 
-	PUSHCHAR 10
+	LDCHAR 10
 	CALL std.printchar(Char)
 
 	RET
@@ -36,16 +36,16 @@ func main() Int
 	STLOC 0
 
 	LDLOC 0
-	PUSHINT 1337
+	LDINT 1337
 	STFIELD Point::x
 
 	LDLOC 0
-	PUSHINT 4711
+	LDINT 4711
 	STFIELD Point::y
 
 	LDLOC 0
 	CALL printPoint(Ref.Struct.Point)
 
-	PUSHINT 0
+	LDINT 0
 	RET
 }
