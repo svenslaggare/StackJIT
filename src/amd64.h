@@ -77,26 +77,23 @@ namespace Amd64Backend {
 	//The size of a register
 	const int REG_SIZE = 8;
 
-	//Indicates if to align the stack to 16 bytes.
-	const bool alignTo16Bytes = false;
+	//Pushes the given register to the stack
+	void pushReg(CodeGen&, Registers);
 
 	//Pushes the given register to the stack
-	void pushReg(CodeGen&, Registers, bool alignTo16Bytes = Amd64Backend::alignTo16Bytes);
-
-	//Pushes the given register to the stack
-	void pushReg(CodeGen&, FloatRegisters, bool alignTo16Bytes = Amd64Backend::alignTo16Bytes);
+	void pushReg(CodeGen&, FloatRegisters);
 
 	//Pushes the given integer to the stack
-	void pushInt(CodeGen&, int, bool alignTo16Bytes = Amd64Backend::alignTo16Bytes);
+	void pushInt(CodeGen&, int);
 
 	//Pops from the stack to the given register
-	void popReg(CodeGen&, Registers, bool alignTo16Bytes = Amd64Backend::alignTo16Bytes);
+	void popReg(CodeGen&, Registers);
 
 	//Pops from the stack to the given register
-	void popReg(CodeGen&, NumberedRegisters, bool alignTo16Bytes = Amd64Backend::alignTo16Bytes);
+	void popReg(CodeGen&, NumberedRegisters);
 
 	//Pops from the stack to the given register
-	void popReg(CodeGen&, FloatRegisters, bool alignTo16Bytes = Amd64Backend::alignTo16Bytes);
+	void popReg(CodeGen&, FloatRegisters);
 
 	//Moves the content from the second register to the first register
 	void moveRegToReg(CodeGen&, Registers, Registers);

@@ -68,10 +68,6 @@ void printString(RawArrayRef objRef) {
 	}
 }
 
-void printNative(int x1, int x2, int x3, int x4, int x5, int x6, int x7) {
-	std::cout << x1 << ":" << x2 << ":" << x3 << ":" << x4 << ":" << x5 << ":" << x6 << ":" << x7 << std::endl;
-}
-
 void NativeLibrary::add(VMState& vmState) {
 	auto intType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Integer));
 	auto floatType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Float));
@@ -97,12 +93,6 @@ void NativeLibrary::add(VMState& vmState) {
 	binder.define(FunctionDefinition("std.math.sqrt", { floatType }, floatType, (long)(&sqrtf)));
 	binder.define(FunctionDefinition("std.math.sin", { floatType }, floatType, (long)(&sinf)));
 	binder.define(FunctionDefinition("std.math.cos", { floatType }, floatType, (long)(&cosf)));
-
-	binder.define(FunctionDefinition(
-		"rt.print",
-		{ intType, intType, intType, intType, intType, intType, intType },
-		voidType,
-		(long)(&printNative)));
 
 //	auto pointType = vmState.typeProvider().makeType("Ref.Struct.Point");
 //	binder.define(FunctionDefinition("rt.println", { pointType }, voidType, (long)(&printPoint)));

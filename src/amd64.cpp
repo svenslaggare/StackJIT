@@ -2,28 +2,16 @@
 #include <vector>
 #include <assert.h>
 
-void Amd64Backend::pushReg(CodeGen& codeGen, Registers reg, bool alignTo16Bytes) {
-	if (alignTo16Bytes) {
-		Amd64Backend::subByteFromReg(codeGen, Registers::SP, Amd64Backend::REG_SIZE);   //sub rsp, <reg size>
-	}
-
+void Amd64Backend::pushReg(CodeGen& codeGen, Registers reg) {
 	codeGen.push_back(0x50 | reg);
 }
 
-void Amd64Backend::pushReg(CodeGen& codeGen, FloatRegisters reg, bool alignTo16Bytes) {
-	if (alignTo16Bytes) {
-		Amd64Backend::subByteFromReg(codeGen, Registers::SP, Amd64Backend::REG_SIZE);   //sub rsp, <reg size>
-	}
-
+void Amd64Backend::pushReg(CodeGen& codeGen, FloatRegisters reg) {
 	Amd64Backend::subByteFromReg(codeGen, Registers::SP, Amd64Backend::REG_SIZE);   //sub rsp, <reg size>
 	Amd64Backend::moveRegToMemoryRegWithOffset(codeGen, Registers::SP, 0, reg);     //movss [rsp+0], <float reg>
 }
 
-void Amd64Backend::pushInt(CodeGen& codeGen, int value, bool alignTo16Bytes) {
-	if (alignTo16Bytes) {
-		Amd64Backend::subByteFromReg(codeGen, Registers::SP, Amd64Backend::REG_SIZE);   //sub rsp, <reg size>
-	}
-
+void Amd64Backend::pushInt(CodeGen& codeGen, int value) {
 	codeGen.push_back(0x68);
 
 	IntToBytes converter;
@@ -34,30 +22,18 @@ void Amd64Backend::pushInt(CodeGen& codeGen, int value, bool alignTo16Bytes) {
 	}
 }
 
-void Amd64Backend::popReg(CodeGen& codeGen, Registers reg, bool alignTo16Bytes) {
+void Amd64Backend::popReg(CodeGen& codeGen, Registers reg) {
 	codeGen.push_back(0x58 | reg);
-
-	if (alignTo16Bytes) {
-		Amd64Backend::addByteToReg(codeGen, Registers::SP, Amd64Backend::REG_SIZE);    //add rsp, <reg size>
-	}
 }
 
-void Amd64Backend::popReg(CodeGen& codeGen, NumberedRegisters reg, bool alignTo16Bytes) {
+void Amd64Backend::popReg(CodeGen& codeGen, NumberedRegisters reg) {
 	codeGen.push_back(0x41);
 	codeGen.push_back(0x58 | reg);
-
-	if (alignTo16Bytes) {
-		Amd64Backend::addByteToReg(codeGen, Registers::SP, Amd64Backend::REG_SIZE);    //add rsp, <reg size>
-	}
 }
 
-void Amd64Backend::popReg(CodeGen& codeGen, FloatRegisters reg, bool alignTo16Bytes) {
+void Amd64Backend::popReg(CodeGen& codeGen, FloatRegisters reg) {
     Amd64Backend::moveMemoryByRegToReg(codeGen, reg, Registers::SP); 			   //movss <reg>, [rsp]
 	Amd64Backend::addByteToReg(codeGen, Registers::SP, Amd64Backend::REG_SIZE);    //add rsp, <reg size>
-
-	if (alignTo16Bytes) {
-		Amd64Backend::addByteToReg(codeGen, Registers::SP, Amd64Backend::REG_SIZE);    //add rsp, <reg size>
-	}
 }
 
 void Amd64Backend::moveRegToReg(CodeGen& codeGen, Registers dest, Registers src) {

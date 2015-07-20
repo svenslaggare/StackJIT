@@ -85,7 +85,7 @@ void ExceptionHandling::addArrayCreationCheck(FunctionCompilationData& function)
 }
 
 namespace {
-	//Get the offset for the stack operand
+	//Returns the offset for a stack operand
 	int getStackOperandOffset(Function& function, int operandStackIndex) {
 		return -(int)(Amd64Backend::REG_SIZE * (1 + function.numLocals() + function.numParams() + operandStackIndex));
 	}
@@ -361,7 +361,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 		OperandStack::popReg(function, (int)inst.operandTypes().size() - 1, Registers::AX);
 
         //Convert it
-        pushArray(generatedCode, { 0xF3, 0x48, 0x0F, 0x2A, 0xC0 }); //cvtsi2ss xmm0,rax
+        pushArray(generatedCode, { 0xF3, 0x48, 0x0F, 0x2A, 0xC0 }); //cvtsi2ss xmm0, rax
 
         //Push it
 		OperandStack::pushReg(function, (int)inst.operandTypes().size() - 1, FloatRegisters::XMM0);
@@ -371,7 +371,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 		OperandStack::popReg(function, (int)inst.operandTypes().size() - 1, FloatRegisters::XMM0);
 
         //Convert it
-        pushArray(generatedCode, { 0xF3, 0x48, 0x0F, 0x2C, 0xC0 }); //cvttss2si rax,xmm0
+        pushArray(generatedCode, { 0xF3, 0x48, 0x0F, 0x2C, 0xC0 }); //cvttss2si rax, xmm0
 
         //Push it
 		OperandStack::pushReg(function, (int)inst.operandTypes().size() - 1, Registers::AX);
@@ -459,7 +459,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::LOAD_LOCAL:
         {
             //Load rax with the locals offset
-            int localOffset = (inst.intValue + (int)function.numParams() + stackOffset) * -Amd64Backend::REG_SIZE;
+            int localOffset = (stackOffset + inst.intValue + (int)function.numParams()) * -Amd64Backend::REG_SIZE;
             Amd64Backend::moveIntToReg(generatedCode, Registers::AX, localOffset); //mov rax, <local>
 
             //Now add the base pointer
@@ -477,7 +477,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             //Pop the top operand
 			OperandStack::popReg(function, (int)inst.operandTypes().size() - 1, Registers::AX);
 
-            int localOffset = (inst.intValue + (int)function.numParams() + stackOffset) * -Amd64Backend::REG_SIZE;
+            int localOffset = (stackOffset + inst.intValue + (int)function.numParams()) * -Amd64Backend::REG_SIZE;
 
             //Store the operand at the given local
             Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::BP, (char)localOffset, Registers::AX); //mov [rbp-local], rax
@@ -949,10 +949,10 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             }
 
             //The pointer to the string as the first arg
-            Amd64Backend::moveLongToReg(generatedCode, Registers::DI, (long)inst.strValue.data()); //mov rdi, <addr of string>
+            Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (long)inst.strValue.data()); //mov rdi, <addr of string>
 
             //The length of the string as the second arg
-            Amd64Backend::moveIntToReg(generatedCode, Registers::SI, inst.strValue.length()); //mov rsi, <string length>
+            Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg1, inst.strValue.length()); //mov rsi, <string length>
 
             //Call the newString runtime function
             generateCall(generatedCode, (long)&Runtime::newString);
