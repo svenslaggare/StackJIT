@@ -175,24 +175,6 @@ void Runtime::garbageCollect(long* basePtr, Function* func, int instIndex) {
 
         markObjects(basePtr, func, instIndex);
 
-//        int topFuncIndex = 0;
-//        for (auto callEntry : vmState.engine().callStack()) {
-//            auto topFunc = callEntry.function;
-//            auto callPoint = callEntry.callPoint;
-//            auto callBasePtr = findBasePtr(basePtr, 0, topFuncIndex);
-//
-//            if (vmState.enableDebug) {
-//                std::cout << topFunc->name() << " (" << callPoint << ")" << std::endl;
-//            }
-//
-//            if (vmState.enableDebug) {
-//                printAliveObjects(callBasePtr, topFunc, callPoint, "\t");
-//            }
-//
-//            markObjects(callBasePtr, topFunc, callPoint);
-//
-//            topFuncIndex++;
-//        }
         auto topEntryPtr = vmState.engine().callStack().top();
 		int topFuncIndex = 0;
 		while (topEntryPtr > vmState.engine().callStack().start()) {
