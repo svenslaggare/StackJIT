@@ -50,6 +50,7 @@ public:
 
     //Returns the execution engine
     ExecutionEngine& engine();
+    const ExecutionEngine& engine() const;
 
     //Returns the GC
     GarbageCollector& gc();

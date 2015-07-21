@@ -23,6 +23,10 @@ ExecutionEngine& VMState::engine() {
     return mEngine;
 }
 
+const ExecutionEngine& VMState::engine() const {
+    return mEngine;
+}
+
 const Binder& VMState::binder() const {
     return mBinder;
 }

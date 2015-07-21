@@ -38,6 +38,8 @@ func main2() Int
 
 func main() Int
 {
+	.locals 1
+	.local 0 Int
 	CALL main2()
 	RET
 }

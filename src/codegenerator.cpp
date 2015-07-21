@@ -291,6 +291,56 @@ void CodeGenerator::zeroLocals(FunctionCompilationData& functionData) {
     }
 }
 
+namespace {
+	//Pushes a function to the call stack
+	void pushFunc(const VMState& vmState, CodeGen& generatedCode, Function& function, int instIndex) {
+		//Get the top pointer
+		long topPtrAddr = (long)vmState.engine().callStack().topPtr();
+		Amd64Backend::moveMemoryToReg(
+			generatedCode,
+			Registers::AX,
+			topPtrAddr); //mov rax, [<address of top>]
+
+		Amd64Backend::addByteToReg(
+			generatedCode,
+			Registers::AX, sizeof(CallStackEntry)); //add rax, <sizeof(CallStackEntry)>
+
+		//Store the entry
+		Amd64Backend::moveLongToReg(generatedCode, Registers::CX, (long)&function); //mov rcx, <address of func>
+		Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::AX, 0, Registers::CX); //mov [rax], rcx
+		Amd64Backend::moveIntToReg(generatedCode, Registers::CX, instIndex); //mov rcx, <call point>
+		Amd64Backend::moveRegToMemoryRegWithOffset(
+			generatedCode,
+			Registers::AX, sizeof(Function*), Registers::CX); //mov [rax+<offset>], rcx
+
+		//Update the top pointer
+		Amd64Backend::moveRegToMemory(
+			generatedCode,
+			topPtrAddr,
+			Registers::AX); //mov [address of top>], rax
+	}
+
+	//Pops a function from the call stack
+	void popFunc(const VMState& vmState, CodeGen& generatedCode) {
+		//Get the top pointer
+		long topPtrAddr = (long)vmState.engine().callStack().topPtr();
+		Amd64Backend::moveMemoryToReg(
+			generatedCode,
+			Registers::AX,
+			topPtrAddr); //mov rax, [<address of top>]
+
+		Amd64Backend::addByteToReg(
+			generatedCode,
+			Registers::AX, -(int)sizeof(CallStackEntry)); //add rax, -<sizeof(CallStackEntry)>
+
+		//Update the top pointer
+		Amd64Backend::moveRegToMemory(
+			generatedCode,
+			topPtrAddr,
+			Registers::AX); //mov [address of top>], rax
+	}
+}
+
 void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, const VMState& vmState, const Instruction& inst, int instIndex) {
     auto& function = functionData.function;
     auto& generatedCode = function.generatedCode;
@@ -582,10 +632,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             auto funcToCall = vmState.binder().getFunction(calledSignature);
 
 			if (!funcToCall.isMacroFunction()) {
-				//Call the pushFunc runtime function
-				Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (long) &function); //Address of the func handle as the target as first arg
-				Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg1, instIndex); //Current inst index as second arg
-				generateCall(generatedCode, (long) &Runtime::pushFunc);
+				//Push the call
+				pushFunc(vmState, generatedCode, function, instIndex);
 
 				//Get the address of the function to call
 				long funcAddr = 0;
@@ -654,8 +702,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 				//Push the result
 				mCallingConvention.returnValue(functionData, funcToCall, (int)inst.operandTypes().size() - numArgs);
 
-				//Call the popFunc runtime function
-				generateCall(generatedCode, (long) &Runtime::popFunc);
+				//Pop the call
+				popFunc(vmState, generatedCode);
 			} else {
 				//Invoke the macro function
 				MacroFunctionContext context(vmState, mCallingConvention, mExceptionHandling, functionData, inst, instIndex);

@@ -10,8 +10,58 @@
 #include <iostream>
 #include <stdexcept>
 
+CallStackEntry::CallStackEntry(Function* function, int callPoint)
+	: function(function), callPoint(callPoint) {
+
+}
+
+CallStackEntry::CallStackEntry()
+	: function(nullptr), callPoint(0) {
+
+}
+
+CallStack::CallStack(std::size_t size)
+	: mSize(size), mStart(new CallStackEntry[size]), mTop(mStart) {
+
+}
+
+CallStack::~CallStack() {
+	delete[] mStart;
+}
+
+void CallStack::push(Function* function, int callPoint) {
+	if (mTop + 1 < mStart + mSize) {
+		mTop++;
+		*mTop = CallStackEntry(function, callPoint);
+	} else {
+		throw std::runtime_error("Stack overflow.");
+	}
+}
+
+CallStackEntry CallStack::pop() {
+	if (mTop == mStart) {
+		throw std::runtime_error("Stack underflow.");
+	}
+
+	auto top = *mTop;
+	mTop--;
+	return top;
+}
+
+CallStackEntry* CallStack::start() {
+	return mStart;
+}
+
+CallStackEntry* CallStack::top() {
+	return mTop;
+}
+
+CallStackEntry* const * const CallStack::topPtr() const {
+	return &mTop;
+}
+
 ExecutionEngine::ExecutionEngine(VMState& vmState)
-	: mVMState(vmState), mJIT(vmState) {
+	: mVMState(vmState), mJIT(vmState), mCallStack(3000) {
 
 }
 
@@ -117,17 +167,10 @@ void ExecutionEngine::compile() {
     mJIT.makeExecutable();
 }
 
-const std::deque<CallStackEntry>& ExecutionEngine::callStack() const {
-    return mCallStack;
+CallStack& ExecutionEngine::callStack() {
+	return mCallStack;
 }
 
-CallStackEntry ExecutionEngine::popFunc() {
-    auto top = std::make_pair(mCallStack.front().first, mCallStack.front().second);
-    mCallStack.pop_front();
-    return top;
-}
-
-void ExecutionEngine::pushFunc(Function* func, int instIndex) {
-    auto newEntry = std::make_pair(func, instIndex);
-    mCallStack.push_front(newEntry);
+const CallStack& ExecutionEngine::callStack() const {
+	return mCallStack;
 }

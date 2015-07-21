@@ -3,23 +3,57 @@
 #include "jit.h"
 #include "assembly.h"
 #include "parser.h"
-#include <deque>
 #include <vector>
 
+//Represents a entry point
 typedef int (*EntryPointFunction)();
 
 class VMState;
 class Assembly;
 class Function;
 
-using CallStackEntry = std::pair<Function*, int>;
+//Represents a call stack entry
+struct CallStackEntry {
+	Function* function;
+	int callPoint;
+
+	CallStackEntry(Function* function, int callPoint);
+	CallStackEntry();
+};
+
+//Manages the call stack
+class CallStack {
+private:
+	std::size_t mSize;
+	CallStackEntry* mStart;
+	CallStackEntry* mTop;
+public:
+	//Creates a new call stack of the given size
+	CallStack(std::size_t size);
+	~CallStack();
+
+	//Pushes the given function to the stack
+	void push(Function* function, int callPoint);
+
+	//Pops the top entry
+	CallStackEntry pop();
+
+	//Returns the start of the stack
+	CallStackEntry* start();
+
+	//Returns top of the stack
+	CallStackEntry* top();
+
+	//Pointer to the top variable
+	CallStackEntry* const * const topPtr() const;
+};
 
 //Represents the execution engine
 class ExecutionEngine {
 private:
 	VMState& mVMState;
 	JITCompiler mJIT;
-	std::deque<CallStackEntry> mCallStack;
+	CallStack mCallStack;
 
 	std::vector<AssemblyParser::Assembly*> mAssemblies;
 	std::vector<Function*> mLoadedFunctions;
@@ -48,11 +82,6 @@ public:
 	void compile();
 
 	//Returns the call stack
-    const std::deque<CallStackEntry>& callStack() const;
-
-    //Pops the top function
-    CallStackEntry popFunc();
-
-    //Pushes the given function to the top of the stack
-    void pushFunc(Function* func, int instIndex);
+    CallStack& callStack();
+    const CallStack& callStack() const;
 };
