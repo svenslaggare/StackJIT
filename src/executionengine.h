@@ -38,8 +38,12 @@ public:
 	//Pops the top entry
 	CallStackEntry pop();
 
+	//Returns the size of the stack
+	std::size_t size() const;
+
 	//Returns the start of the stack
 	CallStackEntry* start();
+	CallStackEntry* const start() const;
 
 	//Returns top of the stack
 	CallStackEntry* top();

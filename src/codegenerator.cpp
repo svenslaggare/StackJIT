@@ -38,6 +38,11 @@ void ExceptionHandling::generateHandlers(MemoryManager& memoryManger) {
 	Amd64Backend::moveLongToReg(handlerCode, Registers::DI, (long)&Runtime::invalidArrayCreation); //mov rdi, <addr of func>
 	Amd64Backend::callInReg(handlerCode, Registers::DI); //call rdi
 
+	//Stack overflow handler
+	auto stackOverflowHandler = handlerCode.size();
+	Amd64Backend::moveLongToReg(handlerCode, Registers::DI, (long)&Runtime::stackOverflow); //mov rdi, <addr of func>
+	Amd64Backend::callInReg(handlerCode, Registers::DI); //call rdi
+
 	//Allocate and copy memory
 	auto handlerMemory = memoryManger.allocateMemory(handlerCode.size());
 	memcpy(handlerMemory, handlerCode.data(), handlerCode.size());
@@ -46,6 +51,7 @@ void ExceptionHandling::generateHandlers(MemoryManager& memoryManger) {
 	mNullCheckHandler = (unsigned char*)handlerMemory + nullHandlerOffset;
 	mArrayBoundsCheckHandler = (unsigned char*)handlerMemory + arrayBoundsHandlerOffset;
 	mArrayCreationCheckHandler = (unsigned char*)handlerMemory + arrayCreationHandler;
+	mStackOverflowCheckHandler = (unsigned char*)handlerMemory + stackOverflowHandler;
 }
 
 void ExceptionHandling::addNullCheck(FunctionCompilationData& function, Registers refReg, Registers cmpReg) const {
@@ -83,6 +89,20 @@ void ExceptionHandling::addArrayCreationCheck(FunctionCompilationData& function)
 	//Jump to handler if invalid
 	Amd64Backend::jumpGreaterThan(codeGen, 0); //jg <array creation handler>
 	function.unresolvedNativeBranches.insert({ codeGen.size() - 6, (long)mArrayCreationCheckHandler });
+}
+
+void ExceptionHandling::addStackOverflowCheck(FunctionCompilationData& function, long callStackEnd) const {
+	auto& codeGen = function.function.generatedCode;
+
+	//Move the end of the call stack to register
+	Amd64Backend::moveLongToReg(codeGen, Registers::CX, callStackEnd); //mov rcx, <call stack end>
+
+	//Compare the top and the end of the stack
+	Amd64Backend::compareRegToReg(codeGen, Registers::AX, Registers::CX); //cmp rax, rcx
+
+	//Jump to handler if overflow
+	Amd64Backend::jumpGreaterThanOrEqual(codeGen, 0); //jge <stack overflow handler>.
+	function.unresolvedNativeBranches.insert({ codeGen.size() - 6, (long)mStackOverflowCheckHandler });
 }
 
 namespace {
@@ -274,54 +294,58 @@ void CodeGenerator::zeroLocals(FunctionCompilationData& functionData) {
     }
 }
 
-namespace {
-	//Pushes a function to the call stack
-	void pushFunc(const VMState& vmState, CodeGen& generatedCode, Function& function, int instIndex) {
-		//Get the top pointer
-		long topPtr = (long)vmState.engine().callStack().topPtr();
-		Amd64Backend::moveMemoryToReg(
-			generatedCode,
-			Registers::AX,
-			topPtr); //mov rax, [<address of top>]
+void CodeGenerator::pushFunc(const VMState& vmState, FunctionCompilationData& functionData, int instIndex) {
+	auto& generatedCode = functionData.function.generatedCode;
+	auto& function = functionData.function;
 
-		Amd64Backend::addByteToReg(
-			generatedCode,
-			Registers::AX, sizeof(CallStackEntry)); //add rax, <sizeof(CallStackEntry)>
+	//Get the top pointer
+	long topPtr = (long)vmState.engine().callStack().topPtr();
+	Amd64Backend::moveMemoryToReg(
+		generatedCode,
+		Registers::AX,
+		topPtr); //mov rax, [<address of top>]
 
-		//Store the entry
-		Amd64Backend::moveLongToReg(generatedCode, Registers::CX, (long)&function); //mov rcx, <address of func>
-		Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::AX, 0, Registers::CX); //mov [rax], rcx
-		Amd64Backend::moveIntToReg(generatedCode, Registers::CX, instIndex); //mov rcx, <call point>
-		Amd64Backend::moveRegToMemoryRegWithOffset(
-			generatedCode,
-			Registers::AX, sizeof(Function*), Registers::CX); //mov [rax+<offset>], rcx
+	Amd64Backend::addByteToReg(
+		generatedCode,
+		Registers::AX, sizeof(CallStackEntry)); //add rax, <sizeof(CallStackEntry)>
 
-		//Update the top pointer
-		Amd64Backend::moveRegToMemory(
-			generatedCode,
-			topPtr,
-			Registers::AX); //mov [address of top>], rax
-	}
+	//Check if overflow
+	mExceptionHandling.addStackOverflowCheck(
+		functionData,
+		(long)(vmState.engine().callStack().start() + vmState.engine().callStack().size()));
 
-	//Pops a function from the call stack
-	void popFunc(const VMState& vmState, CodeGen& generatedCode) {
-		//Get the top pointer
-		long topPtr = (long)vmState.engine().callStack().topPtr();
-		Amd64Backend::moveMemoryToReg(
-			generatedCode,
-			Registers::AX,
-			topPtr); //mov rax, [<address of top>]
+	//Store the entry
+	Amd64Backend::moveLongToReg(generatedCode, Registers::CX, (long)&function); //mov rcx, <address of func>
+	Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::AX, 0, Registers::CX); //mov [rax], rcx
+	Amd64Backend::moveIntToReg(generatedCode, Registers::CX, instIndex); //mov rcx, <call point>
+	Amd64Backend::moveRegToMemoryRegWithOffset(
+		generatedCode,
+		Registers::AX, sizeof(Function*), Registers::CX); //mov [rax+<offset>], rcx
 
-		Amd64Backend::addByteToReg(
-			generatedCode,
-			Registers::AX, -(int)sizeof(CallStackEntry)); //add rax, -<sizeof(CallStackEntry)>
+	//Update the top pointer
+	Amd64Backend::moveRegToMemory(
+		generatedCode,
+		topPtr,
+		Registers::AX); //mov [address of top>], rax
+}
 
-		//Update the top pointer
-		Amd64Backend::moveRegToMemory(
-			generatedCode,
-			topPtr,
-			Registers::AX); //mov [address of top>], rax
-	}
+void CodeGenerator::popFunc(const VMState& vmState, CodeGen& generatedCode) {
+	//Get the top pointer
+	long topPtr = (long)vmState.engine().callStack().topPtr();
+	Amd64Backend::moveMemoryToReg(
+		generatedCode,
+		Registers::AX,
+		topPtr); //mov rax, [<address of top>]
+
+	Amd64Backend::addByteToReg(
+		generatedCode,
+		Registers::AX, -(int)sizeof(CallStackEntry)); //add rax, -<sizeof(CallStackEntry)>
+
+	//Update the top pointer
+	Amd64Backend::moveRegToMemory(
+		generatedCode,
+		topPtr,
+		Registers::AX); //mov [address of top>], rax
 }
 
 void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, const VMState& vmState, const Instruction& inst, int instIndex) {
@@ -616,11 +640,11 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
 			if (!funcToCall.isMacroFunction()) {
 				//Push the call
-				pushFunc(vmState, generatedCode, function, instIndex);
+				pushFunc(vmState, functionData, instIndex);
 
 				//Get the address of the function to call
 				long funcAddr = 0;
-				int numArgs = (int) funcToCall.parameters().size();
+				int numArgs = (int)funcToCall.parameters().size();
 
                 //Align the stack
                 int stackAlignment = mCallingConvention.calculateStackAlignment(functionData, funcToCall);

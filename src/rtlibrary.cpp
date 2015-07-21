@@ -13,14 +13,6 @@
 
 extern VMState vmState;
 
-void Runtime::pushFunc(Function* func, int instIndex) {
-    vmState.engine().callStack().push(func, instIndex);
-}
-
-void Runtime::popFunc() {
-    vmState.engine().callStack().pop();
-}
-
 void Runtime::printStackFrame(long* basePtr, Function* func) {
     using namespace Runtime::Internal;
 
@@ -242,4 +234,8 @@ void Runtime::arrayOutOfBoundsError() {
 
 void Runtime::nullReferenceError() {
     Runtime::runtimeError("Null reference error.");
+}
+
+void Runtime::stackOverflow() {
+	Runtime::runtimeError("Stack overflow.");
 }

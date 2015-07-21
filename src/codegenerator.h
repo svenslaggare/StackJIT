@@ -14,6 +14,7 @@ private:
 	unsigned char* mNullCheckHandler;
 	unsigned char* mArrayBoundsCheckHandler;
 	unsigned char* mArrayCreationCheckHandler;
+	unsigned char* mStackOverflowCheckHandler;
 public:
 	//Generates the exception handlers
 	void generateHandlers(MemoryManager& memoryManger);
@@ -26,6 +27,9 @@ public:
 
 	//Adds an array creation check
 	void addArrayCreationCheck(FunctionCompilationData& function) const;
+
+	//Adds a stack overflow check
+	void addStackOverflowCheck(FunctionCompilationData& function, long callStackEnd) const;
 };
 
 //Manages the operand stack
@@ -51,6 +55,12 @@ private:
 
 	//Zeroes the locals
 	void zeroLocals(FunctionCompilationData& functionData);
+
+	//Pushes a function to the call stack
+	void pushFunc(const VMState& vmState, FunctionCompilationData& functionData, int instIndex);
+
+	//Pops a function from the call stack
+	void popFunc(const VMState& vmState, CodeGen& generatedCode);
 public:
 	//Creates a new code generator
 	CodeGenerator(const CallingConvention& callingConvention, const ExceptionHandling& exceptionHandling);

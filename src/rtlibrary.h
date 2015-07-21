@@ -7,12 +7,6 @@ class ObjectHandle;
 
 //The runtime library
 namespace Runtime {
-	//Pushes the given func to the top of the call stack
-	void pushFunc(Function* func, int instIndex);
-
-	//Pops the top function from the call stack
-	void popFunc();
-
 	//Prints the given stack frame
 	void printStackFrame(long* basePtr, Function* func);
 
@@ -48,4 +42,7 @@ namespace Runtime {
 
 	//Signals that a null reference has been made
 	void nullReferenceError();
+
+	//Signals that the call stack has run out of memory
+	void stackOverflow();
 }

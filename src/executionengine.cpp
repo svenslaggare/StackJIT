@@ -48,7 +48,15 @@ CallStackEntry CallStack::pop() {
 	return top;
 }
 
+std::size_t CallStack::size() const {
+	return mSize;
+}
+
 CallStackEntry* CallStack::start() {
+	return mStart;
+}
+
+CallStackEntry* const CallStack::start() const {
 	return mStart;
 }
 
@@ -61,7 +69,7 @@ CallStackEntry* const * const CallStack::topPtr() const {
 }
 
 ExecutionEngine::ExecutionEngine(VMState& vmState)
-	: mVMState(vmState), mJIT(vmState), mCallStack(3000) {
+	: mVMState(vmState), mJIT(vmState), mCallStack(2000) {
 
 }
 
