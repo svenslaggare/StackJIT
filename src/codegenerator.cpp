@@ -691,16 +691,12 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     break;
     case OpCodes::LOAD_ARG:
         {
-            //Load rax with the arg offset
-            Amd64Backend::moveIntToReg(
+			//Load rax with the argument
+			int argOffset = (inst.intValue + stackOffset) * -Amd64Backend::REG_SIZE;
+
+			Amd64Backend::moveMemoryRegWithOffsetToReg(
 				generatedCode,
-				Registers::AX, (inst.intValue + stackOffset) * -Amd64Backend::REG_SIZE); //mov rax, <arg offset>
-
-            //Now add the base pointer
-            Amd64Backend::addRegToReg(generatedCode, Registers::AX, Registers::BP); //add rax, rbp
-
-            //Load rax with the argument from the stack
-            Amd64Backend::moveMemoryByRegToReg(generatedCode, Registers::AX, Registers::AX); //mov rax, [rax]
+				Registers::AX, Registers::BP, argOffset); //mov rax [rbp+<arg offset>]
 
             //Push the loaded value
 			OperandStack::pushReg(function, (int)inst.operandTypes().size(), Registers::AX);
