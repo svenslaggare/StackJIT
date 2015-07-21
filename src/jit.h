@@ -111,8 +111,8 @@ public:
 	//Returns the memory manager
 	MemoryManager& memoryManager();
 
-	//JITs the given function
-	JitFunction generateFunction(Function* function);
+	//Compiles the given function
+	JitFunction compileFunction(Function* function);
 
 	//Resolves symbols. This function should only be called after all functions has been jitted.
 	void resolveSymbols();

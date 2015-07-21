@@ -153,6 +153,8 @@ public:
 
         TS_ASSERT_EQUALS(invokeVM("comparison/float_le"), "1\n1\n0\n4711\n");
         TS_ASSERT_EQUALS(invokeVM("comparison/float_lt"), "1\n0\n0\n4711\n");
+
+        TS_ASSERT_EQUALS(invokeVM("comparison/largestackframe"), "0\n1\n0\n4711\n");
     }
 
     void testBranch() {

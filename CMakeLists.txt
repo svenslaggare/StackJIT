@@ -56,4 +56,4 @@ set(SOURCE_FILES
     tests/amd64-test.h
     tests/vm-test.h)
 
-add_executable(stackjit ${SOURCE_FILES} src/instructionset.h)
+add_executable(stackjit ${SOURCE_FILES} src/instructionset.h src/helpers.h src/helpers.cpp)

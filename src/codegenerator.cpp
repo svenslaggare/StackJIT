@@ -6,6 +6,7 @@
 #include "function.h"
 #include "instructions.h"
 #include "stackjit.h"
+#include "helpers.h"
 
 #include <string.h>
 #include <iostream>
@@ -482,7 +483,12 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             }
 
             //Jump
-			int target = 8 + 5;
+			std::size_t compareJump = generatedCode.size();
+			std::size_t jump = 0;
+			std::size_t trueBranchStart = 0;
+			std::size_t falseBranchStart = 0;
+
+			int target = 0;
 
             switch (inst.opCode()) {
                 case OpCodes::COMPARE_EQUAL:
@@ -524,11 +530,18 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             }
 
             //False
+			falseBranchStart = generatedCode.size();
 			OperandStack::pushInt(function, (int)inst.operandTypes().size() - 2, 0);
-            Amd64Backend::jump(generatedCode, 8);
+			jump = generatedCode.size();
+            Amd64Backend::jump(generatedCode, 0);
 
             //True
+			trueBranchStart = generatedCode.size();
 			OperandStack::pushInt(function, (int)inst.operandTypes().size() - 2, 1);
+
+
+			Helpers::setInt(generatedCode, jump + 1, (int)(generatedCode.size() - trueBranchStart));
+			Helpers::setInt(generatedCode, compareJump + 2, (int)(trueBranchStart - falseBranchStart));
         }
         break;
     case OpCodes::LOAD_LOCAL:

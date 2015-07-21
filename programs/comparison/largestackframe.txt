@@ -1,0 +1,60 @@
+func println(Bool) Void
+{
+	LDARG 0
+	LDTRUE
+	BNE 6
+	LDINT 1
+	CALL std.println(Int)
+	BR 8
+	LDINT 0
+	CALL std.println(Int)
+	RET
+}
+
+func main() Int
+{
+	.locals 25
+	.local 0 Ref.Array[Char]
+	.local 1 Ref.Array[Char]
+	.local 2 Ref.Array[Char]
+	.local 3 Ref.Array[Char]
+	.local 4 Ref.Array[Char]
+	.local 5 Ref.Array[Char]
+	.local 6 Ref.Array[Char]
+	.local 7 Ref.Array[Char]
+	.local 8 Ref.Array[Char]
+	.local 9 Ref.Array[Char]
+	.local 10 Ref.Array[Char]
+	.local 11 Ref.Array[Char]
+	.local 12 Ref.Array[Char]
+	.local 13 Ref.Array[Char]
+	.local 14 Ref.Array[Char]
+	.local 15 Ref.Array[Char]
+	.local 16 Ref.Array[Char]
+	.local 17 Ref.Array[Char]
+	.local 18 Ref.Array[Char]
+	.local 19 Ref.Array[Char]
+	.local 20 Ref.Array[Char]
+	.local 21 Ref.Array[Char]
+	.local 22 Ref.Array[Char]
+	.local 23 Ref.Array[Char]
+	.local 24 Ref.Array[Char]
+
+	LDINT 3
+	LDINT 4
+	CMPEQ
+	CALL println(Bool)
+
+	LDINT 4
+	LDINT 4
+	CMPEQ
+	CALL println(Bool)
+
+	LDINT 5
+	LDINT 4
+	CMPEQ
+	CALL println(Bool)
+
+	LDINT 4711
+	RET
+}

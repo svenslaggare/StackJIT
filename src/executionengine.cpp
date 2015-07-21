@@ -93,7 +93,7 @@ void ExecutionEngine::generateCode() {
 		//Type check the function
 		TypeChecker::typeCheckFunction(*func, mVMState, mVMState.enableDebug && mVMState.printTypeChecking);
 
-		auto funcPtr = mJIT.generateFunction(func);
+		auto funcPtr = mJIT.compileFunction(func);
 
 		if (mVMState.enableDebug) {
 			std::cout <<

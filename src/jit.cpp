@@ -6,6 +6,7 @@
 #include "vmstate.h"
 #include "binder.h"
 #include "function.h"
+#include "helpers.h"
 
 #include <string.h>
 #include <iostream>
@@ -64,7 +65,7 @@ void JITCompiler::createMacros() {
 	}));
 }
 
-JitFunction JITCompiler::generateFunction(Function* function) {
+JitFunction JITCompiler::compileFunction(Function* function) {
 	auto signature = mVMState.binder().functionSignature(*function);
 	mFunctions.emplace(signature, FunctionCompilationData(*function));
 	auto& functionData = mFunctions.at(signature);
@@ -140,15 +141,11 @@ void JITCompiler::resolveBranches(FunctionCompilationData& functionData) {
 		unsigned int nativeTarget = functionData.instructionNumMapping[branchTarget.target];
 
 		//Calculate the native jump location
-		IntToBytes converter;
-		converter.intValue = nativeTarget - source - branchTarget.instructionSize;
-
-		unsigned int sourceOffset = branchTarget.instructionSize - sizeof(int);
+		int target = nativeTarget - source - branchTarget.instructionSize;
 
 		//Update the source with the native target
-		for (std::size_t i = 0; i < sizeof(int); i++) {
-			function.generatedCode[source + sourceOffset + i] = converter.byteValues[i];
-		}
+		unsigned int sourceOffset = source + branchTarget.instructionSize - sizeof(int);
+		Helpers::setInt(function.generatedCode, sourceOffset, target);
 	}
 
 	functionData.unresolvedBranches.clear();
@@ -167,15 +164,11 @@ void JITCompiler::resolveNativeBranches(FunctionCompilationData& functionData) {
 		auto target = branch.second;
 
 		//Calculate the native jump location
-		IntToBytes converter;
-		converter.intValue = target - ((long)funcCodePtr + source) - 6;
-
-		unsigned int sourceOffset = 6 - sizeof(int);
+		int nativeTarget = target - ((long)funcCodePtr + source) - 6;
 
 		//Update the source with the native target
-		for (std::size_t i = 0; i < sizeof(int); i++) {
-			funcCodePtr[source + sourceOffset + i] = converter.byteValues[i];
-		}
+		unsigned int sourceOffset = source + 6 - sizeof(int);
+		Helpers::setInt(funcCodePtr, sourceOffset, nativeTarget);
 	}
 
 	functionData.unresolvedNativeBranches.clear();
@@ -196,21 +189,10 @@ void JITCompiler::resolveCallTargets(FunctionCompilationData& functionData) {
 
 		//Update the call target
 		if (callType == FunctionCallType::Absolute) {
-			LongToBytes converter;
-			converter.longValue = calledFuncAddr;
-
-			std::size_t base = offset + 2;
-			for (std::size_t i = 0; i < sizeof(long); i++) {
-				funcCodePtr[base + i] = converter.byteValues[i];
-			}
+			Helpers::setLong(funcCodePtr, offset + 2, calledFuncAddr);
 		} else if (callType == FunctionCallType::Relative) {
-			IntToBytes converter;
-			converter.intValue = (int)(calledFuncAddr - ((long)funcCodePtr + offset + 5));
-
-			std::size_t base = offset + 1;
-			for (std::size_t i = 0; i < sizeof(int); i++) {
-				funcCodePtr[base + i] = converter.byteValues[i];
-			}
+			int target = (int)(calledFuncAddr - ((long)funcCodePtr + offset + 5));
+			Helpers::setInt(funcCodePtr, offset + 1, target);
 		}
 	}
 
