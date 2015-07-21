@@ -258,36 +258,19 @@ void CodeGenerator::initializeFunction(FunctionCompilationData& functionData) {
 void CodeGenerator::zeroLocals(FunctionCompilationData& functionData) {
     auto& function = functionData.function;
 
+	//Zero the locals
     if (function.numLocals() > 0) {
-        //This method should be faster? but makes the generated code larger
-        // Amd64Backend::moveIntToReg(function.generatedCode, Registers::AX, 0); //mov rax, 0
+		//Zero eax
+		Amd64Backend::xorRegToReg(
+			function.generatedCode,
+			Registers::AX, Registers::AX, true); //xor eax, eax
 
-        // for (int i = 0; i < function.numLocals(); i++) {
-        //     int localOffset = (i + function.numArgs() + 1) * -Amd64Backend::REG_SIZE;
-        //     Amd64Backend::moveRegToMemoryRegWithCharOffset(function.generatedCode, Registers::BP, localOffset, Registers::AX); //mov [rbp-local], rax
-        // }
-
-        //Set the dir flag to decrease
-        function.generatedCode.push_back(0xFD); //std
-
-        //Set the address where the locals starts
-        Amd64Backend::moveRegToReg(function.generatedCode, Registers::DI, Registers::BP); //mov rdi, rbp
-
-		int localsOffset = (int)((function.numParams() + 1) * -Amd64Backend::REG_SIZE);
-
-		Amd64Backend::addConstantToReg(function.generatedCode, Registers::DI, localsOffset); //add rdi, <locals offset>
-
-        //Set the number of locals
-        Amd64Backend::moveIntToReg(function.generatedCode, Registers::CX, (int)function.numLocals()); //mov rcx, <num locals>
-
-        //Zero eax
-		Amd64Backend::xorRegToReg(function.generatedCode, Registers::AX, Registers::AX, true); //xor eax, eax
-
-        //Execute the zeroing
-        pushArray(function.generatedCode, { 0xF3, 0x48, 0xAB }); //rep stosq
-
-        //Clear the dir flag
-        function.generatedCode.push_back(0xFC); //cld
+		for (int i = 0; i < function.numLocals(); i++) {
+			int localOffset = (int)((i + function.numParams() + 1) * -Amd64Backend::REG_SIZE);
+			Amd64Backend::moveRegToMemoryRegWithOffset(
+				function.generatedCode,
+				Registers::BP, localOffset, Registers::AX); //mov [rbp-local], rax
+        }
     }
 }
 
@@ -295,11 +278,11 @@ namespace {
 	//Pushes a function to the call stack
 	void pushFunc(const VMState& vmState, CodeGen& generatedCode, Function& function, int instIndex) {
 		//Get the top pointer
-		long topPtrAddr = (long)vmState.engine().callStack().topPtr();
+		long topPtr = (long)vmState.engine().callStack().topPtr();
 		Amd64Backend::moveMemoryToReg(
 			generatedCode,
 			Registers::AX,
-			topPtrAddr); //mov rax, [<address of top>]
+			topPtr); //mov rax, [<address of top>]
 
 		Amd64Backend::addByteToReg(
 			generatedCode,
@@ -316,18 +299,18 @@ namespace {
 		//Update the top pointer
 		Amd64Backend::moveRegToMemory(
 			generatedCode,
-			topPtrAddr,
+			topPtr,
 			Registers::AX); //mov [address of top>], rax
 	}
 
 	//Pops a function from the call stack
 	void popFunc(const VMState& vmState, CodeGen& generatedCode) {
 		//Get the top pointer
-		long topPtrAddr = (long)vmState.engine().callStack().topPtr();
+		long topPtr = (long)vmState.engine().callStack().topPtr();
 		Amd64Backend::moveMemoryToReg(
 			generatedCode,
 			Registers::AX,
-			topPtrAddr); //mov rax, [<address of top>]
+			topPtr); //mov rax, [<address of top>]
 
 		Amd64Backend::addByteToReg(
 			generatedCode,
@@ -336,7 +319,7 @@ namespace {
 		//Update the top pointer
 		Amd64Backend::moveRegToMemory(
 			generatedCode,
-			topPtrAddr,
+			topPtr,
 			Registers::AX); //mov [address of top>], rax
 	}
 }

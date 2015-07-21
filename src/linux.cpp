@@ -196,7 +196,7 @@ namespace {
 	}
 
 	//Moves a relative none float argument to the stack. The argument is relative to the type of the register.
-	void moveNoneFloatArgToStack(FunctionCompilationData& functionData, int argIndex, int relativeArgIndex, int numStackArgs) {
+	void moveNoneFloatArgToStack(FunctionCompilationData& functionData, int argIndex, int relativeArgIndex) {
 		auto& function = functionData.function;
 
 		char argStackOffset = -(char)((1 + argIndex) * Amd64Backend::REG_SIZE);
@@ -252,7 +252,7 @@ namespace {
 	}
 
 	//Moves a relative float argument to the stack. The argument is relative to the type of the register.
-	void moveFloatArgToStack(FunctionCompilationData& functionData, int argIndex, int relativeArgIndex, int numStackArgs) {
+	void moveFloatArgToStack(FunctionCompilationData& functionData, int argIndex, int relativeArgIndex) {
 		auto& function = functionData.function;
 
 		char argStackOffset = -(char)((1 + argIndex) * Amd64Backend::REG_SIZE);
@@ -324,12 +324,11 @@ void LinuxCallingConvention::moveArgsToStack(FunctionCompilationData& functionDa
     auto& function = functionData.function;
 	auto& parameters = function.parameters();
 
-	int numStackArgs = numStackArguments(parameters);
 	for (int arg = (int)function.numParams() - 1; arg >= 0; arg--) {
 		if (TypeSystem::isPrimitiveType(function.parameters()[arg], PrimitiveTypes::Float)) {
-			moveFloatArgToStack(functionData, arg, getFloatArgIndex(parameters, arg), numStackArgs);
+			moveFloatArgToStack(functionData, arg, getFloatArgIndex(parameters, arg));
 		} else {
-			moveNoneFloatArgToStack(functionData, arg, getNoneFloatArgIndex(parameters, arg), numStackArgs);
+			moveNoneFloatArgToStack(functionData, arg, getNoneFloatArgIndex(parameters, arg));
 		}
 	}
 }
@@ -343,7 +342,6 @@ void LinuxCallingConvention::callFunctionArgument(FunctionCompilationData& funct
 	if (TypeSystem::isPrimitiveType(argType, PrimitiveTypes::Float)) {
 		//Arguments of index >= 8 are passed via the stack.
 		int relativeIndex = getFloatArgIndex(funcToCall.parameters(), argIndex);
-
 		int argOperandOffset = numStackOperands - (numArgs - argIndex);
 
 		if (relativeIndex >= 8) {
