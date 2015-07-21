@@ -92,6 +92,8 @@ public:
         TS_ASSERT_EQUALS(invokeVM("basic/program14"), "2\n");
         TS_ASSERT_EQUALS(invokeVM("basic/program15"), "-2\n");
 
+        TS_ASSERT_EQUALS(invokeVM("basic/recursion1"), "21\n");
+
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("basic/invalid_program1")), "what():  1: Locals of 'Void' type are not allowed.");
     }
 

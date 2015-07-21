@@ -1,0 +1,28 @@
+func fib(Int) Int
+{
+	LDARG 0
+	LDINT 1
+	BGT 5
+	LDARG 0
+	RET
+
+	LDARG 0
+	LDINT 2
+	SUB
+	CALL fib(Int)
+
+	LDARG 0
+	LDINT 1
+	SUB
+	CALL fib(Int)
+
+	ADD
+	RET
+}
+
+func main() Int
+{
+	LDINT 8
+	CALL fib(Int) Int
+	RET
+}

@@ -1,0 +1,6 @@
+func main() Int
+{
+	LDINT 35
+	CALL rt.fib(Int) Int
+	RET
+}

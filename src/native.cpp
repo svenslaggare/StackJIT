@@ -68,6 +68,14 @@ void printString(RawArrayRef objRef) {
 	}
 }
 
+int fibonacci(int n) {
+	if (n <= 1) {
+		return n;
+	} else {
+		return fibonacci(n - 2) + fibonacci(n - 1);
+	}
+}
+
 void NativeLibrary::add(VMState& vmState) {
 	auto intType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Integer));
 	auto floatType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Float));
@@ -93,6 +101,8 @@ void NativeLibrary::add(VMState& vmState) {
 	binder.define(FunctionDefinition("std.math.sqrt", { floatType }, floatType, (long)(&sqrtf)));
 	binder.define(FunctionDefinition("std.math.sin", { floatType }, floatType, (long)(&sinf)));
 	binder.define(FunctionDefinition("std.math.cos", { floatType }, floatType, (long)(&cosf)));
+
+	binder.define(FunctionDefinition("rt.fib", { intType }, intType, (long)(&fibonacci)));
 
 //	auto pointType = vmState.typeProvider().makeType("Ref.Struct.Point");
 //	binder.define(FunctionDefinition("rt.println", { pointType }, voidType, (long)(&printPoint)));
