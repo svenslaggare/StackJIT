@@ -36,7 +36,4 @@ public:
 	//Returns the function with the given signature
 	FunctionDefinition& getFunction(std::string signature);
 	const FunctionDefinition& getFunction(std::string signature) const;
-
-	FunctionDefinition& operator[](std::string signature);
-	const FunctionDefinition& operator[](std::string signature) const;
 };

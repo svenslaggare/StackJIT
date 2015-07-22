@@ -85,7 +85,7 @@ ExecutionEngine::~ExecutionEngine() {
 
 EntryPointFunction ExecutionEngine::entryPoint() const {
     if (mVMState.binder().isDefined("main()") > 0) {
-        return (EntryPointFunction)(mVMState.binder()["main()"].entryPoint());
+        return (EntryPointFunction)(mVMState.binder().getFunction("main()").entryPoint());
     } else {
         throw std::runtime_error("No entry point has been defined.");
     }

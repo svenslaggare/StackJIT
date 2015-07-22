@@ -2,7 +2,7 @@
 
 //Defines types and assumptions used through out the VM
 
-//An address to an object (array, struct)
+//An address to an object (array, class)
 using ObjectAddr = long;
 
 //An address to an function
