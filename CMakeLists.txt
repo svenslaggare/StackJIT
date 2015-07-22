@@ -51,9 +51,12 @@ set(SOURCE_FILES
     src/objectref.cpp
     src/stackframe.h
     src/stackframe.cpp
+    src/instructionset.h
+    src/helpers.h
+    src/helpers.cpp
     tests/runners/amd64test_runner.cpp
     tests/runners/vmtest_runner.cpp
     tests/amd64-test.h
     tests/vm-test.h)
 
-add_executable(stackjit ${SOURCE_FILES} src/instructionset.h src/helpers.h src/helpers.cpp)
+add_executable(stackjit ${SOURCE_FILES} src/test.h src/test.cpp)

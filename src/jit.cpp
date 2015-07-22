@@ -42,7 +42,7 @@ UnresolvedFunctionCall::Hash_t UnresolvedFunctionCall::Hash = [](const Unresolve
 };
 
 FunctionCompilationData::FunctionCompilationData(Function& function)
-    : function(function), unresolvedCalls(7, UnresolvedFunctionCall::Hash), operandStackSize(0) {
+    : function(function), unresolvedCalls(7, UnresolvedFunctionCall::Hash) {
 
 }
 
@@ -70,8 +70,6 @@ JitFunction JITCompiler::compileFunction(Function* function) {
 	mFunctions.emplace(signature, FunctionCompilationData(*function));
 	auto& functionData = mFunctions.at(signature);
 
-    functionData.operandStackSize = function->operandStackSize();
-    
     //Initialize the function
     mCodeGen.initializeFunction(functionData);
 

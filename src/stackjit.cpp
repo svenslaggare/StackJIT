@@ -2,6 +2,7 @@
 #include "loader.h"
 #include "parser.h"
 #include "native.h"
+#include "test.h"
 #include "vmstate.h"
 #include "executionengine.h"
 
@@ -45,6 +46,12 @@ void handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
 
 		if (switchStr == "-ngc" || switchStr == "--no-gc") {
 			vmState.disableGC = true;
+			continue;
+		}
+
+		if (switchStr == "-t" || switchStr == "--test") {
+			vmState.enableTestMode = true;
+			TestLibrary::add(vmState);
 			continue;
 		}
 

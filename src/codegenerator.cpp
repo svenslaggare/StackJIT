@@ -253,7 +253,7 @@ void CodeGenerator::initializeFunction(FunctionCompilationData& functionData) {
     auto& function = functionData.function;
 
     //Calculate the size of the stack aligned to 16 bytes
-    std::size_t neededStackSize = (function.numParams() + function.numLocals() + functionData.operandStackSize) * Amd64Backend::REG_SIZE;
+    std::size_t neededStackSize = (function.numParams() + function.numLocals() + function.operandStackSize()) * Amd64Backend::REG_SIZE;
     std::size_t stackSize = ((neededStackSize + 15) / 16) * 16;
 
     function.setStackSize(stackSize);

@@ -72,9 +72,6 @@ struct FunctionCompilationData {
 	//Unresolved function calls						 
 	std::unordered_map<UnresolvedFunctionCall, std::string,	UnresolvedFunctionCall::Hash_t> unresolvedCalls;
 
-	//The size of the operand stack
-	int operandStackSize;
-
 	//Holds compilation data for the given function
 	FunctionCompilationData(Function& function);
 };

@@ -29,6 +29,9 @@ public:
     //Indicates if the GC is disabled
     bool disableGC = false;
 
+    //Indicates if the VM is in test mode
+    bool enableTestMode = false;
+
     //Creates a new VM State
     VMState();
 
