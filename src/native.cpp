@@ -36,10 +36,10 @@ int NativeLibrary::abs(int x) {
     }
 }
 
-void printPoint(RawStructRef objRef) {
+void printPoint(RawClassRef objRef) {
 	if (objRef != nullptr) {
 		//Obtain a reference to the structure
-		auto pointRef = vmState.gc().getStructRef(objRef);
+		auto pointRef = vmState.gc().getClassRef(objRef);
 
 		auto intType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Integer));
 

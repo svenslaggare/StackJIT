@@ -3,12 +3,12 @@
 #include <stdexcept>
 #include "objects.h"
 
-class StructHandle;
+class ClassHandle;
 class ClassMetadata;
 class Type;
 
-//Represents a raw struct reference
-using RawStructRef = unsigned char*;
+//Represents a raw class reference
+using RawClassRef = unsigned char*;
 
 //Represents a raw array reference
 using RawArrayRef = unsigned char*;
@@ -21,20 +21,20 @@ private:
 
 	//Creates a new reference to the given field
 	FieldRef(unsigned char* fieldPtr);
-	friend class StructRef;
+	friend class ClassRef;
 public:
 	//Returns a pointer to the field
 	T* value();
 };
 
-//Represents a struct reference
-class StructRef {
+//Represents a class reference
+class ClassRef {
 private:
-	StructHandle* mHandle;
+	ClassHandle* mHandle;
 	const ClassMetadata& mMetadata;
 public:
 	//Creates a new reference to the given structure
-	StructRef(StructHandle* handle, const ClassMetadata& metadata);
+	ClassRef(ClassHandle* handle, const ClassMetadata& metadata);
 
 	//Returns a reference to a field of the given type
 	template<typename T>

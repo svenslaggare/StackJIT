@@ -48,10 +48,10 @@ public:
 	int length() const;
 };
 
-//Represents a struct handle
-class StructHandle : public ObjectHandle  {
+//Represents a class handle
+class ClassHandle : public ObjectHandle  {
 public:
-	//Creates a new struct handle
-	StructHandle(unsigned char* handle, std::size_t objSize, const Type* type);
-	StructHandle();
+	//Creates a new class handle
+	ClassHandle(unsigned char* handle, std::size_t objSize, const Type* type);
+	ClassHandle();
 };

@@ -50,11 +50,11 @@ int ArrayHandle::length() const {
 	return mLength;
 }
 
-StructHandle::StructHandle(unsigned char* handle, std::size_t objSize, const Type* type)
+ClassHandle::ClassHandle(unsigned char* handle, std::size_t objSize, const Type* type)
 	: ObjectHandle(handle, objSize, type) {
 
 }
 
-StructHandle::StructHandle(): ObjectHandle(nullptr, 0, nullptr) {
+ClassHandle::ClassHandle(): ObjectHandle(nullptr, 0, nullptr) {
 
 }

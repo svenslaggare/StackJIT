@@ -25,7 +25,7 @@ namespace Runtime {
 	//Creates a new array of the given type and length
 	unsigned char* newArray(const Type* elementType, int length);
 
-	//Creates a new struct of the given type
+	//Creates a new class of the given type
 	unsigned char* newObject(const Type* type);
 
 	//Creates a new string of the given length

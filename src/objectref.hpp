@@ -16,7 +16,7 @@ T* FieldRef<T>::value() {
 
 //Struct ref
 template<typename T>
-FieldRef<T> StructRef::getField(std::string name, const Type* type) {
+FieldRef<T> ClassRef::getField(std::string name, const Type* type) {
 	if (mMetadata.fields().count(name) > 0) {
 		auto& fieldRef = mMetadata.fields().at(name);
 
@@ -28,7 +28,7 @@ FieldRef<T> StructRef::getField(std::string name, const Type* type) {
 		return FieldRef<T>((unsigned char*)mHandle->handle() + (std::size_t)fieldRef.offset());
 	} else {
 		throw std::runtime_error(
-			"There exists no field called '" + name + "' in the struct '" + mHandle->type()->name() + "'.");
+			"There exists no field called '" + name + "' in the class '" + mHandle->type()->name() + "'.");
 	}
 }
 

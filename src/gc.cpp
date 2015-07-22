@@ -69,22 +69,22 @@ unsigned char* GarbageCollector::newArray(const Type* elementType, int length) {
     return arrayPtr;
 }
 
-unsigned char* GarbageCollector::newStruct(const ClassType* structType) {
-    std::size_t memSize = vmState.classProvider()[structType->className()].size();
-    unsigned char* structPtr = new unsigned char[memSize];
-    memset(structPtr, 0, memSize);
+unsigned char* GarbageCollector::newClass(const ClassType* classType) {
+    std::size_t memSize = vmState.classProvider()[classType->className()].size();
+    unsigned char* classPtr = new unsigned char[memSize];
+    memset(classPtr, 0, memSize);
 
     //Add the struct to the list of objects
-    newObject(new StructHandle(structPtr, memSize, structType));
+    newObject(new ClassHandle(classPtr, memSize, classType));
 
     if (vmState.enableDebug) {
         std::cout
-            << "Allocated object (size: " << memSize << " bytes, type: " <<  structType->name() 
-            << ") at 0x" << std::hex << (long)structPtr << std::dec
+            << "Allocated object (size: " << memSize << " bytes, type: " <<  classType->name()
+            << ") at 0x" << std::hex << (long) classPtr << std::dec
             << std::endl;
     }
 
-    return structPtr;
+    return classPtr;
 }
 
 void GarbageCollector::markObject(ObjectHandle* handle) {
@@ -195,9 +195,9 @@ ObjectHandle* GarbageCollector::getHandle(unsigned char* objectPtr) {
     }
 }
 
-StructRef GarbageCollector::getStructRef(RawStructRef structRef) {
-	auto handle = static_cast<StructHandle*>(getHandle(structRef));
-	auto structType = static_cast<const ClassType*>(handle->type());
-	auto& structMetadata = vmState.classProvider()[structType->className()];
-	return StructRef(handle, structMetadata);
+ClassRef GarbageCollector::getClassRef(RawClassRef classRef) {
+	auto handle = static_cast<ClassHandle*>(getHandle(classRef));
+	auto classType = static_cast<const ClassType*>(handle->type());
+	auto& classMetadata = vmState.classProvider()[classType->className()];
+	return ClassRef(handle, classMetadata);
 }

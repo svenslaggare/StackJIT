@@ -49,8 +49,8 @@ public:
 	//Allocates a new array of the given type and length.
 	unsigned char* newArray(const Type* elementType, int length);
 
-	//Allocates a new struct of the given type.
-	unsigned char* newStruct(const ClassType* structType);
+	//Allocates a new class of the given type.
+	unsigned char* newClass(const ClassType* classType);
 
 	//Marks the value of the given type
 	void markValue(long value, const Type* type);
@@ -61,8 +61,8 @@ public:
 	//Ends the garbage collection.
 	void endGC();
 
-	//Returns a reference to the given structure
-	StructRef getStructRef(RawStructRef structRef);
+	//Returns a reference to the given class
+	ClassRef getClassRef(RawClassRef classRef);
 
 	//Returns a reference to the given array
 	template<typename T>
