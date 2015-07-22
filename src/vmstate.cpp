@@ -31,11 +31,11 @@ const Binder& VMState::binder() const {
     return mBinder;
 }
 
-StructMetadataProvider& VMState::structProvider() {
+ClassMetadataProvider& VMState::classProvider() {
     return mStructProvider;
 }
 
-const StructMetadataProvider& VMState::structProvider() const {
+const ClassMetadataProvider& VMState::classProvider() const {
     return mStructProvider;
 }
 

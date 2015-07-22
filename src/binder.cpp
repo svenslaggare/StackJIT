@@ -24,10 +24,10 @@ std::string Binder::functionSignature(std::string name, const std::vector<const 
     return name + "(" + argsStr + ")";
 }
 
-std::string Binder::memberFunctionSignature(const StructType* structType, std::string name, const std::vector<const Type*>& parameters) const {
+std::string Binder::memberFunctionSignature(const ClassType* structType, std::string name, const std::vector<const Type*>& parameters) const {
 	auto params = parameters;
 	params.insert(params.begin(), structType);
-	return functionSignature(structType->structName() + "::" + name, params);
+	return functionSignature(structType->className() + "::" + name, params);
 }
 
 std::string Binder::functionSignature(const FunctionDefinition& funcDef) const {

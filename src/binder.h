@@ -4,7 +4,7 @@
 #include "function.h"
 
 class Type;
-class StructType;
+class ClassType;
 
 //Represents a binder
 class Binder {
@@ -18,7 +18,7 @@ public:
 	std::string functionSignature(std::string name, const std::vector<const Type*>& parameters) const;
 
 	//Returns the signature for the given member function
-	std::string memberFunctionSignature(const StructType* structType, std::string name, const std::vector<const Type*>& parameters) const;
+	std::string memberFunctionSignature(const ClassType* structType, std::string name, const std::vector<const Type*>& parameters) const;
 
 	//Returns the function signature
 	std::string functionSignature(const FunctionDefinition& funcDef) const;

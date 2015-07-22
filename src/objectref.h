@@ -4,7 +4,7 @@
 #include "objects.h"
 
 class StructHandle;
-class StructMetadata;
+class ClassMetadata;
 class Type;
 
 //Represents a raw struct reference
@@ -31,10 +31,10 @@ public:
 class StructRef {
 private:
 	StructHandle* mHandle;
-	const StructMetadata& mMetadata;
+	const ClassMetadata& mMetadata;
 public:
 	//Creates a new reference to the given structure
-	StructRef(StructHandle* handle, const StructMetadata& metadata);
+	StructRef(StructHandle* handle, const ClassMetadata& metadata);
 
 	//Returns a reference to a field of the given type
 	template<typename T>

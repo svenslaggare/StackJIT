@@ -1,4 +1,4 @@
-struct Point
+class Point
 {
 	x Int
 	y Int
@@ -12,16 +12,15 @@ member Point::.constructor() Void
 func main() Int
 {
 	.locals 1
-	.local 0 Ref.Struct.Point
-
-	LDNULL
-	STLOC 0
-
+	
 	NEWOBJ Point::.constructor()
 	STLOC 0
 
 	LDLOC 0
-	LDFIELD Point::x
+	LDINT 1337
+	STFIELD Point::y
 
+	LDLOC 0
+	LDFIELD Point::y
 	RET
 }

@@ -1,5 +1,5 @@
 #include "objects.h"
-#include "structmetadata.h"
+#include "classmetadata.h"
 #include "type.h"
 
 //Field ref

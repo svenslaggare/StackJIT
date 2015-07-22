@@ -1,0 +1,17 @@
+class Point
+{
+	x Int
+	y Int
+}
+
+class ListNode
+{
+	data Ref.Class.Point
+	next Ref.Class.ListNode
+}
+
+func main() Int
+{
+	LDINT 0
+	RET
+}

@@ -3,7 +3,7 @@
 #include "function.h"
 #include "instructions.h"
 #include "type.h"
-#include "structmetadata.h"
+#include "classmetadata.h"
 
 #include <iostream>
 #include <vector>
@@ -341,7 +341,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                         inst.parameters);
                 } else {
                     signature = vmState.binder().memberFunctionSignature(
-                        inst.calledStructType,
+                        inst.classClassType,
                         inst.strValue,
                         inst.parameters);
                 }
@@ -570,7 +570,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
         case OpCodes::NEW_OBJECT:
             {
                 std::string signature = vmState.binder().memberFunctionSignature(
-                    inst.calledStructType,
+                    inst.classClassType,
                     inst.strValue,
                     inst.parameters);
 
@@ -593,36 +593,35 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                     }
                 }
 
-                operandStack.push(inst.calledStructType);
+                operandStack.push(inst.classClassType);
             }
             break;
         case OpCodes::LOAD_FIELD:
             {
                 assertOperandCount(index, operandStack, 1);
 
-                auto structRefType = popType(operandStack);
-                bool isNull = structRefType == nullType;
+                auto classRefType = popType(operandStack);
+                bool isNull = classRefType == nullType;
 
-                if (!TypeSystem::isStruct(structRefType) && !isNull) {
-                    typeError(index, "Expected first operand to be a struct reference.");
+                if (!TypeSystem::isClass(classRefType) && !isNull) {
+                    typeError(index, "Expected first operand to be a class reference.");
                 }
 
                 std::pair<std::string, std::string> structAndField;
 
-                if (TypeSystem::getStructAndField(inst.strValue, structAndField)) {
-                    auto structName = structAndField.first;
+                if (TypeSystem::getClassAndField(inst.strValue, structAndField)) {
+                    auto className = structAndField.first;
                     auto fieldName = structAndField.second;
 
-                    if (!vmState.structProvider().isDefined(structName)) {
-                        typeError(index, "'" + structName + "' is not a struct type.");
+                    if (!vmState.classProvider().isDefined(className)) {
+                        typeError(index, "'" + className + "' is not a class type.");
                     }
 
-                    auto structMetadata = vmState.structProvider()[structName];
-
-                    auto structType = vmState.typeProvider().makeType("Ref.Struct." + structName);
+                    auto structMetadata = vmState.classProvider()[className];
+                    auto classType = vmState.typeProvider().makeType("Ref.Class." + className);
 
                     if (!isNull) {
-                        auto error = checkType(structType, structRefType);
+                        auto error = checkType(classType, classRefType);
 
                         if (error != "") {
                             typeError(index, error);
@@ -632,7 +631,7 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                     auto fieldType = structMetadata.fields().at(fieldName).type();
 
                     if (fieldType == nullptr) {
-                        typeError(index, "There exists no field '" + fieldName + "' in the '" + structName + "' struct.");
+                        typeError(index, "There exists no field '" + fieldName + "' in the '" + className + "' class.");
                     }
 
                     operandStack.push(fieldType);
@@ -646,34 +645,34 @@ void TypeChecker::typeCheckFunction(Function& function, VMState& vmState, bool s
                 assertOperandCount(index, operandStack, 2);
 
                 auto valueType = popType(operandStack);
-                auto structRefType = popType(operandStack);
-                bool isNull = structRefType == nullType;
+                auto classRefType = popType(operandStack);
+                bool isNull = classRefType == nullType;
 
-                if (!TypeSystem::isStruct(structRefType) && !isNull) {
-                    typeError(index, "Expected first operand to be a struct reference.");
+                if (!TypeSystem::isClass(classRefType) && !isNull) {
+                    typeError(index, "Expected first operand to be a class reference.");
                 }
 
                 std::pair<std::string, std::string> structAndField;
 
-                if (TypeSystem::getStructAndField(inst.strValue, structAndField)) {
-                    auto structName = structAndField.first;
+                if (TypeSystem::getClassAndField(inst.strValue, structAndField)) {
+                    auto className = structAndField.first;
                     auto fieldName = structAndField.second;
 
-                    if (!vmState.structProvider().isDefined(structName)) {
-                        typeError(index, "'" + structName + "' is not a struct type.");
+                    if (!vmState.classProvider().isDefined(className)) {
+                        typeError(index, "'" + className + "' is not a class type.");
                     }
 
-                    auto structMetadata = vmState.structProvider()[structName];
-                    auto fieldType = structMetadata.fields().at(fieldName).type();
+                    auto classMetadata = vmState.classProvider()[className];
+                    auto fieldType = classMetadata.fields().at(fieldName).type();
 
                     if (fieldType == nullptr) {
-                        typeError(index, "There exists no field '" + fieldName + "' in the '" + structName + "' struct.");
+                        typeError(index, "There exists no field '" + fieldName + "' in the '" + className + "' class.");
                     }
 
-                    auto structType = vmState.typeProvider().makeType("Ref.Struct." + structName);
+                    auto classType = vmState.typeProvider().makeType("Ref.Class." + className);
 
                     if (!isNull) {
-                        auto error = checkType(structType, structRefType);
+                        auto error = checkType(classType, classRefType);
 
                         if (error != "") {
                             typeError(index, error);

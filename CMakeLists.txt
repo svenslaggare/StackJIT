@@ -37,8 +37,8 @@ set(SOURCE_FILES
     src/rtlibrary.h
     src/stackjit.cpp
     src/stackjit.h
-    src/structmetadata.cpp
-    src/structmetadata.h
+    src/classmetadata.cpp
+    src/classmetadata.h
     src/type.cpp
     src/type.h
     src/typechecker.cpp
@@ -54,9 +54,11 @@ set(SOURCE_FILES
     src/instructionset.h
     src/helpers.h
     src/helpers.cpp
+    src/test.h
+    src/test.cpp
     tests/runners/amd64test_runner.cpp
     tests/runners/vmtest_runner.cpp
     tests/amd64-test.h
     tests/vm-test.h)
 
-add_executable(stackjit ${SOURCE_FILES} src/test.h src/test.cpp)
+add_executable(stackjit ${SOURCE_FILES})

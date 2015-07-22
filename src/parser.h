@@ -21,7 +21,7 @@ namespace AssemblyParser {
 	    std::vector<std::string> parameters;
 
 	    //Used by the object instructions
-	    std::string calledStructType;
+	    std::string calledClassType;
 
 	    //Creates a new instruction
 	    Instruction();
@@ -45,10 +45,10 @@ namespace AssemblyParser {
 	    static Instruction makeCall(std::string funcName, std::vector<std::string> parameters);
 
 	    //Creates a new call instance instruction
-	    static Instruction makeCallInstance(std::string structType, std::string funcName, std::vector<std::string> parameters);
+	    static Instruction makeCallInstance(std::string classType, std::string funcName, std::vector<std::string> parameters);
 
 	    //Creates a new create object instruction
-	    static Instruction makeNewObject(std::string structType, std::vector<std::string> parameters);
+	    static Instruction makeNewObject(std::string classType, std::vector<std::string> parameters);
 	};
 
 	//Represents an attribute
@@ -69,7 +69,7 @@ namespace AssemblyParser {
 		std::vector<std::string> parameters;
 
 		bool isMemberFunction;
-		std::string structName;
+		std::string className;
 		std::string memberFunctionName;
 
 		bool isExternal;
@@ -89,7 +89,7 @@ namespace AssemblyParser {
 		std::size_t numLocals() const;
 	};
 
-	//Represents a field in a structure
+	//Represents a field in a class
 	struct Field {
 		std::string name;
 		std::string type;
@@ -97,21 +97,21 @@ namespace AssemblyParser {
 		AttributeContainer attributes;
 	};
 
-	//Represents a structure
-	struct Struct {
+	//Represents a class
+	struct Class {
 		std::string name;
 		std::vector<Field> fields;
 
 		AttributeContainer attributes;
 
-		//Creates a new struct
-		Struct();
+		//Creates a new class
+		Class();
 	};
 
 	//Represents an assembly
 	struct Assembly {
 		std::vector<Function> functions;
-		std::vector<Struct> structs;
+		std::vector<Class> classes;
 	};
 
 	//Tokenizes from the given stream

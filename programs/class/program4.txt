@@ -1,4 +1,4 @@
-struct Point
+class Point
 {
 	x Int
 	y Int
@@ -9,7 +9,7 @@ member Point::.constructor() Void
    RET
 }
 
-func printPoint(Ref.Struct.Point) Void
+func printPoint(Ref.Class.Point) Void
 {
 	LDARG 0
 	LDFIELD Point::x
@@ -44,7 +44,7 @@ func main() Int
 	STFIELD Point::y
 
 	LDLOC 0
-	CALL printPoint(Ref.Struct.Point)
+	CALL printPoint(Ref.Class.Point)
 
 	LDINT 0
 	RET

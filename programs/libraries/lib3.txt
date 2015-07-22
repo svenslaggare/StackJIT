@@ -14,7 +14,7 @@ func createAndPrintPoint() Void
 	STFIELD Point::y
 
 	LDLOC 0
-	CALL printPoint(Ref.Struct.Point)
+	CALL printPoint(Ref.Class.Point)
 
 	RET
 }

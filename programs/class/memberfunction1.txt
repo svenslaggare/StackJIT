@@ -1,4 +1,4 @@
-struct Point
+class Point
 {
    y Float
    x Float
@@ -9,39 +9,46 @@ member Point::.constructor() Void
    RET
 }
 
-member Point::addX(Ref.Struct.Point) Float
+member Point::length() Float
 {
+   .locals 1
    LDARG 0
-   LDFIELD Point::x
+   STLOC 0
 
-   LDARG 1
+   LDLOC 0
    LDFIELD Point::x
+   LDLOC 0
+   LDFIELD Point::x
+   MUL
+
+   LDLOC 0
+   LDFIELD Point::y
+   LDLOC 0
+   LDFIELD Point::y
+   MUL
 
    ADD
+   CALL std.math.sqrt(Float)
 
    RET
 }
 
 func main() Int
 {
-   .locals 2
+   .locals 1
    NEWOBJ Point::.constructor()
    STLOC 0
-
-   NEWOBJ Point::.constructor()
-   STLOC 1
 
    LDLOC 0
    LDFLOAT 2
    STFIELD Point::x
 
-   LDLOC 1
+   LDLOC 0
    LDFLOAT 3
-   STFIELD Point::x
+   STFIELD Point::y
 
    LDLOC 0
-   LDLOC 1
-   CALLINST Point::addX(Ref.Struct.Point)
+   CALLINST Point::length()
    CALL std.println(Float)
 
    LDINT 0

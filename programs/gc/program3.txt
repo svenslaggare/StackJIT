@@ -1,4 +1,4 @@
-struct Point
+class Point
 {
 	x Int
 	y Int
@@ -9,9 +9,9 @@ member Point::.constructor() Void
    RET
 }
 
-struct Pair
+class Pair
 {
-	first Ref.Struct.Point
+	first Ref.Class.Point
 	second Int
 }
 
@@ -23,7 +23,7 @@ member Pair::.constructor() Void
 func main3() Int
 {
 	.locals 1
-	.local 0 Ref.Struct.Pair
+	.local 0 Ref.Class.Pair
 
 	NEWOBJ Pair::.constructor()
 	STLOC 0

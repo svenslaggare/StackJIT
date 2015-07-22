@@ -5,7 +5,7 @@
 #include "instructionset.h"
 
 class Type;
-class StructType;
+class ClassType;
 
 //Represents an instruction
 class Instruction {
@@ -24,7 +24,7 @@ public:
     std::vector<const Type*> parameters;
 
     //Used by the objects instruction
-    const StructType* calledStructType;
+    const ClassType* classClassType;
 
     //Creates a new instruction
     Instruction();

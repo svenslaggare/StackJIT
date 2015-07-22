@@ -49,16 +49,16 @@ public:
 	const Type* elementType() const;
 };
 
-//Represents a struct type
-class StructType : public ReferenceType {
+//Represents a class type
+class ClassType : public ReferenceType {
 private:
 	const std::string mStructName;
 public:
-	//Creates a new struct type
-	StructType(std::string name);
+	//Creates a new class type
+	ClassType(std::string name);
 
-	//Returns the name of the struct
-	std::string structName() const;
+	//Returns the name of the class
+	std::string className() const;
 };
 
 //The primitive types
@@ -70,7 +70,7 @@ enum PrimitiveTypes : unsigned char {
 	Char
 };
 
-class StructMetadataProvider;
+class ClassMetadataProvider;
 
 namespace TypeSystem {
 	//Converts the given string into a primitive type. True if correct type.
@@ -80,7 +80,7 @@ namespace TypeSystem {
 	std::string toString(PrimitiveTypes primitiveType);
 
 	//Creates a new type from the given string
-	Type* makeTypeFromString(std::string typeName, const StructMetadataProvider& structProvider);
+	Type* makeTypeFromString(std::string typeName, const ClassMetadataProvider& structProvider);
 
 	//Indicates if the given type is of the given primitive type
 	bool isPrimitiveType(const Type* type, PrimitiveTypes primitiveType);
@@ -91,8 +91,8 @@ namespace TypeSystem {
 	//Indicates if the given type is an array
 	bool isArray(const Type* type);
 
-	//Indicates if the given type is a struct
-	bool isStruct(const Type* type);
+	//Indicates if the given type is a class
+	bool isClass(const Type* type);
 
 	//Returns the type name for an array of the given type
 	std::string arrayTypeName(const Type* type);
@@ -103,6 +103,6 @@ namespace TypeSystem {
 	//Returns the size (in bytes) for the given type
 	std::size_t sizeOfType(const Type* type);
 
-	//Gets the struct and field from the given string
-	bool getStructAndField(std::string str, std::pair<std::string, std::string>& res);
+	//Gets the class name and field from the given string
+	bool getClassAndField(std::string str, std::pair<std::string, std::string>& res);
 }

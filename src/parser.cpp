@@ -52,18 +52,18 @@ AssemblyParser::Instruction AssemblyParser::Instruction::makeCall(std::string fu
 	return inst;
 }
 
-AssemblyParser::Instruction AssemblyParser::Instruction::makeCallInstance(std::string structType, std::string funcName, std::vector<std::string> parameters) {
+AssemblyParser::Instruction AssemblyParser::Instruction::makeCallInstance(std::string classType, std::string funcName, std::vector<std::string> parameters) {
 	AssemblyParser::Instruction inst;
-	inst.calledStructType = structType;
+	inst.calledClassType = classType;
 	inst.strValue = funcName;
 	inst.parameters = parameters;
 	inst.opCode = OpCodes::CALL_INSTANCE;
 	return inst;
 }
 
-AssemblyParser::Instruction AssemblyParser::Instruction::makeNewObject(std::string structType, std::vector<std::string> parameters) {
+AssemblyParser::Instruction AssemblyParser::Instruction::makeNewObject(std::string classType, std::vector<std::string> parameters) {
 	AssemblyParser::Instruction inst;
-	inst.calledStructType = structType;
+	inst.calledClassType = classType;
 	inst.strValue = ".constructor";
 	inst.parameters = parameters;
 	inst.opCode = OpCodes::NEW_OBJECT;
@@ -83,7 +83,7 @@ std::size_t AssemblyParser::Function::numLocals() const {
 	return localTypes.size();
 }
 
-AssemblyParser::Struct::Struct() {
+AssemblyParser::Class::Class() {
 
 }
 
@@ -318,10 +318,10 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
 
 	Function currentFunc;
 
-	bool isStruct = false;
-	bool isStructBody = false;
+	bool isClass = false;
+	bool isClassBody = false;
 	
-	Struct currentStruct;
+	Class currentClass;
 	Field* currentField = nullptr;
 
 	for (std::size_t i = 0; i < tokens.size(); i++) {
@@ -504,11 +504,11 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
 			}
 		}
 
-		if (isStructBody) {
+		if (isClassBody) {
 			if (currentToLower == "@") {
 				if (currentField == nullptr) {
 					//Struct attribute
-					parseAttribute(tokens, i, currentStruct.attributes);
+					parseAttribute(tokens, i, currentClass.attributes);
 				} else {
 					//Field attribute
 					parseAttribute(tokens, i, currentField->attributes);
@@ -517,9 +517,9 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
 			}
 
 			if (currentToLower == "}") {
-				assembly.structs.push_back(currentStruct);
-				isStruct = false;
-				isStructBody = false;
+				assembly.classes.push_back(currentClass);
+				isClass = false;
+				isClassBody = false;
 				currentField = nullptr;
 				continue;
 			}
@@ -528,8 +528,8 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
 			field.name = current;
 			field.type = nextToken(tokens, i);
 
-			currentStruct.fields.push_back(field);
-			currentField = &currentStruct.fields.back();
+			currentClass.fields.push_back(field);
+			currentField = &currentClass.fields.back();
 		}
 
 		//Definitions
@@ -537,14 +537,14 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
 		bool isExternFunc = false;
 		bool isMemberDef = false;
 
-		if (!isFunc && !isStruct && !isExternFunc) {
+		if (!isFunc && !isClass && !isExternFunc) {
 			if (currentToLower == "func") {
 				isFuncDef = true;
 				isFunc = true;
-			} else if (currentToLower == "struct") {
-				currentStruct = {};
-				currentStruct.name = nextToken(tokens, i);
-				isStruct = true;;
+			} else if (currentToLower == "class") {
+				currentClass = {};
+				currentClass.name = nextToken(tokens, i);
+				isClass = true;;
 			} else if (currentToLower == "extern") {
 				isExternFunc = true;
 			} else if (currentToLower == "member") {
@@ -558,8 +558,8 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
 			isFuncBody = true;
 		}
 
-		if (isStruct && currentToLower == "{") {
-			isStructBody = true;
+		if (isClass && currentToLower == "{") {
+			isClassBody = true;
 		}
 
 		//Parse the function definition
@@ -601,9 +601,9 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
             auto memberFunctionName = funcName.substr(structNamePos + 2);
 
             //Add the implicit this reference
-            currentFunc.parameters.insert(currentFunc.parameters.begin(), "Ref.Struct." + structTypeName);
+            currentFunc.parameters.insert(currentFunc.parameters.begin(), "Ref.Class." + structTypeName);
 
-			currentFunc.structName = structTypeName;
+			currentFunc.className = structTypeName;
 			currentFunc.memberFunctionName = memberFunctionName;
 			currentFunc.isMemberFunction = true;
 

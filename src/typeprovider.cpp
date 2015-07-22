@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-TypeProvider::TypeProvider(const StructMetadataProvider& structMetadataProvide)
+TypeProvider::TypeProvider(const ClassMetadataProvider& structMetadataProvide)
 	: mStructMetadataProvider(structMetadataProvide) {
 
 }

@@ -218,33 +218,33 @@ public:
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program1")), "what():  2: Arrays of type 'Void' is not allowed.");
     }
 
-    void testStruct() {
-        TS_ASSERT_EQUALS(invokeVM("struct/program1"), "1337\n");
-        TS_ASSERT_EQUALS(invokeVM("struct/program2"), "4\n4711\n");
-        TS_ASSERT_EQUALS(invokeVM("struct/program3"), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("struct/program4"), "1337:4711\n0\n");
+    void testClasses() {
+        TS_ASSERT_EQUALS(invokeVM("class/program1"), "1337\n");
+        TS_ASSERT_EQUALS(invokeVM("class/program2"), "4\n4711\n");
+        TS_ASSERT_EQUALS(invokeVM("class/program3"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("class/program4"), "1337:4711\n0\n");
 
-        TS_ASSERT_EQUALS(invokeVM("struct/recursivestruct1"), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("struct/structwithstruct1"), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("struct/structwithstruct2"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("class/recursiveclass1"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("class/classwithclass1"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("class/classwithclass2"), "0\n");
 
-        TS_ASSERT_EQUALS(invokeVM("struct/memberfunction1"), "3.60555\n0\n");
-        TS_ASSERT_EQUALS(invokeVM("struct/memberfunction2"), "5\n0\n");
-        TS_ASSERT_EQUALS(invokeVM("struct/memberfunction3"), "2.5\n5.5\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("class/memberfunction1"), "3.60555\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("class/memberfunction2"), "5\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("class/memberfunction3"), "2.5\n5.5\n0\n");
 
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_program1")), "what():  \'Point\' is not a defined struct.");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_program2")), "what():  2: \'Point\' is not a struct type.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program1")), "what():  \'Point\' is not a defined class.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program2")), "what():  2: \'Point\' is not a class type.");
 
-        TS_ASSERT_EQUALS(invokeVM("struct/constructor1"), "1\n2\n0\n");
-        TS_ASSERT_EQUALS(invokeVM("struct/constructor2"), "15\n");
-        TS_ASSERT_EQUALS(invokeVM("struct/constructor3"), "21\n");
+        TS_ASSERT_EQUALS(invokeVM("class/constructor1"), "1\n2\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("class/constructor2"), "15\n");
+        TS_ASSERT_EQUALS(invokeVM("class/constructor3"), "21\n");
 
-        TS_ASSERT_EQUALS(invokeVM("struct/largestruct1"), "1337\n");
+        TS_ASSERT_EQUALS(invokeVM("class/largeclass1"), "1337\n");
 
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_constructor1")), "what():  Constructors must have return type 'Void'.");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_constructor2")), "what():  1: The constructor \'Point::.constructor(Ref.Struct.Point)\' is not defined.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_constructor1")), "what():  Constructors must have return type 'Void'.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_constructor2")), "what():  1: The constructor \'Point::.constructor(Ref.Class.Point)\' is not defined.");
 
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("struct/invalid_memberfunction1")), "what():  Null reference error.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_memberfunction1")), "what():  Null reference error.");
     }
 
     void testException() {

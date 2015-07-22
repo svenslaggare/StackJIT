@@ -1,5 +1,5 @@
 #include "type.h"
-#include "structmetadata.h"
+#include "classmetadata.h"
 
 #include <vector>
 #include <iostream>
@@ -51,12 +51,12 @@ ArrayType::~ArrayType() {
 	delete mElementType;
 }
 
-StructType::StructType(std::string name)
-	: ReferenceType("Struct." + name), mStructName(name) {
+ClassType::ClassType(std::string name)
+	: ReferenceType("Class." + name), mStructName(name) {
 
 }
 
-std::string StructType::structName() const {
+std::string ClassType::className() const {
 	return mStructName;
 }
 
@@ -170,7 +170,7 @@ namespace {
 	}
 }
 
-Type* TypeSystem::makeTypeFromString(std::string typeName, const StructMetadataProvider& structProvider) {
+Type* TypeSystem::makeTypeFromString(std::string typeName, const ClassMetadataProvider& structProvider) {
 	//Split the type name
 	std::vector<std::string> typeParts = splitTypeName(typeName);
 	PrimitiveTypes primitiveType;
@@ -181,7 +181,7 @@ Type* TypeSystem::makeTypeFromString(std::string typeName, const StructMetadataP
 		std::string elementType;
 		if (extractElementType(typeParts.at(1), elementType)) {
 			return new ArrayType(makeTypeFromString(elementType, structProvider));
-		} else if (typeParts.at(1) == "Struct") {
+		} else if (typeParts.at(1) == "Class") {
 			if (typeParts.size() >= 3) {
 				std::string structName = "";
 				bool isFirst = true;
@@ -197,7 +197,7 @@ Type* TypeSystem::makeTypeFromString(std::string typeName, const StructMetadataP
 				}
 
 				if (structProvider.isDefined(structName)) {
-					return new StructType(structName);
+					return new ClassType(structName);
 				} else {
 					return nullptr;
 				}
@@ -238,12 +238,12 @@ bool TypeSystem::isArray(const Type* type) {
 	return type->name().find("Ref.Array") != std::string::npos;
 }
 
-bool TypeSystem::isStruct(const Type* type) {
+bool TypeSystem::isClass(const Type* type) {
 	if (type == nullptr) {
 		return false;
 	}
 
-	return type->name().find("Ref.Struct.") != std::string::npos;
+	return type->name().find("Ref.Class.") != std::string::npos;
 }
 
 std::string TypeSystem::arrayTypeName(const Type* type) {
@@ -280,14 +280,14 @@ std::size_t TypeSystem::sizeOfType(const Type* type) {
 	return 0;
 }
 
-bool TypeSystem::getStructAndField(std::string str, std::pair<std::string, std::string>& res) {
+bool TypeSystem::getClassAndField(std::string str, std::pair<std::string, std::string>& res) {
     auto fieldSepPos = str.find("::");
 
     if (fieldSepPos != std::string::npos) {
-        auto structName = str.substr(0, fieldSepPos);
+        auto className = str.substr(0, fieldSepPos);
         auto fieldName = str.substr(fieldSepPos + 2);
 
-        res.first = structName;
+        res.first = className;
         res.second = fieldName;
 
         return true;

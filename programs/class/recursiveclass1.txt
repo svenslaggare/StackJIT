@@ -1,7 +1,7 @@
-struct ListNode
+class ListNode
 {
 	data Int
-	next Ref.Struct.ListNode
+	next Ref.Class.ListNode
 }
 
 func main() Int

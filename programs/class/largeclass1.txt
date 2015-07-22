@@ -1,4 +1,4 @@
-struct List
+class List
 {
 	x1 Int
 	x2 Int
@@ -43,7 +43,7 @@ member List::.constructor() Void
 func main() Int
 {
 	.locals 1
-	.local 0 Ref.Struct.List
+	.local 0 Ref.Class.List
 
 	NEWOBJ List::.constructor()
 	STLOC 0

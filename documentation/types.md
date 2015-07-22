@@ -10,7 +10,7 @@ The VM supports the following types:
 
 ###Reference types###
 * Arrays: `Ref.Array[<Element type>]`.
-* Structs: `Ref.Struct.<Struct name>`.
+* Classes: `Ref.Class.<Class name>`.
 
 ###Strings###
 A string is of type `Ref.Array[Char]`, this may change in the future. The syntax for declaring a string is `"string value"`.

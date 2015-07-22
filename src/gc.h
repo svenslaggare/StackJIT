@@ -6,7 +6,7 @@
 
 class ObjectHandle;
 class Type;
-class StructType;
+class ClassType;
 class VMState;
 
 //Represents the garbage collector
@@ -50,7 +50,7 @@ public:
 	unsigned char* newArray(const Type* elementType, int length);
 
 	//Allocates a new struct of the given type.
-	unsigned char* newStruct(const StructType* structType);
+	unsigned char* newStruct(const ClassType* structType);
 
 	//Marks the value of the given type
 	void markValue(long value, const Type* type);

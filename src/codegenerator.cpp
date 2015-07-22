@@ -631,7 +631,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             std::string calledSignature = "";
 
             if (inst.opCode() == OpCodes::CALL_INSTANCE) {
-                calledSignature = vmState.binder().memberFunctionSignature(inst.calledStructType, inst.strValue, inst.parameters);
+                calledSignature = vmState.binder().memberFunctionSignature(inst.classClassType, inst.strValue, inst.parameters);
             } else {
                 calledSignature = vmState.binder().functionSignature(inst.strValue, inst.parameters);
             }
@@ -952,7 +952,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::NEW_OBJECT:
         {
-            auto structType = inst.calledStructType;
+            auto classType = inst.classClassType;
 
             //Call the garbageCollect runtime function
             if (!vmState.disableGC) {
@@ -960,7 +960,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             }
 
             //Call the newObject runtime function
-            Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (long)structType); //The pointer to the type as the first arg
+            Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (long) classType); //The pointer to the type as the first arg
             generateCall(generatedCode, (long)&Runtime::newObject);
 
             //Save the reference
@@ -968,7 +968,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
             //Call the constructor
             std::string calledSignature = vmState.binder().memberFunctionSignature(
-                inst.calledStructType,
+                inst.classClassType,
                 inst.strValue,
                 inst.parameters);
 
@@ -1030,9 +1030,9 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         {
             //Get the field
             std::pair<std::string, std::string> structAndField;
-            TypeSystem::getStructAndField(inst.strValue, structAndField);
+			TypeSystem::getClassAndField(inst.strValue, structAndField);
 
-            auto structMetadata = vmState.structProvider()[structAndField.first];
+            auto structMetadata = vmState.classProvider()[structAndField.first];
             auto& field = structMetadata.fields().at(structAndField.second);
             int fieldOffset = field.offset();
 

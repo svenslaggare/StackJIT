@@ -69,8 +69,8 @@ unsigned char* GarbageCollector::newArray(const Type* elementType, int length) {
     return arrayPtr;
 }
 
-unsigned char* GarbageCollector::newStruct(const StructType* structType) {
-    std::size_t memSize = vmState.structProvider()[structType->structName()].size();
+unsigned char* GarbageCollector::newStruct(const ClassType* structType) {
+    std::size_t memSize = vmState.classProvider()[structType->className()].size();
     unsigned char* structPtr = new unsigned char[memSize];
     memset(structPtr, 0, memSize);
 
@@ -103,11 +103,11 @@ void GarbageCollector::markObject(ObjectHandle* handle) {
                     markValue(elementsPtr[i], arrayType->elementType());
                 }
             }
-        } else if (TypeSystem::isStruct(handle->type())) {
+        } else if (TypeSystem::isClass(handle->type())) {
             handle->mark();
 
-            auto structType = static_cast<const StructType*>(handle->type());
-            auto structMetadata = vmState.structProvider().metadataFor(structType);
+            auto structType = static_cast<const ClassType*>(handle->type());
+            auto structMetadata = vmState.classProvider().metadataFor(structType);
 
             //Mark ref fields
             for (auto fieldEntry : structMetadata.fields()) {
@@ -197,7 +197,7 @@ ObjectHandle* GarbageCollector::getHandle(unsigned char* objectPtr) {
 
 StructRef GarbageCollector::getStructRef(RawStructRef structRef) {
 	auto handle = static_cast<StructHandle*>(getHandle(structRef));
-	auto structType = static_cast<const StructType*>(handle->type());
-	auto& structMetadata = vmState.structProvider()[structType->structName()];
+	auto structType = static_cast<const ClassType*>(handle->type());
+	auto& structMetadata = vmState.classProvider()[structType->className()];
 	return StructRef(handle, structMetadata);
 }

@@ -121,8 +121,8 @@ void ExecutionEngine::loadAssembly(AssemblyParser::Assembly& assembly, AssemblyT
 }
 
 void ExecutionEngine::load() {
-	//Load structs
-	Loader::loadStructs(mVMState, mAssemblies);
+	//Load classes
+	Loader::loadClasses(mVMState, mAssemblies);
 
 	//Load functions
 	for (auto assembly : mAssemblies) {

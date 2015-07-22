@@ -205,7 +205,7 @@ unsigned char* Runtime::newArray(const Type* elementType, int length) {
 }
 
 unsigned char* Runtime::newObject(const Type* type) {
-    auto structType = static_cast<const StructType*>(type);
+    auto structType = static_cast<const ClassType*>(type);
     return vmState.gc().newStruct(structType);
 }
 

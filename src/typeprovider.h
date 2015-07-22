@@ -3,16 +3,16 @@
 #include <string>
 
 class Type;
-class StructMetadataProvider;
+class ClassMetadataProvider;
 
 //Provides types
 class TypeProvider {
 private:
 	std::unordered_map<std::string, const Type*> mTypes;
-	const StructMetadataProvider& mStructMetadataProvider;
+	const ClassMetadataProvider& mStructMetadataProvider;
 public:
 	//Creates a new type provider
-	TypeProvider(const StructMetadataProvider& structMetadataProvider);
+	TypeProvider(const ClassMetadataProvider& structMetadataProvider);
 	~TypeProvider();
 
 	TypeProvider(const TypeProvider&) = delete;

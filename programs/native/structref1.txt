@@ -1,4 +1,4 @@
-struct Point
+class Point
 {
 	x Int
 	y Int
@@ -25,10 +25,10 @@ func main() Int
 	STFIELD Point::y
 
 	LDLOC 0
-    CALL rt.println(Ref.Struct.Point)
+    CALL rt.println(Ref.Class.Point)
 
 	#LDNULL
-	#CALL rt.println(Ref.Struct.Point)
+	#CALL rt.println(Ref.Class.Point)
 
 	LDINT 0
 	RET

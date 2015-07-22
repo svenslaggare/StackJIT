@@ -3,12 +3,12 @@
 #include "gc.h"
 #include "executionengine.h"
 #include "typeprovider.h"
-#include "structmetadata.h"
+#include "classmetadata.h"
 
 //Contains the state of the VM
 class VMState {
 private:
-    StructMetadataProvider mStructProvider;
+    ClassMetadataProvider mStructProvider;
 	TypeProvider mTypeProvider;
     Binder mBinder;
     GarbageCollector mGC;
@@ -47,9 +47,9 @@ public:
     Binder& binder();
     const Binder& binder() const;
 
-    //Returns the struct metadata provider
-    StructMetadataProvider& structProvider();
-    const StructMetadataProvider& structProvider() const;
+    //Returns the class metadata provider
+	ClassMetadataProvider& classProvider();
+    const ClassMetadataProvider& classProvider() const;
 
     //Returns the execution engine
     ExecutionEngine& engine();

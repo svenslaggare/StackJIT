@@ -20,13 +20,13 @@ namespace {
 		return type;
 	}
 
-	//Returns the given struct type
-	const StructType* getStructType(VMState& vmState, std::string typeName) {
-		if (!vmState.structProvider().isDefined(typeName)) {
-        	throw std::runtime_error("'" + typeName + "' is not a defined struct.");
+	//Returns the given class type
+	const ClassType* getClassType(VMState& vmState, std::string typeName) {
+		if (!vmState.classProvider().isDefined(typeName)) {
+        	throw std::runtime_error("'" + typeName + "' is not a defined class.");
         }
 
-		return (const StructType*)vmState.typeProvider().makeType("Ref.Struct." + typeName);
+		return (const ClassType*)vmState.typeProvider().makeType("Ref.Class." + typeName);
 	}
 
 	//Loads the given instruction
@@ -44,8 +44,8 @@ namespace {
 			}
 		}
 
-		if (inst.calledStructType != "") {
-			newInst.calledStructType = getStructType(vmState, inst.calledStructType);
+		if (inst.calledClassType != "") {
+			newInst.classClassType = getClassType(vmState, inst.calledClassType);
 		}
 
 		return newInst;
@@ -121,18 +121,18 @@ Function* Loader::loadFunction(VMState& vmState, AssemblyParser::Function& funct
 	return loadedFunc;
 }
 
-void Loader::loadStructs(VMState& vmState, std::vector<AssemblyParser::Assembly*>& assemblies) {
-	//First, create the structs
+void Loader::loadClasses(VMState& vmState, std::vector<AssemblyParser::Assembly*>& assemblies) {
+	//First, create the classes
 	for (auto assembly : assemblies) {
-		for (auto& structure : assembly->structs) {
-			vmState.structProvider().add(structure.name, StructMetadata());
+		for (auto& structure : assembly->classes) {
+			vmState.classProvider().add(structure.name, ClassMetadata());
 		}
 	}
 
 	//Then add the fields
 	for (auto assembly : assemblies) {
-		for (auto& structure : assembly->structs) {
-			StructMetadata& structMetadata = vmState.structProvider()[structure.name];
+		for (auto& structure : assembly->classes) {
+			ClassMetadata& structMetadata = vmState.classProvider()[structure.name];
 
 			for (auto field : structure.fields) {
 				structMetadata.addField(field.name, getType(vmState, field.type));

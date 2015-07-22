@@ -1,4 +1,4 @@
-struct SumContainer
+class SumContainer
 {
 	sum Int
 }
@@ -27,7 +27,7 @@ member SumContainer::.constructor(Int Int Int Int Int Int) Void
 func main() Int
 {
 	.locals 1
-	.local 0 Ref.Struct.SumContainer
+	.local 0 Ref.Class.SumContainer
 
 	LDINT 1
 	LDINT 2
