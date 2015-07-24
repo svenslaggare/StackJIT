@@ -11,7 +11,6 @@
 #include <string.h>
 #include <iostream>
 #include <fstream>
-#include <assert.h>
 
 BranchTarget::BranchTarget(unsigned int target, unsigned int instructionSize)
 	: target(target), instructionSize(instructionSize) {

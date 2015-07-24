@@ -90,14 +90,11 @@ FunctionDefinition::FunctionDefinition(
     std::string name,
     std::vector<const Type*> parameters,
     const Type* returnType,
-    long entryPoint, 
-    int funcSize,
     bool isMemberFunction)
     : mName(name),
       mParameters(parameters),
       mReturnType(returnType),
-      mEntryPoint(entryPoint),
-      mFunctionSize(funcSize),
+      mEntryPoint(0),
       mIsManaged(true),
       mIsMemberFunction(isMemberFunction),
 	  mIsMacroFunction(false) {
@@ -109,7 +106,6 @@ FunctionDefinition::FunctionDefinition(std::string name, std::vector<const Type*
       mParameters(parameters),
       mReturnType(returnType),
       mEntryPoint(entryPoint),
-      mFunctionSize(0),
       mIsManaged(false),
       mIsMemberFunction(false),
 	  mIsMacroFunction(false) {
@@ -121,7 +117,6 @@ FunctionDefinition::FunctionDefinition(std::string name, std::vector<const Type*
 	  mParameters(parameters),
 	  mReturnType(returnType),
 	  mEntryPoint(0),
-	  mFunctionSize(0),
 	  mIsManaged(false),
 	  mIsMemberFunction(false),
 	  mIsMacroFunction(true),
@@ -130,7 +125,7 @@ FunctionDefinition::FunctionDefinition(std::string name, std::vector<const Type*
 }
 
 FunctionDefinition::FunctionDefinition()
-    : mName(""), mReturnType(nullptr), mEntryPoint(0), mFunctionSize(0),
+    : mName(""), mReturnType(nullptr), mEntryPoint(0),
 	  mIsManaged(false), mIsMemberFunction(false),
 	  mIsMacroFunction(false) {
 
@@ -156,19 +151,14 @@ bool FunctionDefinition::isManaged() const {
     return mIsManaged;
 }
 
-void FunctionDefinition::setFunctionBody(long entryPoint, int functionSize) {
+void FunctionDefinition::setEntryPoint(long entryPoint) {
     if (mIsManaged) {
         mEntryPoint = entryPoint;
-        mFunctionSize = functionSize;
     }
 }
 
 long FunctionDefinition::entryPoint() const {
     return mEntryPoint;
-}
-
-int FunctionDefinition::functionSize() const {
-    return mFunctionSize;
 }
 
 bool FunctionDefinition::isMacroFunction() const {

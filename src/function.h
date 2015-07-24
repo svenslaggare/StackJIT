@@ -113,7 +113,6 @@ private:
 	const Type* mReturnType;
 
 	long mEntryPoint;
-	int mFunctionSize;
 
 	bool mIsManaged;
 	bool mIsMemberFunction;
@@ -122,7 +121,7 @@ private:
 	MacroFunction mMacroFunction;
 public:
 	//Creates a new managed function definition
-	FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, long entryPoint, int funcSize, bool isMemberFunction = false);
+	FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, bool isMemberFunction = false);
 
 	//Creates a new external function definition
 	FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, long entryPoint);
@@ -147,14 +146,11 @@ public:
 	//Indicates if the function is a member function
 	bool isMemberFunction() const;
 
-	//Sets the function body (for managed functions)
-	void setFunctionBody(long entryPoint, int functionSize);
+	//Sets the entry point
+	void setEntryPoint(long entryPoint);
 
 	//The entry point
 	long entryPoint() const;
-
-	//The size of the function
-	int functionSize() const;
 
 	//Indicates if the current function is macro
 	bool isMacroFunction() const;

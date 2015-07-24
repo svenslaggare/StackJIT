@@ -137,7 +137,7 @@ void ExecutionEngine::load() {
 				func->name(),
 				func->parameters(),
 				func->returnType(),
-				0, 0, func->isMemberFunction());
+				func->isMemberFunction());
 
 			auto& binder = mVMState.binder();
 			binder.define(funcDef);
@@ -162,7 +162,7 @@ void ExecutionEngine::generateCode() {
 		auto signature = mVMState.binder().functionSignature(func->name(), func->parameters());
 
 		//Set the entry point & size for the function
-		mVMState.binder().getFunction(signature).setFunctionBody((long)funcPtr, (int)func->generatedCode.size());
+		mVMState.binder().getFunction(signature).setEntryPoint((long) funcPtr);
 	}
 
 	//Fix unresolved symbols

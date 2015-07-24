@@ -2,6 +2,7 @@
 #include "linux.h"
 #include "callingconvention.h"
 #include "codegenerator.h"
+#include "exceptions.h"
 
 #include <unordered_map>
 #include <vector>
