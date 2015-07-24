@@ -14,7 +14,7 @@ class Function;
 class Type;
 class MemoryManager;
 
-//Represents a jitted function
+//Represents a compiled function
 typedef void (*JitFunction)();
 
 //Represents a branch target
@@ -96,7 +96,7 @@ private:
 	//Resolves native branches for the given function
 	void resolveNativeBranches(FunctionCompilationData& functionData);
 
-	//Resolves call targets. This function should only be called after all functions has been jitted.
+	//Resolves call targets. This function should only be called after all functions has been compiled.
 	void resolveCallTargets(FunctionCompilationData& functionData);
 public:
 	//Creates a new JIT compiler
@@ -112,9 +112,9 @@ public:
 	//Compiles the given function
 	JitFunction compileFunction(Function* function);
 
-	//Resolves symbols. This function should only be called after all functions has been jitted.
+	//Resolves symbols. This function should only be called after all functions has been compiled.
 	void resolveSymbols();
 
-	//Makes jitted functions executable.
+	//Makes compiled functions executable.
 	void makeExecutable();
 };
