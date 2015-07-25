@@ -2,7 +2,7 @@
 #include "amd64.h"
 #include "codegenerator.h"
 #include "type.h"
-#include "typechecker.h"
+#include "verifier.h"
 #include "vmstate.h"
 #include "binder.h"
 #include "function.h"
@@ -87,23 +87,11 @@ JitFunction JITCompiler::compileFunction(Function* function) {
     std::size_t length = function->generatedCode.size();
 
     if (mVMState.enableDebug) {
-        std::string argsStr = "";
-        bool isFirst = true;
-
-        for (auto param : function->parameters()) {
-            if (isFirst) {
-                isFirst = false;
-            } else {
-                argsStr += " ";
-            }
-
-            argsStr += TypeChecker::typeToString(param);
-        }
-
-        std::cout
-            << "Generated function '" << function->name() << "(" + argsStr + ") " << TypeChecker::typeToString(function->returnType())
-            << "' of size " << length << " bytes."
-            << std::endl;
+		auto funcSignature = mVMState.binder().functionSignature(*function);
+		std::cout
+			<< "Generated function '" << funcSignature << " " << Verifier::typeToString(function->returnType())
+			<< "' of size " << length << " bytes."
+			<< std::endl;
     }
 
     //Indicates if to output the generated code to a file

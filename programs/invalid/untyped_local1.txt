@@ -1,0 +1,6 @@
+func main() Int
+{
+	.locals 1
+	LDLOC 0
+	RET
+}

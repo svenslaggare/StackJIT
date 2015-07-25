@@ -1,5 +1,5 @@
 #include "codegenerator.h"
-#include "typechecker.h"
+#include "verifier.h"
 #include "type.h"
 #include "vmstate.h"
 #include "rtlibrary.h"

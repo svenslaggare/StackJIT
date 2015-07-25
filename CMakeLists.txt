@@ -41,8 +41,8 @@ set(SOURCE_FILES
     src/classmetadata.h
     src/type.cpp
     src/type.h
-    src/typechecker.cpp
-    src/typechecker.h
+    src/verifier.cpp
+    src/verifier.h
     src/typeprovider.cpp
     src/typeprovider.h
     src/vmstate.cpp

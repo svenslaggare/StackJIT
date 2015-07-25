@@ -1,0 +1,6 @@
+func main() Int
+{
+	BR 4
+	LDINT 0
+	RET
+}

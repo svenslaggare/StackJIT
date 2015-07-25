@@ -1,6 +1,6 @@
 #include "native.h"
 #include "vmstate.h"
-#include "typechecker.h"
+#include "verifier.h"
 #include "rtlibrary.h"
 #include "function.h"
 #include <iostream>

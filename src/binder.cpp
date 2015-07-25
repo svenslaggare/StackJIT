@@ -1,5 +1,5 @@
 #include "binder.h"
-#include "typechecker.h"
+#include "verifier.h"
 #include "type.h"
 #include <iostream>
 
@@ -18,7 +18,7 @@ std::string Binder::functionSignature(std::string name, const std::vector<const 
             argsStr += " ";
         }
 
-        argsStr += TypeChecker::typeToString(param);
+        argsStr += Verifier::typeToString(param);
     }
 
     return name + "(" + argsStr + ")";

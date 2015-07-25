@@ -93,8 +93,6 @@ public:
         TS_ASSERT_EQUALS(invokeVM("basic/program15"), "-2\n");
 
         TS_ASSERT_EQUALS(invokeVM("basic/recursion1"), "21\n");
-
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("basic/invalid_program1")), "what():  1: Locals of 'Void' type are not allowed.");
     }
 
 	void testStack() {
@@ -287,6 +285,15 @@ public:
 
 		TS_ASSERT_EQUALS(invokeVM("function/overload"), "0\n");
 		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("function/invalid_overload")), "what():  The function 'test(Int)' is already defined.");
+    }
+
+    void testInvalid() {
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/void_local")), "what():  1: Locals of 'Void' type are not allowed.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/empty_func")), "what():  1: Empty functions are not allowed.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/not_end_in_return")), "what():  1: Functions must end with a 'RET' instruction.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/branch_target")), "what():  1: Invalid jump target (4).");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/untyped_local1")), "what():  1: Cannot load untyped local (0).");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/untyped_local2")), "what():  1: Local 0 is not typed.");
     }
 
     void testLibrary() {

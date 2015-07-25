@@ -1,0 +1,10 @@
+func test() Void
+{
+
+}
+
+func main() Int
+{
+	LDINT 0
+	RET
+}

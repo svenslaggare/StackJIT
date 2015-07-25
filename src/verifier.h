@@ -8,11 +8,11 @@ class Type;
 
 typedef std::stack<const Type*> InstructionTypes;
 
-//The type checker
-namespace TypeChecker {
+//The function verifier
+namespace Verifier {
 	//Converts the given type to a string
 	std::string typeToString(const Type* type);
 
-	//Type checks the given function
-	void typeCheckFunction(Function& function, VMState& vmState, bool showDebug = false);
+	//Verifies the given function
+	void verifyFunction(Function& function, VMState& vmState, bool showDebug = false);
 }

@@ -3,7 +3,7 @@
 #include "binder.h"
 #include "assembly.h"
 #include "function.h"
-#include "typechecker.h"
+#include "verifier.h"
 #include "type.h"
 #include "loader.h"
 
@@ -149,7 +149,7 @@ void ExecutionEngine::generateCode() {
 	//Generate instructions for all functions
 	for (auto func : mLoadedFunctions) {
 		//Type check the function
-		TypeChecker::typeCheckFunction(*func, mVMState, mVMState.enableDebug && mVMState.printTypeChecking);
+		Verifier::verifyFunction(*func, mVMState, mVMState.enableDebug && mVMState.printTypeChecking);
 
 		auto funcPtr = mJIT.compileFunction(func);
 
