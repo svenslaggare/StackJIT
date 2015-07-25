@@ -76,3 +76,7 @@ FunctionDefinition& Binder::getFunction(std::string signature) {
 const FunctionDefinition& Binder::getFunction(std::string signature) const {
 	return mFunctionTable.at(signature);
 }
+
+const FunctionDefinition& Binder::getFunction(const Function& function) const {
+	return mFunctionTable.at(functionSignature(function));
+}

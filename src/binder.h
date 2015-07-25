@@ -36,4 +36,7 @@ public:
 	//Returns the function with the given signature
 	FunctionDefinition& getFunction(std::string signature);
 	const FunctionDefinition& getFunction(std::string signature) const;
+
+	//Returns the definition for the given function
+	const FunctionDefinition& getFunction(const Function& function) const;
 };

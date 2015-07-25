@@ -17,31 +17,12 @@ BranchTarget::BranchTarget(unsigned int target, unsigned int instructionSize)
 
 }
 
-UnresolvedFunctionCall::UnresolvedFunctionCall(FunctionCallType type, std::string functionName, std::size_t callOffset)
-	: type(type), functionName(functionName), callOffset(callOffset) {
+UnresolvedFunctionCall::UnresolvedFunctionCall(FunctionCallType type, std::size_t callOffset, const FunctionDefinition& funcToCall)
+	: type(type), callOffset(callOffset), funcToCall(funcToCall)  {
 
 }
-
-bool UnresolvedFunctionCall::operator<(const UnresolvedFunctionCall& rhs) const {
-	if (functionName < rhs.functionName) {
-		return true;
-	} else if (functionName > rhs.functionName) {
-		return true;
-	} else {
-		return callOffset < rhs.callOffset;
-	}
-}
-
-bool UnresolvedFunctionCall::operator==(const UnresolvedFunctionCall& rhs) const {
-	return functionName == rhs.functionName && callOffset == rhs.callOffset;
-}
-
-UnresolvedFunctionCall::Hash_t UnresolvedFunctionCall::Hash = [](const UnresolvedFunctionCall& call) {
-	return std::hash<std::string>()(call.functionName) + call.callOffset;
-};
-
 FunctionCompilationData::FunctionCompilationData(Function& function)
-    : function(function), unresolvedCalls(7, UnresolvedFunctionCall::Hash) {
+    : function(function) {
 
 }
 
@@ -137,11 +118,10 @@ void JITCompiler::resolveBranches(FunctionCompilationData& functionData) {
 }
 
 void JITCompiler::resolveNativeBranches(FunctionCompilationData& functionData) {
-	auto& function = functionData.function;
-
 	//Get a pointer to the functions native instructions
-	auto funcSignature = mVMState.binder().functionSignature(function);
-	unsigned char* funcCodePtr = (unsigned char*)mVMState.binder().getFunction(funcSignature).entryPoint();
+	auto funcCodePtr = (unsigned char*)mVMState.binder()
+		.getFunction(functionData.function)
+		.entryPoint();
 
 	//Resolved native branches
 	for (auto branch : functionData.unresolvedNativeBranches) {
@@ -160,17 +140,17 @@ void JITCompiler::resolveNativeBranches(FunctionCompilationData& functionData) {
 }
 
 void JITCompiler::resolveCallTargets(FunctionCompilationData& functionData) {
-	for (auto call : functionData.unresolvedCalls) {
-		auto callType = call.first.type;
-		auto funcName = call.first.functionName;
-		auto offset = call.first.callOffset;
-		auto calledFunc = call.second;
+	//Get a pointer to the functions native instructions
+	auto funcCodePtr = (unsigned char*)mVMState.binder()
+		.getFunction(functionData.function)
+		.entryPoint();
+
+	for (auto unresolvedCall : functionData.unresolvedCalls) {
+		auto callType = unresolvedCall.type;
+		auto offset = unresolvedCall.callOffset;
 
 		//The address of the called function
-		long calledFuncAddr = mVMState.binder().getFunction(calledFunc).entryPoint();
-
-		//Get a pointer to the functions native instructions
-		unsigned char* funcCodePtr = (unsigned char*)(mVMState.binder().getFunction(funcName).entryPoint());
+		long calledFuncAddr = unresolvedCall.funcToCall.entryPoint();
 
 		//Update the call target
 		if (callType == FunctionCallType::Absolute) {

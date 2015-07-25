@@ -550,7 +550,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 calledSignature = vmState.binder().functionSignature(inst.strValue, inst.parameters);
             }
 
-            auto funcToCall = vmState.binder().getFunction(calledSignature);
+            auto& funcToCall = vmState.binder().getFunction(calledSignature);
 
 			if (!funcToCall.isMacroFunction()) {
 				//Push the call
@@ -582,13 +582,11 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
 				if (funcToCall.isManaged()) {
 					//Mark that the function call needs to be patched with the entry point later
-					functionData.unresolvedCalls.insert({
+					functionData.unresolvedCalls.push_back(
 						UnresolvedFunctionCall(
 							FunctionCallType::Relative,
-							vmState.binder().functionSignature(function),
-							generatedCode.size()),
-						calledSignature
-					});
+							generatedCode.size(),
+							funcToCall));
 
 					//Make the call
 					Amd64Backend::call(generatedCode, 0);
@@ -599,13 +597,11 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 						funcAddr = funcToCall.entryPoint();
 					} else {
 						//Mark that the function call needs to be patched with the entry point later
-						functionData.unresolvedCalls.insert({
+						functionData.unresolvedCalls.push_back(
 							UnresolvedFunctionCall(
 								FunctionCallType::Absolute,
-								vmState.binder().functionSignature(function),
-								generatedCode.size()),
-							calledSignature
-						});
+								generatedCode.size(),
+								funcToCall));
 					}
 
 					//Make the call
@@ -886,7 +882,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 inst.strValue,
                 inst.parameters);
 
-            auto funcToCall = vmState.binder().getFunction(calledSignature);
+            auto& funcToCall = vmState.binder().getFunction(calledSignature);
             int numArgs = (int)funcToCall.parameters().size() - 1;
 
             //Align the stack
@@ -916,13 +912,11 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             OperandStack::pushReg(function, topOperandIndex + 1 - numArgs, Registers::AX);
 
             //Mark that the constructor needs to be patched with the entry point later
-            functionData.unresolvedCalls.insert({
+            functionData.unresolvedCalls.push_back(
                 UnresolvedFunctionCall(
                     FunctionCallType::Relative,
-                    vmState.binder().functionSignature(function),
-                    generatedCode.size()),
-                calledSignature
-            });
+                    generatedCode.size(),
+					funcToCall));
 
             //Call the constructor
             Amd64Backend::call(generatedCode, 0);

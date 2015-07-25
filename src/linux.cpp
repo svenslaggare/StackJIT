@@ -199,7 +199,7 @@ namespace {
 	void moveNoneFloatArgToStack(FunctionCompilationData& functionData, int argIndex, int relativeArgIndex) {
 		auto& function = functionData.function;
 
-		char argStackOffset = -(char)((1 + argIndex) * Amd64Backend::REG_SIZE);
+		int argStackOffset = -(1 + argIndex) * Amd64Backend::REG_SIZE;
 
 		if (relativeArgIndex >= 6) {
 			int stackArgIndex = getStackArgumentIndex(functionData, argIndex);
@@ -255,7 +255,7 @@ namespace {
 	void moveFloatArgToStack(FunctionCompilationData& functionData, int argIndex, int relativeArgIndex) {
 		auto& function = functionData.function;
 
-		char argStackOffset = -(char)((1 + argIndex) * Amd64Backend::REG_SIZE);
+		int argStackOffset = -(1 + argIndex) * Amd64Backend::REG_SIZE;
 
 		if (relativeArgIndex >= 8) {
 			int stackArgIndex = getStackArgumentIndex(functionData, argIndex);
@@ -337,7 +337,7 @@ void LinuxCallingConvention::callFunctionArgument(FunctionCompilationData& funct
 												  int argIndex, const Type* argType, const FunctionDefinition& funcToCall,
 												  int numStackOperands) const {
     auto& generatedCode = functionData.function.generatedCode;
-	int numArgs = (int) funcToCall.parameters().size();
+	int numArgs = (int)funcToCall.parameters().size();
 
 	if (TypeSystem::isPrimitiveType(argType, PrimitiveTypes::Float)) {
 		//Arguments of index >= 8 are passed via the stack.

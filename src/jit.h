@@ -3,6 +3,7 @@
 #include "callingconvention.h"
 #include "codegenerator.h"
 #include "exceptions.h"
+#include "function.h"
 
 #include <unordered_map>
 #include <vector>
@@ -40,21 +41,14 @@ enum class FunctionCallType {
 struct UnresolvedFunctionCall {
 	const FunctionCallType type;
 
-	//The function that has an unresolved call
-	const std::string functionName;
-
 	//The offset for the call instruction
 	const std::size_t callOffset;
 
+	//The function to call
+	const FunctionDefinition& funcToCall;
+
 	//Creates a new unresolved function call
-	UnresolvedFunctionCall(FunctionCallType type, std::string functionName, std::size_t callOffset);
-
-	bool operator<(const UnresolvedFunctionCall& rhs) const;
-	bool operator==(const UnresolvedFunctionCall& rhs) const;
-
-	//The custom hash function
-	typedef std::function<std::size_t(const UnresolvedFunctionCall& call)> Hash_t;
-	static Hash_t Hash;
+	UnresolvedFunctionCall(FunctionCallType type, std::size_t callOffset, const FunctionDefinition& funcToCall);
 };
 
 //Holds compilation data for a function
@@ -71,7 +65,7 @@ struct FunctionCompilationData {
 	std::vector<unsigned int> instructionNumMapping;			
 
 	//Unresolved function calls						 
-	std::unordered_map<UnresolvedFunctionCall, std::string,	UnresolvedFunctionCall::Hash_t> unresolvedCalls;
+	std::vector<UnresolvedFunctionCall> unresolvedCalls;
 
 	//Holds compilation data for the given function
 	FunctionCompilationData(Function& function);
