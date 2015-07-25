@@ -8,15 +8,15 @@
 #include <iostream>
 #include <vector>
 
-std::string Verifier::typeToString(const Type* type) {
-	if (type == nullptr) {
-		return "Untyped";
+namespace {
+	std::string typeToString(const Type* type) {
+		if (type == nullptr) {
+			return "Untyped";
+		}
+
+		return type->name();
 	}
 
-	return type->name();
-}
-
-namespace {
 	const Type* popType(InstructionTypes& stack) {
 		auto value = stack.top();
 		stack.pop();
@@ -44,9 +44,9 @@ namespace {
 			return "";
 		} else {
 			return
-				"Expected type '" + Verifier::typeToString(expectedType)
+				"Expected type '" + typeToString(expectedType)
 				+ "' but got type '"
-				+ Verifier::typeToString(actualType) + "'.";
+				+ typeToString(actualType) + "'.";
 		}
 	}
 
@@ -93,7 +93,7 @@ namespace {
 			if (arg == nullptr || TypeSystem::isPrimitiveType(arg, PrimitiveTypes::Void)) {
 				throw std::runtime_error(
 					"Parameter: " + std::to_string(i) + " in function '" + function.name()
-					+ "' cannot be of type '" + Verifier::typeToString(arg) + "'.");
+					+ "' cannot be of type '" + typeToString(arg) + "'.");
 			}
 
 			i++;
@@ -367,7 +367,7 @@ namespace {
 							auto returnType = popType(operandStack);
 
 							if (*returnType != *function.returnType()) {
-								throw std::runtime_error("Expected '" + Verifier::typeToString(function.returnType()) + "' as return type.");
+								throw std::runtime_error("Expected '" + typeToString(function.returnType()) + "' as return type.");
 							}
 						}
 					} else {

@@ -18,7 +18,7 @@ std::string Binder::functionSignature(std::string name, const std::vector<const 
             argsStr += " ";
         }
 
-        argsStr += Verifier::typeToString(param);
+        argsStr += param->name();
     }
 
     return name + "(" + argsStr + ")";

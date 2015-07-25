@@ -1,0 +1,5 @@
+func main() Int
+{
+	LDFLOAT 4.0
+	RET
+}

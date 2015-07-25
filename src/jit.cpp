@@ -89,7 +89,7 @@ JitFunction JITCompiler::compileFunction(Function* function) {
     if (mVMState.enableDebug) {
 		auto funcSignature = mVMState.binder().functionSignature(*function);
 		std::cout
-			<< "Generated function '" << funcSignature << " " << Verifier::typeToString(function->returnType())
+			<< "Generated function '" << funcSignature << " " << function->returnType()
 			<< "' of size " << length << " bytes."
 			<< std::endl;
     }

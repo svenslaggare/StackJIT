@@ -294,6 +294,8 @@ public:
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/branch_target")), "what():  1: Invalid jump target (4).");
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/untyped_local1")), "what():  1: Cannot load untyped local (0).");
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/untyped_local2")), "what():  1: Local 0 is not typed.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/return_type1")), "what():  Expected 'Int' as return type.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/return_type2")), "what():  Expected 'Int' as return type.");
     }
 
     void testLibrary() {
