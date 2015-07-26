@@ -196,7 +196,7 @@ void CodeGenerator::zeroLocals(FunctionCompilationData& functionData) {
 		//Zero eax
 		Amd64Backend::xorRegToReg(
 			function.generatedCode,
-			Registers::AX, Registers::AX, true); //xor eax, eax
+			Registers::AX, Registers::AX); //xor rax, rax
 
 		for (int i = 0; i < function.numLocals(); i++) {
 			int localOffset = (int)((i + function.numParams() + 1) * -Amd64Backend::REG_SIZE);
