@@ -277,11 +277,11 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::POP:
         //Pop the value
-		OperandStack::popReg(function, (int)inst.operandTypes().size() - 1, Registers::AX);
+		OperandStack::popReg(function, topOperandIndex, Registers::AX);
         break;
     case OpCodes::LOAD_INT:
         //Push the value
-		OperandStack::pushInt(function, (int)inst.operandTypes().size(), inst.intValue);
+		OperandStack::pushInt(function, topOperandIndex + 1, inst.intValue);
         break;
     case OpCodes::LOAD_FLOAT:
         {
@@ -289,12 +289,12 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             const int* floatData = reinterpret_cast<const int*>(&inst.floatValue);
 
             //Push the value
-			OperandStack::pushInt(function, (int)inst.operandTypes().size(), *floatData);
+			OperandStack::pushInt(function, topOperandIndex + 1, *floatData);
         }
         break;
      case OpCodes::LOAD_CHAR:
         //Push the value
-		OperandStack::pushInt(function, (int)inst.operandTypes().size(), inst.charValue);
+		OperandStack::pushInt(function, topOperandIndex + 1, inst.charValue);
         break;
     case OpCodes::ADD:
     case OpCodes::SUB:
