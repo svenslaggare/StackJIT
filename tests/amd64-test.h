@@ -630,6 +630,10 @@ public:
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x48, 0x81, 0xEB, 0x20, 0x4E, 0x00, 0x00 }));
         generatedCode.clear();
 
+        Amd64Backend::subIntFromReg(generatedCode, Registers::SP, 20000);
+        TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x48, 0x81, 0xEC, 0x20, 0x4E, 0x00, 0x00 }));
+        generatedCode.clear();
+
         Amd64Backend::subIntFromReg(generatedCode, Registers::CX, 30000);
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x48, 0x81, 0xE9, 0x30, 0x75, 0x00, 0x00 }));
         generatedCode.clear();
