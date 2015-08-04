@@ -531,6 +531,10 @@ public:
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x48, 0x81, 0xC1, 0x39, 0x05, 0x00, 0x00 }));
         generatedCode.clear();
 
+        Amd64Backend::addIntToReg(generatedCode, Registers::SP, 1337);
+        TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x48, 0x81, 0xC4, 0x39, 0x05, 0x00, 0x00 }));
+        generatedCode.clear();
+
         Amd64Backend::addIntToReg(generatedCode, Registers::BX, 1337);
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x48, 0x81, 0xC3, 0x39, 0x05, 0x00, 0x00 }));
         generatedCode.clear();

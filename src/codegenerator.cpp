@@ -554,7 +554,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
 			if (!funcToCall.isMacroFunction()) {
 				//Push the call
-				pushFunc(vmState, functionData, instIndex);
+				// pushFunc(vmState, functionData, instIndex);
 
 				//Get the address of the function to call
 				long funcAddr = 0;
@@ -620,7 +620,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 				mCallingConvention.returnValue(functionData, funcToCall, (int)inst.operandTypes().size() - numArgs);
 
 				//Pop the call
-				popFunc(vmState, generatedCode);
+				// popFunc(vmState, generatedCode);
 			} else {
 				//Invoke the macro function
 				MacroFunctionContext context(vmState, mCallingConvention, mExceptionHandling, functionData, inst, instIndex);
