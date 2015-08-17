@@ -1,5 +1,6 @@
 #include "classmetadata.h"
 #include "type.h"
+#include <stdexcept>
 
 //Field
 Field::Field(const Type* type, std::size_t offset)
