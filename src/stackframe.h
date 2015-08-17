@@ -13,7 +13,6 @@ struct StackFrameEntry {
 	StackFrameEntry(long value, const Type* type);
 };
 
-
 //Represents a stack frame
 class StackFrame {
 private:

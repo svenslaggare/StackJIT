@@ -31,15 +31,6 @@ void Runtime::printStackFrame(long* basePtr, Function* func) {
 }
 
 namespace {
-    void printStackTrace(long* basePtr, int level) {
-        if (basePtr == nullptr) {
-            return;
-        }
-
-        std::cout << basePtr << " from " << "0x" << std::hex << *basePtr << std::dec << std::endl;
-        printStackTrace((long*)*basePtr, level + 1);
-    }
-
     void printTimes(char c, int times) {
         for (int i = 0; i < times; i++) {
             std::cout << c;

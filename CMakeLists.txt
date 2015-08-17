@@ -57,10 +57,6 @@ set(SOURCE_FILES
     src/test.h
     src/test.cpp
     src/exceptions.h
-    src/exceptions.cpp
-    tests/runners/amd64test_runner.cpp
-    tests/runners/vmtest_runner.cpp
-    tests/amd64-test.h
-    tests/vm-test.h)
+    src/exceptions.cpp)
 
 add_executable(stackjit ${SOURCE_FILES})

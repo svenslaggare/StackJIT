@@ -1,6 +1,5 @@
 #include "stackframe.h"
 #include "function.h"
-#include "amd64.h"
 
 StackFrameEntry::StackFrameEntry(long value, const Type* type)
 	: value(value), type(type) {
@@ -12,7 +11,6 @@ StackFrame::StackFrame(long* basePtr, const Function* function, const int instIn
 	: mBasePtr(basePtr),
 	  mFunction(function),
 	  mOperandTypes(function->instructions[instIndex].operandTypes()) {
-
 }
 
 StackFrameEntry StackFrame::getArgument(int index) {
