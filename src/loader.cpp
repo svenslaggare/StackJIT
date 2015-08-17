@@ -61,13 +61,15 @@ void Loader::loadExternalFunction(VMState& vmState, AssemblyParser::Function& fu
 	auto returnType = getType(vmState, function.returnType);
 
 	std::vector<const Type*> parameters;
-
 	for (auto param : function.parameters) {
 		parameters.push_back(getType(vmState, param));
 	}
 
-	auto signature = vmState.binder().functionSignature(function.name, parameters);
+	auto signature = vmState.binder().functionSignature(
+		function.name,
+		parameters);
 
+	//Check if defined
 	if (!vmState.binder().isDefined(signature)) {
 		throw std::runtime_error("The external function '" + signature + "' is not defined.");
 	}
@@ -83,7 +85,7 @@ Function* Loader::loadManagedFunction(VMState& vmState, AssemblyParser::Function
 		throw std::runtime_error("Expected a managed function");
 	}
 
-	const Type* returnType = getType(vmState, function.returnType);
+	auto returnType = getType(vmState, function.returnType);
 
 	std::vector<const Type*> parameters;
 	for (auto param : function.parameters) {
@@ -98,7 +100,7 @@ Function* Loader::loadManagedFunction(VMState& vmState, AssemblyParser::Function
 	if (vmState.binder().isDefined(signature)) {
 		throw std::runtime_error("The function '" + signature + "' is already defined.");
 	}
-	
+
 	auto loadedFunc = new Function(
 		function.name,
 		parameters,
