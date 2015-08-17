@@ -5,6 +5,7 @@ before_install:
     - wget -q https://launchpad.net/ubuntu/+archive/primary/+files/cxxtest_4.4-1_all.deb
     - sudo dpkg -i cxxtest_4.4-1_all.deb
     - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+    - sudo apt-get update -qq
 install:
     - sudo apt-get install -qq g++-4.8
 env: CXXTEST=/usr/include
