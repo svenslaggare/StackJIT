@@ -6,6 +6,7 @@
 
 class Assembly;
 class VMState;
+class FunctionDefinition;
 
 //Represents a loader
 namespace Loader {
@@ -15,6 +16,9 @@ namespace Loader {
 	//Loads the given classes from the given assemblies
 	void loadClasses(VMState& vmState, std::vector<AssemblyParser::Assembly*>& assemblies);
 
-	//Loads the given function
-	Function* loadFunction(VMState& vmState, AssemblyParser::Function& function);
+	//Loads the given external function
+	void loadExternalFunction(VMState& vmState, AssemblyParser::Function& function, FunctionDefinition& loadedFunction);
+
+	//Loads the given managed function
+	Function* loadManagedFunction(VMState& vmState, AssemblyParser::Function& function);
 }

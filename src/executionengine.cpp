@@ -138,17 +138,21 @@ void ExecutionEngine::load() {
 	//Load functions
 	for (auto assembly : mAssemblies) {
 		for (auto& currentFunc : assembly->functions) {
-			auto func = Loader::loadFunction(mVMState, currentFunc);
+			FunctionDefinition funcDef;
 
 			if (!currentFunc.isExternal) {
-				mLoadedFunctions.insert({ binder.functionSignature(*func), func });
-			}
+				auto func = Loader::loadManagedFunction(mVMState, currentFunc);
 
-			FunctionDefinition funcDef(
-				func->name(),
-				func->parameters(),
-				func->returnType(),
-				func->isMemberFunction());
+				mLoadedFunctions.insert({ binder.functionSignature(*func), func });
+
+				funcDef = FunctionDefinition(
+					func->name(),
+					func->parameters(),
+					func->returnType(),
+					func->isMemberFunction());
+			} else {
+				Loader::loadExternalFunction(mVMState, currentFunc, funcDef);
+			}
 
 			binder.define(funcDef);
 		}

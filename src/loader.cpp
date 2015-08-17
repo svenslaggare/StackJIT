@@ -50,72 +50,75 @@ namespace {
 
 		return newInst;
 	}
-
-	//Loads the given function
-	Function* loadManagedFunction(VMState& vmState, AssemblyParser::Function& function) {
-		std::vector<const Type*> parameters;
-		const Type* returnType;
-
-		for (auto param : function.parameters) {
-			parameters.push_back(getType(vmState, param));
-		}
-
-		returnType = getType(vmState, function.returnType);
-
-		auto loadedFunc = new Function(
-			function.name,
-			parameters,
-			returnType,
-			function.isMemberFunction,
-			function.memberFunctionName == ".constructor");
-
-		//Locals
-		loadedFunc->setNumLocals(function.localTypes.size());
-		for (std::size_t local = 0; local < function.localTypes.size(); local++) {
-			auto localType = function.localTypes[local];
-
-			if (localType != "") {
-				loadedFunc->setLocal(local, getType(vmState, localType));
-			}
-		}
-
-		//Instructions
-		for (auto inst : function.instructions) {
-			loadedFunc->instructions.push_back(loadInstruction(vmState, loadedFunc, inst));
-		}
-
-		return loadedFunc;
-	}
-
-	//Loads the given external function
-	void loadExternalFunction(VMState& vmState, AssemblyParser::Function& function) {
-		std::vector<const Type*> parameters;
-
-		for (auto param : function.parameters) {
-			parameters.push_back(getType(vmState, param));
-		}
-
-		auto signature = vmState.binder().functionSignature(function.name, parameters);
-
-		if (!vmState.binder().isDefined(signature)) {
-            throw std::runtime_error("The external function '" + signature + "' is not defined.");
-        }
-	}
 }
 
-Function* Loader::loadFunction(VMState& vmState, AssemblyParser::Function& function) {
-	auto loadedFunc = loadManagedFunction(vmState, function);
 
+void Loader::loadExternalFunction(VMState& vmState, AssemblyParser::Function& function, FunctionDefinition& loadedFunction) {
 	if (!function.isExternal) {
-		auto signature = vmState.binder().functionSignature(
-			loadedFunc->name(),
-			loadedFunc->parameters());
+		throw std::runtime_error("Expected an external function");
+	}
 
-		if (vmState.binder().isDefined(signature)) {
-			throw std::runtime_error("The function '" + signature + "' is already defined.");
+	auto returnType = getType(vmState, function.returnType);
+
+	std::vector<const Type*> parameters;
+
+	for (auto param : function.parameters) {
+		parameters.push_back(getType(vmState, param));
+	}
+
+	auto signature = vmState.binder().functionSignature(function.name, parameters);
+
+	if (!vmState.binder().isDefined(signature)) {
+		throw std::runtime_error("The external function '" + signature + "' is not defined.");
+	}
+
+	loadedFunction = FunctionDefinition(
+		function.name,
+		parameters,
+		returnType);
+}
+
+Function* Loader::loadManagedFunction(VMState& vmState, AssemblyParser::Function& function) {
+	if (function.isExternal) {
+		throw std::runtime_error("Expected a managed function");
+	}
+
+	const Type* returnType = getType(vmState, function.returnType);
+
+	std::vector<const Type*> parameters;
+	for (auto param : function.parameters) {
+		parameters.push_back(getType(vmState, param));
+	}
+
+	//Check if defined
+	auto signature = vmState.binder().functionSignature(
+		function.name,
+		parameters);
+
+	if (vmState.binder().isDefined(signature)) {
+		throw std::runtime_error("The function '" + signature + "' is already defined.");
+	}
+	
+	auto loadedFunc = new Function(
+		function.name,
+		parameters,
+		returnType,
+		function.isMemberFunction,
+		function.memberFunctionName == ".constructor");
+
+	//Locals
+	loadedFunc->setNumLocals(function.localTypes.size());
+	for (std::size_t local = 0; local < function.localTypes.size(); local++) {
+		auto localType = function.localTypes[local];
+
+		if (localType != "") {
+			loadedFunc->setLocal(local, getType(vmState, localType));
 		}
-	} else {
-		loadExternalFunction(vmState, function);
+	}
+
+	//Instructions
+	for (auto inst : function.instructions) {
+		loadedFunc->instructions.push_back(loadInstruction(vmState, loadedFunc, inst));
 	}
 
 	return loadedFunc;
