@@ -28,7 +28,7 @@ std::string executeCmd(const char* cmd) {
 }
 
 //Invokes the VM with the given program
-std::string invokeVM(std::string programName, std::string options = "-nd --no-gc") {
+std::string invokeVM(std::string programName, std::string options = "--no-gc") {
 	std::string invokePath = "../StackJIT/stackjit " + options + " < programs/" + programName + ".txt 2>&1";
 	return executeCmd(invokePath.data());
 }
@@ -269,11 +269,11 @@ public:
         TS_ASSERT_EQUALS(invokeVM("gc/program5"), "0\n");
 
 		//With GC enabled
-        TS_ASSERT_EQUALS(invokeVM("gc/program1", "-nd"), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("gc/program2", "-nd"), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("gc/program3", "-nd"), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("gc/program4", "-nd"), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("gc/program5", "-nd"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program1"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program2"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program3"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program4"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program5"), "0\n");
     }
 
     void testFunction() {
@@ -299,44 +299,52 @@ public:
     }
 
     void testLibrary() {
-        TS_ASSERT_EQUALS(invokeVM("rtlib/program1", "-nd --no-gc -i rtlib/rtlib.sbc"), "0.909297\n5\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("rtlib/program1", "--no-gc -i rtlib/rtlib.sbc"), "0.909297\n5\n0\n");
 
-		TS_ASSERT_EQUALS(invokeVM("libraries/program1", "-nd --no-gc -i programs/libraries/lib1.txt -i programs/libraries/lib2.txt"), "1337:4711\n0\n");
-		TS_ASSERT_EQUALS(invokeVM("libraries/program1", "-nd --no-gc -i programs/libraries/lib2.txt -i programs/libraries/lib1.txt"), "1337:4711\n0\n");
+		TS_ASSERT_EQUALS(invokeVM("libraries/program1", "--no-gc -i programs/libraries/lib1.txt -i programs/libraries/lib2.txt"), "1337:4711\n0\n");
+		TS_ASSERT_EQUALS(invokeVM("libraries/program1", "--no-gc -i programs/libraries/lib2.txt -i programs/libraries/lib1.txt"), "1337:4711\n0\n");
 
 		TS_ASSERT_EQUALS(invokeVM(
 			"libraries/program2",
-			"-nd --no-gc -i programs/libraries/lib1.txt -i programs/libraries/lib2.txt -i programs/libraries/lib3.txt"),
+			"--no-gc -i programs/libraries/lib1.txt -i programs/libraries/lib2.txt -i programs/libraries/lib3.txt"),
 				"1337:4711\n0\n");
 
 		TS_ASSERT_EQUALS(invokeVM(
 			"libraries/program2",
-			"-nd --no-gc -i programs/libraries/lib1.txt -i programs/libraries/lib3.txt -i programs/libraries/lib2.txt"),
+			"--no-gc -i programs/libraries/lib1.txt -i programs/libraries/lib3.txt -i programs/libraries/lib2.txt"),
 				"1337:4711\n0\n");
 
         TS_ASSERT_EQUALS(invokeVM(
             "libraries/program2",
-            "-nd --no-gc -i programs/libraries/lib3.txt -i programs/libraries/lib1.txt -i programs/libraries/lib2.txt"),
+            "--no-gc -i programs/libraries/lib3.txt -i programs/libraries/lib1.txt -i programs/libraries/lib2.txt"),
                 "1337:4711\n0\n");
 
         TS_ASSERT_EQUALS(invokeVM(
             "libraries/program2",
-            "-nd --no-gc -i programs/libraries/lib3.txt -i programs/libraries/lib2.txt -i programs/libraries/lib1.txt"),
+            "--no-gc -i programs/libraries/lib3.txt -i programs/libraries/lib2.txt -i programs/libraries/lib1.txt"),
                 "1337:4711\n0\n");
 
         TS_ASSERT_EQUALS(invokeVM(
             "libraries/program2",
-            "-nd --no-gc -i programs/libraries/lib2.txt -i programs/libraries/lib1.txt -i programs/libraries/lib3.txt"),
+            "--no-gc -i programs/libraries/lib2.txt -i programs/libraries/lib1.txt -i programs/libraries/lib3.txt"),
                 "1337:4711\n0\n");
 
         TS_ASSERT_EQUALS(invokeVM(
             "libraries/program2",
-            "-nd --no-gc -i programs/libraries/lib2.txt -i programs/libraries/lib3.txt -i programs/libraries/lib1.txt"),
+            "--no-gc -i programs/libraries/lib2.txt -i programs/libraries/lib3.txt -i programs/libraries/lib1.txt"),
                 "1337:4711\n0\n");
     }
 
     void testAttributes() {
         TS_ASSERT_EQUALS(invokeVM("attributes/func1"), "12\n");
         TS_ASSERT_EQUALS(invokeVM("attributes/struct1"), "0\n");
+    }
+
+    void testLazy() {
+        TS_ASSERT_EQUALS(invokeVM("lazy/onlymain", "-lc"), "1337\n");
+        TS_ASSERT_EQUALS(invokeVM("lazy/mainwithcall", "-lc"), "15\n");
+        TS_ASSERT_EQUALS(invokeVM("lazy/mainwith2calls", "-lc"), "25\n");
+        TS_ASSERT_EQUALS(invokeVM("lazy/callchainwithoutpatching", "-lc"), "25\n");
+        TS_ASSERT_EQUALS(invokeVM("lazy/loop", "-lc"), "0\n");
     }
 };

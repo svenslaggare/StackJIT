@@ -28,6 +28,27 @@ namespace {
 	bool validCharValue(int value) {
 		return value >= -128 && value < 128;
 	}
+
+	//Generates a compile call for the given function
+	std::size_t generateCompileCall(CodeGen& generatedCode, Function& function, const FunctionDefinition& funcToCall) {
+		std::size_t callIndex;
+		std::size_t checkEndIndex;
+
+		Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (long)&function); //The current function
+		Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg1, 0); //Offset of the call
+		callIndex = generatedCode.size() - sizeof(int);
+		Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg2, (int)generatedCode.size()); //The offset for this check
+		Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg3, 0); //The end of the this check
+		checkEndIndex = generatedCode.size() - sizeof(int);
+		Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg4, (long)(&funcToCall)); //The function to compile
+
+		Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&Runtime::compileFunction);
+		Amd64Backend::callInReg(generatedCode, Registers::AX);
+
+		Helpers::setInt(generatedCode, checkEndIndex, (int)generatedCode.size());
+
+		return callIndex;
+	}
 }
 
 void OperandStack::popReg(Function& function, int operandStackIndex, Registers reg) {
@@ -150,6 +171,13 @@ CodeGenerator::CodeGenerator(const CallingConvention& callingConvention, const E
 
 }
 
+bool CodeGenerator::compileAtRuntime(const VMState& vmState, const FunctionDefinition& funcToCall,
+									 std::string funcSignature) {
+	return vmState.lazyJIT
+		   && funcToCall.isManaged()
+		   && !vmState.engine().jitCompiler().hasCompiled(funcSignature);
+}
+
 void CodeGenerator::generateCall(CodeGen& codeGen, long funcPtr, Registers addrReg) {
 	Amd64Backend::moveLongToReg(codeGen, addrReg, funcPtr);
 	Amd64Backend::callInReg(codeGen, addrReg);
@@ -239,7 +267,7 @@ void CodeGenerator::pushFunc(const VMState& vmState, FunctionCompilationData& fu
 	Amd64Backend::moveRegToMemory(
 		generatedCode,
 		topPtr,
-		Registers::AX); //mov [address of top>], rax
+		Registers::AX); //mov [<address of top>], rax
 }
 
 void CodeGenerator::popFunc(const VMState& vmState, CodeGen& generatedCode) {
@@ -258,7 +286,7 @@ void CodeGenerator::popFunc(const VMState& vmState, CodeGen& generatedCode) {
 	Amd64Backend::moveRegToMemory(
 		generatedCode,
 		topPtr,
-		Registers::AX); //mov [address of top>], rax
+		Registers::AX); //mov [<address of top>], rax
 }
 
 void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, const VMState& vmState, const Instruction& inst, int instIndex) {
@@ -550,9 +578,17 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 calledSignature = vmState.binder().functionSignature(inst.strValue, inst.parameters);
             }
 
-            auto& funcToCall = vmState.binder().getFunction(calledSignature);
+            const auto& funcToCall = vmState.binder().getFunction(calledSignature);
 
 			if (!funcToCall.isMacroFunction()) {
+				bool needsToCompile = compileAtRuntime(vmState, funcToCall, calledSignature);
+				std::size_t callIndex = 0;
+
+				//Check if the called function needs to be compiled compiled
+				if (needsToCompile) {
+					callIndex = generateCompileCall(generatedCode, function, funcToCall);
+				}
+
 				//Push the call
 				pushFunc(vmState, functionData, instIndex);
 
@@ -581,12 +617,16 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 				}
 
 				if (funcToCall.isManaged()) {
-					//Mark that the function call needs to be patched with the entry point later
-					functionData.unresolvedCalls.push_back(
-						UnresolvedFunctionCall(
-							FunctionCallType::Relative,
-							generatedCode.size(),
-							funcToCall));
+					if (!needsToCompile) {
+						//Mark that the function call needs to be patched with the entry point later
+						functionData.unresolvedCalls.push_back(
+							UnresolvedFunctionCall(
+								FunctionCallType::Relative,
+								generatedCode.size(),
+								funcToCall));
+					} else {
+						Helpers::setInt(generatedCode, callIndex, (int)generatedCode.size());
+					}
 
 					//Make the call
 					Amd64Backend::call(generatedCode, 0);
@@ -617,7 +657,9 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 				}
 
 				//Push the result
-				mCallingConvention.returnValue(functionData, funcToCall, (int)inst.operandTypes().size() - numArgs);
+				mCallingConvention.handleReturnValue(
+					functionData, funcToCall,
+					(int)inst.operandTypes().size() - numArgs);
 
 				//Pop the call
 				popFunc(vmState, generatedCode);
@@ -637,14 +679,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 generateCall(generatedCode, (long)&Runtime::printStackFrame);
             }
 
-            if (!TypeSystem::isPrimitiveType(function.returnType(), PrimitiveTypes::Void)) {
-                //Pop the return value
-                if (TypeSystem::isPrimitiveType(function.returnType(), PrimitiveTypes::Float)) {
-					OperandStack::popReg(function, topOperandIndex, FloatRegisters::XMM0);
-                } else {
-					OperandStack::popReg(function, topOperandIndex, Registers::AX);
-                }
-            }
+            mCallingConvention.makeReturnValue(functionData, (int)inst.operandTypes().size());
 
             //Restore the base pointer
             Amd64Backend::moveRegToReg(generatedCode, Registers::SP, Registers::BP); //mov rsp, rbp
@@ -869,20 +904,30 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 generateGCCall(generatedCode, function, instIndex);
             }
 
+			//Call the constructor
+			std::string calledSignature = vmState.binder().memberFunctionSignature(
+				inst.classClassType,
+				inst.strValue,
+				inst.parameters);
+
+			const auto& funcToCall = vmState.binder().getFunction(calledSignature);
+
+			//Check if the constructor needs to be compiled
+			bool needsToCompile = compileAtRuntime(vmState, funcToCall, calledSignature);
+			std::size_t callIndex = 0;
+
+			//Check if the called function needs to be compiled compiled
+			if (needsToCompile) {
+				callIndex = generateCompileCall(generatedCode, function, funcToCall);
+			}
+
             //Call the newObject runtime function
-            Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (long)classType); //The pointer to the type as the first arg
+            Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (long)classType); //The pointer to the type
             generateCall(generatedCode, (long)&Runtime::newObject);
 
             //Save the reference
 			Amd64Backend::moveRegToReg(generatedCode, NumberedRegisters::R10, Registers::AX);
 
-            //Call the constructor
-            std::string calledSignature = vmState.binder().memberFunctionSignature(
-                inst.classClassType,
-                inst.strValue,
-                inst.parameters);
-
-            auto& funcToCall = vmState.binder().getFunction(calledSignature);
             int numArgs = (int)funcToCall.parameters().size() - 1;
 
             //Align the stack
@@ -911,12 +956,16 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			Amd64Backend::moveRegToReg(generatedCode, Registers::AX, NumberedRegisters::R10);
             OperandStack::pushReg(function, topOperandIndex + 1 - numArgs, Registers::AX);
 
-            //Mark that the constructor needs to be patched with the entry point later
-            functionData.unresolvedCalls.push_back(
-                UnresolvedFunctionCall(
-                    FunctionCallType::Relative,
-                    generatedCode.size(),
-					funcToCall));
+			if (!needsToCompile) {
+				//Mark that the constructor needs to be patched with the entry point later
+				functionData.unresolvedCalls.push_back(
+					UnresolvedFunctionCall(
+						FunctionCallType::Relative,
+						generatedCode.size(),
+						funcToCall));
+			} else {
+				Helpers::setInt(generatedCode, callIndex, (int)generatedCode.size());
+			}
 
             //Call the constructor
             Amd64Backend::call(generatedCode, 0);
@@ -930,7 +979,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             }
 
             //This is for clean up after a call, as the constructor returns nothing.
-            mCallingConvention.returnValue(functionData, funcToCall, (int)inst.operandTypes().size() - numArgs);
+			mCallingConvention.handleReturnValue(functionData, funcToCall, (int) inst.operandTypes().size() - numArgs);
         }
         break;
     case OpCodes::LOAD_FIELD:

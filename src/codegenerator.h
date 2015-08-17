@@ -1,5 +1,6 @@
 #pragma once
 #include "amd64.h"
+#include "function.h"
 
 struct FunctionCompilationData;
 class VMState;
@@ -8,6 +9,7 @@ class CallingConvention;
 class MemoryManager;
 class Function;
 class ExceptionHandling;
+class FunctionDefinition;
 
 //Manages the operand stack
 namespace OperandStack {
@@ -29,6 +31,9 @@ class CodeGenerator {
 private:
 	const CallingConvention& mCallingConvention;
 	const ExceptionHandling& mExceptionHandling;
+
+	//Indicates if the given function needs to be compiled at runtime
+	bool compileAtRuntime(const VMState& vmState, const FunctionDefinition& funcToCall, std::string funcSignature);
 
 	//Zeroes the locals
 	void zeroLocals(FunctionCompilationData& functionData);

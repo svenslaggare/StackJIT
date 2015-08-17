@@ -103,8 +103,17 @@ public:
 	//Returns the memory manager
 	MemoryManager& memoryManager();
 
+	//Indicates if the given function has been compiled
+	bool hasCompiled(std::string signature) const;
+
+	//Returns the compiled functions
+	const std::unordered_map<std::string, FunctionCompilationData>& functions() const;
+
 	//Compiles the given function
 	JitFunction compileFunction(Function* function);
+
+	//Resolves symbols for the given function
+	void resolveSymbols(std::string signature);
 
 	//Resolves symbols. This function should only be called after all functions has been compiled.
 	void resolveSymbols();

@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include "function.h"
 
 class Function;
 class Type;
@@ -18,6 +19,9 @@ namespace Runtime {
 		//Marks all the objects
 		void markObjects(long* basePtr, Function* func, int instIndex);
 	};
+
+	//Compiles the given function
+	void compileFunction(Function* callee, int callOffset, int checkStart, int checkEnd, FunctionDefinition* funcToCall);
 
 	//Tries to collect garbage
 	void garbageCollect(long* basePtr, Function* func, int instIndex);

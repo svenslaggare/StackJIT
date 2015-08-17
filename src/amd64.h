@@ -135,6 +135,7 @@ namespace Amd64Backend {
 
 	//Moves the given long (64-bits) to the given register
 	void moveLongToReg(CodeGen&, Registers, long);
+	void moveLongToReg(CodeGen&, NumberedRegisters, long);
 
 	//Moves the content from memory where the address is in the second register to the first register
 	void moveMemoryByRegToReg(CodeGen&, FloatRegisters, Registers);

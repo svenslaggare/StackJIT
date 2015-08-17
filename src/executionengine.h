@@ -4,6 +4,7 @@
 #include "assembly.h"
 #include "parser.h"
 #include <vector>
+#include <unordered_map>
 
 //Represents a entry point
 typedef int (*EntryPointFunction)();
@@ -60,10 +61,7 @@ private:
 	CallStack mCallStack;
 
 	std::vector<AssemblyParser::Assembly*> mAssemblies;
-	std::vector<Function*> mLoadedFunctions;
-
-	//Loads the assemblies
-	void load();
+	std::unordered_map<std::string, Function*> mLoadedFunctions;
 
 	//Generates code for loaded functions
 	void generateCode();
@@ -76,11 +74,21 @@ public:
 	ExecutionEngine(const ExecutionEngine&) = delete;
 	ExecutionEngine& operator=(const ExecutionEngine&) = delete;
 
+	//Returns the JIT compiler
+	JITCompiler& jitCompiler();
+	const JITCompiler& jitCompiler() const;
+
 	//Returns the entry point
 	EntryPointFunction entryPoint() const; 
 
 	//Loads the given assembly
 	void loadAssembly(AssemblyParser::Assembly& assembly, AssemblyType assemblyType);
+
+	//Loads the assemblies
+	void load();
+
+	//Compiles the function with the given signature
+	bool compileFunction(std::string signature);
 
 	//Compiles the functions
 	void compile();

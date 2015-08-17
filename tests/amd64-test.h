@@ -320,6 +320,14 @@ public:
         Amd64Backend::moveLongToReg(generatedCode, Registers::CX, 0x118d2cc5a);
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x48, 0xB9, 0x5A, 0xCC, 0xD2, 0x18, 0x01, 0x00, 0x00, 0x00 }));
         generatedCode.clear();
+
+        Amd64Backend::moveLongToReg(generatedCode, NumberedRegisters::R8, 0x118d2cc5a);
+        TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x49, 0xB8, 0x5A, 0xCC, 0xD2, 0x18, 0x01, 0x00, 0x00, 0x00 }));
+        generatedCode.clear();
+
+        Amd64Backend::moveLongToReg(generatedCode, NumberedRegisters::R9, 0x118d2cc5a);
+        TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x49, 0xB9, 0x5A, 0xCC, 0xD2, 0x18, 0x01, 0x00, 0x00, 0x00 } ));
+        generatedCode.clear();
     }
 
     //Tests moveMemoryByRegToReg

@@ -5,6 +5,7 @@ func test() Void
 
 func main() Int
 {
+	CALL test()
 	LDINT 0
 	RET
 }

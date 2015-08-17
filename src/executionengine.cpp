@@ -79,8 +79,17 @@ ExecutionEngine::~ExecutionEngine() {
 	}
 
 	for (auto func : mLoadedFunctions) {
-		delete func;
+		delete func.second;
 	}
+}
+
+JITCompiler& ExecutionEngine::jitCompiler() {
+	return mJIT;
+}
+
+
+const JITCompiler& ExecutionEngine::jitCompiler() const {
+	return mJIT;
 }
 
 EntryPointFunction ExecutionEngine::entryPoint() const {
@@ -124,13 +133,15 @@ void ExecutionEngine::load() {
 	//Load classes
 	Loader::loadClasses(mVMState, mAssemblies);
 
+	auto& binder = mVMState.binder();
+
 	//Load functions
 	for (auto assembly : mAssemblies) {
 		for (auto& currentFunc : assembly->functions) {
 			auto func = Loader::loadFunction(mVMState, currentFunc);
 
 			if (!currentFunc.isExternal) {
-				mLoadedFunctions.push_back(func);
+				mLoadedFunctions.insert({ binder.functionSignature(*func), func });
 			}
 
 			FunctionDefinition funcDef(
@@ -139,21 +150,49 @@ void ExecutionEngine::load() {
 				func->returnType(),
 				func->isMemberFunction());
 
-			auto& binder = mVMState.binder();
 			binder.define(funcDef);
 		}
 	}
 }
 
-void ExecutionEngine::generateCode() {
-	//Generate instructions for all functions
-	for (auto func : mLoadedFunctions) {
+bool ExecutionEngine::compileFunction(std::string signature) {
+	if (mLoadedFunctions.count(signature) > 0 && !mJIT.hasCompiled(signature)) {
+		auto func = mLoadedFunctions[signature];
+
 		//Type check the function
-		Verifier::verifyFunction(*func, mVMState, mVMState.enableDebug && mVMState.printTypeChecking);
+		Verifier::verifyFunction(*func, mVMState);
 
 		auto funcPtr = mJIT.compileFunction(func);
 
-		if (mVMState.enableDebug) {
+		if (mVMState.enableDebug && mVMState.printFunctionGeneration) {
+			std::cout <<
+			"Defined function '" << func->name() << "' at 0x" << std::hex << (long)funcPtr << std::dec << "."
+			<< std::endl;
+		}
+
+		//Set the entry point & size for the function
+		mVMState.binder().getFunction(signature).setEntryPoint((long)funcPtr);
+
+		//Fix unresolved symbols
+		mJIT.resolveSymbols(signature);
+
+		return true;
+	}
+
+	return false;
+}
+
+void ExecutionEngine::generateCode() {
+	//Generate instructions for all functions
+	for (auto loadedFunc : mLoadedFunctions) {
+		auto func = loadedFunc.second;
+
+		//Type check the function
+		Verifier::verifyFunction(*func, mVMState);
+
+		auto funcPtr = mJIT.compileFunction(func);
+
+		if (mVMState.enableDebug && mVMState.printFunctionGeneration) {
 			std::cout <<
 			"Defined function '" << func->name() << "' at 0x" << std::hex << (long)funcPtr << std::dec << "."
 			<< std::endl;
@@ -162,7 +201,7 @@ void ExecutionEngine::generateCode() {
 		auto signature = mVMState.binder().functionSignature(func->name(), func->parameters());
 
 		//Set the entry point & size for the function
-		mVMState.binder().getFunction(signature).setEntryPoint((long) funcPtr);
+		mVMState.binder().getFunction(signature).setEntryPoint((long)funcPtr);
 	}
 
 	//Fix unresolved symbols

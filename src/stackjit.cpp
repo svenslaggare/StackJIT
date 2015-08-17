@@ -15,22 +15,13 @@
 //The global state for the VM
 VMState vmState;
 
+//Parses the options
 void handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
 	for (int i = 1; i < argc; i++) {
 		std::string switchStr = argv[i];
 
 		if (switchStr == "-d" || switchStr == "--debug") {
 			vmState.enableDebug = true;
-			continue;
-		}
-
-		if (switchStr == "-nd" || switchStr == "--no-debug") {
-			vmState.enableDebug = false;
-			continue;
-		}
-
-		if (switchStr == "-ptc" || switchStr == "--print-type-checking") {
-			vmState.printTypeChecking = true;
 			continue;
 		}
 
@@ -41,6 +32,21 @@ void handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
 
 		if (switchStr == "-ogc" || switchStr == "--output-generated-code") {
 			vmState.outputGeneratedCode = true;
+			continue;
+		}
+
+		if (switchStr == "-pfg" || switchStr == "--print-function-generation") {
+			vmState.outputGeneratedCode = true;
+			continue;
+		}
+
+		if (switchStr == "-plp" || switchStr == "--print-lazy-patching") {
+			vmState.printLazyPatching = true;
+			continue;
+		}
+
+		if (switchStr == "-lc" || switchStr == "--lazy-compile") {
+			vmState.lazyJIT = true;
 			continue;
 		}
 
@@ -94,8 +100,16 @@ int main(int argc, char* argv[]) {
     Loader::load(std::cin, vmState, *program);
     engine.loadAssembly(*program, AssemblyType::Program);
 
-	//Compile all functions to native code
-	engine.compile();
+	if (!vmState.lazyJIT) {
+		//Compile all functions to native code
+		engine.compile();
+	} else {
+		//Load functions
+		engine.load();
+
+		//Compile the entry point
+		engine.compileFunction("main()");
+	}
 
     //Execute the program
 	if (vmState.enableDebug) {

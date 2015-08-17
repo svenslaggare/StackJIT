@@ -690,7 +690,6 @@ namespace {
 				}
 			} else {
 				typeError(branch.source, "Expected the number of types before and after branch to be the same.");
-
 			}
 		}
 	}
@@ -705,7 +704,7 @@ namespace {
 	}
 }
 
-void Verifier::verifyFunction(Function& function, VMState& vmState, bool showDebug) {
+void Verifier::verifyFunction(Function& function, VMState& vmState) {
 	InstructionTypes operandStack;
 
 	const auto numInstructions = function.instructions.size();
@@ -716,10 +715,6 @@ void Verifier::verifyFunction(Function& function, VMState& vmState, bool showDeb
 
 	//Check that local types are valid
 	preCheckLocalsTypes(vmState, function);
-
-	if (showDebug) {
-		std::cout << "----Type checking: " <<  function.name() << "----" << std::endl;
-	}
 
 	//Check the function definition
 	verifyFunctionDefinition(function);
@@ -750,25 +745,6 @@ void Verifier::verifyFunction(Function& function, VMState& vmState, bool showDeb
 
 	//Check that the branches are valid
 	verifyBranches(function, branches);
-
-	if (showDebug) {
-		for (std::size_t i = 0; i < numInstructions; i++) {
-			auto types = function.instructions[i].operandTypes();
-
-			std::cout << i << ": ";
-
-			while (!types.empty()) {
-				std::cout << typeToString(types.front()) << " ";
-				types.pop_front();
-			}
-
-			std::cout << std::endl;
-		}
-	}
-
-	if (showDebug) {
-		std::cout << "----End type checking----" << std::endl;
-	}
 
 	//Check that all locals has been typed
 	postCheckLocalsTypes(function);

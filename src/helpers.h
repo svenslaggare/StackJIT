@@ -10,5 +10,6 @@ namespace Helpers {
 	void setInt(unsigned char* source, std::size_t startIndex, int value);
 
 	//Sets the long in the given byte vector starting at the given index
+	void setLong(std::vector<unsigned char>& source, std::size_t startIndex, long value);
 	void setLong(unsigned char* source, std::size_t startIndex, long value);
 }

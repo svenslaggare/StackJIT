@@ -45,6 +45,14 @@ void JITCompiler::createMacros() {
 	}));
 }
 
+bool JITCompiler::hasCompiled(std::string signature) const {
+	return mFunctions.count(signature) > 0;
+}
+
+const std::unordered_map<std::string, FunctionCompilationData>& JITCompiler::functions() const {
+	return mFunctions;
+}
+
 JitFunction JITCompiler::compileFunction(Function* function) {
 	auto signature = mVMState.binder().functionSignature(*function);
 	mFunctions.emplace(signature, FunctionCompilationData(*function));
@@ -67,10 +75,10 @@ JitFunction JITCompiler::compileFunction(Function* function) {
     unsigned char* code = function->generatedCode.data();
     std::size_t length = function->generatedCode.size();
 
-    if (mVMState.enableDebug) {
+    if (mVMState.enableDebug && mVMState.printFunctionGeneration) {
 		auto funcSignature = mVMState.binder().functionSignature(*function);
 		std::cout
-			<< "Generated function '" << funcSignature << " " << function->returnType()
+			<< "Generated function '" << funcSignature << " " << function->returnType()->name()
 			<< "' of size " << length << " bytes."
 			<< std::endl;
     }
@@ -94,7 +102,6 @@ JitFunction JITCompiler::compileFunction(Function* function) {
     //Return the generated instructions as a function pointer
     return (JitFunction)mem;
 }
-
 
 void JITCompiler::resolveBranches(FunctionCompilationData& functionData) {
 	auto& function = functionData.function;
@@ -162,6 +169,15 @@ void JITCompiler::resolveCallTargets(FunctionCompilationData& functionData) {
 	}
 
 	functionData.unresolvedCalls.clear();
+}
+
+void JITCompiler::resolveSymbols(std::string signature) {
+	if (mFunctions.count(signature) > 0) {
+		auto& func = mFunctions.at(signature);
+
+		resolveCallTargets(func);
+		resolveNativeBranches(func);
+	}
 }
 
 void JITCompiler::resolveSymbols() {

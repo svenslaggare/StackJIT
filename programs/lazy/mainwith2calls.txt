@@ -14,5 +14,10 @@ func main() Int
 	LDINT 6
 	LDINT 5
 	CALL int_add(Int Int Int)
+
+	LDINT 4
+	LDINT 6
+	CALL int_add(Int Int Int)
+
 	RET
 }

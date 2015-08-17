@@ -1,6 +1,3 @@
-#include <iostream>
-#include <string.h>
-
 #include "rtlibrary.h"
 #include "amd64.h"
 #include "objects.h"
@@ -9,7 +6,10 @@
 #include "type.h"
 #include "stackframe.h"
 #include "codegenerator.h"
+#include "helpers.h"
 #include "stackjit.h"
+#include <iostream>
+#include <string.h>
 
 extern VMState vmState;
 
@@ -76,6 +76,32 @@ namespace {
 
         std::cout << " (" + type->name() + ")";
     }
+}
+
+void Runtime::compileFunction(Function* callee, int callOffset, int checkStart, int checkEnd, FunctionDefinition* funcToCall) {
+	auto toCallSignature = vmState.binder().functionSignature(*funcToCall);
+
+	vmState.engine().compileFunction(toCallSignature);
+
+	if (vmState.enableDebug && vmState.printLazyPatching) {
+		std::cout
+			<< "Patching call to " << toCallSignature << " at " << vmState.binder().functionSignature(*callee)
+			<< ", offset: " << callOffset << ", check offset: " << checkStart << "." << std::endl;
+	}
+
+	//Get a pointer to the function code
+	auto funcCodePtr = (unsigned char*)vmState.binder().getFunction(*callee).entryPoint();
+
+	//The address of the called function
+	long calledFuncAddr = funcToCall->entryPoint();
+
+	//Update the call target
+	int target = (int)(calledFuncAddr - ((long)funcCodePtr + callOffset + 5));
+	Helpers::setInt(funcCodePtr, callOffset + 1, target);
+
+	//Replace this check at the call site with a branch to end of the check
+	funcCodePtr[checkStart] = 0xe9;
+	Helpers::setInt(funcCodePtr, checkStart + 1, checkEnd - (checkStart + 5));
 }
 
 void Runtime::Internal::printAliveObjects(long* basePtr, Function* func, int instIndex, std::string indentation) {

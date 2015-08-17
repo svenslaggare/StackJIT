@@ -15,12 +15,9 @@ private:
     ExecutionEngine mEngine;
 public:
 	//Indicates if debugging is enabled
-	bool enableDebug = true;
+	bool enableDebug = false;
 
-	//Prints type checking if debug is enabled
-	bool printTypeChecking = false;
-
-	//Prints the info about the stack frame if debug is enabled
+	//Prints the info about the stack frame
 	bool printStackFrame = false;
 
 	//Indicates if the generated code is outputted as a file
@@ -28,6 +25,15 @@ public:
 
     //Indicates if the GC is disabled
     bool disableGC = false;
+
+    //Prints when a function has been compiled
+    bool printFunctionGeneration = false;
+
+    //Indicates if the functions are lazily compiled
+    bool lazyJIT = false;
+
+    //Prints when lazy calls are patched
+    bool printLazyPatching = false;
 
     //Indicates if the VM is in test mode
     bool enableTestMode = false;

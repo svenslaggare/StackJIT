@@ -63,7 +63,7 @@ CodePage* LinuxMemoryManager::newPage(std::size_t size) {
     void *mem = mmap(
         nullptr,
         size,
-        PROT_WRITE | PROT_READ,
+        PROT_WRITE | PROT_READ | PROT_EXEC,
         MAP_ANON | MAP_PRIVATE,
         -1,
         0);
@@ -420,7 +420,7 @@ void LinuxCallingConvention::callFunctionArgument(FunctionCompilationData& funct
 
 void LinuxCallingConvention::callFunctionArguments(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall,
 												   int numStackOperands) const {
-    int numArgs = (int) funcToCall.parameters().size();
+    int numArgs = (int)funcToCall.parameters().size();
 
 	//Set the function arguments
     for (int arg = numArgs - 1; arg >= 0; arg--) {
@@ -433,8 +433,22 @@ int LinuxCallingConvention::calculateStackAlignment(FunctionCompilationData& fun
 	return (numStackArgs % 2) * Amd64Backend::REG_SIZE;
 }
 
-void LinuxCallingConvention::returnValue(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall,
-										 int numStackOperands) const {
+void LinuxCallingConvention::makeReturnValue(FunctionCompilationData& functionData,	int numStackOperands) const {
+	auto& function = functionData.function;
+
+	if (!TypeSystem::isPrimitiveType(function.returnType(), PrimitiveTypes::Void)) {
+		//Pop the return value
+		if (TypeSystem::isPrimitiveType(function.returnType(), PrimitiveTypes::Float)) {
+			OperandStack::popReg(function, numStackOperands - 1, FloatRegisters::XMM0);
+		} else {
+			OperandStack::popReg(function, numStackOperands - 1, Registers::AX);
+		}
+	}
+}
+
+void LinuxCallingConvention::handleReturnValue(FunctionCompilationData& functionData,
+											   const FunctionDefinition& funcToCall,
+											   int numStackOperands) const {
     auto& generatedCode = functionData.function.generatedCode;
 
 	//If we have passed arguments via the stack, adjust the stack pointer.

@@ -1,0 +1,34 @@
+func int_add(Int Int Int) Int
+{
+	LDARG 0
+	LDARG 1
+	ADD
+	LDARG 2
+	ADD
+	RET
+}
+
+func adder() Int
+{
+	LDINT 4
+	LDINT 6
+	LDINT 5
+	CALL int_add(Int Int Int)
+	RET
+}
+
+func adder2(Int) Int
+{
+	LDARG 0
+	LDINT 4
+    LDINT 6
+    CALL int_add(Int Int Int)
+	RET
+}
+
+func main() Int
+{
+	CALL adder()
+	CALL adder2(Int)
+	RET
+}

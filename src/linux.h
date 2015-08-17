@@ -71,6 +71,7 @@ public:
 
 	virtual int calculateStackAlignment(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall) const override;
 
-	virtual void returnValue(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall,
-							 int numStackOperands) const override;
+	virtual void makeReturnValue(FunctionCompilationData& functionData, int numStackOperands) const override;
+	virtual void handleReturnValue(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall,
+								   int numStackOperands) const override;
 };

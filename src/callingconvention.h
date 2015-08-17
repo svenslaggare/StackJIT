@@ -23,7 +23,10 @@ public:
 	//Calculates how much the stack must be aligned to perform the call
 	virtual int calculateStackAlignment(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall) const = 0;
 
-	//Generates code for returning a value from a function
-	virtual void returnValue(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall,
-							 int numStackOperands) const = 0;
+	//Generates code for handling making return value for a function
+	virtual void makeReturnValue(FunctionCompilationData& functionData, int numStackOperands) const = 0;
+
+	//Generates code for handling a return value from a function
+	virtual void handleReturnValue(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall,
+								   int numStackOperands) const = 0;
 };
