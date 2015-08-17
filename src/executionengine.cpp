@@ -178,7 +178,7 @@ void ExecutionEngine::loadDefinitions() {
 					throw std::runtime_error("The function '" + signature + "' is already defined.");
 				}
 
-				mDefinedFunctions.insert({ signature, currentFunc });
+				mLoadedDefinitions.insert({ signature, currentFunc });
 			} else {
 				Loader::loadExternalFunction(mVMState, currentFunc, funcDef);
 			}
@@ -215,9 +215,9 @@ void ExecutionEngine::compileFunction(Function* function, std::string signature,
 }
 
 bool ExecutionEngine::compileFunction(std::string signature) {
-	if (mDefinedFunctions.count(signature) > 0 && !mJIT.hasCompiled(signature)) {
+	if (mLoadedDefinitions.count(signature) > 0 && !mJIT.hasCompiled(signature)) {
 		//Load the function
-		auto funcDef = mDefinedFunctions[signature];
+		auto funcDef = mLoadedDefinitions[signature];
 		auto func = Loader::loadManagedFunction(mVMState, funcDef, false);
 		mLoadedFunctions.insert({ mVMState.binder().functionSignature(*func), func });
 

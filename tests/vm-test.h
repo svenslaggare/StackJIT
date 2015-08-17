@@ -30,7 +30,7 @@ std::string executeCmd(const char* cmd) {
 //Invokes the VM with the given program
 std::string invokeVM(std::string programName, std::string options = "--no-gc") {
     #if USE_VALGRIND
-	std::string invokePath = "valgrind -q ../StackJIT/stackjit " + options + " < programs/" + programName + ".txt 2>&1";
+	std::string invokePath = "valgrind -q --error-exitcode=1 ../StackJIT/stackjit " + options + " < programs/" + programName + ".txt 2>&1";
 	#else
     std::string invokePath = "../StackJIT/stackjit " + options + " < programs/" + programName + ".txt 2>&1";
     #endif
@@ -274,11 +274,11 @@ public:
         TS_ASSERT_EQUALS(invokeVM("gc/program5"), "0\n");
 
 		//With GC enabled
-        TS_ASSERT_EQUALS(invokeVM("gc/program1"), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("gc/program2"), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("gc/program3"), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("gc/program4"), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("gc/program5"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program1", ""), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program2", ""), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program3", ""), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program4", ""), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program5", ""), "0\n");
     }
 
     void testFunction() {

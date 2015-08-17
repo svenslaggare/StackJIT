@@ -37,7 +37,7 @@ namespace {
         }
 
         std::cout << basePtr << " from " << "0x" << std::hex << *basePtr << std::dec << std::endl;
-        printStackTrace((long*) *basePtr, level + 1);
+        printStackTrace((long*)*basePtr, level + 1);
     }
 
     void printTimes(char c, int times) {
@@ -52,10 +52,10 @@ namespace {
         }
 
         if (currentIndex == index) {
-            return (long*) *basePtr;
+            return (long*)*basePtr;
         }
 
-        return findBasePtr((long*) *basePtr, currentIndex + 1, index);
+        return findBasePtr((long*)*basePtr, currentIndex + 1, index);
     }
 
     void printValue(long value, const Type* type) {
@@ -66,7 +66,7 @@ namespace {
                 std::cout << "0x" << std::hex << value << std::dec;
             }
         } else if (type->name() == "Float") {
-            int floatPattern = (int) value;
+            int floatPattern = (int)value;
             float floatValue = *(reinterpret_cast<float*>(&floatPattern));
             std::cout << floatValue;
         } else {

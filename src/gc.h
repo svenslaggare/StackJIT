@@ -31,7 +31,7 @@ private:
 	//Marks the given object.
 	void markObject(ObjectHandle* handle);
 
-	//Sweeps the object deleting unreachable objects.
+	//Deletes unreachable objects.
 	void sweepObjects();
 
 	//Returns a handle for the given raw object pointer
