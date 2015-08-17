@@ -1,4 +1,4 @@
 language: cpp
 compiler: clang
-install: sudo apt-get install -qq cxxtest
+before_install: sudo apt-get install -qq cxxtest
 script: make test-valgrind
