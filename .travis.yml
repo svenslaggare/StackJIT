@@ -2,6 +2,6 @@ language: cpp
 compiler: clang
 before_install:
     - wget -q https://launchpad.net/ubuntu/+archive/primary/+files/cxxtest_4.4-1_all.deb
-    - sudo ./cxxtest_4.4-1_all.deb
+    - sudo dpkg -i cxxtest_4.4-1_all.deb
 env: CXXTEST=/usr/include
 script: make test-valgrind
