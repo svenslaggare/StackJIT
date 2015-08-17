@@ -583,7 +583,7 @@ namespace {
 					bool isNull = classRefType == nullType;
 
 					if (!TypeSystem::isClass(classRefType) && !isNull) {
-						typeError(index, "Expected first operand to be a class reference.");
+						typeError(index, "Expected first operand to be a class reference, but got type: " + classRefType->name() + ".");
 					}
 
 					std::pair<std::string, std::string> structAndField;
@@ -628,7 +628,7 @@ namespace {
 					bool isNull = classRefType == nullType;
 
 					if (!TypeSystem::isClass(classRefType) && !isNull) {
-						typeError(index, "Expected first operand to be a class reference.");
+						typeError(index, "Expected first operand to be a class reference, but got type: " + classRefType->name() + ".");
 					}
 
 					std::pair<std::string, std::string> structAndField;
