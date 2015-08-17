@@ -170,8 +170,7 @@ CodeGenerator::CodeGenerator(const CallingConvention& callingConvention, const E
 
 }
 
-bool CodeGenerator::compileAtRuntime(const VMState& vmState, const FunctionDefinition& funcToCall,
-									 std::string funcSignature) {
+bool CodeGenerator::compileAtRuntime(const VMState& vmState, const FunctionDefinition& funcToCall, std::string funcSignature) {
 	return vmState.lazyJIT
 		   && funcToCall.isManaged()
 		   && !vmState.engine().jitCompiler().hasCompiled(funcSignature);
