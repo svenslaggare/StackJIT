@@ -11,7 +11,6 @@ class ClassType;
 class Instruction {
 private:
     const OpCodes mOpCode;
-    bool mHasEliminatedNullCheck = false;
     std::deque<const Type*> mOperandTypes;
 public:
     //Primitive values
@@ -24,7 +23,7 @@ public:
     std::vector<const Type*> parameters;
 
     //Used by the objects instruction
-    const ClassType* classClassType;
+    const ClassType* classType;
 
     //Creates a new instruction
     Instruction();
@@ -32,12 +31,6 @@ public:
 
     //Returns the OP code
     OpCodes opCode() const;
-
-    //Indicates if the null check has been eliminated
-    bool hasEliminatedNullCheck() const;
-
-    //Eliminates the null check
-    void eliminateNullCheck();
 
     //Returns the operand types
     const std::deque<const Type*>& operandTypes() const;

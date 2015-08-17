@@ -320,7 +320,7 @@ namespace {
 							inst.parameters);
 					} else {
 						signature = vmState.binder().memberFunctionSignature(
-							inst.classClassType,
+							inst.classType,
 							inst.strValue,
 							inst.parameters);
 					}
@@ -549,7 +549,7 @@ namespace {
 			case OpCodes::NEW_OBJECT:
 				{
 					std::string signature = vmState.binder().memberFunctionSignature(
-						inst.classClassType,
+						inst.classType,
 						inst.strValue,
 						inst.parameters);
 
@@ -572,7 +572,7 @@ namespace {
 						}
 					}
 
-					operandStack.push(inst.classClassType);
+					operandStack.push(inst.classType);
 				}
 				break;
 			case OpCodes::LOAD_FIELD:

@@ -14,14 +14,6 @@ OpCodes Instruction::opCode() const {
 	return mOpCode;
 }
 
-bool Instruction::hasEliminatedNullCheck() const {
-    return mHasEliminatedNullCheck;
-}
-
-void Instruction::eliminateNullCheck() {
-    mHasEliminatedNullCheck = true;
-}
-
 const std::deque<const Type*>& Instruction::operandTypes() const {
 	return mOperandTypes;
 }

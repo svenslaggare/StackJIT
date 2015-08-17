@@ -45,7 +45,7 @@ namespace {
 		}
 
 		if (inst.calledClassType != "") {
-			newInst.classClassType = getClassType(vmState, inst.calledClassType);
+			newInst.classType = getClassType(vmState, inst.calledClassType);
 		}
 
 		return newInst;

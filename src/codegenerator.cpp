@@ -571,7 +571,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             std::string calledSignature = "";
 
             if (inst.opCode() == OpCodes::CALL_INSTANCE) {
-                calledSignature = vmState.binder().memberFunctionSignature(inst.classClassType, inst.strValue, inst.parameters);
+                calledSignature = vmState.binder().memberFunctionSignature(inst.classType, inst.strValue, inst.parameters);
             } else {
                 calledSignature = vmState.binder().functionSignature(inst.strValue, inst.parameters);
             }
@@ -895,7 +895,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::NEW_OBJECT:
         {
-            auto classType = inst.classClassType;
+            auto classType = inst.classType;
 
             //Call the garbageCollect runtime function
             if (!vmState.disableGC) {
@@ -907,7 +907,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
 			//Call the constructor
 			std::string calledSignature = vmState.binder().memberFunctionSignature(
-				inst.classClassType,
+				inst.classType,
 				inst.strValue,
 				inst.parameters);
 
