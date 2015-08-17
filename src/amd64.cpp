@@ -388,7 +388,7 @@ void Amd64Backend::addIntToReg(CodeGen& codeGen, Registers destReg, int srcValue
 		codeGen.push_back(0x05);
 	} else {
 		codeGen.push_back(0x81);
-		codeGen.push_back(0xc1 | destReg);
+		codeGen.push_back(0xc0 | destReg);
 	}
 
 	IntToBytes converter;

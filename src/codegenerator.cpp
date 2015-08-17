@@ -224,7 +224,7 @@ void CodeGenerator::zeroLocals(FunctionCompilationData& functionData) {
 		//Zero eax
 		Amd64Backend::xorRegToReg(
 			function.generatedCode,
-			Registers::AX, Registers::AX, true); //xor eax, eax
+			Registers::AX, Registers::AX); //xor rax, rax
 
 		for (int i = 0; i < function.numLocals(); i++) {
 			int localOffset = (int)((i + function.numParams() + 1) * -Amd64Backend::REG_SIZE);
@@ -305,11 +305,11 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::POP:
         //Pop the value
-		OperandStack::popReg(function, (int)inst.operandTypes().size() - 1, Registers::AX);
+		OperandStack::popReg(function, topOperandIndex, Registers::AX);
         break;
     case OpCodes::LOAD_INT:
         //Push the value
-		OperandStack::pushInt(function, (int)inst.operandTypes().size(), inst.intValue);
+		OperandStack::pushInt(function, topOperandIndex + 1, inst.intValue);
         break;
     case OpCodes::LOAD_FLOAT:
         {
@@ -317,12 +317,12 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             const int* floatData = reinterpret_cast<const int*>(&inst.floatValue);
 
             //Push the value
-			OperandStack::pushInt(function, (int)inst.operandTypes().size(), *floatData);
+			OperandStack::pushInt(function, topOperandIndex + 1, *floatData);
         }
         break;
      case OpCodes::LOAD_CHAR:
         //Push the value
-		OperandStack::pushInt(function, (int)inst.operandTypes().size(), inst.charValue);
+		OperandStack::pushInt(function, topOperandIndex + 1, inst.charValue);
         break;
     case OpCodes::ADD:
     case OpCodes::SUB:
@@ -590,7 +590,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 				}
 
 				//Push the call
-				pushFunc(vmState, functionData, instIndex);
+				// pushFunc(vmState, functionData, instIndex);
 
 				//Get the address of the function to call
 				long funcAddr = 0;
@@ -662,7 +662,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 					(int)inst.operandTypes().size() - numArgs);
 
 				//Pop the call
-				popFunc(vmState, generatedCode);
+				// popFunc(vmState, generatedCode);
 			} else {
 				//Invoke the macro function
 				MacroFunctionContext context(vmState, mCallingConvention, mExceptionHandling, functionData, inst, instIndex);
