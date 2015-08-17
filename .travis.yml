@@ -4,5 +4,8 @@ before_install:
     - sudo apt-get install python-ply
     - wget -q https://launchpad.net/ubuntu/+archive/primary/+files/cxxtest_4.4-1_all.deb
     - sudo dpkg -i cxxtest_4.4-1_all.deb
+    - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; fi
+install:
+    - sudo apt-get install -qq g++-4.8; fi
 env: CXXTEST=/usr/include
 script: make test-valgrind
