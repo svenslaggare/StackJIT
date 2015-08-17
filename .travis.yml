@@ -1,5 +1,7 @@
 language: cpp
 compiler: clang
-sudo: false
-before_install: sudo apt-get install -qq cxxtest
+before_install:
+    - sudo apt-add-repository ppa:dhart/ppa
+    - sudo apt-get update -qq
+    - sudo apt-get install -qq cxxtest
 script: make test-valgrind
