@@ -1,14 +1,11 @@
 #include "assembly.h"
 #include "loader.h"
-#include "parser.h"
 #include "native.h"
 #include "test.h"
 #include "vmstate.h"
 #include "executionengine.h"
-
 #include <iostream>
 #include <fstream>
-#include <vector>
 #include <string.h>
 #include <chrono>
 
@@ -56,7 +53,6 @@ void handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
 		}
 
 		if (switchStr == "-t" || switchStr == "--test") {
-			vmState.enableTestMode = true;
 			TestLibrary::add(vmState);
 			continue;
 		}

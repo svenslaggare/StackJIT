@@ -1,10 +1,9 @@
 #pragma once
 #include <string>
-#include "function.h"
 
 class Function;
+class FunctionDefinition;
 class Type;
-class ObjectHandle;
 
 //The runtime library
 namespace Runtime {

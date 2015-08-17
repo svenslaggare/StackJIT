@@ -1,17 +1,22 @@
 #pragma once
 #include "binder.h"
 #include "jit.h"
-#include "assembly.h"
 #include "parser.h"
 #include <vector>
 #include <unordered_map>
 
-//Represents a entry point
-typedef int (*EntryPointFunction)();
-
 class VMState;
 class Assembly;
 class Function;
+
+enum class AssemblyType;
+
+namespace AssemblyParser {
+	struct Assembly;
+}
+
+//Represents a entry point
+typedef int (*EntryPointFunction)();
 
 //Represents a call stack entry
 struct CallStackEntry {
@@ -65,6 +70,9 @@ private:
 
 	//Generates code for loaded functions
 	void generateCode();
+
+	//Compiles the given function
+	void compileFunction(Function* function, std::string signature = "", bool resolveSymbols = false);
 public:
 	//Creates a new execution engine
 	ExecutionEngine(VMState& vmState);

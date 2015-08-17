@@ -5,7 +5,6 @@
 #include "function.h"
 #include "type.h"
 #include "stackframe.h"
-#include "codegenerator.h"
 #include "helpers.h"
 #include "stackjit.h"
 #include <iostream>

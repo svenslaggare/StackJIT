@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 #include <functional>
-#include <map>
 
 //Represents a type
 class Type {

@@ -1,5 +1,4 @@
 #pragma once
-
 #include "amd64.h"
 
 struct FunctionCompilationData;

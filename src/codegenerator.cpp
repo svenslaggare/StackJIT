@@ -8,7 +8,6 @@
 #include "exceptions.h"
 #include "stackjit.h"
 #include "helpers.h"
-
 #include <string.h>
 #include <iostream>
 
@@ -590,7 +589,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 				}
 
 				//Push the call
-				// pushFunc(vmState, functionData, instIndex);
+				pushFunc(vmState, functionData, instIndex);
 
 				//Get the address of the function to call
 				long funcAddr = 0;
@@ -662,7 +661,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 					(int)inst.operandTypes().size() - numArgs);
 
 				//Pop the call
-				// popFunc(vmState, generatedCode);
+				popFunc(vmState, generatedCode);
 			} else {
 				//Invoke the macro function
 				MacroFunctionContext context(vmState, mCallingConvention, mExceptionHandling, functionData, inst, instIndex);
@@ -904,6 +903,9 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                 generateGCCall(generatedCode, function, instIndex);
             }
 
+			//Push the call
+			pushFunc(vmState, functionData, instIndex);
+
 			//Call the constructor
 			std::string calledSignature = vmState.binder().memberFunctionSignature(
 				inst.classClassType,
@@ -980,6 +982,9 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
             //This is for clean up after a call, as the constructor returns nothing.
 			mCallingConvention.handleReturnValue(functionData, funcToCall, (int) inst.operandTypes().size() - numArgs);
+
+			//Pop the call
+			popFunc(vmState, generatedCode);
         }
         break;
     case OpCodes::LOAD_FIELD:

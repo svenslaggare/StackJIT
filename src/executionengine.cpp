@@ -155,27 +155,36 @@ void ExecutionEngine::load() {
 	}
 }
 
+void ExecutionEngine::compileFunction(Function* function, std::string signature, bool resolveSymbols) {
+	//Type check the function
+	Verifier::verifyFunction(*function, mVMState);
+
+	//Compile it
+	auto funcPtr = mJIT.compileFunction(function);
+
+	if (mVMState.enableDebug && mVMState.printFunctionGeneration) {
+		std::cout <<
+		"Defined function '" << function->name() << "' at 0x" << std::hex << (long)funcPtr << std::dec << "."
+		<< std::endl;
+	}
+
+	if (signature == "") {
+		signature = mVMState.binder().functionSignature(*function);
+	}
+
+	//Set the entry point & size for the function
+	mVMState.binder().getFunction(signature).setEntryPoint((long)funcPtr);
+
+	if (resolveSymbols) {
+		//Fix unresolved symbols
+		mJIT.resolveSymbols(signature);
+	}
+}
+
 bool ExecutionEngine::compileFunction(std::string signature) {
 	if (mLoadedFunctions.count(signature) > 0 && !mJIT.hasCompiled(signature)) {
 		auto func = mLoadedFunctions[signature];
-
-		//Type check the function
-		Verifier::verifyFunction(*func, mVMState);
-
-		auto funcPtr = mJIT.compileFunction(func);
-
-		if (mVMState.enableDebug && mVMState.printFunctionGeneration) {
-			std::cout <<
-			"Defined function '" << func->name() << "' at 0x" << std::hex << (long)funcPtr << std::dec << "."
-			<< std::endl;
-		}
-
-		//Set the entry point & size for the function
-		mVMState.binder().getFunction(signature).setEntryPoint((long)funcPtr);
-
-		//Fix unresolved symbols
-		mJIT.resolveSymbols(signature);
-
+		compileFunction(func, signature, true);
 		return true;
 	}
 
@@ -185,23 +194,7 @@ bool ExecutionEngine::compileFunction(std::string signature) {
 void ExecutionEngine::generateCode() {
 	//Generate instructions for all functions
 	for (auto loadedFunc : mLoadedFunctions) {
-		auto func = loadedFunc.second;
-
-		//Type check the function
-		Verifier::verifyFunction(*func, mVMState);
-
-		auto funcPtr = mJIT.compileFunction(func);
-
-		if (mVMState.enableDebug && mVMState.printFunctionGeneration) {
-			std::cout <<
-			"Defined function '" << func->name() << "' at 0x" << std::hex << (long)funcPtr << std::dec << "."
-			<< std::endl;
-		}
-
-		auto signature = mVMState.binder().functionSignature(func->name(), func->parameters());
-
-		//Set the entry point & size for the function
-		mVMState.binder().getFunction(signature).setEntryPoint((long)funcPtr);
+		compileFunction(loadedFunc.second);
 	}
 
 	//Fix unresolved symbols

@@ -1,6 +1,6 @@
 #pragma once
 #include "amd64.h"
-#include "function.h"
+#include <string>
 
 struct FunctionCompilationData;
 class VMState;

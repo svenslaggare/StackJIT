@@ -30,13 +30,10 @@ public:
     bool printFunctionGeneration = false;
 
     //Indicates if the functions are lazily compiled
-    bool lazyJIT = false;
+    bool lazyJIT = true;
 
     //Prints when lazy calls are patched
     bool printLazyPatching = false;
-
-    //Indicates if the VM is in test mode
-    bool enableTestMode = false;
 
     //Creates a new VM State
     VMState();

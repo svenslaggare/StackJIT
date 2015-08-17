@@ -3,11 +3,8 @@
 #include "callingconvention.h"
 #include "codegenerator.h"
 #include "exceptions.h"
-#include "function.h"
-
 #include <unordered_map>
 #include <vector>
-#include <deque>
 #include <functional>
 
 class VMState;
