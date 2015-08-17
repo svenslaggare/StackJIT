@@ -1,8 +1,7 @@
 language: cpp
 compiler: clang
 before_install:
-    - echo | sudo apt-add-repository ppa:dhart/ppa
-    - sudo apt-get update -qq
-    - sudo apt-get install -qq cxxtest
-env: CXXTEST=/usr/include    
+    - wget https://launchpad.net/ubuntu/+archive/primary/+files/cxxtest_4.4-1_all.deb
+    - cxxtest_4.4-1_all.deb
+env: CXXTEST=/usr/include
 script: make test-valgrind
