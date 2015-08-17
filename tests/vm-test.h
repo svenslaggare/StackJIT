@@ -29,7 +29,12 @@ std::string executeCmd(const char* cmd) {
 
 //Invokes the VM with the given program
 std::string invokeVM(std::string programName, std::string options = "--no-gc") {
-	std::string invokePath = "../StackJIT/stackjit " + options + " < programs/" + programName + ".txt 2>&1";
+    #if USE_VALGRIND
+	std::string invokePath = "valgrind -q ../StackJIT/stackjit " + options + " < programs/" + programName + ".txt 2>&1";
+	#else
+    std::string invokePath = "../StackJIT/stackjit " + options + " < programs/" + programName + ".txt 2>&1";
+    #endif
+
 	return executeCmd(invokePath.data());
 }
 

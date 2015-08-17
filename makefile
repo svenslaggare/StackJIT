@@ -17,6 +17,7 @@ TESTS_DIR=tests
 TEST_RUNNERS_DIR=$(TESTS_DIR)/runners
 AMD64_TEST_EXECUTABLE=amd64-test
 VM_TEST_EXECUTABLE=vm-test
+TEST_WITH_VALGRIND=0
 
 all: $(OBJDIR) $(SOURCES) $(EXECUTABLE)
 
@@ -31,6 +32,11 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(HEADERS) $(TEMPLATE_HEADERS)
 
 test: test-amd64 test-vm
 
+valgrind-flags:
+	$(eval TEST_WITH_VALGRIND = 1)
+
+test-valgrind: valgrind-flags test-amd64 test-vm
+
 test-amd64: $(TESTS_DIR)/amd64-test.h $(OBJDIR) $(OBJDIR)/amd64.o
 	mkdir -p $(TEST_RUNNERS_DIR)
 	cxxtestgen --error-printer -o $(TEST_RUNNERS_DIR)/amd64test_runner.cpp $(TESTS_DIR)/amd64-test.h
@@ -40,7 +46,7 @@ test-amd64: $(TESTS_DIR)/amd64-test.h $(OBJDIR) $(OBJDIR)/amd64.o
 test-vm: $(TESTS_DIR)/vm-test.h  $(OBJDIR) $(EXECUTABLE)
 	mkdir -p $(TEST_RUNNERS_DIR)
 	cxxtestgen --error-printer -o $(TEST_RUNNERS_DIR)/vmtest_runner.cpp $(TESTS_DIR)/vm-test.h
-	$(CC) $(LDFLAGS) -o $(VM_TEST_EXECUTABLE) -I $(CXXTEST) $(TEST_RUNNERS_DIR)/vmtest_runner.cpp
+	$(CC) $(LDFLAGS) -o $(VM_TEST_EXECUTABLE) -I $(CXXTEST) $(TEST_RUNNERS_DIR)/vmtest_runner.cpp -DUSE_VALGRIND=$(TEST_WITH_VALGRIND)
 	./$(VM_TEST_EXECUTABLE)
 
 clean:
