@@ -14,7 +14,7 @@ To run the VM, supply a program via stdin:
 * `-ogc` or `--output-generated-code`: Outputs the generated machine code for the functions. The output can be viewed using _objdump_: `objdump -D -M intel -b binary -mi386 -Mx86-64 <file name>`.
 * `-pfg` or `--print-function-generation`: Prints status when functions are generated. Requires debugging to be enabled.
 * `-plp` or `--print-lazy-patching`: Prints when lazy compiled functions that are called are patched. Requires debugging to be enabled.
-* `-lc` or `--lazy-compile`: Enables lazy compilation of functions.
+* `-lc <enable>` or `--lazy-compile <enable>`: Enables lazy compilation of functions.
 * `-t` or `--test`: Enables test mode, which loads test related libraries.
 * `-ngc` or `--no-gc`: Disables garbage collection. The GC can still be used by calling the runtime function.
 * `-i <library file>`: Loads a library.

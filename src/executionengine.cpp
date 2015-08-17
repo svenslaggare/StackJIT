@@ -159,6 +159,35 @@ void ExecutionEngine::load() {
 	}
 }
 
+void ExecutionEngine::loadDefinitions() {
+	//Load classes
+	Loader::loadClasses(mVMState, mAssemblies);
+
+	auto& binder = mVMState.binder();
+
+	//Load functions
+	for (auto assembly : mAssemblies) {
+		for (auto& currentFunc : assembly->functions) {
+			FunctionDefinition funcDef;
+
+			if (!currentFunc.isExternal) {
+				Loader::generateDefinition(mVMState, currentFunc, funcDef);
+
+				auto signature = binder.functionSignature(funcDef);
+				if (binder.isDefined(signature)) {
+					throw std::runtime_error("The function '" + signature + "' is already defined.");
+				}
+
+				mDefinedFunctions.insert({ signature, currentFunc });
+			} else {
+				Loader::loadExternalFunction(mVMState, currentFunc, funcDef);
+			}
+
+			binder.define(funcDef);
+		}
+	}
+}
+
 void ExecutionEngine::compileFunction(Function* function, std::string signature, bool resolveSymbols) {
 	//Type check the function
 	Verifier::verifyFunction(*function, mVMState);
@@ -186,8 +215,13 @@ void ExecutionEngine::compileFunction(Function* function, std::string signature,
 }
 
 bool ExecutionEngine::compileFunction(std::string signature) {
-	if (mLoadedFunctions.count(signature) > 0 && !mJIT.hasCompiled(signature)) {
-		auto func = mLoadedFunctions[signature];
+	if (mDefinedFunctions.count(signature) > 0 && !mJIT.hasCompiled(signature)) {
+		//Load the function
+		auto funcDef = mDefinedFunctions[signature];
+		auto func = Loader::loadManagedFunction(mVMState, funcDef, false);
+		mLoadedFunctions.insert({ mVMState.binder().functionSignature(*func), func });
+
+		//Compile it
 		compileFunction(func, signature, true);
 		return true;
 	}

@@ -52,12 +52,7 @@ namespace {
 	}
 }
 
-
-void Loader::loadExternalFunction(VMState& vmState, AssemblyParser::Function& function, FunctionDefinition& loadedFunction) {
-	if (!function.isExternal) {
-		throw std::runtime_error("Expected an external function");
-	}
-
+void Loader::generateDefinition(VMState& vmState, AssemblyParser::Function& function, FunctionDefinition& definition) {
 	auto returnType = getType(vmState, function.returnType);
 
 	std::vector<const Type*> parameters;
@@ -65,22 +60,29 @@ void Loader::loadExternalFunction(VMState& vmState, AssemblyParser::Function& fu
 		parameters.push_back(getType(vmState, param));
 	}
 
-	auto signature = vmState.binder().functionSignature(
+	definition = FunctionDefinition(
 		function.name,
-		parameters);
+		parameters,
+		returnType,
+		function.isMemberFunction);
+}
+
+void Loader::loadExternalFunction(VMState& vmState, AssemblyParser::Function& function, FunctionDefinition& loadedFunction) {
+	if (!function.isExternal) {
+		throw std::runtime_error("Expected an external function");
+	}
+
+	generateDefinition(vmState, function, loadedFunction);
+
+	auto signature = vmState.binder().functionSignature(loadedFunction);
 
 	//Check if defined
 	if (!vmState.binder().isDefined(signature)) {
 		throw std::runtime_error("The external function '" + signature + "' is not defined.");
 	}
-
-	loadedFunction = FunctionDefinition(
-		function.name,
-		parameters,
-		returnType);
 }
 
-Function* Loader::loadManagedFunction(VMState& vmState, AssemblyParser::Function& function) {
+Function* Loader::loadManagedFunction(VMState& vmState, AssemblyParser::Function& function, bool checkIfDefined) {
 	if (function.isExternal) {
 		throw std::runtime_error("Expected a managed function");
 	}
@@ -97,7 +99,7 @@ Function* Loader::loadManagedFunction(VMState& vmState, AssemblyParser::Function
 		function.name,
 		parameters);
 
-	if (vmState.binder().isDefined(signature)) {
+	if (checkIfDefined && vmState.binder().isDefined(signature)) {
 		throw std::runtime_error("The function '" + signature + "' is already defined.");
 	}
 

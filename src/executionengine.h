@@ -67,9 +67,13 @@ private:
 
 	std::vector<AssemblyParser::Assembly*> mAssemblies;
 	std::unordered_map<std::string, Function*> mLoadedFunctions;
+	std::unordered_map<std::string, AssemblyParser::Function> mDefinedFunctions;
 
 	//Generates code for loaded functions
 	void generateCode();
+
+	//Loads the assemblies
+	void load();
 
 	//Compiles the given function
 	void compileFunction(Function* function, std::string signature = "", bool resolveSymbols = false);
@@ -92,8 +96,8 @@ public:
 	//Loads the given assembly
 	void loadAssembly(AssemblyParser::Assembly& assembly, AssemblyType assemblyType);
 
-	//Loads the assemblies
-	void load();
+	//Loads definitions
+	void loadDefinitions();
 
 	//Compiles the function with the given signature
 	bool compileFunction(std::string signature);

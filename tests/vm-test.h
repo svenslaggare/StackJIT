@@ -346,10 +346,10 @@ public:
     }
 
     void testLazy() {
-        TS_ASSERT_EQUALS(invokeVM("lazy/onlymain", "-lc"), "1337\n");
-        TS_ASSERT_EQUALS(invokeVM("lazy/mainwithcall", "-lc"), "15\n");
-        TS_ASSERT_EQUALS(invokeVM("lazy/mainwith2calls", "-lc"), "25\n");
-        TS_ASSERT_EQUALS(invokeVM("lazy/callchainwithoutpatching", "-lc"), "25\n");
-        TS_ASSERT_EQUALS(invokeVM("lazy/loop", "-lc"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("lazy/onlymain", "-lc 1"), "1337\n");
+        TS_ASSERT_EQUALS(invokeVM("lazy/mainwithcall", "-lc 1"), "15\n");
+        TS_ASSERT_EQUALS(invokeVM("lazy/mainwith2calls", "-lc 1"), "25\n");
+        TS_ASSERT_EQUALS(invokeVM("lazy/callchainwithoutpatching", "-lc 1"), "25\n");
+        TS_ASSERT_EQUALS(invokeVM("lazy/loop", "-lc 1"), "0\n");
     }
 };

@@ -43,7 +43,15 @@ void handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
 		}
 
 		if (switchStr == "-lc" || switchStr == "--lazy-compile") {
-			vmState.lazyJIT = true;
+			int next = i + 1;
+
+			if (next < argc) {
+				vmState.lazyJIT = std::string(argv[next]) == "1";
+				i++;
+			} else {
+				std::cout << "Expected value after '" << switchStr << "' option." << std::endl;
+			}
+
 			continue;
 		}
 
@@ -84,7 +92,14 @@ void handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
 	}
 }
 
+//Returns the duration since last
+long getDuration(std::chrono::time_point<std::chrono::high_resolution_clock> start) {
+	auto end = std::chrono::high_resolution_clock::now();
+	return std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+}
+
 int main(int argc, char* argv[]) {
+	auto start = std::chrono::high_resolution_clock::now();
     auto& engine = vmState.engine();
     NativeLibrary::add(vmState);
 
@@ -100,8 +115,8 @@ int main(int argc, char* argv[]) {
 		//Compile all functions to native code
 		engine.compile();
 	} else {
-		//Load functions
-		engine.load();
+		//Load definitions
+		engine.loadDefinitions();
 
 		//Compile the entry point
 		engine.compileFunction("main()");
@@ -109,18 +124,17 @@ int main(int argc, char* argv[]) {
 
     //Execute the program
 	if (vmState.enableDebug) {
+		std::cout << "Load time: " << getDuration(start) << " ms." << std::endl;
 		std::cout << "Program output:" << std::endl;
 	}
 
 	auto programPtr = engine.entryPoint();
 
-	auto start = std::chrono::high_resolution_clock::now();
+	start = std::chrono::high_resolution_clock::now();
     int res = programPtr();
 
     if (vmState.enableDebug) {
-        auto end = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-        std::cout << "Return value (executed for " << duration << " ms): " << std::endl;
+        std::cout << "Return value (executed for " << getDuration(start) << " ms): " << std::endl;
     }
 
     std::cout << res << std::endl;
