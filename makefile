@@ -5,8 +5,7 @@ LDFLAGS=-std=c++11 -Wall
 SRCDIR=src
 OBJDIR=obj
 EXECUTABLE=stackjit
-FOLDERS = $(OBJDIR)/linux
-FOLDERS = $(OBJDIR)/windows
+FOLDERS = $(OBJDIR)/linux $(OBJDIR)/windows
 
 SOURCES=$(wildcard $(SRCDIR)/*.cpp)
 HEADERS=$(wildcard $(SRCDIR)/*.h)
