@@ -1,8 +1,8 @@
 #include "exceptions.h"
-#include "memory.h"
 #include "rtlibrary.h"
 #include "function.h"
 #include "jit.h"
+#include <string.h>
 
 //Exception handling
 void ExceptionHandling::generateHandlers(MemoryManager& memoryManger) {

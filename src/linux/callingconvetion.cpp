@@ -1,105 +1,10 @@
-#include "linux.h"
-#include "amd64.h"
-#include "jit.h"
-#include "function.h"
-#include "type.h"
-
+#ifdef __unix__
+#include "callingconvention.h"
+#include "../amd64.h"
+#include "../jit.h"
+#include "../function.h"
+#include "../type.h"
 #include <iostream>
-#include <sys/mman.h>
-
-CodePage::CodePage(void* start, std::size_t size)
-    : mStart(start), mSize(size), mUsed(0) {
-
-}
-
-CodePage::~CodePage() {
-    munmap(mStart, mSize);
-}
-
-void* CodePage::start() const {
-    return mStart;
-}
-
-std::size_t CodePage::size() const {
-    return mSize;
-}
-
-std::size_t CodePage::used() const {
-    return mUsed;
-}
-
-void* CodePage::allocateMemory(std::size_t size) {
-    if (mUsed + size < mSize) {
-        void* newPtr = (char*)mStart + mUsed;
-        mUsed += size;
-        return newPtr;
-    } else {
-        return nullptr;
-    }
-}
-
-void CodePage::makeExecutable() {
-    int success = mprotect(mStart, mSize, PROT_EXEC | PROT_READ);
-
-	if (success != 0) {
-		throw std::runtime_error("Unable to make memory executable.");
-	}
-}
-
-LinuxMemoryManager::LinuxMemoryManager() {
-
-}
-
-LinuxMemoryManager::~LinuxMemoryManager() {
-    for (auto codePage : mPages) {
-        delete codePage;
-    }
-}
-
-CodePage* LinuxMemoryManager::newPage(std::size_t size) {
-    //Align to page size
-    size = ((size + PAGE_SIZE - 1) / PAGE_SIZE) * PAGE_SIZE;
-
-    void *mem = mmap(
-        nullptr,
-        size,
-        PROT_WRITE | PROT_READ | PROT_EXEC,
-        MAP_ANON | MAP_PRIVATE,
-        -1,
-        0);
-
-    if (mem == MAP_FAILED) {
-        throw std::runtime_error("Unable to allocate memory.");
-    }
-
-    auto newPage = new CodePage(mem, size);
-    mPages.push_back(newPage);
-    return newPage;
-}
-
-void* LinuxMemoryManager::allocateMemory(std::size_t size) {
-    CodePage* page = nullptr;
-
-    //Find a page with enough size
-    for (auto currentPage : mPages) {
-        if (currentPage->used() + size < currentPage->size()) {
-            page = currentPage;
-            break;
-        }
-    }
-
-    if (page == nullptr) {
-        page = newPage(size);
-    }
-
-    return page->allocateMemory(size);
-}
-
-void LinuxMemoryManager::makeMemoryExecutable() {
-	for (auto codePage : mPages) {
-        codePage->makeExecutable();
-    }
-}
 
 namespace {
 	//The maximum number of register for argument passing
@@ -214,41 +119,41 @@ namespace {
 				Registers::BP, argStackOffset, Registers::AX); //mov [rbp+<arg offset>], rax
 		}
 
-        if (relativeArgIndex == 5) {
+		if (relativeArgIndex == 5) {
 			Amd64Backend::moveRegToMemoryRegWithOffset(
 				function.generatedCode,
 				Registers::BP, argStackOffset, RegisterCallArguments::Arg5); //mov [rbp+<arg offset>], r9
-        }
+		}
 
-        if (relativeArgIndex == 4) {
+		if (relativeArgIndex == 4) {
 			Amd64Backend::moveRegToMemoryRegWithOffset(
 				function.generatedCode,
 				Registers::BP, argStackOffset, RegisterCallArguments::Arg4); //mov [rbp+<arg offset>], r8
-        }
+		}
 
-        if (relativeArgIndex == 3) {
+		if (relativeArgIndex == 3) {
 			Amd64Backend::moveRegToMemoryRegWithOffset(
 				function.generatedCode,
 				Registers::BP, argStackOffset, RegisterCallArguments::Arg3); //mov [rbp+<arg offset>], rcx
-        }
+		}
 
-        if (relativeArgIndex == 2) {
+		if (relativeArgIndex == 2) {
 			Amd64Backend::moveRegToMemoryRegWithOffset(
 				function.generatedCode,
 				Registers::BP, argStackOffset, RegisterCallArguments::Arg2); //mov [rbp+<arg offset>], rdx
-        }
+		}
 
-        if (relativeArgIndex == 1) {
+		if (relativeArgIndex == 1) {
 			Amd64Backend::moveRegToMemoryRegWithOffset(
 				function.generatedCode,
 				Registers::BP, argStackOffset, RegisterCallArguments::Arg1); //mov [rbp+<arg offset>], rsi
-        }
+		}
 
-        if (relativeArgIndex == 0) {
+		if (relativeArgIndex == 0) {
 			Amd64Backend::moveRegToMemoryRegWithOffset(
 				function.generatedCode,
 				Registers::BP, argStackOffset, RegisterCallArguments::Arg0); //mov [rbp+<arg offset>], rdi
-        }
+		}
 	}
 
 	//Moves a relative float argument to the stack. The argument is relative to the type of the register.
@@ -320,8 +225,8 @@ namespace {
 	}
 }
 
-void LinuxCallingConvention::moveArgsToStack(FunctionCompilationData& functionData) const {
-    auto& function = functionData.function;
+void CallingConvention::moveArgsToStack(FunctionCompilationData& functionData) const {
+	auto& function = functionData.function;
 	auto& parameters = function.parameters();
 
 	for (int arg = (int)function.numParams() - 1; arg >= 0; arg--) {
@@ -333,10 +238,10 @@ void LinuxCallingConvention::moveArgsToStack(FunctionCompilationData& functionDa
 	}
 }
 
-void LinuxCallingConvention::callFunctionArgument(FunctionCompilationData& functionData,
+void CallingConvention::callFunctionArgument(FunctionCompilationData& functionData,
 												  int argIndex, const Type* argType, const FunctionDefinition& funcToCall,
 												  int numStackOperands) const {
-    auto& generatedCode = functionData.function.generatedCode;
+	auto& generatedCode = functionData.function.generatedCode;
 	int numArgs = (int)funcToCall.parameters().size();
 
 	if (TypeSystem::isPrimitiveType(argType, PrimitiveTypes::Float)) {
@@ -418,22 +323,22 @@ void LinuxCallingConvention::callFunctionArgument(FunctionCompilationData& funct
 	}
 }
 
-void LinuxCallingConvention::callFunctionArguments(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall,
+void CallingConvention::callFunctionArguments(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall,
 												   int numStackOperands) const {
-    int numArgs = (int)funcToCall.parameters().size();
+	int numArgs = (int)funcToCall.parameters().size();
 
 	//Set the function arguments
-    for (int arg = numArgs - 1; arg >= 0; arg--) {
+	for (int arg = numArgs - 1; arg >= 0; arg--) {
 		callFunctionArgument(functionData, arg, funcToCall.parameters().at(arg), funcToCall, numStackOperands);
 	}
 }
 
-int LinuxCallingConvention::calculateStackAlignment(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall) const {
+int CallingConvention::calculateStackAlignment(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall) const {
 	int numStackArgs = numStackArguments(funcToCall.parameters());
 	return (numStackArgs % 2) * Amd64Backend::REG_SIZE;
 }
 
-void LinuxCallingConvention::makeReturnValue(FunctionCompilationData& functionData,	int numStackOperands) const {
+void CallingConvention::makeReturnValue(FunctionCompilationData& functionData,	int numStackOperands) const {
 	auto& function = functionData.function;
 
 	if (!TypeSystem::isPrimitiveType(function.returnType(), PrimitiveTypes::Void)) {
@@ -446,10 +351,10 @@ void LinuxCallingConvention::makeReturnValue(FunctionCompilationData& functionDa
 	}
 }
 
-void LinuxCallingConvention::handleReturnValue(FunctionCompilationData& functionData,
+void CallingConvention::handleReturnValue(FunctionCompilationData& functionData,
 											   const FunctionDefinition& funcToCall,
 											   int numStackOperands) const {
-    auto& generatedCode = functionData.function.generatedCode;
+	auto& generatedCode = functionData.function.generatedCode;
 
 	//If we have passed arguments via the stack, adjust the stack pointer.
 	int numStackArgs = numStackArguments(funcToCall.parameters());
@@ -458,11 +363,12 @@ void LinuxCallingConvention::handleReturnValue(FunctionCompilationData& function
 		Amd64Backend::addConstantToReg(generatedCode, Registers::SP, numStackArgs * Amd64Backend::REG_SIZE);
 	}
 
-    if (!TypeSystem::isPrimitiveType(funcToCall.returnType(), PrimitiveTypes::Void)) {
-        if (TypeSystem::isPrimitiveType(funcToCall.returnType(), PrimitiveTypes::Float)) {
+	if (!TypeSystem::isPrimitiveType(funcToCall.returnType(), PrimitiveTypes::Void)) {
+		if (TypeSystem::isPrimitiveType(funcToCall.returnType(), PrimitiveTypes::Float)) {
 			OperandStack::pushReg(functionData.function, numStackOperands, FloatRegisters::XMM0);
-        } else {
+		} else {
 			OperandStack::pushReg(functionData.function, numStackOperands, Registers::AX);
-        }
-    }
+		}
+	}
 }
+#endif

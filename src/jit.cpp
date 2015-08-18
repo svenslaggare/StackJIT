@@ -7,7 +7,7 @@
 #include "binder.h"
 #include "function.h"
 #include "helpers.h"
-
+#include "memory.h"
 #include <string.h>
 #include <iostream>
 #include <fstream>

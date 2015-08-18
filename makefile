@@ -5,9 +5,14 @@ LDFLAGS=-std=c++11 -Wall
 SRCDIR=src
 OBJDIR=obj
 EXECUTABLE=stackjit
+FOLDERS = $(OBJDIR)/linux
 
 SOURCES=$(wildcard $(SRCDIR)/*.cpp)
 HEADERS=$(wildcard $(SRCDIR)/*.h)
+
+SOURCES += $(wildcard $(SRCDIR)/*/*.cpp)
+HEADERS += $(wildcard $(SRCDIR)/*/*.h)
+
 TEMPLATE_HEADERS=$(wildcard $(SRCDIR)/*.hpp)
 
 _OBJECTS=$(SOURCES:.cpp=.o)
@@ -23,6 +28,7 @@ all: $(OBJDIR) $(SOURCES) $(EXECUTABLE)
 
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
+	mkdir -p $(FOLDERS)
 
 $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
@@ -52,6 +58,6 @@ test-vm: $(TESTS_DIR)/vm-test.h  $(OBJDIR) $(EXECUTABLE)
 clean:
 	rm -rf $(OBJDIR)
 	rm -rf $(TEST_RUNNERS_DIR)
-	rm $(EXECUTABLE)
-	rm $(AMD64_TEST_EXECUTABLE)
-	rm $(VM_TEST_EXECUTABLE)
+	rm -f $(EXECUTABLE)
+	rm -f $(AMD64_TEST_EXECUTABLE)
+	rm -f $(VM_TEST_EXECUTABLE)

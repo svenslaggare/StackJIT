@@ -8,6 +8,7 @@
 #include "exceptions.h"
 #include "stackjit.h"
 #include "helpers.h"
+#include "callingconvention.h"
 #include <string.h>
 #include <iostream>
 

@@ -1,6 +1,5 @@
 #include "function.h"
 #include "codegenerator.h"
-#include "memory.h"
 
 Function::Function(std::string name, std::vector<const Type*> parameters, const Type* returnType, bool isMemberFunction, bool isConstructor)
 	: mName(name),

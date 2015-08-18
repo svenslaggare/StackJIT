@@ -1,5 +1,5 @@
 #pragma once
-#include "linux.h"
+#include "memory.h"
 #include "callingconvention.h"
 #include "codegenerator.h"
 #include "exceptions.h"
@@ -10,7 +10,6 @@
 class VMState;
 class Function;
 class Type;
-class MemoryManager;
 
 //Represents a compiled function
 typedef void (*JitFunction)();
@@ -72,8 +71,8 @@ struct FunctionCompilationData {
 class JITCompiler {
 private:
 	VMState& mVMState;
-	LinuxMemoryManager mMemoryManager;
-	LinuxCallingConvention mCallingConvention;
+	MemoryManager mMemoryManager;
+	CallingConvention mCallingConvention;
 	ExceptionHandling mExceptionHandling;
 	CodeGenerator mCodeGen;
 	std::unordered_map<std::string, FunctionCompilationData> mFunctions;

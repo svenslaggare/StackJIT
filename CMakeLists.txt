@@ -57,6 +57,10 @@ set(SOURCE_FILES
     src/test.h
     src/test.cpp
     src/exceptions.h
-    src/exceptions.cpp)
+    src/exceptions.cpp
+    src/linux/memory.h
+    src/linux/memory.cpp
+    src/linux/callingconvention.h
+    src/linux/callingconvetion.cpp)
 
 add_executable(stackjit ${SOURCE_FILES})
