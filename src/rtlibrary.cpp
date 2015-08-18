@@ -12,7 +12,7 @@
 
 extern VMState vmState;
 
-void Runtime::printStackFrame(long* basePtr, Function* func) {
+void Runtime::printStackFrame(RegisterValue* basePtr, Function* func) {
     using namespace Runtime::Internal;
 
     auto numArgs = func->numParams();
@@ -37,19 +37,19 @@ namespace {
         }
     }
 
-    long* findBasePtr(long* basePtr, int currentIndex, int index) {
+    RegisterValue* findBasePtr(RegisterValue* basePtr, int currentIndex, int index) {
         if (basePtr == nullptr) {
             return nullptr;
         }
 
         if (currentIndex == index) {
-            return (long*)*basePtr;
+            return (RegisterValue*)*basePtr;
         }
 
-        return findBasePtr((long*)*basePtr, currentIndex + 1, index);
+        return findBasePtr((RegisterValue*)*basePtr, currentIndex + 1, index);
     }
 
-    void printValue(long value, const Type* type) {
+    void printValue(RegisterValue value, const Type* type) {
         if (TypeSystem::isReferenceType(type)) {
             if (value == 0) {
                 std::cout << "nullref";
@@ -80,13 +80,13 @@ void Runtime::compileFunction(Function* callee, int callOffset, int checkStart, 
 	}
 
 	//Get a pointer to the function code
-	auto funcCodePtr = (unsigned char*)vmState.binder().getFunction(*callee).entryPoint();
+	auto funcCodePtr = vmState.binder().getFunction(*callee).entryPoint();
 
 	//The address of the called function
-	long calledFuncAddr = funcToCall->entryPoint();
+	auto calledFuncPtr = funcToCall->entryPoint();
 
 	//Update the call target
-	int target = (int)(calledFuncAddr - ((long)funcCodePtr + callOffset + 5));
+	int target = (int)(calledFuncPtr - (funcCodePtr + callOffset + 5));
 	Helpers::setInt(funcCodePtr, callOffset + 1, target);
 
 	//Replace this check at the call site with a branch to end of the check
@@ -94,7 +94,7 @@ void Runtime::compileFunction(Function* callee, int callOffset, int checkStart, 
 	Helpers::setInt(funcCodePtr, checkStart + 1, checkEnd - (checkStart + 5));
 }
 
-void Runtime::Internal::printAliveObjects(long* basePtr, Function* func, int instIndex, std::string indentation) {
+void Runtime::Internal::printAliveObjects(RegisterValue* basePtr, Function* func, int instIndex, std::string indentation) {
 	StackFrame stackFrame(basePtr, func, instIndex);
 	auto numArgs = func->numParams();
 	auto numLocals = func->numLocals();
@@ -138,7 +138,7 @@ void Runtime::Internal::printAliveObjects(long* basePtr, Function* func, int ins
 	}
 }
 
-void Runtime::Internal::markObjects(long* basePtr, Function* func, int instIndex) {
+void Runtime::Internal::markObjects(RegisterValue* basePtr, Function* func, int instIndex) {
     auto& gc = vmState.gc();
 
 	StackFrame stackFrame(basePtr, func, instIndex);
@@ -162,7 +162,7 @@ void Runtime::Internal::markObjects(long* basePtr, Function* func, int instIndex
 	}
 }
 
-void Runtime::garbageCollect(long* basePtr, Function* func, int instIndex) {
+void Runtime::garbageCollect(RegisterValue* basePtr, Function* func, int instIndex) {
     using namespace Runtime::Internal;
     auto& gc = vmState.gc();
 

@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include "stackjit.h"
 
 class Function;
 class FunctionDefinition;
@@ -8,22 +9,22 @@ class Type;
 //The runtime library
 namespace Runtime {
 	//Prints the given stack frame
-	void printStackFrame(long* basePtr, Function* func);
+	void printStackFrame(RegisterValue* basePtr, Function* func);
 
 	//Internal functions
 	namespace Internal {
 		//Prints the alive objects
-		void printAliveObjects(long* basePtr, Function* func, int instIndex, std::string indentation = "");
+		void printAliveObjects(RegisterValue* basePtr, Function* func, int instIndex, std::string indentation = "");
 
 		//Marks all the objects
-		void markObjects(long* basePtr, Function* func, int instIndex);
+		void markObjects(RegisterValue* basePtr, Function* func, int instIndex);
 	};
 
 	//Compiles the given function
 	void compileFunction(Function* callee, int callOffset, int checkStart, int checkEnd, FunctionDefinition* funcToCall);
 
 	//Tries to collect garbage
-	void garbageCollect(long* basePtr, Function* func, int instIndex);
+	void garbageCollect(RegisterValue* basePtr, Function* func, int instIndex);
 
 	//Creates a new array of the given type and length
 	unsigned char* newArray(const Type* elementType, int length);

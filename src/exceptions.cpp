@@ -10,22 +10,22 @@ void ExceptionHandling::generateHandlers(MemoryManager& memoryManger) {
 
 	//Null handler
 	auto nullHandlerOffset = handlerCode.size();
-	Amd64Backend::moveLongToReg(handlerCode, Registers::DI, (long)&Runtime::nullReferenceError); //mov rdi, <addr of func>
+	Amd64Backend::moveLongToReg(handlerCode, Registers::DI, (PtrValue)&Runtime::nullReferenceError); //mov rdi, <addr of func>
 	Amd64Backend::callInReg(handlerCode, Registers::DI); //call rdi
 
 	//Array bounds handler
 	auto arrayBoundsHandlerOffset = handlerCode.size();
-	Amd64Backend::moveLongToReg(handlerCode, Registers::DI, (long)&Runtime::arrayOutOfBoundsError); //mov rdi, <addr of func>
+	Amd64Backend::moveLongToReg(handlerCode, Registers::DI, (PtrValue)&Runtime::arrayOutOfBoundsError); //mov rdi, <addr of func>
 	Amd64Backend::callInReg(handlerCode, Registers::DI); //call rdi
 
 	//Array creation handler
 	auto arrayCreationHandler = handlerCode.size();
-	Amd64Backend::moveLongToReg(handlerCode, Registers::DI, (long)&Runtime::invalidArrayCreation); //mov rdi, <addr of func>
+	Amd64Backend::moveLongToReg(handlerCode, Registers::DI, (PtrValue)&Runtime::invalidArrayCreation); //mov rdi, <addr of func>
 	Amd64Backend::callInReg(handlerCode, Registers::DI); //call rdi
 
 	//Stack overflow handler
 	auto stackOverflowHandler = handlerCode.size();
-	Amd64Backend::moveLongToReg(handlerCode, Registers::DI, (long)&Runtime::stackOverflow); //mov rdi, <addr of func>
+	Amd64Backend::moveLongToReg(handlerCode, Registers::DI, (PtrValue)&Runtime::stackOverflow); //mov rdi, <addr of func>
 	Amd64Backend::callInReg(handlerCode, Registers::DI); //call rdi
 
 	//Allocate and copy memory
@@ -48,7 +48,7 @@ void ExceptionHandling::addNullCheck(FunctionCompilationData& function, Register
 
 	//Jump to handler if null
 	Amd64Backend::jumpEqual(codeGen, 0); //je <null handler>
-	function.unresolvedNativeBranches.insert({ codeGen.size() - 6, (long)mNullCheckHandler });
+	function.unresolvedNativeBranches.insert({ codeGen.size() - 6, (PtrValue)mNullCheckHandler });
 }
 
 void ExceptionHandling::addArrayBoundsCheck(FunctionCompilationData& function) const {
@@ -62,7 +62,7 @@ void ExceptionHandling::addArrayBoundsCheck(FunctionCompilationData& function) c
 
 	//Jump to handler if out of bounds. By using an unsigned comparison, we only need one check.
 	Amd64Backend::jumpGreaterThanOrEqualUnsigned(codeGen, 0); //jae <array bounds handler>.
-	function.unresolvedNativeBranches.insert({ codeGen.size() - 6, (long)mArrayBoundsCheckHandler });
+	function.unresolvedNativeBranches.insert({ codeGen.size() - 6, (PtrValue)mArrayBoundsCheckHandler });
 }
 
 void ExceptionHandling::addArrayCreationCheck(FunctionCompilationData& function) const {
@@ -73,10 +73,10 @@ void ExceptionHandling::addArrayCreationCheck(FunctionCompilationData& function)
 
 	//Jump to handler if invalid
 	Amd64Backend::jumpGreaterThan(codeGen, 0); //jg <array creation handler>
-	function.unresolvedNativeBranches.insert({ codeGen.size() - 6, (long)mArrayCreationCheckHandler });
+	function.unresolvedNativeBranches.insert({ codeGen.size() - 6, (PtrValue)mArrayCreationCheckHandler });
 }
 
-void ExceptionHandling::addStackOverflowCheck(FunctionCompilationData& function, long callStackEnd) const {
+void ExceptionHandling::addStackOverflowCheck(FunctionCompilationData& function, PtrValue callStackEnd) const {
 	auto& codeGen = function.function.generatedCode;
 
 	//Move the end of the call stack to register
@@ -87,5 +87,5 @@ void ExceptionHandling::addStackOverflowCheck(FunctionCompilationData& function,
 
 	//Jump to handler if overflow
 	Amd64Backend::jumpGreaterThanOrEqual(codeGen, 0); //jge <stack overflow handler>.
-	function.unresolvedNativeBranches.insert({ codeGen.size() - 6, (long)mStackOverflowCheckHandler });
+	function.unresolvedNativeBranches.insert({ codeGen.size() - 6, (PtrValue)mStackOverflowCheckHandler });
 }

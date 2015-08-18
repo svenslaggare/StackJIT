@@ -82,21 +82,21 @@ void NativeLibrary::add(VMState& vmState) {
 	void(*printlnInt)(int) = &NativeLibrary::println;
 	void(*printlnFloat)(float) = &NativeLibrary::println;
 
-	binder.define(FunctionDefinition("std.print", { intType }, voidType, (long)(printInt)));
-	binder.define(FunctionDefinition("std.print", { floatType }, voidType, (long)(printFloat)));
-	binder.define(FunctionDefinition("std.println", { intType }, voidType, (long)(printlnInt)));
-	binder.define(FunctionDefinition("std.println", { floatType }, voidType, (long)(printlnFloat)));
-	binder.define(FunctionDefinition("std.printchar", { charType }, voidType, (long)(&printchar)));
+	binder.define(FunctionDefinition("std.print", { intType }, voidType, (unsigned char*)(printInt)));
+	binder.define(FunctionDefinition("std.print", { floatType }, voidType, (unsigned char*)(printFloat)));
+	binder.define(FunctionDefinition("std.println", { intType }, voidType, (unsigned char*)(printlnInt)));
+	binder.define(FunctionDefinition("std.println", { floatType }, voidType, (unsigned char*)(printlnFloat)));
+	binder.define(FunctionDefinition("std.printchar", { charType }, voidType, (unsigned char*)(&printchar)));
 
 	//Math
-	binder.define(FunctionDefinition("std.math.abs", { intType }, intType, (long)(&abs)));
-	binder.define(FunctionDefinition("std.math.sqrt", { floatType }, floatType, (long)(&sqrtf)));
-	binder.define(FunctionDefinition("std.math.sin", { floatType }, floatType, (long)(&sinf)));
-	binder.define(FunctionDefinition("std.math.cos", { floatType }, floatType, (long)(&cosf)));
+	binder.define(FunctionDefinition("std.math.abs", { intType }, intType, (unsigned char*)(&abs)));
+	binder.define(FunctionDefinition("std.math.sqrt", { floatType }, floatType, (unsigned char*)(&sqrtf)));
+	binder.define(FunctionDefinition("std.math.sin", { floatType }, floatType, (unsigned char*)(&sinf)));
+	binder.define(FunctionDefinition("std.math.cos", { floatType }, floatType, (unsigned char*)(&cosf)));
 
 //	auto pointType = vmState.typeProvider().makeType("Ref.Class.Point");
-//	binder.define(FunctionDefinition("rt.println", { pointType }, voidType, (long)(&printPoint)));
+//	binder.define(FunctionDefinition("rt.println", { pointType }, voidType, (unsigned char)(&printPoint)));
 
 	auto charArrayType = vmState.typeProvider().makeType("Ref.Array[Char]");
-	binder.define(FunctionDefinition("rt.println", { charArrayType }, voidType, (long)(&printString)));
+	binder.define(FunctionDefinition("rt.println", { charArrayType }, voidType, (unsigned char*)(&printString)));
 }

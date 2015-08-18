@@ -12,4 +12,8 @@ namespace Helpers {
 	//Sets the long in the given byte vector starting at the given index
 	void setLong(std::vector<unsigned char>& source, std::size_t startIndex, long value);
 	void setLong(unsigned char* source, std::size_t startIndex, long value);
+
+	//Sets the pointer in the given byte vector starting at the given index
+	void setPointer(std::vector<unsigned char>& source, std::size_t startIndex, unsigned char* value);
+	void setPointer(unsigned char* source, std::size_t startIndex, unsigned char* value);
 }

@@ -197,7 +197,7 @@ void ExecutionEngine::compileFunction(Function* function, std::string signature,
 
 	if (mVMState.enableDebug && mVMState.printFunctionGeneration) {
 		std::cout <<
-		"Defined function '" << function->name() << "' at 0x" << std::hex << (long)funcPtr << std::dec << "."
+		"Defined function '" << function->name() << "' at 0x" << std::hex << (std::size_t)funcPtr << std::dec << "."
 		<< std::endl;
 	}
 
@@ -206,7 +206,7 @@ void ExecutionEngine::compileFunction(Function* function, std::string signature,
 	}
 
 	//Set the entry point & size for the function
-	mVMState.binder().getFunction(signature).setEntryPoint((long)funcPtr);
+	mVMState.binder().getFunction(signature).setEntryPoint((unsigned char*)funcPtr);
 
 	if (resolveSymbols) {
 		//Fix unresolved symbols

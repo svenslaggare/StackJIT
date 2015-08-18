@@ -31,7 +31,7 @@ void GarbageCollector::deleteObject(ObjectHandle* handle) {
 
 void GarbageCollector::printObject(ObjectHandle* handle) {
     std::cout 
-        << "0x" << std::hex << (long)handle->handle() << std::dec << ": " << handle->size()
+        << "0x" << std::hex << (PtrValue)handle->handle() << std::dec << ": " << handle->size()
         << " bytes (" << handle->type()->name() << ")" << std::endl;
 }
 
@@ -62,7 +62,7 @@ unsigned char* GarbageCollector::newArray(const Type* elementType, int length) {
             << "Allocated array ("
             << "size: " << memSize << " bytes, "
 			<< "length: " << length << ", type: " << elementType->name()
-            << ") at 0x" << std::hex << (long)arrayPtr << std::dec
+            << ") at 0x" << std::hex << (PtrValue)arrayPtr << std::dec
             << std::endl;
     }
 
@@ -80,7 +80,7 @@ unsigned char* GarbageCollector::newClass(const ClassType* classType) {
     if (vmState.enableDebug) {
         std::cout
             << "Allocated object (size: " << memSize << " bytes, type: " <<  classType->name()
-            << ") at 0x" << std::hex << (long) classPtr << std::dec
+            << ") at 0x" << std::hex << (PtrValue)classPtr << std::dec
             << std::endl;
     }
 
@@ -97,7 +97,7 @@ void GarbageCollector::markObject(ObjectHandle* handle) {
 
             //Mark ref elements
             if (TypeSystem::isReferenceType(arrayType->elementType())) {
-                long* elementsPtr = (long*)(arrayHandle->handle() + StackJIT::ARRAY_LENGTH_SIZE);
+                RegisterValue* elementsPtr = (RegisterValue*)(arrayHandle->handle() + StackJIT::ARRAY_LENGTH_SIZE);
 
                 for (int i = 0; i < arrayHandle->length(); i++) {
                     markValue(elementsPtr[i], arrayType->elementType());
@@ -114,7 +114,7 @@ void GarbageCollector::markObject(ObjectHandle* handle) {
                 auto field = fieldEntry.second;
 
                 if (TypeSystem::isReferenceType(field.type())) {
-                    long fieldValue = *((long*)handle->handle() + field.offset());
+                    RegisterValue fieldValue = *((RegisterValue*)handle->handle() + field.offset());
                     markValue(fieldValue, field.type());
                 }
             }
@@ -122,7 +122,7 @@ void GarbageCollector::markObject(ObjectHandle* handle) {
     }
 }
 
-void GarbageCollector::markValue(long value, const Type* type) {
+void GarbageCollector::markValue(RegisterValue value, const Type* type) {
     if (TypeSystem::isReferenceType(type)) {
         unsigned char* objPtr = (unsigned char*)value;
 

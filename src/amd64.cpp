@@ -62,7 +62,7 @@ void Amd64Backend::moveRegToReg(CodeGen& codeGen, Registers dest, NumberedRegist
 	codeGen.push_back(0xc0 | dest | (src << 3));
 }
 
-void Amd64Backend::moveRegToMemory(CodeGen& codeGen, long destAddr, Registers srcReg) {
+void Amd64Backend::moveRegToMemory(CodeGen& codeGen, Int64 destAddr, Registers srcReg) {
 	assert(srcReg == Registers::AX && "Only the AX register is supported.");
 	codeGen.push_back(0x48);
 	codeGen.push_back(0xa3);
@@ -70,12 +70,12 @@ void Amd64Backend::moveRegToMemory(CodeGen& codeGen, long destAddr, Registers sr
 	LongToBytes converter;
 	converter.longValue = destAddr;
 
-	for (std::size_t i = 0; i < sizeof(long); i++) {
+	for (std::size_t i = 0; i < sizeof(Int64); i++) {
 		codeGen.push_back(converter.byteValues[i]);
 	}
 }
 
-void Amd64Backend::moveMemoryToReg(CodeGen& codeGen, Registers destReg, long srcAddr) {
+void Amd64Backend::moveMemoryToReg(CodeGen& codeGen, Registers destReg, Int64 srcAddr) {
 	assert(destReg == Registers::AX && "Only the AX register is supported.");
 	codeGen.push_back(0x48);
 	codeGen.push_back(0xa1);
@@ -83,7 +83,7 @@ void Amd64Backend::moveMemoryToReg(CodeGen& codeGen, Registers destReg, long src
 	LongToBytes converter;
 	converter.longValue = srcAddr;
 
-	for (std::size_t i = 0; i < sizeof(long); i++) {
+	for (std::size_t i = 0; i < sizeof(Int64); i++) {
 		codeGen.push_back(converter.byteValues[i]);
 	}
 }
@@ -245,26 +245,26 @@ void Amd64Backend::moveIntToReg(CodeGen& codeGen, Registers dest, int value) {
 	}
 }
 
-void Amd64Backend::moveLongToReg(CodeGen& codeGen, Registers dest, long value) {
+void Amd64Backend::moveLongToReg(CodeGen& codeGen, Registers dest, Int64 value) {
 	codeGen.push_back(0x48);
 	codeGen.push_back(0xb8 | dest);
 
 	LongToBytes converter;
 	converter.longValue = value;
 
-	for (std::size_t i = 0; i < sizeof(long); i++) {
+	for (std::size_t i = 0; i < sizeof(Int64); i++) {
 		codeGen.push_back(converter.byteValues[i]);
 	}
 }
 
-void Amd64Backend::moveLongToReg(CodeGen& codeGen, NumberedRegisters dest, long value) {
+void Amd64Backend::moveLongToReg(CodeGen& codeGen, NumberedRegisters dest, Int64 value) {
 	codeGen.push_back(0x49);
 	codeGen.push_back(0xb8 | dest);
 
 	LongToBytes converter;
 	converter.longValue = value;
 
-	for (std::size_t i = 0; i < sizeof(long); i++) {
+	for (std::size_t i = 0; i < sizeof(Int64); i++) {
 		codeGen.push_back(converter.byteValues[i]);
 	}
 }

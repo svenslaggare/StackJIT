@@ -1,5 +1,6 @@
 #pragma once
 #include "amd64.h"
+#include "stackjit.h"
 
 struct FunctionCompilationData;
 class MemoryManager;
@@ -25,5 +26,5 @@ public:
 	void addArrayCreationCheck(FunctionCompilationData& function) const;
 
 	//Adds a stack overflow check
-	void addStackOverflowCheck(FunctionCompilationData& function, long callStackEnd) const;
+	void addStackOverflowCheck(FunctionCompilationData& function, PtrValue callStackEnd) const;
 };

@@ -1,27 +1,28 @@
 #pragma once
 #include <functional>
 #include <deque>
+#include "stackjit.h"
 
 class Function;
 class Type;
 
 //Represents a stack frame entry (argument, local, operand)
 struct StackFrameEntry {
-	long value;
+	RegisterValue value;
 	const Type* type;
 
-	StackFrameEntry(long value, const Type* type);
+	StackFrameEntry(RegisterValue value, const Type* type);
 };
 
 //Represents a stack frame
 class StackFrame {
 private:
-	long* mBasePtr;
+	RegisterValue* mBasePtr;
 	const Function* mFunction;
 	const std::deque<const Type*>& mOperandTypes;
 public:
 	//Creates a new stack frame
-	StackFrame(long* basePtr, const Function* function, const int instIndex);
+	StackFrame(RegisterValue* basePtr, const Function* function, const int instIndex);
 
 	//Returns the given function argument
 	StackFrameEntry getArgument(int index);

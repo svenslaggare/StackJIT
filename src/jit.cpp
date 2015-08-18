@@ -126,7 +126,7 @@ void JITCompiler::resolveBranches(FunctionCompilationData& functionData) {
 
 void JITCompiler::resolveNativeBranches(FunctionCompilationData& functionData) {
 	//Get a pointer to the functions native instructions
-	auto funcCodePtr = (unsigned char*)mVMState.binder()
+	auto funcCodePtr = mVMState.binder()
 		.getFunction(functionData.function)
 		.entryPoint();
 
@@ -136,7 +136,7 @@ void JITCompiler::resolveNativeBranches(FunctionCompilationData& functionData) {
 		auto target = branch.second;
 
 		//Calculate the native jump location
-		int nativeTarget = target - ((long)funcCodePtr + source) - 6;
+		int nativeTarget = target - (PtrValue)(funcCodePtr + source) - 6;
 
 		//Update the source with the native target
 		unsigned int sourceOffset = source + 6 - sizeof(int);
@@ -148,7 +148,7 @@ void JITCompiler::resolveNativeBranches(FunctionCompilationData& functionData) {
 
 void JITCompiler::resolveCallTargets(FunctionCompilationData& functionData) {
 	//Get a pointer to the functions native instructions
-	auto funcCodePtr = (unsigned char*)mVMState.binder()
+	auto funcCodePtr = mVMState.binder()
 		.getFunction(functionData.function)
 		.entryPoint();
 
@@ -157,13 +157,13 @@ void JITCompiler::resolveCallTargets(FunctionCompilationData& functionData) {
 		auto offset = unresolvedCall.callOffset;
 
 		//The address of the called function
-		long calledFuncAddr = unresolvedCall.funcToCall.entryPoint();
+		auto calledFuncPtr = unresolvedCall.funcToCall.entryPoint();
 
 		//Update the call target
 		if (callType == FunctionCallType::Absolute) {
-			Helpers::setLong(funcCodePtr, offset + 2, calledFuncAddr);
+			Helpers::setPointer(funcCodePtr, offset + 2, calledFuncPtr);
 		} else if (callType == FunctionCallType::Relative) {
-			int target = (int)(calledFuncAddr - ((long)funcCodePtr + offset + 5));
+			int target = (int)(calledFuncPtr - (funcCodePtr + offset + 5));
 			Helpers::setInt(funcCodePtr, offset + 1, target);
 		}
 	}

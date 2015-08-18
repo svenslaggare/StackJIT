@@ -468,11 +468,11 @@ namespace {
 					bool isNull = arrayRefType == nullType;
 
 					if (!TypeSystem::isArray(arrayRefType) && !isNull) {
-						typeError(index, "Expected first operand to be an array reference.");
+						typeError(index, "Expected first operand to be an array reference, but got type: " + arrayRefType->name() + ".");
 					}
 
 					if (!TypeSystem::isPrimitiveType(indexType, PrimitiveTypes::Integer)) {
-						typeError(index, "Expected second operand to be of type Int.");
+						typeError(index, "Expected second operand to be of type Int but got type: " + indexType->name() + ".");
 					}
 
 					auto elemType = vmState.typeProvider().makeType(inst.strValue);
@@ -507,11 +507,11 @@ namespace {
 					bool isNull = arrayRefType == nullType;
 
 					if (!TypeSystem::isArray(arrayRefType) && !isNull) {
-						typeError(index, "Expected first operand to be an array reference.");
+						typeError(index, "Expected first operand to be an array reference, but got type: " + arrayRefType->name() + ".");
 					}
 
 					if (!TypeSystem::isPrimitiveType(indexType, PrimitiveTypes::Integer)) {
-						typeError(index, "Expected second operand to be of type Int.");
+						typeError(index, "Expected second operand to be of type Int but got type: " + indexType->name() + ".");
 					}
 
 					auto elemType = vmState.typeProvider().makeType(inst.strValue);

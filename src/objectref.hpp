@@ -1,6 +1,7 @@
 #include "objects.h"
 #include "classmetadata.h"
 #include "type.h"
+#include "stackjit.h"
 
 //Field ref
 template<typename T>
@@ -59,7 +60,7 @@ ArrayRef<T>::ArrayRef(ArrayHandle* handle)
 template<typename T>
 ElementRef<T> ArrayRef<T>::getElement(int index) {
 	if (index >= 0 && index < mLength) {
-		return ElementRef<T>((unsigned char*)mHandle->handle() + sizeof(T) * index + 4, index);
+		return ElementRef<T>((unsigned char*)mHandle->handle() + sizeof(T) * index + StackJIT::ARRAY_LENGTH_SIZE, index);
 	} else {
 		throw std::runtime_error("Array index is out of bounds.");
 	}

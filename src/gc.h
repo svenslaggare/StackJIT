@@ -1,6 +1,7 @@
 #pragma once
 #include "objects.h"
 #include "objectref.h"
+#include "stackjit.h"
 #include <unordered_map>
 #include <vector>
 
@@ -53,7 +54,7 @@ public:
 	unsigned char* newClass(const ClassType* classType);
 
 	//Marks the value of the given type
-	void markValue(long value, const Type* type);
+	void markValue(RegisterValue value, const Type* type);
 
 	//Begins the garbage collection. Return true if started.
 	bool beginGC();

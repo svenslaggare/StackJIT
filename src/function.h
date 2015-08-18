@@ -110,7 +110,7 @@ private:
 	std::vector<const Type*> mParameters;
 	const Type* mReturnType;
 
-	long mEntryPoint;
+	unsigned char* mEntryPoint;
 
 	bool mIsManaged;
 	bool mIsMemberFunction;
@@ -122,7 +122,7 @@ public:
 	FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, bool isMemberFunction = false);
 
 	//Creates a new external function definition
-	FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, long entryPoint);
+	FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, unsigned char* entryPoint);
 
 	//Creates a new macro function definition
 	FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, MacroFunction macroFunction);
@@ -145,10 +145,10 @@ public:
 	bool isMemberFunction() const;
 
 	//Sets the entry point
-	void setEntryPoint(long entryPoint);
+	void setEntryPoint(unsigned char* entryPoint);
 
 	//The entry point
-	long entryPoint() const;
+	unsigned char* entryPoint() const;
 
 	//Indicates if the current function is macro
 	bool isMacroFunction() const;

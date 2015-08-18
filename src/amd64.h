@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include "stackjit.h"
 
 //Converts between primitive types and char arrays
 union ShortToBytes {
@@ -13,8 +14,13 @@ union IntToBytes {
 };
 
 union LongToBytes {
-    long longValue;
-    unsigned char byteValues[sizeof(long)];
+	Int64 longValue;
+    unsigned char byteValues[sizeof(Int64)];
+};
+
+union PtrToBytes {
+	unsigned char* ptrValue;
+    unsigned char byteValues[sizeof(unsigned char*)];
 };
 
 //The registers
@@ -101,10 +107,10 @@ namespace Amd64Backend {
 	void moveRegToReg(CodeGen&, Registers, NumberedRegisters);
 
 	//Moves the content from the register to the memory address
-	void moveRegToMemory(CodeGen&, long, Registers);
+	void moveRegToMemory(CodeGen&, Int64, Registers);
 
 	//Moves the content from given memory address to the register
-	void moveMemoryToReg(CodeGen&, Registers, long);
+	void moveMemoryToReg(CodeGen&, Registers, Int64);
 
 	//Moves the content from memory where the address is in the second register to the first register
 	void moveMemoryByRegToReg(CodeGen&, Registers, Registers, bool is32bits = false);
@@ -134,8 +140,8 @@ namespace Amd64Backend {
 	void moveIntToReg(CodeGen&, Registers, int);
 
 	//Moves the given long (64-bits) to the given register
-	void moveLongToReg(CodeGen&, Registers, long);
-	void moveLongToReg(CodeGen&, NumberedRegisters, long);
+	void moveLongToReg(CodeGen&, Registers, Int64);
+	void moveLongToReg(CodeGen&, NumberedRegisters, Int64);
 
 	//Moves the content from memory where the address is in the second register to the first register
 	void moveMemoryByRegToReg(CodeGen&, FloatRegisters, Registers);

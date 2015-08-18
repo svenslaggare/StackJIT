@@ -33,15 +33,15 @@ namespace {
 		std::size_t callIndex;
 		std::size_t checkEndIndex;
 
-		Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (long)&function); //The current function
+		Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (PtrValue)&function); //The current function
 		Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg1, 0); //Offset of the call
 		callIndex = generatedCode.size() - sizeof(int);
 		Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg2, (int)generatedCode.size()); //The offset for this check
 		Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg3, 0); //The end of the this check
 		checkEndIndex = generatedCode.size() - sizeof(int);
-		Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg4, (long)(&funcToCall)); //The function to compile
+		Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg4, (PtrValue)(&funcToCall)); //The function to compile
 
-		Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (long)&Runtime::compileFunction);
+		Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (PtrValue)&Runtime::compileFunction);
 		Amd64Backend::callInReg(generatedCode, Registers::AX);
 
 		Helpers::setInt(generatedCode, checkEndIndex, (int)generatedCode.size());
@@ -176,16 +176,16 @@ bool CodeGenerator::compileAtRuntime(const VMState& vmState, const FunctionDefin
 		   && !vmState.engine().jitCompiler().hasCompiled(funcSignature);
 }
 
-void CodeGenerator::generateCall(CodeGen& codeGen, long funcPtr, Registers addrReg) {
-	Amd64Backend::moveLongToReg(codeGen, addrReg, funcPtr);
+void CodeGenerator::generateCall(CodeGen& codeGen, unsigned char* funcPtr, Registers addrReg) {
+	Amd64Backend::moveLongToReg(codeGen, addrReg, (std::size_t)funcPtr);
 	Amd64Backend::callInReg(codeGen, addrReg);
 }
 
 void CodeGenerator::generateGCCall(CodeGen& generatedCode, Function& function, int instIndex) {
 	Amd64Backend::moveRegToReg(generatedCode, RegisterCallArguments::Arg0, Registers::BP); //BP as the first argument
-	Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg1, (long)&function); //Address of the function as second argument
+	Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg1, (PtrValue)&function); //Address of the function as second argument
 	Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg2, instIndex); //Current inst index as third argument
-	generateCall(generatedCode, (long)&Runtime::garbageCollect);
+	generateCall(generatedCode, (unsigned char*)&Runtime::garbageCollect);
 }
 
 void CodeGenerator::initializeFunction(FunctionCompilationData& functionData) {
@@ -238,7 +238,7 @@ void CodeGenerator::pushFunc(const VMState& vmState, FunctionCompilationData& fu
 	auto& function = functionData.function;
 
 	//Get the top pointer
-	long topPtr = (long)vmState.engine().callStack().topPtr();
+	auto topPtr = (PtrValue)vmState.engine().callStack().topPtr();
 	Amd64Backend::moveMemoryToReg(
 		generatedCode,
 		Registers::AX,
@@ -251,10 +251,10 @@ void CodeGenerator::pushFunc(const VMState& vmState, FunctionCompilationData& fu
 	//Check if overflow
 	mExceptionHandling.addStackOverflowCheck(
 		functionData,
-		(long)(vmState.engine().callStack().start() + vmState.engine().callStack().size()));
+		(PtrValue)(vmState.engine().callStack().start() + vmState.engine().callStack().size()));
 
 	//Store the entry
-	Amd64Backend::moveLongToReg(generatedCode, Registers::CX, (long)&function); //mov rcx, <address of func>
+	Amd64Backend::moveLongToReg(generatedCode, Registers::CX, (PtrValue)&function); //mov rcx, <address of func>
 	Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::AX, 0, Registers::CX); //mov [rax], rcx
 	Amd64Backend::moveIntToReg(generatedCode, Registers::CX, instIndex); //mov rcx, <call point>
 	Amd64Backend::moveRegToMemoryRegWithOffset(
@@ -270,7 +270,7 @@ void CodeGenerator::pushFunc(const VMState& vmState, FunctionCompilationData& fu
 
 void CodeGenerator::popFunc(const VMState& vmState, CodeGen& generatedCode) {
 	//Get the top pointer
-	long topPtr = (long)vmState.engine().callStack().topPtr();
+	auto topPtr = (PtrValue)vmState.engine().callStack().topPtr();
 	Amd64Backend::moveMemoryToReg(
 		generatedCode,
 		Registers::AX,
@@ -591,7 +591,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 				pushFunc(vmState, functionData, instIndex);
 
 				//Get the address of the function to call
-				long funcAddr = 0;
+				unsigned char* funcAddr = nullptr;
 				int numArgs = (int)funcToCall.parameters().size();
 
                 //Align the stack
@@ -673,8 +673,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             //If debug is enabled, print the stack frame before return
             if (vmState.enableDebug && vmState.printStackFrame) {
                 Amd64Backend::moveRegToReg(generatedCode, RegisterCallArguments::Arg0, Registers::BP); //BP as the first argument
-                Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg1, (long)&function); //Address of the function as second argument
-                generateCall(generatedCode, (long)&Runtime::printStackFrame);
+                Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg1, (PtrValue)&function); //Address of the function as second argument
+                generateCall(generatedCode, (unsigned char*)&Runtime::printStackFrame);
             }
 
             mCallingConvention.makeReturnValue(functionData, (int)inst.operandTypes().size());
@@ -799,7 +799,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             }
 
             //The pointer to the type as the first arg
-            Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (long)elemType); //mov rdi, <addr of type pointer>
+            Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (PtrValue)elemType); //mov rdi, <addr of type pointer>
 
             //Pop the size as the second arg
 			OperandStack::popReg(function, topOperandIndex, RegisterCallArguments::Arg1);
@@ -808,7 +808,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			mExceptionHandling.addArrayCreationCheck(functionData);
 
             //Call the newArray runtime function
-            generateCall(generatedCode, (long)&Runtime::newArray);
+            generateCall(generatedCode, (unsigned char*)&Runtime::newArray);
 
             //Push the returned pointer
 			OperandStack::pushReg(function, topOperandIndex, Registers::AX);
@@ -923,8 +923,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			}
 
             //Call the newObject runtime function
-            Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (long)classType); //The pointer to the type
-            generateCall(generatedCode, (long)&Runtime::newObject);
+            Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (PtrValue)classType); //The pointer to the type
+            generateCall(generatedCode, (unsigned char*)&Runtime::newObject);
 
             //Save the reference
 			Amd64Backend::moveRegToReg(generatedCode, NumberedRegisters::R10, Registers::AX);
@@ -1061,13 +1061,13 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             }
 
             //The pointer to the string as the first arg
-            Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (long)inst.strValue.data()); //mov rdi, <addr of string>
+            Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (PtrValue)inst.strValue.data()); //mov rdi, <addr of string>
 
             //The length of the string as the second arg
             Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg1, (int)inst.strValue.length()); //mov rsi, <string length>
 
             //Call the newString runtime function
-            generateCall(generatedCode, (long)&Runtime::newString);
+            generateCall(generatedCode, (unsigned char*)&Runtime::newString);
 
             //Push the returned pointer
 			OperandStack::pushReg(function, topOperandIndex + 1, Registers::AX);

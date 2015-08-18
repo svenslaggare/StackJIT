@@ -56,7 +56,7 @@ struct FunctionCompilationData {
 	std::unordered_map<unsigned int, BranchTarget> unresolvedBranches;
 
 	//Unresolved native branches
-	std::unordered_map<unsigned int, long> unresolvedNativeBranches;
+	std::unordered_map<unsigned int, PtrValue> unresolvedNativeBranches;
 
 	//Mapping from instruction number to native instruction offset
 	std::vector<unsigned int> instructionNumMapping;			

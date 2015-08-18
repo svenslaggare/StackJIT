@@ -48,7 +48,7 @@ public:
 	CodeGenerator(const CallingConvention& callingConvention, const ExceptionHandling& exceptionHandling);
 
 	//Generates a call to the given function
-	void generateCall(CodeGen& codeGen, long funcPtr, Registers addrReg = Registers::AX);
+	void generateCall(CodeGen& codeGen, unsigned char* funcPtr, Registers addrReg = Registers::AX);
 
 	//Generates a call to the garbage collect runtime function
 	void generateGCCall(CodeGen& generatedCode, Function& function, int instIndex);

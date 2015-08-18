@@ -2,11 +2,14 @@
 
 //Defines types and assumptions used through out the VM
 
-//An address to an object (array, class)
-using ObjectAddr = long;
+//Holds a pointer value
+using PtrValue = std::size_t;
 
-//An address to an function
-using FuncAddr = long;
+//Holds a register value
+using RegisterValue = long;
+
+//Represents a 64 bits signed integer
+using Int64 = long;
 
 namespace StackJIT {
 	//The size of the length of an array

@@ -274,7 +274,7 @@ std::size_t TypeSystem::sizeOfType(const Type* type) {
 	if (fromString(typeName, primitiveType)) {
 		return sizeOfType(primitiveType);
 	} else if (TypeSystem::isReferenceType(type)) {
-		return sizeof(long);
+		return sizeof(unsigned char*);
 	}
 
 	return 0;
