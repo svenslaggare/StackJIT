@@ -1,15 +1,13 @@
 #pragma once
-#ifdef __unix__
+#if defined(_WIN64) || defined(__MINGW32__)
 #include "../amd64.h"
 
 //The register for function arguments
 namespace RegisterCallArguments {
-	const Registers Arg0 = Registers::DI;
-	const Registers Arg1 = Registers::SI;
-	const Registers Arg2 = Registers::DX;
-	const Registers Arg3 = Registers::CX;
-	const NumberedRegisters Arg4 = NumberedRegisters::R8;
-	const NumberedRegisters Arg5 = NumberedRegisters::R9;
+	const Registers Arg0 = Registers::CX;
+	const Registers Arg1 = Registers::DX;
+	const NumberedRegisters Arg2 = NumberedRegisters::R8;
+	const NumberedRegisters Arg3 = NumberedRegisters::R9;
 }
 
 namespace FloatRegisterCallArguments {
@@ -17,10 +15,6 @@ namespace FloatRegisterCallArguments {
 	const FloatRegisters Arg1 = FloatRegisters::XMM1;
 	const FloatRegisters Arg2 = FloatRegisters::XMM2;
 	const FloatRegisters Arg3 = FloatRegisters::XMM3;
-	const FloatRegisters Arg4 = FloatRegisters::XMM4;
-	const FloatRegisters Arg5 = FloatRegisters::XMM5;
-	const FloatRegisters Arg6 = FloatRegisters::XMM6;
-	const FloatRegisters Arg7 = FloatRegisters::XMM7;
 }
 
 struct FunctionCompilationData;

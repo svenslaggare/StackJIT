@@ -245,6 +245,19 @@ void Amd64Backend::moveIntToReg(CodeGen& codeGen, Registers dest, int value) {
 	}
 }
 
+void Amd64Backend::moveIntToReg(CodeGen& codeGen, NumberedRegisters dest, int value) {
+	codeGen.push_back(0x49);
+	codeGen.push_back(0xc7);
+	codeGen.push_back(0xc0 | dest);
+
+	IntToBytes converter;
+	converter.intValue = value;
+
+	for (std::size_t i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.byteValues[i]);
+	}
+}
+
 void Amd64Backend::moveLongToReg(CodeGen& codeGen, Registers dest, Int64 value) {
 	codeGen.push_back(0x48);
 	codeGen.push_back(0xb8 | dest);

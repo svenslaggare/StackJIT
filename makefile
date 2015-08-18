@@ -6,6 +6,7 @@ SRCDIR=src
 OBJDIR=obj
 EXECUTABLE=stackjit
 FOLDERS = $(OBJDIR)/linux
+FOLDERS = $(OBJDIR)/windows
 
 SOURCES=$(wildcard $(SRCDIR)/*.cpp)
 HEADERS=$(wildcard $(SRCDIR)/*.h)
@@ -34,7 +35,7 @@ $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(HEADERS) $(TEMPLATE_HEADERS)
-	$(CC) $(CFLAGS) $< -o $@	
+	$(CC) $(CFLAGS) $< -o $@
 
 test: test-amd64 test-vm
 

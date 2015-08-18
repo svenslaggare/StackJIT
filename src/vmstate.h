@@ -30,7 +30,7 @@ public:
     bool printFunctionGeneration = false;
 
     //Indicates if the functions are lazily compiled
-    bool lazyJIT = true;
+    bool lazyJIT = false;
 
     //Prints when lazy calls are patched
     bool printLazyPatching = false;

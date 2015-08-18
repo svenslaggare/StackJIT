@@ -8,3 +8,9 @@ tests/runners/*
 *.sublime-workspace
 *.sublime-project
 .idea
+Windows/Debug
+Windows/x64
+Windows/ipch
+Windows/StackJIT.opensdf
+Windows/StackJIT.sdf
+Windows/tests/x64
