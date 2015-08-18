@@ -55,9 +55,7 @@ public:
     bool isDefined(std::string structName) const;
 
     //Returns the metadata for the given class
-    const ClassMetadata& operator[](std::string className) const;
-    ClassMetadata& operator[](std::string className);
-
-    //Returns the metadata for the given class
-    const ClassMetadata& metadataFor(const ClassType* classType) const;
+    const ClassMetadata& getMetadata(std::string className) const;
+    ClassMetadata& getMetadata(std::string className);
+    const ClassMetadata& getMetadata(const ClassType* classType) const;
 };

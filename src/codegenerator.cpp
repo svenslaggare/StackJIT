@@ -994,7 +994,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             std::pair<std::string, std::string> structAndField;
 			TypeSystem::getClassAndField(inst.strValue, structAndField);
 
-            auto structMetadata = vmState.classProvider()[structAndField.first];
+            auto structMetadata = vmState.classProvider().getMetadata(structAndField.first);
             auto& field = structMetadata.fields().at(structAndField.second);
             int fieldOffset = field.offset();
 

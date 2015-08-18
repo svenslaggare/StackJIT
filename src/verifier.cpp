@@ -596,7 +596,7 @@ namespace {
 							typeError(index, "'" + className + "' is not a class type.");
 						}
 
-						auto structMetadata = vmState.classProvider()[className];
+						auto structMetadata = vmState.classProvider().getMetadata(className);
 						auto classType = vmState.typeProvider().makeType("Ref.Class." + className);
 
 						if (!isNull) {
@@ -641,7 +641,7 @@ namespace {
 							typeError(index, "'" + className + "' is not a class type.");
 						}
 
-						auto classMetadata = vmState.classProvider()[className];
+						auto classMetadata = vmState.classProvider().getMetadata(className);
 						auto fieldType = classMetadata.fields().at(fieldName).type();
 
 						if (fieldType == nullptr) {

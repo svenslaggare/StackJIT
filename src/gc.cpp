@@ -70,7 +70,7 @@ unsigned char* GarbageCollector::newArray(const Type* elementType, int length) {
 }
 
 unsigned char* GarbageCollector::newClass(const ClassType* classType) {
-    std::size_t memSize = vmState.classProvider()[classType->className()].size();
+    std::size_t memSize = vmState.classProvider().getMetadata(classType->className()).size();
     unsigned char* classPtr = new unsigned char[memSize];
     memset(classPtr, 0, memSize);
 
@@ -107,7 +107,7 @@ void GarbageCollector::markObject(ObjectHandle* handle) {
             handle->mark();
 
             auto structType = static_cast<const ClassType*>(handle->type());
-            auto structMetadata = vmState.classProvider().metadataFor(structType);
+            auto structMetadata = vmState.classProvider().getMetadata(structType);
 
             //Mark ref fields
             for (auto fieldEntry : structMetadata.fields()) {
@@ -198,6 +198,6 @@ ObjectHandle* GarbageCollector::getHandle(unsigned char* objectPtr) {
 ClassRef GarbageCollector::getClassRef(RawClassRef classRef) {
 	auto handle = static_cast<ClassHandle*>(getHandle(classRef));
 	auto classType = static_cast<const ClassType*>(handle->type());
-	auto& classMetadata = vmState.classProvider()[classType->className()];
+	auto& classMetadata = vmState.classProvider().getMetadata(classType->className());
 	return ClassRef(handle, classMetadata);
 }

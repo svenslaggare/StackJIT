@@ -54,7 +54,7 @@ bool ClassMetadataProvider::isDefined(std::string structName) const {
 	return mClassesMetadata.count(structName) > 0;
 }
 
-const ClassMetadata& ClassMetadataProvider::operator[](std::string className) const {
+const ClassMetadata& ClassMetadataProvider::getMetadata(std::string className) const {
 	if (mClassesMetadata.count(className) > 0) {
         return mClassesMetadata.at(className);
     } else {
@@ -62,7 +62,7 @@ const ClassMetadata& ClassMetadataProvider::operator[](std::string className) co
     }
 }
 
-ClassMetadata& ClassMetadataProvider::operator[](std::string className) {
+ClassMetadata& ClassMetadataProvider::getMetadata(std::string className) {
 	if (mClassesMetadata.count(className) > 0) {
 		return mClassesMetadata.at(className);
 	} else {
@@ -70,6 +70,6 @@ ClassMetadata& ClassMetadataProvider::operator[](std::string className) {
 	}
 }
 
-const ClassMetadata& ClassMetadataProvider::metadataFor(const ClassType* classType) const {
-	return operator[](classType->className());
+const ClassMetadata& ClassMetadataProvider::getMetadata(const ClassType* classType) const {
+	return getMetadata(classType->className());
 }
