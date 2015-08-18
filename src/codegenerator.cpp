@@ -238,7 +238,7 @@ void CodeGenerator::pushFunc(const VMState& vmState, FunctionCompilationData& fu
 	auto& function = functionData.function;
 
 	//Get the top pointer
-	auto topPtr = (PtrValue)vmState.engine().callStack().topPtr();
+	auto topPtr = (unsigned char*)vmState.engine().callStack().topPtr();
 	Amd64Backend::moveMemoryToReg(
 		generatedCode,
 		Registers::AX,
@@ -270,7 +270,7 @@ void CodeGenerator::pushFunc(const VMState& vmState, FunctionCompilationData& fu
 
 void CodeGenerator::popFunc(const VMState& vmState, CodeGen& generatedCode) {
 	//Get the top pointer
-	auto topPtr = (PtrValue)vmState.engine().callStack().topPtr();
+	auto topPtr = (unsigned char*)vmState.engine().callStack().topPtr();
 	Amd64Backend::moveMemoryToReg(
 		generatedCode,
 		Registers::AX,

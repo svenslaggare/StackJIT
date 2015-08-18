@@ -104,7 +104,7 @@ public:
     //Tests moveRegToMemory
     void testMoveRegToMemory() {
         CodeGen generatedCode;
-        Amd64Backend::moveRegToMemory(generatedCode, 0xfcdebc03, Registers::AX);
+        Amd64Backend::moveRegToMemory(generatedCode, (unsigned char*)0xfcdebc03, Registers::AX);
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x48, 0xA3, 0x03, 0xBC, 0xDE, 0xFC, 0x00, 0x00, 0x00, 0x00 }));
         generatedCode.clear();
     }
@@ -112,7 +112,7 @@ public:
     //Tests moveMemoryToReg
     void testMoveMemoryToReg() {
         CodeGen generatedCode;
-        Amd64Backend::moveMemoryToReg(generatedCode, Registers::AX, 0xfcdebc03);
+        Amd64Backend::moveMemoryToReg(generatedCode, Registers::AX, (unsigned char*)0xfcdebc03);
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x48, 0xA1, 0x03, 0xBC, 0xDE, 0xFC, 0x00, 0x00, 0x00, 0x00 }));
         generatedCode.clear();
     }

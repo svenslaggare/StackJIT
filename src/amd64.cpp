@@ -62,28 +62,28 @@ void Amd64Backend::moveRegToReg(CodeGen& codeGen, Registers dest, NumberedRegist
 	codeGen.push_back(0xc0 | dest | (src << 3));
 }
 
-void Amd64Backend::moveRegToMemory(CodeGen& codeGen, Int64 destAddr, Registers srcReg) {
+void Amd64Backend::moveRegToMemory(CodeGen& codeGen, unsigned char* destAddr, Registers srcReg) {
 	assert(srcReg == Registers::AX && "Only the AX register is supported.");
 	codeGen.push_back(0x48);
 	codeGen.push_back(0xa3);
 
-	LongToBytes converter;
-	converter.longValue = destAddr;
+	PtrToBytes converter;
+	converter.ptrValue = destAddr;
 
-	for (std::size_t i = 0; i < sizeof(Int64); i++) {
+	for (std::size_t i = 0; i < sizeof(unsigned char*); i++) {
 		codeGen.push_back(converter.byteValues[i]);
 	}
 }
 
-void Amd64Backend::moveMemoryToReg(CodeGen& codeGen, Registers destReg, Int64 srcAddr) {
+void Amd64Backend::moveMemoryToReg(CodeGen& codeGen, Registers destReg, unsigned char* srcAddr) {
 	assert(destReg == Registers::AX && "Only the AX register is supported.");
 	codeGen.push_back(0x48);
 	codeGen.push_back(0xa1);
 
-	LongToBytes converter;
-	converter.longValue = srcAddr;
+	PtrToBytes converter;
+	converter.ptrValue = srcAddr;
 
-	for (std::size_t i = 0; i < sizeof(Int64); i++) {
+	for (std::size_t i = 0; i < sizeof(unsigned char*); i++) {
 		codeGen.push_back(converter.byteValues[i]);
 	}
 }
