@@ -98,58 +98,54 @@ long getDuration(std::chrono::time_point<std::chrono::high_resolution_clock> sta
 	return std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 }
 
-int mainFn(int argc, char* argv[]) {
-	auto start = std::chrono::high_resolution_clock::now();
-	auto& engine = vmState.engine();
-	NativeLibrary::add(vmState);
-
-	//Handle options
-	handleOptions(argc, argv, engine);
-
-	//Load the program
-	auto program = new AssemblyParser::Assembly;
-	Loader::load(std::cin, vmState, *program);
-	engine.loadAssembly(*program, AssemblyType::Program);
-
-	if (!vmState.lazyJIT) {
-		//Compile all functions to native code
-		engine.compile();
-	}
-	else {
-		//Load definitions
-		engine.loadDefinitions();
-
-		//Compile the entry point
-		engine.compileFunction("main()");
-	}
-
-	//Execute the program
-	if (vmState.enableDebug) {
-		std::cout << "Load time: " << getDuration(start) << " ms." << std::endl;
-		std::cout << "Program output:" << std::endl;
-	}
-
-	auto programPtr = engine.entryPoint();
-
-	start = std::chrono::high_resolution_clock::now();
-	int res = programPtr();
-
-	if (vmState.enableDebug) {
-		std::cout << "Return value (executed for " << getDuration(start) << " ms): " << std::endl;
-	}
-
-	std::cout << res << std::endl;
-	return 0;
-}
-
 int main(int argc, char* argv[]) {
-#if defined(_WIN64) || defined(__MINGW32_)
 	try {
-		return mainFn(argc, argv);
+		auto start = std::chrono::high_resolution_clock::now();
+		auto& engine = vmState.engine();
+		NativeLibrary::add(vmState);
+
+		//Handle options
+		handleOptions(argc, argv, engine);
+
+		//Load the program
+		auto program = new AssemblyParser::Assembly;
+		Loader::load(std::cin, vmState, *program);
+		engine.loadAssembly(*program, AssemblyType::Program);
+
+		if (!vmState.lazyJIT) {
+			//Compile all functions to native code
+			engine.compile();
+		}
+		else {
+			//Load definitions
+			engine.loadDefinitions();
+
+			//Compile the entry point
+			engine.compileFunction("main()");
+		}
+
+		//Execute the program
+		if (vmState.enableDebug) {
+			std::cout << "Load time: " << getDuration(start) << " ms." << std::endl;
+			std::cout << "Program output:" << std::endl;
+		}
+
+		auto programPtr = engine.entryPoint();
+
+		start = std::chrono::high_resolution_clock::now();
+		int res = programPtr();
+
+		if (vmState.enableDebug) {
+			std::cout << "Return value (executed for " << getDuration(start) << " ms): " << std::endl;
+		}
+
+		std::cout << res << std::endl;
+		return 0;
 	} catch (std::runtime_error& e) {
-		std::cout << "what():  " << e.what();
+		std::cout << e.what();
 	}
-#else
-	return mainFn(argc, argv);
+
+#if __unix__
+	std::cout << std::endl;
 #endif
 }

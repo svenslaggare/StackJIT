@@ -71,26 +71,7 @@ std::string stripErrorMessage(std::string errorMessage) {
 #if defined(_WIN64) || defined(__MINGW32_)
     return errorMessage;
 #else
-    std::string delimiter = "\n";
-    std::size_t pos = 0;
-    std::string token;
-
-    std::string stripedString = "";
-
-    int line = 0;
-
-    while ((pos = errorMessage.find(delimiter)) != std::string::npos) {
-        token = errorMessage.substr(0, pos);
-        errorMessage.erase(0, pos + delimiter.length());
-
-        if (line != 0 && errorMessage.length() > 0) {
-            stripedString += token + "\n";
-        }
-
-        line++;
-    }
-
-    return rtrim(ltrim(stripedString));
+    return errorMessage.substr(0, errorMessage.length() - 1);
 #endif
 }
 
@@ -234,7 +215,7 @@ public:
 
         TS_ASSERT_EQUALS(invokeVM("array/nested"), "4\n");
 
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program1")), "what():  2: Arrays of type 'Void' is not allowed.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program1")), "2: Arrays of type 'Void' is not allowed.");
     }
 
     void testClasses() {
@@ -251,8 +232,8 @@ public:
         TS_ASSERT_EQUALS(invokeVM("class/memberfunction2"), "5\n0\n");
         TS_ASSERT_EQUALS(invokeVM("class/memberfunction3"), "2.5\n5.5\n0\n");
 
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program1")), "what():  \'Point\' is not a defined class.");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program2")), "what():  2: \'Point\' is not a class type.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program1")), "\'Point\' is not a defined class.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program2")), "2: \'Point\' is not a class type.");
 
         TS_ASSERT_EQUALS(invokeVM("class/constructor1"), "1\n2\n0\n");
         TS_ASSERT_EQUALS(invokeVM("class/constructor2"), "15\n");
@@ -260,10 +241,10 @@ public:
 
         TS_ASSERT_EQUALS(invokeVM("class/largeclass1"), "1337\n");
 
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_constructor1")), "what():  Constructors must have return type 'Void'.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_constructor1")), "Constructors must have return type 'Void'.");
         TS_ASSERT_EQUALS(stripErrorMessage(
 			invokeVM("class/invalid_constructor2")),
-			"what():  1: The constructor \'Point::.constructor(Ref.Class.Point)\' is not defined.");
+			"1: The constructor \'Point::.constructor(Ref.Class.Point)\' is not defined.");
 
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_memberfunction1")), "Error: Null reference.");
     }
@@ -300,25 +281,25 @@ public:
     }
 
     void testFunction() {
-		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("function/no_main")), "what():  The main function must be defined.");
-		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("function/invalid_main")), "what():  The main function must have the following signature: 'main() Int'.");
-		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("function/invalid_main2")), "what():  The main function must have the following signature: 'main() Int'.");
+		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("function/no_main")), "The main function must be defined.");
+		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("function/invalid_main")), "The main function must have the following signature: 'main() Int'.");
+		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("function/invalid_main2")), "The main function must have the following signature: 'main() Int'.");
 
-		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("function/already_defined")), "what():  The function 'test()' is already defined.");
+		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("function/already_defined")), "The function 'test()' is already defined.");
 
 		TS_ASSERT_EQUALS(invokeVM("function/overload"), "0\n");
-		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("function/invalid_overload")), "what():  The function 'test(Int)' is already defined.");
+		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("function/invalid_overload")), "The function 'test(Int)' is already defined.");
     }
 
     void testInvalid() {
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/void_local")), "what():  1: Locals of 'Void' type are not allowed.");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/empty_func")), "what():  1: Empty functions are not allowed.");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/not_end_in_return")), "what():  1: Functions must end with a 'RET' instruction.");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/branch_target")), "what():  1: Invalid jump target (4).");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/untyped_local1")), "what():  1: Cannot load untyped local (0).");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/untyped_local2")), "what():  1: Local 0 is not typed.");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/return_type1")), "what():  Expected 'Int' as return type.");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/return_type2")), "what():  Expected 'Int' as return type.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/void_local")), "1: Locals of 'Void' type are not allowed.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/empty_func")), "1: Empty functions are not allowed.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/not_end_in_return")), "1: Functions must end with a 'RET' instruction.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/branch_target")), "1: Invalid jump target (4).");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/untyped_local1")), "1: Cannot load untyped local (0).");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/untyped_local2")), "1: Local 0 is not typed.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/return_type1")), "Expected 'Int' as return type.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/return_type2")), "Expected 'Int' as return type.");
     }
 
     void testLibrary() {
