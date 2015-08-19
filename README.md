@@ -21,7 +21,7 @@ To run the VM, supply a program via stdin:
 * `-i <library file>`: Loads a library.
 
 ##Build##
-To build:
+To build on Linux:
 ```
 make all
 ```
@@ -30,8 +30,12 @@ To run tests (requires [CXXTest](http://cxxtest.com/)):
 make test
 ```
 
+To build on Windows:
+Open the VS 2015 solution in the Windows folder.
+The tests requires [CXXTest](http://cxxtest.com/), unpacked at `C:/CXXTest`.
+
 ##Supported platforms##
-Supports Linux x64. The VM has only been tested on Linux Mint 17.
+Supports Linux x64 and Windowx 64. The VM has only been tested on Linux Mint 17 and Windows 7.
 
 ##Documentation##
 See the [documentation folder](https://github.com/svenslaggare/StackJIT/tree/master/documentation) for documentation about the features of the VM.
