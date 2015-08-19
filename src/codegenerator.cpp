@@ -208,7 +208,7 @@ void CodeGenerator::generateCall(CodeGen& codeGen, unsigned char* funcPtr, Regis
 		Amd64Backend::subByteFromReg(codeGen, Registers::SP, mCallingConvention.calculateShadowStackSize());
 	}
 
-	Amd64Backend::moveLongToReg(codeGen, addrReg, (Int64)funcPtr);
+	Amd64Backend::moveLongToReg(codeGen, addrReg, (PtrValue)funcPtr);
 	Amd64Backend::callInReg(codeGen, addrReg);
 
 	if (shadowSpaceNeeded) {

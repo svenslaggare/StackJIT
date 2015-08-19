@@ -14,8 +14,8 @@ union IntToBytes {
 };
 
 union LongToBytes {
-	Int64 longValue;
-    unsigned char byteValues[sizeof(Int64)];
+	std::int64_t longValue;
+    unsigned char byteValues[sizeof(std::int64_t)];
 };
 
 union PtrToBytes {
@@ -121,8 +121,8 @@ namespace Amd64Backend {
 	void moveIntToReg(CodeGen&, NumberedRegisters, int);
 
 	//Moves the given long (64-bits) to the given register
-	void moveLongToReg(CodeGen&, Registers, Int64);
-	void moveLongToReg(CodeGen&, NumberedRegisters, Int64);
+	void moveLongToReg(CodeGen&, Registers, std::int64_t);
+	void moveLongToReg(CodeGen&, NumberedRegisters, std::int64_t);
 
 	//Moves the content from memory where the address is in the second register to the first register
 	void moveMemoryByRegToReg(CodeGen&, FloatRegisters, Registers);
