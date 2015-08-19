@@ -29,7 +29,7 @@ Defines the instruction set used by the VM.
 
 ###Functions###
 * `CALL <signature>`: Calls the given function. The arguments are popped from the evaluation stack.
-* `CALLINST <struct name>::<signature>`: Calls the given member function. The first argument must be a reference of the called Struct. The arguments are popped from the evaluation stack.
+* `CALLINST <struct name>::<signature>`: Calls the given member function. The first argument must be a reference of the called class. The arguments are popped from the evaluation stack.
 * `RET`: Returns from the current function, popping the return value from the evaluation stack.
 * `LDARG <arg>`: Loads the given function argument and pushes it to the evaluation stack.
 
@@ -61,8 +61,8 @@ Defines the instruction set used by the VM.
 
 ###Classes###
 * `NEWOBJ <type>::<constructor>`: Creates a new object of the given type and pushes the reference to the stack.
-* `LDFIELD <field>`: Pops a struct ref from the stack and loads a value from the given field pushing unto the stack.
-* `STFIELD <field>`: Pops a struct ref from the stack, a value and stores the value at the given field.
+* `LDFIELD <field>`: Pops a class reference from the stack and loads a value from the given field pushing unto the stack.
+* `STFIELD <field>`: Pops a class reference from the stack, a value and stores the value at the given field.
 
 ###String###
 * `LDSTR <string>`: Creates a new string and pushes the reference to the string to the evaluation stack.
