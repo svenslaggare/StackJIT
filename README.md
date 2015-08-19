@@ -10,7 +10,7 @@ To run the VM, supply a program via stdin:
 ```
 
 ###Options###
-* `-d` or `--debug`: Enables debugging. This is the default mode.
+* `-d` or `--debug`: Enables debugging.
 * `-ogc` or `--output-generated-code`: Outputs the generated machine code for the functions. The output can be viewed using _objdump_: `objdump -D -M intel -b binary -mi386 -Mx86-64 <file name>`.
 * `-lc <enable>` or `--lazy-compile <enable>`: Enables lazy compilation of functions. This is the default mode.
 * `-t` or `--test`: Enables test mode, which loads test related libraries.
