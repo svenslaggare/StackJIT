@@ -31,6 +31,7 @@ make test
 ```
 
 To build on Windows:
+
 Open the VS 2015 solution in the Windows folder.
 The tests requires [CXXTest](http://cxxtest.com/), unpacked at `C:/CXXTest`.
 
