@@ -196,9 +196,9 @@ void ExecutionEngine::compileFunction(Function* function, std::string signature,
 	auto funcPtr = mJIT.compileFunction(function);
 
 	if (mVMState.enableDebug && mVMState.printFunctionGeneration) {
-		std::cout <<
-		"Defined function '" << function->name() << "' at 0x" << std::hex << (std::size_t)funcPtr << std::dec << "."
-		<< std::endl;
+		std::cout
+			<< "Defined function '" << function->name() << "' at 0x" << std::hex << (PtrValue)funcPtr << std::dec << "."
+			<< std::endl;
 	}
 
 	if (signature == "") {
