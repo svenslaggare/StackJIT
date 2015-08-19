@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 
 //Defines types and assumptions used through out the VM
 
