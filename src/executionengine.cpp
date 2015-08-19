@@ -93,7 +93,7 @@ const JITCompiler& ExecutionEngine::jitCompiler() const {
 }
 
 EntryPointFunction ExecutionEngine::entryPoint() const {
-    if (mVMState.binder().isDefined("main()") > 0) {
+    if (mVMState.binder().isDefined("main()")) {
         return (EntryPointFunction)(mVMState.binder().getFunction("main()").entryPoint());
     } else {
         throw std::runtime_error("No entry point has been defined.");
