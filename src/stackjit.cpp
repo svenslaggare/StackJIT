@@ -143,9 +143,9 @@ int main(int argc, char* argv[]) {
 		return 0;
 	} catch (std::runtime_error& e) {
 		std::cout << e.what();
-	}
 
-#if __unix__
-	std::cout << std::endl;
-#endif
+		#if __unix__
+		std::cout << std::endl;
+		#endif
+	}
 }

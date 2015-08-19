@@ -71,7 +71,17 @@ namespace {
 void Runtime::compileFunction(Function* callee, int callOffset, int checkStart, int checkEnd, FunctionDefinition* funcToCall) {
 	auto toCallSignature = vmState.binder().functionSignature(*funcToCall);
 
-	vmState.engine().compileFunction(toCallSignature);
+    try {
+	   vmState.engine().compileFunction(toCallSignature);
+    } catch (std::runtime_error& e) {
+        std::cout << e.what();
+
+        #if __unix__
+        std::cout << std::endl;
+        #endif
+
+        exit(0);
+    }
 
 	if (vmState.enableDebug && vmState.printLazyPatching) {
 		std::cout
@@ -239,9 +249,9 @@ unsigned char* Runtime::newString(const char* string, int length) {
 void Runtime::runtimeError(std::string errorMessage) {
 	std::cout << "Error: " << errorMessage;
 
-#ifdef __unix__
+    #ifdef __unix__
 	std::cout << std::endl;
-#endif
+    #endif
 
 	exit(0);
 }
