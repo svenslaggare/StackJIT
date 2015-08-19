@@ -31,6 +31,7 @@ namespace {
 
 	//Generates a compile call for the given function
 	std::size_t generateCompileCall(CodeGen& generatedCode, Function& function, const FunctionDefinition& funcToCall) {
+#if defined(_WIN64) || defined(__MINGW32__)
 		std::size_t callIndex;
 		std::size_t checkEndIndex;
 
@@ -54,8 +55,6 @@ namespace {
 		Helpers::setInt(generatedCode, checkEndIndex, (int)generatedCode.size());
 
 		return callIndex;
-#if defined(_WIN64) || defined(__MINGW32__)
-		return 0;
 #else
 		std::size_t callIndex;
 		std::size_t checkEndIndex;
