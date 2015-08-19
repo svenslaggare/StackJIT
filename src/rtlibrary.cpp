@@ -74,12 +74,7 @@ void Runtime::compileFunction(Function* callee, int callOffset, int checkStart, 
     try {
 	   vmState.engine().compileFunction(toCallSignature);
     } catch (std::runtime_error& e) {
-        std::cout << e.what();
-
-        #if __unix__
-        std::cout << std::endl;
-        #endif
-
+        std::cout << e.what() << std::endl;
         exit(0);
     }
 
@@ -247,12 +242,7 @@ unsigned char* Runtime::newString(const char* string, int length) {
 }
 
 void Runtime::runtimeError(std::string errorMessage) {
-	std::cout << "Error: " << errorMessage;
-
-    #ifdef __unix__
-	std::cout << std::endl;
-    #endif
-
+	std::cout << "Error: " << errorMessage << std::endl;
 	exit(0);
 }
 

@@ -68,11 +68,7 @@ static inline std::string &trim(std::string &s) {
 
 //Strips error messages of unnecessary information
 std::string stripErrorMessage(std::string errorMessage) {
-#if defined(_WIN64) || defined(__MINGW32_)
-    return errorMessage;
-#else
     return errorMessage.substr(0, errorMessage.length() - 1);
-#endif
 }
 
 class VMTestSuite : public CxxTest::TestSuite {

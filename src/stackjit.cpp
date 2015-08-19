@@ -142,10 +142,6 @@ int main(int argc, char* argv[]) {
 		std::cout << res << std::endl;
 		return 0;
 	} catch (std::runtime_error& e) {
-		std::cout << e.what();
-
-		#if __unix__
-		std::cout << std::endl;
-		#endif
+		std::cout << e.what() << std::endl;
 	}
 }
