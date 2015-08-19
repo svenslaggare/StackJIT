@@ -355,6 +355,7 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
 
 			if (noOperandsInstructions.count(currentToLower) > 0) {
 				currentFunc.instructions.push_back(Instruction::make(noOperandsInstructions[currentToLower]));
+				continue;
 			}
 
 			if (strOperandInstructions.count(currentToLower) > 0) {
@@ -373,7 +374,6 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
 					} else {
 						throw std::runtime_error("The number of locals must be >= 0.");
 					}
-
 					continue;
 				} else {
 					throw std::runtime_error("The locals has already been set.");
@@ -390,7 +390,6 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
 					} else {
                     	throw std::runtime_error("Invalid local index.");
                     }
-
 					continue;
 				} else {
 					throw std::runtime_error("The locals must been set.");
@@ -443,7 +442,6 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
 				} else {
 					currentFunc.instructions.push_back(Instruction::makeCall(funcName, parameters));
 				}
-
 				continue;
 			}
 
@@ -501,7 +499,10 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
 			if (currentToLower == "ldstr") {
 				auto str = nextToken(tokens, i);
 				currentFunc.instructions.push_back(Instruction::makeWithStr(OpCodes::LOAD_STRING, str));
+				continue;
 			}
+
+//			throw std::runtime_error("'" + current + "' is not a valid instruction.");
 		}
 
 		if (isClassBody) {
@@ -544,7 +545,7 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
 			} else if (currentToLower == "class") {
 				currentClass = {};
 				currentClass.name = nextToken(tokens, i);
-				isClass = true;;
+				isClass = true;
 			} else if (currentToLower == "extern") {
 				isExternFunc = true;
 			} else if (currentToLower == "member") {

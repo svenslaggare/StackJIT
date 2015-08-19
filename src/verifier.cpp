@@ -39,8 +39,16 @@ namespace {
 		}
 	}
 
+	//Indicates if the given types are equal
+	bool sameType(const Type* type1, const Type* type2) {
+		return
+			*type1 == *type2
+			|| (TypeSystem::isReferenceType(type1) && TypeSystem::isNull(type2))
+			|| (TypeSystem::isReferenceType(type2) && TypeSystem::isNull(type1));
+	}
+
 	std::string checkType(const Type* expectedType, const Type* actualType) {
-		if (expectedType == nullptr || *expectedType == *actualType || actualType->name() == "Ref.Null") {
+		if (expectedType == nullptr || *expectedType == *actualType || TypeSystem::isNull(actualType)) {
 			return "";
 		} else {
 			return
@@ -250,6 +258,14 @@ namespace {
 							} else {
 								typeError(index, "Expected 2 operands of type Float on the stack.");
 							}
+						} else if (*op1 == *charType) {
+							if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Char)) {
+								operandStack.push(boolType);
+							} else {
+								typeError(index, "Expected 2 operands of type Char on the stack.");
+							}
+						} else if (sameType(op1, op2)) {
+							operandStack.push(boolType);
 						} else {
 							typeError(index, "Expected 2 operands of comparable type on the stack.");
 						}
@@ -258,8 +274,10 @@ namespace {
 							operandStack.push(boolType);
 						} else if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Float) && TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Float)) {
 							operandStack.push(boolType);
+						} else if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Char) && TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Char)) {
+							operandStack.push(boolType);
 						} else {
-							typeError(index, "Expected 2 operands of type Int or Float on the stack.");
+							typeError(index, "Expected 2 operands of type Int, Char or Float on the stack.");
 						}
 					}
 				}
@@ -383,6 +401,48 @@ namespace {
 				break;
 			case OpCodes::BRANCH_EQUAL:
 			case OpCodes::BRANCH_NOT_EQUAL:
+				{
+					assertOperandCount(index, operandStack, 2);
+
+					//Check if valid target
+					if (!(inst.intValue >= 0 && inst.intValue < (int) numInstructions)) {
+						typeError(index, "Invalid jump target (" + std::to_string(inst.intValue) + ").");
+					}
+
+					auto op1 = popType(operandStack);
+					auto op2 = popType(operandStack);
+
+					if (*op1 == *intType) {
+						if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
+							branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
+						} else {
+							typeError(index, "Expected 2 operands of type Int on the stack.");
+						}
+					} else if (*op1 == *boolType) {
+						if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Bool)) {
+							branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
+						} else {
+							typeError(index, "Expected 2 operands of type Bool on the stack.");
+						}
+					} else if (*op1 == *floatType) {
+						if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Float)) {
+							branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
+						} else {
+							typeError(index, "Expected 2 operands of type Float on the stack.");
+						}
+					} else if (*op1 == *charType) {
+						if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Char)) {
+							branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
+						} else {
+							typeError(index, "Expected 2 operands of type Char on the stack.");
+						}
+					} else if (sameType(op1, op2)) {
+						branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
+					} else {
+						typeError(index, "Expected 2 operands of comparable type on the stack.");
+					}
+				}
+				break;
 			case OpCodes::BRANCH_GREATER_THAN:
 			case OpCodes::BRANCH_GREATER_THAN_OR_EQUAL:
 			case OpCodes::BRANCH_LESS_THAN:
@@ -415,6 +475,12 @@ namespace {
 							branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
 						} else {
 							typeError(index, "Expected 2 operands of type Float on the stack.");
+						}
+					} else if (*op1 == *charType) {
+						if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Char)) {
+							branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
+						} else {
+							typeError(index, "Expected 2 operands of type Char on the stack.");
 						}
 					} else {
 						typeError(index, "Expected 2 operands of comparable type on the stack.");
@@ -476,6 +542,11 @@ namespace {
 					}
 
 					auto elemType = vmState.typeProvider().makeType(inst.strValue);
+
+					if (elemType == nullptr) {
+						typeError(index, "There exists no type '" + inst.strValue + "'.");
+					}
+
 					assertNotVoidType(index, elemType);
 
 					if (!isNull) {
@@ -486,10 +557,6 @@ namespace {
 						if (error != "") {
 							typeError(index, error);
 						}
-					}
-
-					if (elemType == nullptr) {
-						typeError(index, "There exists no type '" + inst.strValue + "'.");
 					}
 
 					if (*valueType != *elemType) {
@@ -515,6 +582,11 @@ namespace {
 					}
 
 					auto elemType = vmState.typeProvider().makeType(inst.strValue);
+
+					if (elemType == nullptr) {
+						typeError(index, "There exists no type '" + inst.strValue + "'.");
+					}
+
 					assertNotVoidType(index, elemType);
 
 					if (!isNull) {
@@ -525,10 +597,6 @@ namespace {
 						if (error != "") {
 							typeError(index, error);
 						}
-					}
-
-					if (elemType == nullptr) {
-						typeError(index, "There exists no type '" + inst.strValue + "'.");
 					}
 
 					operandStack.push(elemType);

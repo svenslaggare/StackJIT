@@ -1,0 +1,43 @@
+class Point
+{
+	x Int
+	y Int
+}
+
+member Point::.constructor() Void
+{
+	RET
+}
+
+func main() Int
+{
+	.locals 2
+	NEWOBJ Point::.constructor()
+	STLOC 0
+
+	NEWOBJ Point::.constructor()
+    STLOC 1
+
+	LDNULL
+	LDLOC 0
+	CMPNE
+	CALL std.println(Bool)
+
+	LDLOC 0
+	LDLOC 0
+	CMPNE
+	CALL std.println(Bool)
+
+	LDLOC 0
+	LDLOC 1
+	CMPNE
+	CALL std.println(Bool)
+
+	LDLOC 0
+	LDNULL
+	CMPNE
+	CALL std.println(Bool)
+
+	LDINT 0
+	RET
+}

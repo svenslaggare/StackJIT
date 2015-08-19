@@ -489,12 +489,11 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::COMPARE_LESS_THAN_OR_EQUAL:
         {
             auto opType = inst.operandTypes()[0];
-            bool intOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Integer);
-            bool boolType = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Bool);
             bool floatOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Float);
+			bool intBasedType = !floatOp;
             bool unsignedComparison = false;
 
-            if (intOp || boolType) {
+            if (intBasedType) {
                 //Pop 2 operands
 				OperandStack::popReg(function, topOperandIndex, Registers::CX);
 				OperandStack::popReg(function, topOperandIndex - 1, Registers::AX);
@@ -758,12 +757,11 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::BRANCH_LESS_THAN_OR_EQUAL:
         {
             auto opType = inst.operandTypes()[0];
-            bool intOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Integer);
-            bool boolType = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Bool);
             bool floatOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Float);
+			bool intBasedType = !floatOp;
             bool unsignedComparison = false;
 
-            if (intOp || boolType) {
+            if (intBasedType) {
                 //Pop 2 operands
 				OperandStack::popReg(function, topOperandIndex, Registers::CX);
 				OperandStack::popReg(function, topOperandIndex - 1, Registers::AX);

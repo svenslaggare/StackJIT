@@ -50,22 +50,6 @@ std::string invokeVM(std::string programName, std::string options = "--no-gc") {
 	return executeCmd(invokePath.data());
 }
 
-static inline std::string &ltrim(std::string &s) {
-    s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
-    return s;
-}
-
-// trim from end
-static inline std::string &rtrim(std::string &s) {
-    s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
-    return s;
-}
-
-// trim from both ends
-static inline std::string &trim(std::string &s) {
-    return ltrim(rtrim(s));
-}
-
 //Strips error messages of unnecessary information
 std::string stripErrorMessage(std::string errorMessage) {
     return errorMessage.substr(0, errorMessage.length() - 1);
@@ -152,6 +136,9 @@ public:
         TS_ASSERT_EQUALS(invokeVM("comparison/float_le"), "1\n1\n0\n4711\n");
         TS_ASSERT_EQUALS(invokeVM("comparison/float_lt"), "1\n0\n0\n4711\n");
 
+        TS_ASSERT_EQUALS(invokeVM("comparison/ref_eq"), "false\ntrue\nfalse\nfalse\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("comparison/ref_ne"), "true\nfalse\ntrue\ntrue\n0\n");
+
         TS_ASSERT_EQUALS(invokeVM("comparison/largestackframe"), "0\n1\n0\n4711\n");
     }
 
@@ -195,6 +182,14 @@ public:
         TS_ASSERT_EQUALS(invokeVM("branch/float_le"), "1\n");
         TS_ASSERT_EQUALS(invokeVM("branch/float_le2"), "0\n");
         TS_ASSERT_EQUALS(invokeVM("branch/float_le3"), "1\n");
+
+        TS_ASSERT_EQUALS(invokeVM("branch/ref_eq1"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("branch/ref_eq2"), "1\n");
+        TS_ASSERT_EQUALS(invokeVM("branch/ref_eq3"), "0\n");
+
+        TS_ASSERT_EQUALS(invokeVM("branch/ref_ne1"), "1\n");
+        TS_ASSERT_EQUALS(invokeVM("branch/ref_ne2"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("branch/ref_ne3"), "1\n");
     }
 
     void testString() {
@@ -211,7 +206,16 @@ public:
 
         TS_ASSERT_EQUALS(invokeVM("array/nested"), "4\n");
 
+        TS_ASSERT_EQUALS(invokeVM("array/intarray"), "1\n2\n3\n4\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("array/floatarray"), "1.5\n2.5\n3.5\n4.5\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("array/boolarray"), "false\ntrue\nfalse\ntrue\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("array/refarray"), "1:2\n2:3\n3:4\n4:5\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("array/chararray"), "A\nB\nC\nD\n0\n");
+
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program1")), "2: Arrays of type 'Void' is not allowed.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program2")), "2: 'RT' is not a valid type.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program3")), "6: There exists no type 'RT'.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program4")), "7: There exists no type 'RT'.");
     }
 
     void testClasses() {

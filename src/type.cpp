@@ -230,6 +230,10 @@ bool TypeSystem::isReferenceType(const Type* type) {
 	return type->name().find("Ref.") != std::string::npos;
 }
 
+bool TypeSystem::isNull(const Type* type) {
+	return type->name() == "Ref.Null";
+}
+
 bool TypeSystem::isArray(const Type* type) {
 	if (type == nullptr) {
 		return false;

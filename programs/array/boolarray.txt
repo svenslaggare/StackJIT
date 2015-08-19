@@ -1,0 +1,52 @@
+func main() Int
+{
+	.locals 1
+	.local 0 Ref.Array[Bool]
+
+	LDINT 4
+	NEWARR Bool
+	STLOC 0
+
+	LDLOC 0
+	LDINT 0
+	LDFALSE
+	STELEM Bool
+
+	LDLOC 0
+	LDINT 1
+	LDTRUE
+	STELEM Bool
+
+	LDLOC 0
+	LDINT 2
+	LDFALSE
+	STELEM Bool
+
+	LDLOC 0
+	LDINT 3
+	LDTRUE
+	STELEM Bool
+
+	LDLOC 0
+	LDINT 0
+	LDELEM Bool
+	CALL std.println(Bool)
+
+	LDLOC 0
+	LDINT 1
+	LDELEM Bool
+	CALL std.println(Bool)
+
+	LDLOC 0
+	LDINT 2
+	LDELEM Bool
+	CALL std.println(Bool)
+
+	LDLOC 0
+	LDINT 3
+	LDELEM Bool
+	CALL std.println(Bool)
+
+	LDINT 0
+	RET
+}

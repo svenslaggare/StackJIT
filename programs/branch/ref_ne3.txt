@@ -1,0 +1,35 @@
+class Point
+{
+	x Int
+	y Int
+}
+
+member Point::.constructor() Void
+{
+	RET
+}
+
+func main() Int
+{
+	.locals 3
+	.local 0 Int
+	.local 1 Ref.Class.Point
+	.local 2 Ref.Class.Point
+
+	NEWOBJ Point::.constructor()
+	STLOC 1
+
+	NEWOBJ Point::.constructor()
+	STLOC 2
+
+	LDLOC 1
+	LDLOC 2
+	BNE 10
+	LDINT 0
+	STLOC 0
+	BR 12
+	LDINT 1
+	STLOC 0
+	LDLOC 0
+	RET
+}

@@ -8,6 +8,8 @@ namespace NativeLibrary {
 
 	void println(int x);
 	void println(float x);
+	void println(bool x);
+	void println(char x);
 
 	void printchar(char x);
 

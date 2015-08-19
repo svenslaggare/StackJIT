@@ -139,10 +139,10 @@ void Loader::loadClasses(VMState& vmState, std::vector<AssemblyParser::Assembly*
 	//Then add the fields
 	for (auto assembly : assemblies) {
 		for (auto& currentClass : assembly->classes) {
-			ClassMetadata& structMetadata = vmState.classProvider().getMetadata(currentClass.name);
+			ClassMetadata& classMetadata = vmState.classProvider().getMetadata(currentClass.name);
 
 			for (auto field : currentClass.fields) {
-				structMetadata.addField(field.name, getType(vmState, field.type));
+				classMetadata.addField(field.name, getType(vmState, field.type));
 			}
 		}
 	}

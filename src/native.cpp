@@ -24,6 +24,18 @@ void NativeLibrary::println(float x) {
 	std::cout << x << std::endl;
 }
 
+void NativeLibrary::println(bool x) {
+	if (x) {
+		std::cout << "true" << std::endl;
+	} else {
+		std::cout << "false" << std::endl;
+	}
+}
+
+void NativeLibrary::println(char x) {
+	std::cout << x << std::endl;
+}
+
 void NativeLibrary::printchar(char x) {
 	std::cout << x;
 }
@@ -72,6 +84,7 @@ void NativeLibrary::add(VMState& vmState) {
 	auto intType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Integer));
 	auto floatType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Float));
 	auto charType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Char));
+	auto boolType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Bool));
 	auto voidType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Void));
 
 	auto& binder = vmState.binder();
@@ -79,13 +92,20 @@ void NativeLibrary::add(VMState& vmState) {
 	//Print
 	void(*printInt)(int) = &NativeLibrary::print;
 	void(*printFloat)(float) = &NativeLibrary::print;
+
 	void(*printlnInt)(int) = &NativeLibrary::println;
 	void(*printlnFloat)(float) = &NativeLibrary::println;
+	void(*printlnBool)(bool) = &NativeLibrary::println;
+	void(*printlnChar)(char) = &NativeLibrary::println;
 
 	binder.define(FunctionDefinition("std.print", { intType }, voidType, (unsigned char*)(printInt)));
 	binder.define(FunctionDefinition("std.print", { floatType }, voidType, (unsigned char*)(printFloat)));
+
 	binder.define(FunctionDefinition("std.println", { intType }, voidType, (unsigned char*)(printlnInt)));
 	binder.define(FunctionDefinition("std.println", { floatType }, voidType, (unsigned char*)(printlnFloat)));
+	binder.define(FunctionDefinition("std.println", { boolType }, voidType, (unsigned char*)(printlnBool)));
+	binder.define(FunctionDefinition("std.println", { charType }, voidType, (unsigned char*)(printlnChar)));
+
 	binder.define(FunctionDefinition("std.printchar", { charType }, voidType, (unsigned char*)(&printchar)));
 
 	//Math

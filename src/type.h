@@ -87,6 +87,9 @@ namespace TypeSystem {
 	//Indicates if the given type is a reference type
 	bool isReferenceType(const Type* type);
 
+	//Indicates if the given type is the null type
+	bool isNull(const Type* type);
+
 	//Indicates if the given type is an array
 	bool isArray(const Type* type);
 

@@ -1,0 +1,52 @@
+func main() Int
+{
+	.locals 1
+	.local 0 Ref.Array[Int]
+
+	LDINT 4
+	NEWARR Int
+	STLOC 0
+
+	LDLOC 0
+	LDINT 0
+	LDINT 1
+	STELEM Int
+
+	LDLOC 0
+	LDINT 1
+	LDINT 2
+	STELEM Int
+
+	LDLOC 0
+	LDINT 2
+	LDINT 3
+	STELEM Int
+
+	LDLOC 0
+	LDINT 3
+	LDINT 4
+	STELEM Int
+
+	LDLOC 0
+	LDINT 0
+	LDELEM Int
+	CALL std.println(Int)
+
+	LDLOC 0
+	LDINT 1
+	LDELEM Int
+	CALL std.println(Int)
+
+	LDLOC 0
+	LDINT 2
+	LDELEM Int
+	CALL std.println(Int)
+
+	LDLOC 0
+	LDINT 3
+	LDELEM Int
+	CALL std.println(Int)
+
+	LDINT 0
+	RET
+}

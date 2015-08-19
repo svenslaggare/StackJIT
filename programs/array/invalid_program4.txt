@@ -1,0 +1,16 @@
+func main() Int
+{
+	.locals 1
+
+	LDINT 4
+	NEWARR Int
+	STLOC 0
+
+	LDLOC 0
+	LDINT 0
+	LDINT 0
+	STELEM RT
+
+	LDINT 0
+	RET
+}
