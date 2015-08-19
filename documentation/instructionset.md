@@ -18,7 +18,7 @@ Defines the instruction set used by the VM.
 
 ###Boolean###
 * `LDTRUE`: Pushes the boolean value _true_ to the evaluation stack.
-* `LDFALSE`: Pushes the boolean value false to the evaluation stack.
+* `LDFALSE`: Pushes the boolean value _false_ to the evaluation stack.
 * `AND`: Pops two boolean operands, ands them and pushes the result to the evaluation stack.
 * `OR`: Pops two boolean operands, ors them and pushes the result to the evaluation stack.
 * `NOT`: Pops one boolean operand, inverts it and pushes the result to the evaluation stack.
@@ -60,10 +60,10 @@ Defines the instruction set used by the VM.
 * `LDLEN`: Pops an array reference from the stack and pushes the length of the array.
 
 ###Classes###
-* `NEWOBJ <type>::<constructor>` Creates a new object of the given type and pushes the reference to the stack.
-* `LDFIELD <field>` Pops a struct ref from the stack and loads a value from the given field pushing unto the stack.
-* `STFIELD <field>` Pops a struct ref from the stack, a value and stores the value at the given field.
+* `NEWOBJ <type>::<constructor>`: Creates a new object of the given type and pushes the reference to the stack.
+* `LDFIELD <field>`: Pops a struct ref from the stack and loads a value from the given field pushing unto the stack.
+* `STFIELD <field>`: Pops a struct ref from the stack, a value and stores the value at the given field.
 
 ###String###
-* `LDSTR <string>` Creates a new string and pushes the reference to the string to the evaluation stack.
-* `LDCHAR <char value>` Pushes a char to the evaluation stack.
+* `LDSTR <string>`: Creates a new string and pushes the reference to the string to the evaluation stack.
+* `LDCHAR <char value>`: Pushes a char to the evaluation stack.
