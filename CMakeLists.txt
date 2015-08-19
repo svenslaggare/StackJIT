@@ -22,8 +22,6 @@ set(SOURCE_FILES
     src/instructions.h
     src/jit.cpp
     src/jit.h
-    src/linux.cpp
-    src/linux.h
     src/loader.cpp
     src/loader.h
     src/memory.h
@@ -61,6 +59,10 @@ set(SOURCE_FILES
     src/linux/memory.h
     src/linux/memory.cpp
     src/linux/callingconvention.h
-    src/linux/callingconvetion.cpp)
+    src/linux/callingconvetion.cpp
+    src/windows/memory.h
+    src/windows/memory.cpp
+    src/windows/callingconvention.h
+    src/windows/callingconvetion.cpp)
 
 add_executable(stackjit ${SOURCE_FILES})

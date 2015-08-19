@@ -9,7 +9,11 @@
 
 //Executes the given command
 std::string executeCmd(const char* cmd) {
+#if defined(_WIN64) || defined(__MINGW32__)
     auto pipe = _popen(cmd, "r");
+#else
+    auto pipe = popen(cmd, "r");
+#endif
 
     if (!pipe) {
 		return "ERROR";
@@ -23,7 +27,11 @@ std::string executeCmd(const char* cmd) {
     	}
     }
 
+#if defined(_WIN64) || defined(__MINGW32__)
     _pclose(pipe);
+#else
+    pclose(pipe);
+#endif
     return result;
 }
 
@@ -32,7 +40,11 @@ std::string invokeVM(std::string programName, std::string options = "--no-gc") {
     #if USE_VALGRIND
 	std::string invokePath = "valgrind -q --error-exitcode=1 ../StackJIT/stackjit " + options + " < programs/" + programName + ".txt 2>&1";
 	#else
-    std::string invokePath = "StackJIT.exe " + options + " < ../../../programs/" + programName + ".txt 2>&1";
+        #if defined(_WIN64) || defined(__MINGW32__)
+        std::string invokePath = "StackJIT.exe " + options + " < ../../../programs/" + programName + ".txt 2>&1";
+        #else
+        std::string invokePath = "../StackJIT/stackjit " + options + " < programs/" + programName + ".txt 2>&1";
+        #endif
     #endif
 
 	return executeCmd(invokePath.data());
@@ -56,27 +68,30 @@ static inline std::string &trim(std::string &s) {
 
 //Strips error messages of unnecessary information
 std::string stripErrorMessage(std::string errorMessage) {
-    //std::string delimiter = "\n";
-    //std::size_t pos = 0;
-    //std::string token;
+#if defined(_WIN64) || defined(__MINGW32_)
+    return errorMessage;
+#else
+    std::string delimiter = "\n";
+    std::size_t pos = 0;
+    std::string token;
 
-    //std::string stripedString = "";
+    std::string stripedString = "";
 
-    //int line = 0;
+    int line = 0;
 
-    //while ((pos = errorMessage.find(delimiter)) != std::string::npos) {
-    //    token = errorMessage.substr(0, pos);
-    //    errorMessage.erase(0, pos + delimiter.length());
+    while ((pos = errorMessage.find(delimiter)) != std::string::npos) {
+        token = errorMessage.substr(0, pos);
+        errorMessage.erase(0, pos + delimiter.length());
 
-    //    if (line != 0 && errorMessage.length() > 0) {
-    //        stripedString += token + "\n";
-    //    }
+        if (line != 0 && errorMessage.length() > 0) {
+            stripedString += token + "\n";
+        }
 
-    //    line++;
-    //}
+        line++;
+    }
 
-    //return rtrim(ltrim(stripedString));
-	return errorMessage;
+    return rtrim(ltrim(stripedString));
+#endif
 }
 
 class VMTestSuite : public CxxTest::TestSuite {
@@ -240,7 +255,7 @@ public:
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program2")), "what():  2: \'Point\' is not a class type.");
 
         TS_ASSERT_EQUALS(invokeVM("class/constructor1"), "1\n2\n0\n");
-        //TS_ASSERT_EQUALS(invokeVM("class/constructor2"), "15\n");
+        TS_ASSERT_EQUALS(invokeVM("class/constructor2"), "15\n");
         TS_ASSERT_EQUALS(invokeVM("class/constructor3"), "21\n");
 
         TS_ASSERT_EQUALS(invokeVM("class/largeclass1"), "1337\n");
@@ -248,39 +263,39 @@ public:
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_constructor1")), "what():  Constructors must have return type 'Void'.");
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_constructor2")), "what():  1: The constructor \'Point::.constructor(Ref.Class.Point)\' is not defined.");
 
-        //TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_memberfunction1")), "what():  Null reference error.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_memberfunction1")), "what():  Null reference error.");
     }
 
-    //void testException() {
-    //    TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/nullref1")), "what():  Null reference error.");
-    //    TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/nullref2")), "what():  Null reference error.");
-    //    TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/nullref3")), "what():  Null reference error.");
+    void testException() {
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/nullref1")), "what():  Null reference error.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/nullref2")), "what():  Null reference error.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/nullref3")), "what():  Null reference error.");
 
-    //    TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck")), "what():  Array index is out of bounds.");
-    //    TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck2")), "what():  Array index is out of bounds.");
-    //    TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck3")), "what():  Array index is out of bounds.");
-    //    TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck4")), "what():  Array index is out of bounds.");
-    //    TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck5")), "what():  Array index is out of bounds.");
-    //    TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck6")), "what():  Array index is out of bounds.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck")), "what():  Array index is out of bounds.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck2")), "what():  Array index is out of bounds.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck3")), "what():  Array index is out of bounds.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck4")), "what():  Array index is out of bounds.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck5")), "what():  Array index is out of bounds.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck6")), "what():  Array index is out of bounds.");
 
-    //    TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/invalidarraycreation")), "what():  The length of the array must be >= 0.");
-    //}
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/invalidarraycreation")), "what():  The length of the array must be >= 0.");
+    }
 
-  //  void testGC() {
-		////Without GC enabled
-  //      TS_ASSERT_EQUALS(invokeVM("gc/program1"), "0\n");
-  //      TS_ASSERT_EQUALS(invokeVM("gc/program2"), "0\n");
-  //      TS_ASSERT_EQUALS(invokeVM("gc/program3"), "0\n");
-  //      TS_ASSERT_EQUALS(invokeVM("gc/program4"), "0\n");
-  //      TS_ASSERT_EQUALS(invokeVM("gc/program5"), "0\n");
+    void testGC() {
+		//Without GC enabled
+        TS_ASSERT_EQUALS(invokeVM("gc/program1"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program2"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program3"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program4"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program5"), "0\n");
 
-		////With GC enabled
-  //      TS_ASSERT_EQUALS(invokeVM("gc/program1", ""), "0\n");
-  //      TS_ASSERT_EQUALS(invokeVM("gc/program2", ""), "0\n");
-  //      TS_ASSERT_EQUALS(invokeVM("gc/program3", ""), "0\n");
-  //      TS_ASSERT_EQUALS(invokeVM("gc/program4", ""), "0\n");
-  //      TS_ASSERT_EQUALS(invokeVM("gc/program5", ""), "0\n");
-  //  }
+		//With GC enabled
+        TS_ASSERT_EQUALS(invokeVM("gc/program1", ""), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program2", ""), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program3", ""), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program4", ""), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program5", ""), "0\n");
+    }
 
     void testFunction() {
 		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("function/no_main")), "what():  The main function must be defined.");
@@ -305,9 +320,15 @@ public:
     }
 
     void testLibrary() {
-		std::string programsPath = "../../../programs";
+        #if defined(_WIN64) || defined(__MINGW32__)
+		std::string baseDir = "../../../";
+		std::string programsPath = baseDir + "programs";
+		#else
+        std::string baseDir = "";
+        std::string programsPath = "programs";
+		#endif
 
-        TS_ASSERT_EQUALS(invokeVM("rtlib/program1", "--no-gc -i ../../../rtlib/rtlib.sbc"), "0.909297\n5\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("rtlib/program1", "--no-gc -i " + baseDir + "rtlib/rtlib.sbc"), "0.909297\n5\n0\n");
 
 		TS_ASSERT_EQUALS(invokeVM(
 			"libraries/program1", "--no-gc -i " + programsPath + "/libraries/lib1.txt -i " + programsPath + "/libraries/lib2.txt"),
@@ -353,11 +374,11 @@ public:
         TS_ASSERT_EQUALS(invokeVM("attributes/struct1"), "0\n");
     }
 
- //   void testLazy() {
- //       TS_ASSERT_EQUALS(invokeVM("lazy/onlymain", "-lc 1"), "1337\n");
- //       TS_ASSERT_EQUALS(invokeVM("lazy/mainwithcall", "-lc 1"), "15\n");
- //       TS_ASSERT_EQUALS(invokeVM("lazy/mainwith2calls", "-lc 1"), "25\n");
- //       TS_ASSERT_EQUALS(invokeVM("lazy/callchainwithoutpatching", "-lc 1"), "25\n");
- //       TS_ASSERT_EQUALS(invokeVM("lazy/loop", "-lc 1"), "0\n");
- //   }
+    void testLazy() {
+        TS_ASSERT_EQUALS(invokeVM("lazy/onlymain", "-lc 1"), "1337\n");
+        TS_ASSERT_EQUALS(invokeVM("lazy/mainwithcall", "-lc 1"), "15\n");
+        TS_ASSERT_EQUALS(invokeVM("lazy/mainwith2calls", "-lc 1"), "25\n");
+        TS_ASSERT_EQUALS(invokeVM("lazy/callchainwithoutpatching", "-lc 1"), "25\n");
+        TS_ASSERT_EQUALS(invokeVM("lazy/loop", "-lc 1"), "0\n");
+    }
 };

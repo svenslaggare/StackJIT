@@ -29,11 +29,11 @@ namespace {
 		return value;
 	}
 
-	void typeError(int instIndex, std::string errorMessage) {
+	void typeError(std::size_t instIndex, std::string errorMessage) {
 		throw std::runtime_error(std::to_string(instIndex) + ": " + errorMessage);
 	}
 
-	void assertOperandCount(int index, const InstructionTypes& stack, std::size_t count) {
+	void assertOperandCount(std::size_t index, const InstructionTypes& stack, std::size_t count) {
 		if (stack.size() < count) {
 			typeError(index, "Expected " + std::to_string(count) + " operand(s) on the stack.");
 		}
@@ -50,7 +50,7 @@ namespace {
 		}
 	}
 
-	void assertNotVoidType(int index, const Type* type) {
+	void assertNotVoidType(std::size_t index, const Type* type) {
 		if (type != nullptr && type->name() == "Void") {
 			typeError(index, "Void type not allowed.");
 		}
@@ -335,11 +335,11 @@ namespace {
 						typeError(index, "Member functions must be called with the 'CALLINST' instruction.");
 					}
 
-					int calledFuncNumArgs = (int) calledFunc.parameters().size();
+					auto calledFuncNumArgs = calledFunc.parameters().size();
 					assertOperandCount(index, operandStack, calledFuncNumArgs);
 
 					//Check the arguments
-					for (int i = calledFuncNumArgs - 1; i >= 0; i--) {
+					for (int i = (int)calledFuncNumArgs - 1; i >= 0; i--) {
 						auto argType = popType(operandStack);
 						auto error = checkType(calledFunc.parameters()[i], argType);
 
@@ -559,11 +559,11 @@ namespace {
 
 					auto calledFunc = vmState.binder().getFunction(signature);
 
-					int calledFuncNumArgs = calledFunc.parameters().size();
+					auto calledFuncNumArgs = calledFunc.parameters().size();
 					assertOperandCount(index, operandStack, calledFuncNumArgs - 1);
 
 					//Check the arguments
-					for (int i = calledFuncNumArgs - 1; i >= 1; i--) {
+					for (int i = (int)calledFuncNumArgs - 1; i >= 1; i--) {
 						auto argType = popType(operandStack);
 						auto error = checkType(calledFunc.parameters()[i], argType);
 

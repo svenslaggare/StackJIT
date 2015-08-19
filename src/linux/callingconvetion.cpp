@@ -338,6 +338,10 @@ int CallingConvention::calculateStackAlignment(FunctionCompilationData& function
 	return (numStackArgs % 2) * Amd64Backend::REG_SIZE;
 }
 
+int CallingConvention::calculateShadowStackSize(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall) const {
+	return 0;
+}
+
 void CallingConvention::makeReturnValue(FunctionCompilationData& functionData,	int numStackOperands) const {
 	auto& function = functionData.function;
 

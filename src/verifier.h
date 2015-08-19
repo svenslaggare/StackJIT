@@ -11,5 +11,5 @@ typedef std::stack<const Type*> InstructionTypes;
 //The function verifier
 namespace Verifier {
 	//Verifies the given function
-	void verifyFunction(Function& function, VMState& vmStatee);
+	void verifyFunction(Function& function, VMState& vmState);
 }

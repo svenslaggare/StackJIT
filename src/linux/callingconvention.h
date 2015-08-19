@@ -48,6 +48,9 @@ public:
 	//Calculates how much the stack must be aligned to perform the call
 	int calculateStackAlignment(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall) const;
 
+	//Calculates how much shadow stack size is needed
+	int calculateShadowStackSize(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall) const;
+
 	//Generates code for handling making return value for a function
 	void makeReturnValue(FunctionCompilationData& functionData, int numStackOperands) const;
 
