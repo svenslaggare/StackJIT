@@ -28,7 +28,7 @@ FunctionCompilationData::FunctionCompilationData(Function& function)
 
 JITCompiler::JITCompiler(VMState& vmState)
 	: mVMState(vmState), mCodeGen(mCallingConvention, mExceptionHandling) {
-	mExceptionHandling.generateHandlers(mMemoryManager);
+	mExceptionHandling.generateHandlers(mMemoryManager, mCallingConvention);
 	createMacros();
 }
 
@@ -63,7 +63,7 @@ JitFunction JITCompiler::compileFunction(Function* function) {
 
     //Generate the native instructions for the program
     int i = 0;
-    for (auto current : function->instructions) {
+    for (auto& current : function->instructions) {
         mCodeGen.generateInstruction(functionData, mVMState, current, i);
         i++;
     }

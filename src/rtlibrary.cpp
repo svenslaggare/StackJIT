@@ -228,7 +228,7 @@ unsigned char* Runtime::newObject(const Type* type) {
 unsigned char* Runtime::newString(const char* string, int length) {
     auto elemType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Char));
     auto strPtr = vmState.gc().newArray(elemType, length);
-    
+
     for (int i = 0; i < length; i++) {
         strPtr[i + StackJIT::ARRAY_LENGTH_SIZE] = (unsigned char)string[i];
     }
@@ -237,7 +237,13 @@ unsigned char* Runtime::newString(const char* string, int length) {
 }
 
 void Runtime::runtimeError(std::string errorMessage) {
-    throw std::runtime_error(errorMessage);
+	std::cout << "Error: " << errorMessage;
+
+#ifdef __unix__
+	std::cout << std::endl;
+#endif
+
+	exit(0);
 }
 
 void Runtime::invalidArrayCreation() {
@@ -249,7 +255,7 @@ void Runtime::arrayOutOfBoundsError() {
 }
 
 void Runtime::nullReferenceError() {
-    Runtime::runtimeError("Null reference error.");
+    Runtime::runtimeError("Null reference.");
 }
 
 void Runtime::stackOverflow() {

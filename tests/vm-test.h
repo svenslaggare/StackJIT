@@ -222,7 +222,7 @@ public:
 
     void testString() {
         TS_ASSERT_EQUALS(invokeVM("string/char1"), "A\n0\n");
-        //TS_ASSERT_EQUALS(invokeVM("string/loadstring"), "Hello, World!\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("string/loadstring"), "Hello, World!\n0\n");
     }
 
     void testArray() {
@@ -232,7 +232,7 @@ public:
 
         TS_ASSERT_EQUALS(invokeVM("array/largearray1"), "1337\n");
 
-        //TS_ASSERT_EQUALS(invokeVM("array/nested"), "4\n");
+        TS_ASSERT_EQUALS(invokeVM("array/nested"), "4\n");
 
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program1")), "what():  2: Arrays of type 'Void' is not allowed.");
     }
@@ -261,24 +261,26 @@ public:
         TS_ASSERT_EQUALS(invokeVM("class/largeclass1"), "1337\n");
 
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_constructor1")), "what():  Constructors must have return type 'Void'.");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_constructor2")), "what():  1: The constructor \'Point::.constructor(Ref.Class.Point)\' is not defined.");
+        TS_ASSERT_EQUALS(stripErrorMessage(
+			invokeVM("class/invalid_constructor2")),
+			"what():  1: The constructor \'Point::.constructor(Ref.Class.Point)\' is not defined.");
 
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_memberfunction1")), "what():  Null reference error.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_memberfunction1")), "Error: Null reference.");
     }
 
     void testException() {
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/nullref1")), "what():  Null reference error.");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/nullref2")), "what():  Null reference error.");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/nullref3")), "what():  Null reference error.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/nullref1")), "Error: Null reference.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/nullref2")), "Error: Null reference.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/nullref3")), "Error: Null reference.");
 
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck")), "what():  Array index is out of bounds.");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck2")), "what():  Array index is out of bounds.");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck3")), "what():  Array index is out of bounds.");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck4")), "what():  Array index is out of bounds.");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck5")), "what():  Array index is out of bounds.");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck6")), "what():  Array index is out of bounds.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck")), "Error: Array index is out of bounds.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck2")), "Error: Array index is out of bounds.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck3")), "Error: Array index is out of bounds.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck4")), "Error: Array index is out of bounds.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck5")), "Error: Array index is out of bounds.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/boundscheck6")), "Error: Array index is out of bounds.");
 
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/invalidarraycreation")), "what():  The length of the array must be >= 0.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("exception/invalidarraycreation")), "Error: The length of the array must be >= 0.");
     }
 
     void testGC() {

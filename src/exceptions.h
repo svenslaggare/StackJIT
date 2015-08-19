@@ -4,6 +4,7 @@
 
 struct FunctionCompilationData;
 class MemoryManager;
+class CallingConvention;
 
 //Handles exceptions
 class ExceptionHandling {
@@ -12,12 +13,15 @@ private:
 	unsigned char* mArrayBoundsCheckHandler;
 	unsigned char* mArrayCreationCheckHandler;
 	unsigned char* mStackOverflowCheckHandler;
+	
+	//Creates a call to the given handler
+	std::size_t createHandlerCall(std::vector<unsigned char>& handlerCode, CallingConvention& callingConvention, PtrValue handlerPtr);
 public:
 	//Generates the exception handlers
-	void generateHandlers(MemoryManager& memoryManger);
+	void generateHandlers(MemoryManager& memoryManger, CallingConvention& callingConvention);
 
 	//Adds a null check
-	void addNullCheck(FunctionCompilationData& function, Registers refReg = Registers::AX, Registers cmpReg = Registers::SI) const;
+	void addNullCheck(FunctionCompilationData& function, Registers refReg = Registers::AX, NumberedRegisters cmpReg = NumberedRegisters::R11) const;
 
 	//Adds an array bounds check
 	void addArrayBoundsCheck(FunctionCompilationData& function) const;

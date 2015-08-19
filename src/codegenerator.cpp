@@ -40,6 +40,32 @@ namespace {
 		Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg2, (int)generatedCode.size()); //The offset for this check
 		Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg3, 0); //The end of the this check
 		checkEndIndex = generatedCode.size() - sizeof(int);
+
+		//The function to compile
+		Amd64Backend::subByteFromReg(generatedCode, Registers::SP, 8); //Alignment
+		Amd64Backend::moveLongToReg(generatedCode, NumberedRegisters::R10, (PtrValue)(&funcToCall));
+		Amd64Backend::pushReg(generatedCode, NumberedRegisters::R10);
+		Amd64Backend::subByteFromReg(generatedCode, Registers::SP, 32); //Shadow space
+
+		Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (PtrValue)&Runtime::compileFunction);
+		Amd64Backend::callInReg(generatedCode, Registers::AX);
+		Amd64Backend::addByteToReg(generatedCode, Registers::SP, 16 + 32); //Used stack
+
+		Helpers::setInt(generatedCode, checkEndIndex, (int)generatedCode.size());
+
+		return callIndex;
+#if defined(_WIN64) || defined(__MINGW32__)
+		return 0;
+#else
+		std::size_t callIndex;
+		std::size_t checkEndIndex;
+
+		Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (PtrValue)&function); //The current function
+		Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg1, 0); //Offset of the call
+		callIndex = generatedCode.size() - sizeof(int);
+		Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg2, (int)generatedCode.size()); //The offset for this check
+		Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg3, 0); //The end of the this check
+		checkEndIndex = generatedCode.size() - sizeof(int);
 		Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg4, (PtrValue)(&funcToCall)); //The function to compile
 
 		Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (PtrValue)&Runtime::compileFunction);
@@ -48,6 +74,7 @@ namespace {
 		Helpers::setInt(generatedCode, checkEndIndex, (int)generatedCode.size());
 
 		return callIndex;
+#endif
 	}
 }
 
@@ -177,9 +204,17 @@ bool CodeGenerator::compileAtRuntime(const VMState& vmState, const FunctionDefin
 		   && !vmState.engine().jitCompiler().hasCompiled(funcSignature);
 }
 
-void CodeGenerator::generateCall(CodeGen& codeGen, unsigned char* funcPtr, Registers addrReg) {
+void CodeGenerator::generateCall(CodeGen& codeGen, unsigned char* funcPtr, Registers addrReg, bool shadowSpaceNeeded) {
+	if (shadowSpaceNeeded) {
+		Amd64Backend::subByteFromReg(codeGen, Registers::SP, mCallingConvention.calculateShadowStackSize());
+	}
+
 	Amd64Backend::moveLongToReg(codeGen, addrReg, (Int64)funcPtr);
 	Amd64Backend::callInReg(codeGen, addrReg);
+
+	if (shadowSpaceNeeded) {
+		Amd64Backend::addByteToReg(codeGen, Registers::SP, mCallingConvention.calculateShadowStackSize());
+	}
 }
 
 void CodeGenerator::generateGCCall(CodeGen& generatedCode, Function& function, int instIndex) {
@@ -204,7 +239,7 @@ void CodeGenerator::initializeFunction(FunctionCompilationData& functionData) {
 
     if (stackSize > 0) {
         //Make room for the variables on the stack
-        if (validCharValue(stackSize)) {
+        if (validCharValue((int)stackSize)) {
             Amd64Backend::subByteFromReg(function.generatedCode, Registers::SP, (char)stackSize); //sub rsp, <size of stack>
         } else {
             Amd64Backend::subIntFromReg(function.generatedCode, Registers::SP, (int)stackSize); //sub rsp, <size of stack>
@@ -609,16 +644,14 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 				mCallingConvention.callFunctionArguments(functionData, funcToCall, (int)inst.operandTypes().size());
 
 				//Shadow stack size may be needed
-				int shadowStack = mCallingConvention.calculateShadowStackSize(functionData, funcToCall);
+				int shadowStack = mCallingConvention.calculateShadowStackSize();
 				if (shadowStack > 0) {
 					Amd64Backend::subByteFromReg(generatedCode, Registers::SP, shadowStack);
 				}
 
 				if (inst.opCode() == OpCodes::CALL_INSTANCE) {
 					//Null check
-					Amd64Backend::pushReg(generatedCode, Registers::CX);
-					mExceptionHandling.addNullCheck(functionData, RegisterCallArguments::Arg0, Registers::CX);
-					Amd64Backend::popReg(generatedCode, Registers::CX);
+					mExceptionHandling.addNullCheck(functionData, RegisterCallArguments::Arg0);
 				}
 
 				if (funcToCall.isManaged()) {
@@ -650,7 +683,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 					}
 
 					//Make the call
-					generateCall(generatedCode, funcAddr);
+					generateCall(generatedCode, funcAddr, Registers::AX, false);
 				}
 
 				//Unalign the stack
@@ -827,7 +860,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
             //Pop the operands
 			OperandStack::popReg(function, topOperandIndex, Registers::DX); //The value to store
-			OperandStack::popReg(function, topOperandIndex - 1, Registers::CX); //The index of the element
+			OperandStack::popReg(function, topOperandIndex - 1, NumberedRegisters::R10); //The index of the element
 			OperandStack::popReg(function, topOperandIndex - 2, Registers::AX); //The address of the array
 
             //Null check
@@ -837,8 +870,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			mExceptionHandling.addArrayBoundsCheck(functionData);
 
             //Compute the address of the element
-            pushArray(generatedCode, { 0x48, 0x6B, 0xC9, (unsigned char)TypeSystem::sizeOfType(elemType) }); //imul rcx, <size of type>
-            Amd64Backend::addRegToReg(generatedCode, Registers::AX, Registers::CX); //add rax, rcx
+            pushArray(generatedCode, { 0x4d, 0x6b, 0xd2, (unsigned char)TypeSystem::sizeOfType(elemType) }); //imul r10, <size of type>
+            Amd64Backend::addRegToReg(generatedCode, Registers::AX, NumberedRegisters::R10); //add rax, r10
 
             //Store the element
             auto elemSize = TypeSystem::sizeOfType(elemType);
@@ -859,7 +892,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             auto elemType = vmState.typeProvider().getType(inst.strValue);
 
             //Pop the operands
-			OperandStack::popReg(function, topOperandIndex, Registers::CX); //The index of the element
+			OperandStack::popReg(function, topOperandIndex, NumberedRegisters::R10); //The index of the element
 			OperandStack::popReg(function, topOperandIndex - 1, Registers::AX); //The address of the ar
 
 			//Null check
@@ -869,8 +902,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			mExceptionHandling.addArrayBoundsCheck(functionData);
 
             //Compute the address of the element
-            pushArray(generatedCode, { 0x48, 0x6B, 0xC9, (unsigned char)TypeSystem::sizeOfType(elemType) }); //imul rcx, <size of type>
-            Amd64Backend::addRegToReg(generatedCode, Registers::AX, Registers::CX); //add rax, rcx
+			pushArray(generatedCode, { 0x4d, 0x6b, 0xd2, (unsigned char)TypeSystem::sizeOfType(elemType) }); //imul r10, <size of type>
+            Amd64Backend::addRegToReg(generatedCode, Registers::AX, NumberedRegisters::R10); //add rax, r10
             Amd64Backend::addByteToReg(generatedCode, Registers::AX, StackJIT::ARRAY_LENGTH_SIZE); //add rax, <element offset>
 
             //Load the element
@@ -960,15 +993,15 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 					(int)inst.operandTypes().size());
             }
 
+			//Push the reference to the created object
+			Amd64Backend::moveRegToReg(generatedCode, Registers::AX, NumberedRegisters::R10);
+			OperandStack::pushReg(function, topOperandIndex + 1 - numArgs, Registers::AX);
+
 			//Shadow stack may be needed
-			int shadowStack = mCallingConvention.calculateShadowStackSize(functionData, funcToCall);
+			int shadowStack = mCallingConvention.calculateShadowStackSize();
 			if (shadowStack > 0) {
 				Amd64Backend::subByteFromReg(generatedCode, Registers::SP, shadowStack);
 			}
-
-            //Push the reference to the created object
-			Amd64Backend::moveRegToReg(generatedCode, Registers::AX, NumberedRegisters::R10);
-            OperandStack::pushReg(function, topOperandIndex + 1 - numArgs, Registers::AX);
 
 			if (!needsToCompile) {
 				//Mark that the constructor needs to be patched with the entry point later
@@ -993,7 +1026,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			}
 
             //This is for clean up after a call, as the constructor returns nothing.
-			mCallingConvention.handleReturnValue(functionData, funcToCall, (int) inst.operandTypes().size() - numArgs);
+			mCallingConvention.handleReturnValue(functionData, funcToCall, (int)inst.operandTypes().size() - numArgs);
 
 			//Pop the call
 			popFunc(vmState, generatedCode);
@@ -1008,7 +1041,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
             auto structMetadata = vmState.classProvider().getMetadata(structAndField.first);
             auto& field = structMetadata.fields().at(structAndField.second);
-            int fieldOffset = field.offset();
+            int fieldOffset = (int)field.offset();
 
             //Get the size of the field
             auto elemSize = TypeSystem::sizeOfType(field.type());
@@ -1074,10 +1107,10 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             }
 
             //The pointer to the string as the first arg
-            Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (PtrValue)inst.strValue.data()); //mov rdi, <addr of string>
+            Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (PtrValue)inst.strValue.data()); //mov <arg 0>, <addr of string>
 
             //The length of the string as the second arg
-            Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg1, (int)inst.strValue.length()); //mov rsi, <string length>
+            Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg1, (int)inst.strValue.length()); //mov <arg 1>, <string length>
 
             //Call the newString runtime function
             generateCall(generatedCode, (unsigned char*)&Runtime::newString);

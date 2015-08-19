@@ -13,6 +13,11 @@ void Amd64Backend::pushReg(CodeGen& codeGen, Registers reg) {
 	codeGen.push_back(0x50 | reg);
 }
 
+void Amd64Backend::pushReg(CodeGen& codeGen, NumberedRegisters reg) {
+	codeGen.push_back(0x41);
+	codeGen.push_back(0x50 | reg);
+}
+
 void Amd64Backend::pushReg(CodeGen& codeGen, FloatRegisters reg) {
 	Amd64Backend::subByteFromReg(codeGen, Registers::SP, Amd64Backend::REG_SIZE);   //sub rsp, <reg size>
 	Amd64Backend::moveRegToMemoryRegWithCharOffset(codeGen, Registers::SP, 0, reg);     //movss [rsp+0], <float reg>
@@ -350,6 +355,12 @@ void Amd64Backend::callInReg(CodeGen& codeGen, Registers func) {
     codeGen.push_back(0xd0 | func);
 }
 
+void Amd64Backend::callInReg(CodeGen& codeGen, NumberedRegisters func) {
+	codeGen.push_back(0x41);
+	codeGen.push_back(0xff);
+	codeGen.push_back(0xd0 | func);
+}
+
 void Amd64Backend::call(CodeGen& codeGen, int funcAddr) {
 	codeGen.push_back(0xe8);
 
@@ -372,6 +383,12 @@ void Amd64Backend::addRegToReg(CodeGen& codeGen, Registers dest, Registers src, 
 
     codeGen.push_back(0x01);
     codeGen.push_back(0xc0 | dest | (src << 3));
+}
+
+void Amd64Backend::addRegToReg(CodeGen& codeGen, Registers dest, NumberedRegisters src) {
+	codeGen.push_back(0x4c);
+	codeGen.push_back(0x01);
+	codeGen.push_back(0xc0 | dest | (src << 3));
 }
 
 void Amd64Backend::addConstantToReg(CodeGen& codeGen, Registers destReg, int srcValue, bool is32bits) {
@@ -499,6 +516,12 @@ void Amd64Backend::xorRegToReg(CodeGen& codeGen, Registers dest, Registers src, 
 	codeGen.push_back(0xc0 | dest | (src << 3));
 }
 
+void Amd64Backend::xorRegToReg(CodeGen& codeGen, NumberedRegisters dest, NumberedRegisters src) {
+	codeGen.push_back(0x4D);
+	codeGen.push_back(0x31);
+	codeGen.push_back(0xc0 | dest | (src << 3));
+}
+
 void Amd64Backend::notReg(CodeGen& codeGen, Registers reg, bool is32bits) {
 	if (!is32bits) {
         codeGen.push_back(0x48);
@@ -510,6 +533,18 @@ void Amd64Backend::notReg(CodeGen& codeGen, Registers reg, bool is32bits) {
 
 void Amd64Backend::compareRegToReg(CodeGen& codeGen, Registers reg1, Registers reg2) {
 	codeGen.push_back(0x48);
+	codeGen.push_back(0x39);
+	codeGen.push_back(0xc0 | reg1 | (reg2 << 3));
+}
+
+void Amd64Backend::compareRegToReg(CodeGen& codeGen, Registers reg1, NumberedRegisters reg2) {
+	codeGen.push_back(0x4c);
+	codeGen.push_back(0x39);
+	codeGen.push_back(0xc0 | reg1 | (reg2 << 3));
+}
+
+void Amd64Backend::compareRegToReg(CodeGen& codeGen, NumberedRegisters reg1, Registers reg2) {
+	codeGen.push_back(0x49);
 	codeGen.push_back(0x39);
 	codeGen.push_back(0xc0 | reg1 | (reg2 << 3));
 }

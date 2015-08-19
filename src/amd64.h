@@ -64,6 +64,7 @@ namespace Amd64Backend {
 
 	//Pushes the given register to the stack
 	void pushReg(CodeGen&, Registers);
+	void pushReg(CodeGen&, NumberedRegisters);
 
 	//Pushes the given register to the stack
 	void pushReg(CodeGen&, FloatRegisters);
@@ -137,6 +138,7 @@ namespace Amd64Backend {
 
 	//Calls the given function where the entry points is in a register
 	void callInReg(CodeGen&, Registers);
+	void callInReg(CodeGen&, NumberedRegisters);
 
 	//Calls the given function
 	void call(CodeGen&, int);
@@ -146,6 +148,7 @@ namespace Amd64Backend {
 
 	//Adds the second register to the first
 	void addRegToReg(CodeGen&, Registers, Registers, bool is32bits = false);
+	void addRegToReg(CodeGen&, Registers, NumberedRegisters);
 
 	//Adds the given integer constant to the given register
 	void addConstantToReg(CodeGen&, Registers, int, bool is32bits = false);
@@ -179,12 +182,15 @@ namespace Amd64Backend {
 
 	//XOR's the second register to the first
 	void xorRegToReg(CodeGen&, Registers, Registers, bool is32bits = false);
+	void xorRegToReg(CodeGen&, NumberedRegisters, NumberedRegisters);
 
 	//NOT's the register
 	void notReg(CodeGen&, Registers, bool is32bits = false);
 
 	//Compares the two registers
 	void compareRegToReg(CodeGen&, Registers, Registers);
+	void compareRegToReg(CodeGen&, Registers, NumberedRegisters);
+	void compareRegToReg(CodeGen&, NumberedRegisters, Registers);
 
 	//Jumps to the target relative the current instruction
 	void jump(CodeGen&, int);

@@ -179,7 +179,7 @@ void CallingConvention::callFunctionArgument(FunctionCompilationData& functionDa
 	int numArgs = (int)funcToCall.parameters().size();
 
 	if (TypeSystem::isPrimitiveType(argType, PrimitiveTypes::Float)) {
-		//Arguments of index >= 8 are passed via the stack.
+		//Arguments of index >= 4 are passed via the stack.
 		int relativeIndex = getFloatArgIndex(funcToCall.parameters(), argIndex);
 		int argOperandOffset = numStackOperands - (numArgs - argIndex);
 
@@ -205,7 +205,7 @@ void CallingConvention::callFunctionArgument(FunctionCompilationData& functionDa
 			OperandStack::popReg(functionData.function, argOperandOffset, FloatRegisterCallArguments::Arg0);
 		}
 	} else {
-		//Arguments of index >= 6 are passed via the stack
+		//Arguments of index >= 4 are passed via the stack
 		int relativeIndex = getNoneFloatArgIndex(funcToCall.parameters(), argIndex);
 		int argOperandOffset = numStackOperands - (numArgs - argIndex);
 
@@ -245,10 +245,10 @@ void CallingConvention::callFunctionArguments(FunctionCompilationData& functionD
 
 int CallingConvention::calculateStackAlignment(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall) const {
 	int numStackArgs = numStackArguments(funcToCall.parameters());
-	return ((numStackArgs % 2) + 0) * Amd64Backend::REG_SIZE;
+	return (numStackArgs % 2) * Amd64Backend::REG_SIZE;
 }
 
-int CallingConvention::calculateShadowStackSize(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall) const {
+int CallingConvention::calculateShadowStackSize() const {
 	return 4 * Amd64Backend::REG_SIZE;
 }
 

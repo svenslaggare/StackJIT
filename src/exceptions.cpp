@@ -2,31 +2,36 @@
 #include "rtlibrary.h"
 #include "function.h"
 #include "jit.h"
+#include "callingconvention.h"
 #include <string.h>
 
-//Exception handling
-void ExceptionHandling::generateHandlers(MemoryManager& memoryManger) {
+std::size_t ExceptionHandling::createHandlerCall(std::vector<unsigned char>& handlerCode, CallingConvention& callingConvention, PtrValue handlerPtr) {
+	int shadowSpace = callingConvention.calculateShadowStackSize();
+
+	auto handlerOffset = handlerCode.size();
+
+	if (shadowSpace > 0) {
+		Amd64Backend::subByteFromReg(handlerCode, Registers::SP, shadowSpace);
+	}
+
+	Amd64Backend::moveLongToReg(handlerCode, NumberedRegisters::R11, handlerPtr); //mov r11, <addr of func>
+	Amd64Backend::callInReg(handlerCode, NumberedRegisters::R11); //call r11
+
+	if (shadowSpace > 0) {
+		Amd64Backend::addByteToReg(handlerCode, Registers::SP, shadowSpace);
+	}
+
+	return handlerOffset;
+}
+
+void ExceptionHandling::generateHandlers(MemoryManager& memoryManger, CallingConvention& callingConvention) {
 	std::vector<unsigned char> handlerCode;
 
-	//Null handler
-	auto nullHandlerOffset = handlerCode.size();
-	Amd64Backend::moveLongToReg(handlerCode, Registers::DI, (PtrValue)&Runtime::nullReferenceError); //mov rdi, <addr of func>
-	Amd64Backend::callInReg(handlerCode, Registers::DI); //call rdi
-
-	//Array bounds handler
-	auto arrayBoundsHandlerOffset = handlerCode.size();
-	Amd64Backend::moveLongToReg(handlerCode, Registers::DI, (PtrValue)&Runtime::arrayOutOfBoundsError); //mov rdi, <addr of func>
-	Amd64Backend::callInReg(handlerCode, Registers::DI); //call rdi
-
-	//Array creation handler
-	auto arrayCreationHandler = handlerCode.size();
-	Amd64Backend::moveLongToReg(handlerCode, Registers::DI, (PtrValue)&Runtime::invalidArrayCreation); //mov rdi, <addr of func>
-	Amd64Backend::callInReg(handlerCode, Registers::DI); //call rdi
-
-	//Stack overflow handler
-	auto stackOverflowHandler = handlerCode.size();
-	Amd64Backend::moveLongToReg(handlerCode, Registers::DI, (PtrValue)&Runtime::stackOverflow); //mov rdi, <addr of func>
-	Amd64Backend::callInReg(handlerCode, Registers::DI); //call rdi
+	//Create handler calls
+	auto nullHandlerOffset = createHandlerCall(handlerCode, callingConvention, (PtrValue)&Runtime::nullReferenceError);
+	auto arrayBoundsHandlerOffset = createHandlerCall(handlerCode, callingConvention, (PtrValue)&Runtime::arrayOutOfBoundsError);
+	auto arrayCreationHandler = createHandlerCall(handlerCode, callingConvention, (PtrValue)&Runtime::invalidArrayCreation);
+	auto stackOverflowHandler = createHandlerCall(handlerCode, callingConvention, (PtrValue)&Runtime::stackOverflow);
 
 	//Allocate and copy memory
 	auto handlerMemory = memoryManger.allocateMemory(handlerCode.size());
@@ -39,11 +44,11 @@ void ExceptionHandling::generateHandlers(MemoryManager& memoryManger) {
 	mStackOverflowCheckHandler = (unsigned char*)handlerMemory + stackOverflowHandler;
 }
 
-void ExceptionHandling::addNullCheck(FunctionCompilationData& function, Registers refReg, Registers cmpReg) const {
+void ExceptionHandling::addNullCheck(FunctionCompilationData& function, Registers refReg, NumberedRegisters cmpReg) const {
 	auto& codeGen = function.function.generatedCode;
 
 	//Compare the reference with null
-	Amd64Backend::xorRegToReg(codeGen, cmpReg, cmpReg, true); //Zero the register
+	Amd64Backend::xorRegToReg(codeGen, cmpReg, cmpReg); //Zero the register
 	Amd64Backend::compareRegToReg(codeGen, refReg, cmpReg); //cmp <ref>, <cmp>
 
 	//Jump to handler if null
@@ -55,10 +60,10 @@ void ExceptionHandling::addArrayBoundsCheck(FunctionCompilationData& function) c
 	auto& codeGen = function.function.generatedCode;
 
 	//Get the size of the array (an int)
-	Amd64Backend::moveMemoryByRegToReg(codeGen, Registers::SI, Registers::AX, true); //mov esi, [rax]
+	Amd64Backend::moveMemoryByRegToReg(codeGen, Registers::CX, Registers::AX, true); //mov ecx, [rax]
 
 	//Compare the index and size
-	Amd64Backend::compareRegToReg(codeGen, Registers::CX, Registers::SI); //cmp rcx, rsi
+	Amd64Backend::compareRegToReg(codeGen, NumberedRegisters::R10, Registers::CX); //cmp r11, rcx
 
 	//Jump to handler if out of bounds. By using an unsigned comparison, we only need one check.
 	Amd64Backend::jumpGreaterThanOrEqualUnsigned(codeGen, 0); //jae <array bounds handler>.
@@ -68,8 +73,8 @@ void ExceptionHandling::addArrayBoundsCheck(FunctionCompilationData& function) c
 void ExceptionHandling::addArrayCreationCheck(FunctionCompilationData& function) const {
 	auto& codeGen = function.function.generatedCode;
 
-	Amd64Backend::xorRegToReg(codeGen, Registers::CX, Registers::CX, true); //Zero the register
-	Amd64Backend::compareRegToReg(codeGen, Registers::CX, Registers::SI); //cmp rcx, rsi
+	Amd64Backend::xorRegToReg(codeGen, NumberedRegisters::R11, NumberedRegisters::R11); //Zero the register
+	Amd64Backend::compareRegToReg(codeGen, NumberedRegisters::R11, RegisterCallArguments::Arg1); //cmp rcx, <arg 1>
 
 	//Jump to handler if invalid
 	Amd64Backend::jumpGreaterThan(codeGen, 0); //jg <array creation handler>
