@@ -64,14 +64,4 @@ public:
 
 	//Returns a reference to the given class
 	ClassRef getClassRef(RawClassRef classRef);
-
-	//Returns a reference to the given array
-	template<typename T>
-	ArrayRef<T> getArrayRef(RawArrayRef arrayRef);
 };
-
-template<typename T>
-ArrayRef<T> GarbageCollector::getArrayRef(RawArrayRef arrayRef) {
-	auto handle = static_cast<ArrayHandle*>(getHandle(arrayRef));
-	return ArrayRef<T>(handle);
-}

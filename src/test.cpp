@@ -31,12 +31,9 @@ void printPoint(RawClassRef objRef) {
 
 void printString(RawArrayRef objRef) {
 	if (objRef != nullptr) {
-		//Obtain a reference to the array
-		auto arrayRef = vmState.gc().getArrayRef<char>(objRef);
-
+		ArrayRef<char> arrayRef(objRef);
 		for (int i = 0; i < arrayRef.length(); i++) {
-			auto elementRef = arrayRef.getElement(i);
-			std::cout << *elementRef.value();
+			std::cout << arrayRef.getElement(i);
 		}
 
 		std::cout << std::endl;

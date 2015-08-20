@@ -33,37 +33,21 @@ FieldRef<T> ClassRef::getField(std::string name, const Type* type) {
 	}
 }
 
-//Element ref
-template<typename T>
-ElementRef<T>::ElementRef(unsigned char* elementPtr, int index)
-	: mElementPtr((T*)elementPtr), mIndex(index) {
-
-}
-
-template<typename T>
-T* ElementRef<T>::value() {
-	return mElementPtr;
-}
-
-template<typename T>
-int ElementRef<T>::index() const {
-	return mIndex;
-}
-
 //Array ref
 template<typename T>
-ArrayRef<T>::ArrayRef(ArrayHandle* handle)
-	: mHandle(handle), mLength(handle->length()) {
+ArrayRef<T>::ArrayRef(const RawArrayRef arrayRef)
+	: mElementsPtr((T*)(arrayRef + StackJIT::ARRAY_LENGTH_SIZE)), mLength(*(int*)arrayRef) {
 
 }
 
 template<typename T>
-ElementRef<T> ArrayRef<T>::getElement(int index) {
-	if (index >= 0 && index < mLength) {
-		return ElementRef<T>((unsigned char*)mHandle->handle() + sizeof(T) * index + StackJIT::ARRAY_LENGTH_SIZE, index);
-	} else {
-		throw std::runtime_error("Array index is out of bounds.");
-	}
+T* ArrayRef<T>::elementsPtr() const {
+	return mElementsPtr;
+}
+
+template<typename T>
+T ArrayRef<T>::getElement(int index) const {
+	return mElementsPtr[index];
 }
 
 template<typename T>

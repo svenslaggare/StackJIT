@@ -55,6 +55,30 @@ int NativeLibrary::abs(int x) {
     }
 }
 
+StringRef::StringRef(RawClassRef stringRef) {
+	auto charsField = (char**)(stringRef + sCharsFieldOffset);
+	ArrayRef<char> charsArray((unsigned char*)(*charsField));
+	mChars = charsArray.elementsPtr();
+	mLength = charsArray.length();
+}
+
+//Returns the char at the given index
+char StringRef::charAt(int index) {
+	return mChars[index];
+}
+
+//Returns the length of the string
+int StringRef::length() const {
+	return mLength;
+}
+
+std::size_t StringRef::sCharsFieldOffset;
+
+void StringRef::initialize(VMState& vmState) {
+	auto& classMetadata = vmState.classProvider().getMetadata("std.String");
+	sCharsFieldOffset = classMetadata.fields().at("chars").offset();
+}
+
 bool NativeLibrary::stringEquals(RawClassRef str1, RawClassRef str2) {
 	if (str1 == nullptr || str2 == nullptr) {
 		return false;
@@ -65,24 +89,15 @@ bool NativeLibrary::stringEquals(RawClassRef str1, RawClassRef str2) {
 	}
 
 	//Get references to the instances
-	auto str1Ref = vmState.gc().getClassRef(str1);
-	auto str2Ref = vmState.gc().getClassRef(str2);
+	StringRef str1Ref(str1);
+	StringRef str2Ref(str2);
 
-	auto charArrayType = vmState.typeProvider().makeType("Ref.Array[Char]");
-
-	//Get references to the char arrays
-	auto str1Chars = str1Ref.getField<RawArrayRef>("chars", charArrayType);
-	auto str2Chars = str2Ref.getField<RawArrayRef>("chars", charArrayType);
-
-	auto str1CharsRef = vmState.gc().getArrayRef<char>(*str1Chars.value());
-	auto str2CharsRef = vmState.gc().getArrayRef<char>(*str2Chars.value());
-
-	if (str1CharsRef.length() != str2CharsRef.length()) {
+	if (str1Ref.length() != str2Ref.length()) {
 		return false;
 	}
 
-	for (int i = 0; i < str1CharsRef.length(); i++) {
-		if (*str1CharsRef.getElement(i).value() != *str2CharsRef.getElement(i).value()) {
+	for (int i = 0; i < str1Ref.length(); i++) {
+		if (str1Ref.charAt(i) != str2Ref.charAt(i)) {
 			return false;
 		}
 	}
@@ -130,6 +145,7 @@ void NativeLibrary::add(VMState& vmState) {
 	//String
 	auto stringType = vmState.typeProvider().makeType("Ref.Class.std.String");
 	if (stringType != nullptr) {
+		StringRef::initialize(vmState);
 		binder.define(FunctionDefinition("std.equals", { stringType, stringType }, boolType, (unsigned char*)(&stringEquals)));
 	}
 }

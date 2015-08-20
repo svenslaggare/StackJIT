@@ -97,10 +97,9 @@ void GarbageCollector::markObject(ObjectHandle* handle) {
 
             //Mark ref elements
             if (TypeSystem::isReferenceType(arrayType->elementType())) {
-                RegisterValue* elementsPtr = (RegisterValue*)(arrayHandle->handle() + StackJIT::ARRAY_LENGTH_SIZE);
-
-                for (int i = 0; i < arrayHandle->length(); i++) {
-                    markValue(elementsPtr[i], arrayType->elementType());
+                ArrayRef<RegisterValue> arrayRef((unsigned char*)arrayHandle->handle());
+                for (int i = 0; i < arrayRef.length(); i++) {
+                    markValue(arrayRef.getElement(i), arrayType->elementType());
                 }
             }
         } else if (TypeSystem::isClass(handle->type())) {

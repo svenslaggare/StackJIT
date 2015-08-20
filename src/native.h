@@ -4,6 +4,28 @@
 
 class VMState;
 
+//Represents a string reference
+class StringRef {
+private:
+	char* mChars;
+	int mLength;
+
+	static std::size_t sCharsFieldOffset;
+public:
+	//Creates a new reference for the given raw reference
+	StringRef(RawClassRef stringRef);
+
+	//Returns the char at the given index
+	char charAt(int index);
+
+	//Returns tte length of the string
+	int length() const;
+
+	//Initialize the string reference
+	static void initialize(VMState& vmState);
+};
+
+
 //The part of the runtime library exposed to programs
 namespace NativeLibrary {
 	void print(int x);

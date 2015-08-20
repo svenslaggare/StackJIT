@@ -41,38 +41,21 @@ public:
 	FieldRef<T> getField(std::string name, const Type* type);
 };
 
-//Represents an element reference
-template<typename T>
-class ElementRef {
-private:
-	T* mElementPtr;
-	int mIndex;
-
-	//Creates a new reference to the given element
-	ElementRef(unsigned char* elementPtr, int index);
-
-	template<typename U>
-	friend class ArrayRef;
-public:
-	//Returns a pointer to the element
-	T* value();
-
-	//Returns the index for the element
-	int index() const;
-};
-
 //Represents an array reference
 template<typename T>
 class ArrayRef {
 private:
-	ArrayHandle* mHandle;
+	T* mElementsPtr;
 	int mLength;
 public:
 	//Creates a new reference to the given array
-	ArrayRef(ArrayHandle* handle);
+	ArrayRef(const RawArrayRef arrayRef);
 
-	//Returns a reference to the field at the given index
-	ElementRef<T> getElement(int index);
+	//Returns a pointer to the elements
+	T* elementsPtr() const;
+
+	//Returns the value of the given element
+	T getElement(int index) const;
 
 	//Returns the length of the array
 	int length() const;

@@ -13,7 +13,7 @@ func main() Int
 	NEWOBJ std.String::.constructor(Ref.Array[Char])
 	STLOC 2
 
-	LDINT 100000
+	LDINT 300000
 	STLOC 0
 
 	LDLOC 1
