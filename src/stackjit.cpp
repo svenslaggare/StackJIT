@@ -4,7 +4,10 @@
 #include <iostream>
 #include <fstream>
 #include <chrono>
+
+#ifdef __unix__
 #include <unistd.h>
+#endif
 
 //The global state for the VM
 VMState vmState;
