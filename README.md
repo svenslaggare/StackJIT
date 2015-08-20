@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/svenslaggare/StackJIT.svg?branch=master)](https://travis-ci.org/svenslaggare/StackJIT)
+[![Linux Build Status](https://travis-ci.org/svenslaggare/StackJIT.svg?branch=master)](https://travis-ci.org/svenslaggare/StackJIT) [![Windows Build Status](https://ci.appveyor.com/api/projects/status/nqt3cks6w2kqfny8?svg=true)](https://ci.appveyor.com/project/svenslaggare/stackjit)
 StackJIT
 ========
 A simple virtual machine for a stack-based assembler like language, featuring a JIT compiler, GC and object system.
