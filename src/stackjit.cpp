@@ -1,11 +1,10 @@
-#include "assembly.h"
 #include "loader.h"
 #include "vmstate.h"
 #include "executionengine.h"
 #include <iostream>
 #include <fstream>
-#include <string.h>
 #include <chrono>
+#include <unistd.h>
 
 //The global state for the VM
 VMState vmState;
@@ -31,7 +30,7 @@ void handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
 		}
 
 		if (switchStr == "-pfg" || switchStr == "--print-function-generation") {
-			vmState.outputGeneratedCode = true;
+			vmState.printFunctionGeneration = true;
 			continue;
 		}
 
@@ -58,6 +57,11 @@ void handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
 			continue;
 		}
 
+		if (switchStr == "-nrl" || switchStr == "--no-rtlib") {
+			vmState.loadRuntimeLibrary = false;
+			continue;
+		}
+
 		if (switchStr == "-t" || switchStr == "--test") {
 			vmState.testMode = true;
 			continue;
@@ -68,16 +72,7 @@ void handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
 
 			if (next < argc) {
 				//Load the library
-				std::string libraryPath = argv[next];
-				std::ifstream fileStream(libraryPath);
-
-				if (!fileStream.is_open()) {
-					std::cout << "Could not load library '" << libraryPath << "'." << std::endl;
-				}
-
-				auto lib = new AssemblyParser::Assembly;
-				Loader::load(fileStream, vmState, *lib);
-				engine.loadAssembly(*lib, AssemblyType::Library);
+				engine.loadLibrary(argv[next]);
 				i++;
 			} else {
 				std::cout << "Expected a library file after '-i' option." << std::endl;
@@ -90,16 +85,43 @@ void handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
 	}
 }
 
-//Returns the duration since last
-std::int64_t getDuration(std::chrono::time_point<std::chrono::high_resolution_clock> start) {
+//Returns the duration since the given time point
+std::int64_t getDuration(std::chrono::time_point<std::chrono::high_resolution_clock> timePoint) {
 	auto end = std::chrono::high_resolution_clock::now();
-	return std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+	return std::chrono::duration_cast<std::chrono::milliseconds>(end - timePoint).count();
+}
+
+std::string getExecutableDir() {
+	const int bufferSize = 1024;
+	char buffer[bufferSize];
+
+#if defined(__WIN64) || defined(__MINGW32__)
+	int bytes = GetModuleFileName(nullptr, buffer, bufferSize);
+
+	//To remove the name
+	buffer[bytes - 12] = '\0';
+#else
+	char szTmp[32];
+	sprintf(szTmp, "/proc/%d/exe", getpid());
+	int bytes = std::min((int)readlink(szTmp, buffer, bufferSize), bufferSize - 1);
+
+	if (bytes >= 0) {
+		buffer[bytes] = '\0';
+	}
+
+	//To remove the name
+	buffer[bytes - 8] = '\0';
+#endif
+
+	return std::string(buffer);
 }
 
 int main(int argc, char* argv[]) {
 	try {
 		auto start = std::chrono::high_resolution_clock::now();
 		auto& engine = vmState.engine();
+
+		engine.setBaseDir(getExecutableDir());
 
 		//Handle options
 		handleOptions(argc, argv, engine);

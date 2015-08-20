@@ -29,6 +29,9 @@ public:
     //Indicates if the GC is disabled
     bool disableGC = false;
 
+    //Indicates if the runtime library is loaded.
+    bool loadRuntimeLibrary = true;
+
     //Prints when a function has been compiled
     bool printFunctionGeneration = false;
 

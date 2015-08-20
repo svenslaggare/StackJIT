@@ -4,7 +4,6 @@
 #include "vmstate.h"
 #include "instructions.h"
 #include "type.h"
-#include "assembly.h"
 #include <stdexcept>
 #include <iostream>
 

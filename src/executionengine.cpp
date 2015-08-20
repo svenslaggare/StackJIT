@@ -1,7 +1,6 @@
 #include "executionengine.h"
 #include "vmstate.h"
 #include "binder.h"
-#include "assembly.h"
 #include "function.h"
 #include "verifier.h"
 #include "type.h"
@@ -11,6 +10,7 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <fstream>
 
 CallStackEntry::CallStackEntry(Function* function, int callPoint)
 	: function(function), callPoint(callPoint) {
@@ -94,6 +94,10 @@ const JITCompiler& ExecutionEngine::jitCompiler() const {
 	return mJIT;
 }
 
+void ExecutionEngine::setBaseDir(std::string baseDir) {
+	mBaseDir = baseDir;
+}
+
 EntryPointFunction ExecutionEngine::entryPoint() const {
     if (mVMState.binder().isDefined("main()")) {
         return (EntryPointFunction)(mVMState.binder().getFunction("main()").entryPoint());
@@ -111,6 +115,20 @@ AssemblyParser::Function* getFunction(AssemblyParser::Assembly& assembly, std::s
 	}
 
 	return nullptr;
+}
+
+bool ExecutionEngine::loadLibrary(std::string filePath) {
+	std::ifstream fileStream(filePath);
+
+	if (!fileStream.is_open()) {
+		std::cout << "Could not load library '" << filePath << "'." << std::endl;
+		return false;
+	}
+
+	auto lib = new AssemblyParser::Assembly;
+	Loader::load(fileStream, mVMState, *lib);
+	loadAssembly(*lib, AssemblyType::Library);
+	return true;
 }
 
 void ExecutionEngine::loadAssembly(AssemblyParser::Assembly& assembly, AssemblyType assemblyType) {
@@ -131,8 +149,24 @@ void ExecutionEngine::loadAssembly(AssemblyParser::Assembly& assembly, AssemblyT
 	mAssemblies.push_back(&assembly);
 }
 
+void ExecutionEngine::loadRuntimeLibrary() {
+	if (mVMState.loadRuntimeLibrary) {
+		bool loaded = false;
+
+		loaded = loadLibrary(mBaseDir + "rtlib/native.sbc");
+		loaded = loadLibrary(mBaseDir + "rtlib/string.sbc");
+
+		if (!loaded) {
+			throw std::runtime_error("Could not load runtime library.");
+		}
+	}
+}
+
 void ExecutionEngine::load() {
 	auto& binder = mVMState.binder();
+
+	//Load runtime library
+	loadRuntimeLibrary();
 
 	//Load classes
 	Loader::loadClasses(mVMState, mAssemblies);
@@ -171,6 +205,9 @@ void ExecutionEngine::load() {
 
 void ExecutionEngine::loadDefinitions() {
 	auto& binder = mVMState.binder();
+
+	//Load runtime library
+	loadRuntimeLibrary();
 
 	//Load classes
 	Loader::loadClasses(mVMState, mAssemblies);

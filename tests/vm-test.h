@@ -46,7 +46,7 @@ std::string programsPath = "programs";
 #endif
 
 //Invokes the VM with the given program
-std::string invokeVM(std::string programName, std::string options = "") {
+std::string invokeVM(std::string programName, std::string options = "--no-rtlib") {
     std::string valgrindExecutable = "";
 
     #if USE_VALGRIND
@@ -281,11 +281,11 @@ public:
 
     void testGC() {
 		//Without GC enabled
-        TS_ASSERT_EQUALS(invokeVM("gc/program1", "--no-gc"), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("gc/program2", "--no-gc"), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("gc/program3", "--no-gc"), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("gc/program4", "--no-gc"), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("gc/program5", "--no-gc"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program1", "--no-gc --no-rtlib"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program2", "--no-gc --no-rtlib"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program3", "--no-gc --no-rtlib"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program4", "--no-gc --no-rtlib"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program5", "--no-gc --no-rtlib"), "0\n");
 
 		//With GC enabled
         TS_ASSERT_EQUALS(invokeVM("gc/program1"), "0\n");
@@ -318,60 +318,62 @@ public:
     }
 
     void testLibrary() {
+		std::string options = "--no-rtlib ";
+
 		TS_ASSERT_EQUALS(invokeVM(
-			"libraries/program1", "-i " + programsPath + "/libraries/lib1.txt -i " + programsPath + "/libraries/lib2.txt"),
+			"libraries/program1", options + "-i " + programsPath + "/libraries/lib1.txt -i " + programsPath + "/libraries/lib2.txt"),
 			"1337:4711\n0\n");
 
 		TS_ASSERT_EQUALS(invokeVM(
-			"libraries/program1", "-i " + programsPath + "/libraries/lib2.txt -i " + programsPath + "/libraries/lib1.txt"),
+			"libraries/program1", options + "-i " + programsPath + "/libraries/lib2.txt -i " + programsPath + "/libraries/lib1.txt"),
 			"1337:4711\n0\n");
 
 		TS_ASSERT_EQUALS(invokeVM(
 			"libraries/program2",
-			"-i " + programsPath + "/libraries/lib1.txt -i " + programsPath + "/libraries/lib2.txt -i " + programsPath + "/libraries/lib3.txt"),
-				"1337:4711\n0\n");
+			options + "-i " + programsPath + "/libraries/lib1.txt -i " + programsPath + "/libraries/lib2.txt -i " + programsPath + "/libraries/lib3.txt"),
+			"1337:4711\n0\n");
 
 		TS_ASSERT_EQUALS(invokeVM(
 			"libraries/program2",
-			"-i " + programsPath + "/libraries/lib1.txt -i " + programsPath + "/libraries/lib3.txt -i " + programsPath + "/libraries/lib2.txt"),
-				"1337:4711\n0\n");
+			options + "-i " + programsPath + "/libraries/lib1.txt -i " + programsPath + "/libraries/lib3.txt -i " + programsPath + "/libraries/lib2.txt"),
+			"1337:4711\n0\n");
 
         TS_ASSERT_EQUALS(invokeVM(
             "libraries/program2",
-            "-i " + programsPath + "/libraries/lib3.txt -i " + programsPath + "/libraries/lib1.txt -i " + programsPath + "/libraries/lib2.txt"),
-                "1337:4711\n0\n");
+			options + "-i " + programsPath + "/libraries/lib3.txt -i " + programsPath + "/libraries/lib1.txt -i " + programsPath + "/libraries/lib2.txt"),
+            "1337:4711\n0\n");
 
         TS_ASSERT_EQUALS(invokeVM(
             "libraries/program2",
-            "-i " + programsPath + "/libraries/lib3.txt -i " + programsPath + "/libraries/lib2.txt -i " + programsPath + "/libraries/lib1.txt"),
-                "1337:4711\n0\n");
+			options + "-i " + programsPath + "/libraries/lib3.txt -i " + programsPath + "/libraries/lib2.txt -i " + programsPath + "/libraries/lib1.txt"),
+            "1337:4711\n0\n");
 
         TS_ASSERT_EQUALS(invokeVM(
             "libraries/program2",
-            "-i " + programsPath + "/libraries/lib2.txt -i " + programsPath + "/libraries/lib1.txt -i " + programsPath + "/libraries/lib3.txt"),
-                "1337:4711\n0\n");
+			options + "-i " + programsPath + "/libraries/lib2.txt -i " + programsPath + "/libraries/lib1.txt -i " + programsPath + "/libraries/lib3.txt"),
+			"1337:4711\n0\n");
 
         TS_ASSERT_EQUALS(invokeVM(
             "libraries/program2",
-            "-i " + programsPath + "/libraries/lib2.txt -i " + programsPath + "/libraries/lib3.txt -i " + programsPath + "/libraries/lib1.txt"),
-                "1337:4711\n0\n");
+			options + "-i " + programsPath + "/libraries/lib2.txt -i " + programsPath + "/libraries/lib3.txt -i " + programsPath + "/libraries/lib1.txt"),
+            "1337:4711\n0\n");
     }
 
     void testRuntimeLibrary() {
-        TS_ASSERT_EQUALS(invokeVM("rtlib/program1", "-i rtlib/native.sbc"), "0.909297\n5\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("rtlib/program1", ""), "0.909297\n5\n0\n");
 
-        TS_ASSERT_EQUALS(invokeVM("rtlib/string1", "-i rtlib/string.sbc"), "Hello, World!\n0\n");
-        TS_ASSERT_EQUALS(invokeVM("rtlib/string2", "-i rtlib/string.sbc"), "true\n0\n");
-        TS_ASSERT_EQUALS(invokeVM("rtlib/string3", "-i rtlib/string.sbc"), "false\n0\n");
-        TS_ASSERT_EQUALS(invokeVM("rtlib/string4", "-i rtlib/string.sbc"), "false\n0\n");
-        TS_ASSERT_EQUALS(invokeVM("rtlib/string4", "-i rtlib/string.sbc"), "false\n0\n");
-        TS_ASSERT_EQUALS(invokeVM("rtlib/string5", "-i rtlib/string.sbc"), "false\n0\n");
-        TS_ASSERT_EQUALS(invokeVM("rtlib/string6", "-i rtlib/string.sbc"), "false\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("rtlib/string1", ""), "Hello, World!\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("rtlib/string2", ""), "true\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("rtlib/string3", ""), "false\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("rtlib/string4", ""), "false\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("rtlib/string4", ""), "false\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("rtlib/string5", ""), "false\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("rtlib/string6", ""), "false\n0\n");
     }
 
     void testNative() {
-        TS_ASSERT_EQUALS(invokeVM("native/arrayref1", "--test"), "Hello, World!\n0\n");
-        TS_ASSERT_EQUALS(invokeVM("native/structref1", "--test"), "1337:4711\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("native/arrayref1", "--no-rtlib --test"), "Hello, World!\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("native/structref1", "--no-rtlib --test"), "1337:4711\n0\n");
     }
 
     void testAttributes() {
@@ -380,10 +382,10 @@ public:
     }
 
     void testLazy() {
-        TS_ASSERT_EQUALS(invokeVM("lazy/onlymain", "-lc 1"), "1337\n");
-        TS_ASSERT_EQUALS(invokeVM("lazy/mainwithcall", "-lc 1"), "15\n");
-        TS_ASSERT_EQUALS(invokeVM("lazy/mainwith2calls", "-lc 1"), "25\n");
-        TS_ASSERT_EQUALS(invokeVM("lazy/callchainwithoutpatching", "-lc 1"), "25\n");
-        TS_ASSERT_EQUALS(invokeVM("lazy/loop", "-lc 1"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("lazy/onlymain", "--no-rtlib -lc 1"), "1337\n");
+        TS_ASSERT_EQUALS(invokeVM("lazy/mainwithcall", "--no-rtlib -lc 1"), "15\n");
+        TS_ASSERT_EQUALS(invokeVM("lazy/mainwith2calls", "--no-rtlib -lc 1"), "25\n");
+        TS_ASSERT_EQUALS(invokeVM("lazy/callchainwithoutpatching", "--no-rtlib -lc 1"), "25\n");
+        TS_ASSERT_EQUALS(invokeVM("lazy/loop", "--no-rtlib -lc 1"), "0\n");
     }
 };

@@ -9,7 +9,13 @@ class VMState;
 class Assembly;
 class Function;
 
-enum class AssemblyType;
+//The type of the assembly
+enum class AssemblyType {
+	//The assembly is a program. This requires an entry point (main function)
+	Program,
+	//The assembly is a library. A library cannot be executed.
+	Library
+};
 
 namespace AssemblyParser {
 	struct Assembly;
@@ -65,6 +71,8 @@ private:
 	JITCompiler mJIT;
 	CallStack mCallStack;
 
+	std::string mBaseDir;
+
 	std::vector<AssemblyParser::Assembly*> mAssemblies;
 	std::unordered_map<std::string, Function*> mLoadedFunctions;
 	std::unordered_map<std::string, AssemblyParser::Function> mLoadedDefinitions;
@@ -74,6 +82,9 @@ private:
 
 	//Loads the assemblies
 	void load();
+
+	//Loads the runtime library
+	void loadRuntimeLibrary();
 
 	//Compiles the given function
 	void compileFunction(Function* function, std::string signature = "", bool resolveSymbols = false);
@@ -90,8 +101,14 @@ public:
 	JITCompiler& jitCompiler();
 	const JITCompiler& jitCompiler() const;
 
+	//Sets the base directory of the VM
+	void setBaseDir(std::string baseDir);
+
 	//Returns the entry point
 	EntryPointFunction entryPoint() const; 
+
+	//Loads the given library from a file
+	bool loadLibrary(std::string filePath);
 
 	//Loads the given assembly
 	void loadAssembly(AssemblyParser::Assembly& assembly, AssemblyType assemblyType);
