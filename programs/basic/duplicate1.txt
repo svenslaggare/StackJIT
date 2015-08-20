@@ -1,0 +1,7 @@
+func main() Int
+{
+    LDINT 5
+    DUP
+    ADD
+    RET
+}

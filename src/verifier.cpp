@@ -153,6 +153,13 @@ namespace {
 				assertOperandCount(index, operandStack, 1);
 				popType(operandStack);
 				break;
+			case OpCodes::DUPLICATE:
+				{
+					assertOperandCount(index, operandStack, 1);
+					auto topType = operandStack.top();
+					operandStack.push(topType);
+				}
+				break;
 			case OpCodes::ADD:
 			case OpCodes::SUB:
 			case OpCodes::MUL:

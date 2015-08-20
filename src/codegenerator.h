@@ -13,6 +13,9 @@ class FunctionDefinition;
 
 //Manages the operand stack
 namespace OperandStack {
+	//Duplicates the top operand
+	void duplicate(Function& function, int operandStackIndex);
+
 	//Pops an operand from the operand stack to the given register
 	void popReg(Function& function, int operandStackIndex, Registers reg);
 	void popReg(Function& function, int operandStackIndex, NumberedRegisters reg);

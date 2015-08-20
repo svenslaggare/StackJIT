@@ -6,6 +6,7 @@ enum class OpCodes : unsigned char {
 	LOAD_FLOAT,
 	LOAD_CHAR,
 	POP,
+	DUPLICATE,
 	ADD,
 	SUB,
 	MUL,

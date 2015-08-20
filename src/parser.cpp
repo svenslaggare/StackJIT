@@ -103,6 +103,7 @@ namespace {
 	{
 		{ "nop", OpCodes::NOP },
 		{ "pop", OpCodes::POP },
+		{ "dup", OpCodes::DUPLICATE },
 		{ "add", OpCodes::ADD },
 		{ "sub", OpCodes::SUB },
 		{ "mul", OpCodes::MUL },

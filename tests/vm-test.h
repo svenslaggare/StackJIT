@@ -85,6 +85,7 @@ public:
         TS_ASSERT_EQUALS(invokeVM("basic/program15"), "-2\n");
 
         TS_ASSERT_EQUALS(invokeVM("basic/recursion1"), "21\n");
+		TS_ASSERT_EQUALS(invokeVM("basic/duplicate1"), "10\n");
     }
 
 	void testStack() {

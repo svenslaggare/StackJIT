@@ -77,18 +77,25 @@ namespace {
 	}
 }
 
+void OperandStack::duplicate(Function& function, int operandStackIndex) {
+	int stackOffset1 = getStackOperandOffset(function, operandStackIndex);
+	int stackOffset2 = getStackOperandOffset(function, operandStackIndex + 1);
+
+	Amd64Backend::moveMemoryRegWithOffsetToReg(
+		function.generatedCode,
+		Registers::AX, Registers::BP, stackOffset1); //mov rax, [rbp+<operand1 offset>]
+
+	Amd64Backend::moveRegToMemoryRegWithOffset(
+		function.generatedCode,
+		Registers::BP, stackOffset2, Registers::AX); //mov [rbp+<operand2 offset>], rax
+}
+
 void OperandStack::popReg(Function& function, int operandStackIndex, Registers reg) {
 	int stackOffset = getStackOperandOffset(function, operandStackIndex);
 
-	if (validCharValue(stackOffset)) {
-		Amd64Backend::moveMemoryRegWithCharOffsetToReg(
-			function.generatedCode,
-			reg, Registers::BP, stackOffset); //mov <reg>, [rbp+<operand offset>]
-	} else {
-		Amd64Backend::moveMemoryRegWithIntOffsetToReg(
-			function.generatedCode,
-			reg, Registers::BP, stackOffset); //mov <reg>, [rbp+<operand offset>]
-	}
+	Amd64Backend::moveMemoryRegWithOffsetToReg(
+		function.generatedCode,
+		reg, Registers::BP, stackOffset); //mov <reg>, [rbp+<operand offset>]
 }
 
 void OperandStack::popReg(Function& function, int operandStackIndex, NumberedRegisters reg) {
@@ -138,31 +145,18 @@ void OperandStack::popReg(Function& function, int operandStackIndex, FloatRegist
 void OperandStack::pushReg(Function& function, int operandStackIndex, Registers reg) {
 	int stackOffset = getStackOperandOffset(function, operandStackIndex);
 
-	if (validCharValue(stackOffset)) {
-		Amd64Backend::moveRegToMemoryRegWithCharOffset(
-			function.generatedCode,
-			Registers::BP, stackOffset, reg); //mov [rbp+<operand offset>], <reg>
-	} else {
-		Amd64Backend::moveRegToMemoryRegWithIntOffset(
-			function.generatedCode,
-			Registers::BP, stackOffset, reg); //mov [rbp+<operand offset>], <reg>
-	}
+	Amd64Backend::moveRegToMemoryRegWithOffset(
+		function.generatedCode,
+		Registers::BP, stackOffset, reg); //mov [rbp+<operand offset>], <reg>
 }
 
 void OperandStack::pushReg(Function& function, int operandStackIndex, FloatRegisters reg) {
 	int stackOffset = getStackOperandOffset(function, operandStackIndex);
 
-	if (validCharValue(stackOffset)) {
-		Amd64Backend::moveRegToMemoryRegWithCharOffset(
-			function.generatedCode,
-			Registers::BP,
-			stackOffset, reg); //movss [rbp+<operand offset>], <float reg>
-	} else {
-		Amd64Backend::moveRegToMemoryRegWithIntOffset(
-			function.generatedCode,
-			Registers::BP,
-			stackOffset, reg); //movss [rbp+<operand offset>], <float reg>
-	}
+	Amd64Backend::moveRegToMemoryRegWithOffset(
+		function.generatedCode,
+		Registers::BP,
+		stackOffset, reg); //movss [rbp+<operand offset>], <float reg>
 }
 
 void OperandStack::pushInt(Function& function, int operandStackIndex, int value) {
@@ -340,6 +334,10 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         //Pop the value
 		OperandStack::popReg(function, topOperandIndex, Registers::AX);
         break;
+	case OpCodes::DUPLICATE:
+		//Duplicate the top operand
+		OperandStack::duplicate(function, topOperandIndex);
+		break;
     case OpCodes::LOAD_INT:
         //Push the value
 		OperandStack::pushInt(function, topOperandIndex + 1, inst.intValue);
