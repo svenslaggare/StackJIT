@@ -17,6 +17,9 @@ public:
 	//Indicates if debugging is enabled
 	bool enableDebug = false;
 
+    //Indicates if testing mode is enabled
+	bool testMode = false;
+
 	//Prints the info about the stack frame
 	bool printStackFrame = false;
 

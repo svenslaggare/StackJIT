@@ -6,6 +6,8 @@
 #include "verifier.h"
 #include "type.h"
 #include "loader.h"
+#include "native.h"
+#include "test.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -130,10 +132,18 @@ void ExecutionEngine::loadAssembly(AssemblyParser::Assembly& assembly, AssemblyT
 }
 
 void ExecutionEngine::load() {
+	auto& binder = mVMState.binder();
+
 	//Load classes
 	Loader::loadClasses(mVMState, mAssemblies);
 
-	auto& binder = mVMState.binder();
+	//Load native functions
+	NativeLibrary::add(mVMState);
+
+	if (mVMState.testMode) {
+		//Load test functions
+		TestLibrary::add(mVMState);
+	}
 
 	//Load functions
 	for (auto assembly : mAssemblies) {
@@ -160,10 +170,18 @@ void ExecutionEngine::load() {
 }
 
 void ExecutionEngine::loadDefinitions() {
+	auto& binder = mVMState.binder();
+
 	//Load classes
 	Loader::loadClasses(mVMState, mAssemblies);
 
-	auto& binder = mVMState.binder();
+	//Load native functions
+	NativeLibrary::add(mVMState);
+
+	if (mVMState.testMode) {
+		//Load test functions
+		TestLibrary::add(mVMState);
+	}
 
 	//Load functions
 	for (auto assembly : mAssemblies) {

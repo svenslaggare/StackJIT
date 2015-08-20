@@ -1,0 +1,20 @@
+class List
+{
+	data Ref.Class.Point
+}
+
+member List::.constructor() Void
+{
+	RET
+}
+
+func main() Int
+{
+	.locals 1
+
+	NEWOBJ List::.constructor()
+	STLOC 0
+
+	LDINT 0
+	RET
+}

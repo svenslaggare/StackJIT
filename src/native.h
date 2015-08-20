@@ -5,6 +5,7 @@ class VMState;
 namespace NativeLibrary {
 	void print(int x);
 	void print(float x);
+	void print(bool x);
 
 	void println(int x);
 	void println(float x);

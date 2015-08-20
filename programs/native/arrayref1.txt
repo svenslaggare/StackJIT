@@ -1,7 +1,7 @@
 func main() Int
 {
 	ldstr "Hello, World!"
-	CALL rt.println(Ref.Array[Char])
+	CALL rt.test.println(Ref.Array[Char])
 
 	LDINT 0
     RET

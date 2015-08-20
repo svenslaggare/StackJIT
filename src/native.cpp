@@ -16,6 +16,15 @@ void NativeLibrary::print(float x) {
 	std::cout << x;
 }
 
+void NativeLibrary::print(bool x) {
+	if (x) {
+		std::cout << "true";
+	} else {
+		std::cout << "false";
+	}
+}
+
+
 void NativeLibrary::println(int x) {
 	std::cout << x << std::endl;
 }
@@ -25,11 +34,8 @@ void NativeLibrary::println(float x) {
 }
 
 void NativeLibrary::println(bool x) {
-	if (x) {
-		std::cout << "true" << std::endl;
-	} else {
-		std::cout << "false" << std::endl;
-	}
+	print(x);
+	std::cout << std::endl;
 }
 
 void NativeLibrary::println(char x) {
@@ -48,38 +54,6 @@ int NativeLibrary::abs(int x) {
     }
 }
 
-void printPoint(RawClassRef objRef) {
-	if (objRef != nullptr) {
-		//Obtain a reference to the structure
-		auto pointRef = vmState.gc().getClassRef(objRef);
-
-		auto intType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Integer));
-
-		auto xField = pointRef.getField<int>("x", intType);
-		auto yField = pointRef.getField<int>("y", intType);
-
-		std::cout << *xField.value() << ":" << *yField.value() << std::endl;
-	} else {
-		Runtime::nullReferenceError();
-	}
-}
-
-void printString(RawArrayRef objRef) {
-	if (objRef != nullptr) {
-		//Obtain a reference to the array
-		auto arrayRef = vmState.gc().getArrayRef<char>(objRef);
-
-		for (int i = 0; i < arrayRef.length(); i++) {
-			auto elementRef = arrayRef.getElement(i);
-			std::cout << *elementRef.value();
-		}
-
-		std::cout << std::endl;
-	} else {
-		Runtime::nullReferenceError();
-	}
-}
-
 void NativeLibrary::add(VMState& vmState) {
 	auto intType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Integer));
 	auto floatType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Float));
@@ -92,6 +66,7 @@ void NativeLibrary::add(VMState& vmState) {
 	//Print
 	void(*printInt)(int) = &NativeLibrary::print;
 	void(*printFloat)(float) = &NativeLibrary::print;
+	void(*printBool)(bool) = &NativeLibrary::print;
 
 	void(*printlnInt)(int) = &NativeLibrary::println;
 	void(*printlnFloat)(float) = &NativeLibrary::println;
@@ -100,6 +75,7 @@ void NativeLibrary::add(VMState& vmState) {
 
 	binder.define(FunctionDefinition("std.print", { intType }, voidType, (unsigned char*)(printInt)));
 	binder.define(FunctionDefinition("std.print", { floatType }, voidType, (unsigned char*)(printFloat)));
+	binder.define(FunctionDefinition("std.print", { boolType }, voidType, (unsigned char*)(printBool)));
 
 	binder.define(FunctionDefinition("std.println", { intType }, voidType, (unsigned char*)(printlnInt)));
 	binder.define(FunctionDefinition("std.println", { floatType }, voidType, (unsigned char*)(printlnFloat)));
@@ -113,10 +89,4 @@ void NativeLibrary::add(VMState& vmState) {
 	binder.define(FunctionDefinition("std.math.sqrt", { floatType }, floatType, (unsigned char*)(&sqrtf)));
 	binder.define(FunctionDefinition("std.math.sin", { floatType }, floatType, (unsigned char*)(&sinf)));
 	binder.define(FunctionDefinition("std.math.cos", { floatType }, floatType, (unsigned char*)(&cosf)));
-
-//	auto pointType = vmState.typeProvider().makeType("Ref.Class.Point");
-//	binder.define(FunctionDefinition("rt.println", { pointType }, voidType, (unsigned char)(&printPoint)));
-
-	auto charArrayType = vmState.typeProvider().makeType("Ref.Array[Char]");
-	binder.define(FunctionDefinition("rt.println", { charArrayType }, voidType, (unsigned char*)(&printString)));
 }

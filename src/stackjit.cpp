@@ -1,7 +1,5 @@
 #include "assembly.h"
 #include "loader.h"
-#include "native.h"
-#include "test.h"
 #include "vmstate.h"
 #include "executionengine.h"
 #include <iostream>
@@ -61,7 +59,7 @@ void handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
 		}
 
 		if (switchStr == "-t" || switchStr == "--test") {
-			TestLibrary::add(vmState);
+			vmState.testMode = true;
 			continue;
 		}
 
@@ -102,7 +100,6 @@ int main(int argc, char* argv[]) {
 	try {
 		auto start = std::chrono::high_resolution_clock::now();
 		auto& engine = vmState.engine();
-		NativeLibrary::add(vmState);
 
 		//Handle options
 		handleOptions(argc, argv, engine);

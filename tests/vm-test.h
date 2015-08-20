@@ -36,7 +36,7 @@ std::string executeCmd(const char* cmd) {
 }
 
 //Invokes the VM with the given program
-std::string invokeVM(std::string programName, std::string options = "--no-gc") {
+std::string invokeVM(std::string programName, std::string options = "") {
     #if USE_VALGRIND
 	std::string invokePath = "valgrind -q --error-exitcode=1 ../StackJIT/stackjit " + options + " < programs/" + programName + ".txt 2>&1";
 	#else
@@ -234,6 +234,7 @@ public:
 
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program1")), "\'Point\' is not a defined class.");
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program2")), "2: \'Point\' is not a class type.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program3")), "There exists no type called 'Ref.Class.Point'.");
 
         TS_ASSERT_EQUALS(invokeVM("class/constructor1"), "1\n2\n0\n");
         TS_ASSERT_EQUALS(invokeVM("class/constructor2"), "15\n");
@@ -241,7 +242,10 @@ public:
 
         TS_ASSERT_EQUALS(invokeVM("class/largeclass1"), "1337\n");
 
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_constructor1")), "Constructors must have return type 'Void'.");
+        TS_ASSERT_EQUALS(stripErrorMessage(
+            invokeVM("class/invalid_constructor1")),
+            "Constructors must have return type 'Void'.");
+
         TS_ASSERT_EQUALS(stripErrorMessage(
 			invokeVM("class/invalid_constructor2")),
 			"1: The constructor \'Point::.constructor(Ref.Class.Point)\' is not defined.");
@@ -266,18 +270,18 @@ public:
 
     void testGC() {
 		//Without GC enabled
+        TS_ASSERT_EQUALS(invokeVM("gc/program1", "--no-gc"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program2", "--no-gc"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program3", "--no-gc"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program4", "--no-gc"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/program5", "--no-gc"), "0\n");
+
+		//With GC enabled
         TS_ASSERT_EQUALS(invokeVM("gc/program1"), "0\n");
         TS_ASSERT_EQUALS(invokeVM("gc/program2"), "0\n");
         TS_ASSERT_EQUALS(invokeVM("gc/program3"), "0\n");
         TS_ASSERT_EQUALS(invokeVM("gc/program4"), "0\n");
         TS_ASSERT_EQUALS(invokeVM("gc/program5"), "0\n");
-
-		//With GC enabled
-        TS_ASSERT_EQUALS(invokeVM("gc/program1", ""), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("gc/program2", ""), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("gc/program3", ""), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("gc/program4", ""), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("gc/program5", ""), "0\n");
     }
 
     void testFunction() {
@@ -311,7 +315,7 @@ public:
         std::string programsPath = "programs";
 		#endif
 
-        TS_ASSERT_EQUALS(invokeVM("rtlib/program1", "--no-gc -i " + baseDir + "rtlib/rtlib.sbc"), "0.909297\n5\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("rtlib/program1", "--no-gc -i " + baseDir + "rtlib/native.sbc"), "0.909297\n5\n0\n");
 
 		TS_ASSERT_EQUALS(invokeVM(
 			"libraries/program1", "--no-gc -i " + programsPath + "/libraries/lib1.txt -i " + programsPath + "/libraries/lib2.txt"),
@@ -350,6 +354,11 @@ public:
             "libraries/program2",
             "--no-gc -i " + programsPath + "/libraries/lib2.txt -i " + programsPath + "/libraries/lib3.txt -i " + programsPath + "/libraries/lib1.txt"),
                 "1337:4711\n0\n");
+    }
+
+    void testNative() {
+        TS_ASSERT_EQUALS(invokeVM("native/arrayref1", "--test"), "Hello, World!\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("native/structref1", "--test"), "1337:4711\n0\n");
     }
 
     void testAttributes() {

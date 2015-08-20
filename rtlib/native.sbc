@@ -1,4 +1,4 @@
-#Defines the Runtime library.
+#Defines the native part of the runtime library.
 
 #Prints an int followed to standard output
 extern std.print(Int) Void
@@ -6,11 +6,20 @@ extern std.print(Int) Void
 #Prints a float followed to standard output
 extern std.print(Float) Void
 
+#Prints a bool followed to standard output
+extern std.print(Bool) Void
+
 #Prints an int followed by a line break to standard output
 extern std.println(Int) Void
 
 #Prints a float followed by a line break to standard output
 extern std.println(Float) Void
+
+#Prints a bool followed by a line break to standard output
+extern std.println(Bool) Void
+
+#Prints a char followed by a line break to standard output
+extern std.println(Char) Void
 
 #Prints the given character
 extern std.printchar(Char) Void
