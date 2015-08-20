@@ -108,6 +108,7 @@ std::string getExecutableDir() {
 
 	return std::string(buffer);
 #else
+        char buffer[bufferSize];
 	char szTmp[32];
 	sprintf(szTmp, "/proc/%d/exe", getpid());
 	int bytes = std::min((int)readlink(szTmp, buffer, bufferSize), bufferSize - 1);
@@ -119,7 +120,6 @@ std::string getExecutableDir() {
 	//To remove the name
 	buffer[bytes - 8] = '\0';
 
-	char buffer[bufferSize];
 	return std::string(buffer);
 #endif
 }
