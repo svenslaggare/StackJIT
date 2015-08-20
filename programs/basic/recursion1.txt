@@ -23,6 +23,6 @@ func fib(Int) Int
 func main() Int
 {
 	LDINT 8
-	CALL fib(Int) Int
+	CALL fib(Int)
 	RET
 }

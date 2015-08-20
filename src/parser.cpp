@@ -329,6 +329,13 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
 
 		//Bodies
 		if (isFuncBody) {
+			if (currentToLower == "}") {
+				isFuncBody = false;
+				isFunc = false;
+				assembly.functions.push_back(currentFunc);
+				continue;
+			}
+
 			if (currentToLower == "@") {
 				parseAttribute(tokens, i, currentFunc.attributes);
 				continue;
@@ -501,7 +508,7 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
 				continue;
 			}
 
-//			throw std::runtime_error("'" + current + "' is not a valid instruction.");
+			throw std::runtime_error("'" + current + "' is not a valid instruction.");
 		}
 
 		if (isClassBody) {
@@ -609,12 +616,6 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
 
             localsSet = false;
             isFunc = true;
-        }
-
-        if (isFuncBody && currentToLower == "}") {
-            isFuncBody = false;
-            isFunc = false;
-			assembly.functions.push_back(currentFunc);
         }
 	}
 }
