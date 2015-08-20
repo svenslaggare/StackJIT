@@ -5,7 +5,9 @@
 #include <fstream>
 #include <chrono>
 
-#ifdef __unix__
+#if defined(_WIN64) || defined(__MINGW32__)
+#include <Windows.h>
+#else
 #include <unistd.h>
 #endif
 
@@ -96,13 +98,15 @@ std::int64_t getDuration(std::chrono::time_point<std::chrono::high_resolution_cl
 
 std::string getExecutableDir() {
 	const int bufferSize = 1024;
-	char buffer[bufferSize];
 
-#if defined(__WIN64) || defined(__MINGW32__)
-	int bytes = GetModuleFileName(nullptr, buffer, bufferSize);
+#if defined(_WIN64) || defined(__MINGW32__)
+	char buffer[MAX_PATH];
+	int bytes = GetModuleFileNameA(nullptr, buffer, MAX_PATH);
 
 	//To remove the name
 	buffer[bytes - 12] = '\0';
+
+	return std::string(buffer);
 #else
 	char szTmp[32];
 	sprintf(szTmp, "/proc/%d/exe", getpid());
@@ -114,9 +118,10 @@ std::string getExecutableDir() {
 
 	//To remove the name
 	buffer[bytes - 8] = '\0';
-#endif
 
+	char buffer[bufferSize];
 	return std::string(buffer);
+#endif
 }
 
 int main(int argc, char* argv[]) {

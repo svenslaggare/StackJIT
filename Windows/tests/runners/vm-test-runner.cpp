@@ -107,25 +107,25 @@ public:
 
 static class TestDescription_suite_VMTestSuite_testRuntimeLibrary : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_VMTestSuite_testRuntimeLibrary() : CxxTest::RealTestDescription( Tests_VMTestSuite, suiteDescription_VMTestSuite, 360, "testRuntimeLibrary" ) {}
+ TestDescription_suite_VMTestSuite_testRuntimeLibrary() : CxxTest::RealTestDescription( Tests_VMTestSuite, suiteDescription_VMTestSuite, 362, "testRuntimeLibrary" ) {}
  void runTest() { suite_VMTestSuite.testRuntimeLibrary(); }
 } testDescription_suite_VMTestSuite_testRuntimeLibrary;
 
 static class TestDescription_suite_VMTestSuite_testNative : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_VMTestSuite_testNative() : CxxTest::RealTestDescription( Tests_VMTestSuite, suiteDescription_VMTestSuite, 372, "testNative" ) {}
+ TestDescription_suite_VMTestSuite_testNative() : CxxTest::RealTestDescription( Tests_VMTestSuite, suiteDescription_VMTestSuite, 374, "testNative" ) {}
  void runTest() { suite_VMTestSuite.testNative(); }
 } testDescription_suite_VMTestSuite_testNative;
 
 static class TestDescription_suite_VMTestSuite_testAttributes : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_VMTestSuite_testAttributes() : CxxTest::RealTestDescription( Tests_VMTestSuite, suiteDescription_VMTestSuite, 377, "testAttributes" ) {}
+ TestDescription_suite_VMTestSuite_testAttributes() : CxxTest::RealTestDescription( Tests_VMTestSuite, suiteDescription_VMTestSuite, 379, "testAttributes" ) {}
  void runTest() { suite_VMTestSuite.testAttributes(); }
 } testDescription_suite_VMTestSuite_testAttributes;
 
 static class TestDescription_suite_VMTestSuite_testLazy : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_VMTestSuite_testLazy() : CxxTest::RealTestDescription( Tests_VMTestSuite, suiteDescription_VMTestSuite, 382, "testLazy" ) {}
+ TestDescription_suite_VMTestSuite_testLazy() : CxxTest::RealTestDescription( Tests_VMTestSuite, suiteDescription_VMTestSuite, 384, "testLazy" ) {}
  void runTest() { suite_VMTestSuite.testLazy(); }
 } testDescription_suite_VMTestSuite_testLazy;
 
