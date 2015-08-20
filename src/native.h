@@ -1,4 +1,7 @@
 #pragma once
+
+#include "objectref.h"
+
 class VMState;
 
 //The part of the runtime library exposed to programs
@@ -15,6 +18,8 @@ namespace NativeLibrary {
 	void printchar(char x);
 
 	int abs(int x);
+
+	bool stringEquals(RawClassRef str1, RawClassRef str2);
 
 	//Adds the native library to the given VM state
 	void add(VMState& vmState);

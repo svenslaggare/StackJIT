@@ -35,17 +35,27 @@ std::string executeCmd(const char* cmd) {
     return result;
 }
 
+#if defined(_WIN64) || defined(__MINGW32__)
+std::string executable = "StackJIT.exe";
+std::string baseDir = "../../../";
+std::string programsPath = baseDir + "programs";
+#else
+std::string executable = "../StackJIT/stackjit";
+std::string baseDir = "";
+std::string programsPath = "programs";
+#endif
+
 //Invokes the VM with the given program
 std::string invokeVM(std::string programName, std::string options = "") {
+    std::string valgrindExecutable = "";
+
     #if USE_VALGRIND
-	std::string invokePath = "valgrind -q --error-exitcode=1 ../StackJIT/stackjit " + options + " < programs/" + programName + ".txt 2>&1";
-	#else
-        #if defined(_WIN64) || defined(__MINGW32__)
-        std::string invokePath = "StackJIT.exe " + options + " < ../../../programs/" + programName + ".txt 2>&1";
-        #else
-        std::string invokePath = "../StackJIT/stackjit " + options + " < programs/" + programName + ".txt 2>&1";
-        #endif
-    #endif
+	valgrindExecutable = "valgrind -q --error-exitcode=1 ";
+	#endif
+
+    std::string invokePath =
+        valgrindExecutable + executable + " " + options
+        + " < " + programsPath + "/" + programName + ".txt 2>&1";
 
 	return executeCmd(invokePath.data());
 }
@@ -212,10 +222,10 @@ public:
         TS_ASSERT_EQUALS(invokeVM("array/refarray"), "1:2\n2:3\n3:4\n4:5\n0\n");
         TS_ASSERT_EQUALS(invokeVM("array/chararray"), "A\nB\nC\nD\n0\n");
 
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program1")), "2: Arrays of type 'Void' is not allowed.");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program2")), "2: 'RT' is not a valid type.");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program3")), "6: There exists no type 'RT'.");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program4")), "7: There exists no type 'RT'.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program1")), "1: Arrays of type 'Void' is not allowed.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program2")), "1: 'RT' is not a valid type.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program3")), "5: There exists no type 'RT'.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program4")), "6: There exists no type 'RT'.");
     }
 
     void testClasses() {
@@ -233,7 +243,7 @@ public:
         TS_ASSERT_EQUALS(invokeVM("class/memberfunction3"), "2.5\n5.5\n0\n");
 
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program1")), "\'Point\' is not a defined class.");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program2")), "2: \'Point\' is not a class type.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program2")), "1: \'Point\' is not a class type.");
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program3")), "There exists no type called 'Ref.Class.Point'.");
 
         TS_ASSERT_EQUALS(invokeVM("class/constructor1"), "1\n2\n0\n");
@@ -248,7 +258,7 @@ public:
 
         TS_ASSERT_EQUALS(stripErrorMessage(
 			invokeVM("class/invalid_constructor2")),
-			"1: The constructor \'Point::.constructor(Ref.Class.Point)\' is not defined.");
+			"0: The constructor \'Point::.constructor(Ref.Class.Point)\' is not defined.");
 
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_memberfunction1")), "Error: Null reference.");
     }
@@ -296,64 +306,66 @@ public:
     }
 
     void testInvalid() {
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/void_local")), "1: Locals of 'Void' type are not allowed.");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/empty_func")), "1: Empty functions are not allowed.");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/not_end_in_return")), "1: Functions must end with a 'RET' instruction.");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/branch_target")), "1: Invalid jump target (4).");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/untyped_local1")), "1: Cannot load untyped local (0).");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/untyped_local2")), "1: Local 0 is not typed.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/void_local")), "0: Locals of 'Void' type are not allowed.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/empty_func")), "0: Empty functions are not allowed.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/not_end_in_return")), "0: Functions must end with a 'RET' instruction.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/branch_target")), "0: Invalid jump target (4).");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/untyped_local1")), "0: Cannot load untyped local (0).");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/untyped_local2")), "0: Local 0 is not typed.");
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/return_type1")), "Expected 'Int' as return type.");
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/return_type2")), "Expected 'Int' as return type.");
     }
 
     void testLibrary() {
-        #if defined(_WIN64) || defined(__MINGW32__)
-		std::string baseDir = "../../../";
-		std::string programsPath = baseDir + "programs";
-		#else
-        std::string baseDir = "";
-        std::string programsPath = "programs";
-		#endif
-
-        TS_ASSERT_EQUALS(invokeVM("rtlib/program1", "--no-gc -i " + baseDir + "rtlib/native.sbc"), "0.909297\n5\n0\n");
-
 		TS_ASSERT_EQUALS(invokeVM(
-			"libraries/program1", "--no-gc -i " + programsPath + "/libraries/lib1.txt -i " + programsPath + "/libraries/lib2.txt"),
+			"libraries/program1", "-i " + programsPath + "/libraries/lib1.txt -i " + programsPath + "/libraries/lib2.txt"),
 			"1337:4711\n0\n");
 
 		TS_ASSERT_EQUALS(invokeVM(
-			"libraries/program1", "--no-gc -i " + programsPath + "/libraries/lib2.txt -i " + programsPath + "/libraries/lib1.txt"),
+			"libraries/program1", "-i " + programsPath + "/libraries/lib2.txt -i " + programsPath + "/libraries/lib1.txt"),
 			"1337:4711\n0\n");
 
 		TS_ASSERT_EQUALS(invokeVM(
 			"libraries/program2",
-			"--no-gc -i " + programsPath + "/libraries/lib1.txt -i " + programsPath + "/libraries/lib2.txt -i " + programsPath + "/libraries/lib3.txt"),
+			"-i " + programsPath + "/libraries/lib1.txt -i " + programsPath + "/libraries/lib2.txt -i " + programsPath + "/libraries/lib3.txt"),
 				"1337:4711\n0\n");
 
 		TS_ASSERT_EQUALS(invokeVM(
 			"libraries/program2",
-			"--no-gc -i " + programsPath + "/libraries/lib1.txt -i " + programsPath + "/libraries/lib3.txt -i " + programsPath + "/libraries/lib2.txt"),
+			"-i " + programsPath + "/libraries/lib1.txt -i " + programsPath + "/libraries/lib3.txt -i " + programsPath + "/libraries/lib2.txt"),
 				"1337:4711\n0\n");
 
         TS_ASSERT_EQUALS(invokeVM(
             "libraries/program2",
-            "--no-gc -i " + programsPath + "/libraries/lib3.txt -i " + programsPath + "/libraries/lib1.txt -i " + programsPath + "/libraries/lib2.txt"),
+            "-i " + programsPath + "/libraries/lib3.txt -i " + programsPath + "/libraries/lib1.txt -i " + programsPath + "/libraries/lib2.txt"),
                 "1337:4711\n0\n");
 
         TS_ASSERT_EQUALS(invokeVM(
             "libraries/program2",
-            "--no-gc -i " + programsPath + "/libraries/lib3.txt -i " + programsPath + "/libraries/lib2.txt -i " + programsPath + "/libraries/lib1.txt"),
+            "-i " + programsPath + "/libraries/lib3.txt -i " + programsPath + "/libraries/lib2.txt -i " + programsPath + "/libraries/lib1.txt"),
                 "1337:4711\n0\n");
 
         TS_ASSERT_EQUALS(invokeVM(
             "libraries/program2",
-            "--no-gc -i " + programsPath + "/libraries/lib2.txt -i " + programsPath + "/libraries/lib1.txt -i " + programsPath + "/libraries/lib3.txt"),
+            "-i " + programsPath + "/libraries/lib2.txt -i " + programsPath + "/libraries/lib1.txt -i " + programsPath + "/libraries/lib3.txt"),
                 "1337:4711\n0\n");
 
         TS_ASSERT_EQUALS(invokeVM(
             "libraries/program2",
-            "--no-gc -i " + programsPath + "/libraries/lib2.txt -i " + programsPath + "/libraries/lib3.txt -i " + programsPath + "/libraries/lib1.txt"),
+            "-i " + programsPath + "/libraries/lib2.txt -i " + programsPath + "/libraries/lib3.txt -i " + programsPath + "/libraries/lib1.txt"),
                 "1337:4711\n0\n");
+    }
+
+    void testRuntimeLibrary() {
+        TS_ASSERT_EQUALS(invokeVM("rtlib/program1", "-i " + baseDir + "rtlib/native.sbc"), "0.909297\n5\n0\n");
+
+        TS_ASSERT_EQUALS(invokeVM("rtlib/string1", "-i " + baseDir + "rtlib/string.sbc"), "Hello, World!\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("rtlib/string2", "-i " + baseDir + "rtlib/string.sbc"), "true\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("rtlib/string3", "-i " + baseDir + "rtlib/string.sbc"), "false\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("rtlib/string4", "-i " + baseDir + "rtlib/string.sbc"), "false\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("rtlib/string4", "-i " + baseDir + "rtlib/string.sbc"), "false\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("rtlib/string5", "-i " + baseDir + "rtlib/string.sbc"), "false\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("rtlib/string6", "-i " + baseDir + "rtlib/string.sbc"), "false\n0\n");
     }
 
     void testNative() {

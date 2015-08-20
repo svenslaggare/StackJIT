@@ -112,6 +112,61 @@ member std.String::concat(Ref.Class.std.String) Ref.Class.std.String
    RET
 }
 
+member std.String::equals(Ref.Class.std.String) Bool
+{
+   @AccessModifier(value=public)
+   .locals 2
+   .local 1 Int
+   .local 0 Bool
+
+   LDARG 1
+   LDNULL
+   BNE 6
+   LDFALSE
+   STLOC 0
+   BR 44
+   LDARG 0
+   LDARG 1
+   BNE 12
+   LDTRUE
+   STLOC 0
+   BR 44
+   LDARG 0
+   CALLINST std.String::length()
+   LDARG 1
+   CALLINST std.String::length()
+   BEQ 20
+   LDFALSE
+   STLOC 0
+   BR 44
+   LDINT 0
+   STLOC 1
+   LDLOC 1
+   LDARG 0
+   CALLINST std.String::length()
+   BGE 41
+   LDARG 0
+   LDLOC 1
+   CALLINST std.String::charAt(Int)
+   LDARG 1
+   LDLOC 1
+   CALLINST std.String::charAt(Int)
+   BEQ 36
+   LDFALSE
+   STLOC 0
+   BR 44
+   LDLOC 1
+   LDINT 1
+   ADD
+   STLOC 1
+   BR 22
+   LDTRUE
+   STLOC 0
+   BR 44
+   LDLOC 0
+   RET
+}
+
 func std.println(Ref.Class.std.String) Void
 {
    .locals 1

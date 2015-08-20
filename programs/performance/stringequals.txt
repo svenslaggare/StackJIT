@@ -1,0 +1,36 @@
+func main() Int
+{
+	.locals 3
+	.local 0 Int
+	.local 1 Ref.Class.std.String
+	.local 2 Ref.Class.std.String
+
+	LDSTR "Hello"
+	NEWOBJ std.String::.constructor(Ref.Array[Char])
+	STLOC 1
+
+	LDSTR "Hello"
+	NEWOBJ std.String::.constructor(Ref.Array[Char])
+	STLOC 2
+
+	LDINT 100000
+	STLOC 0
+
+	LDLOC 1
+	LDLOC 2
+	CALL std.equals(Ref.Class.std.String Ref.Class.std.String)
+	#CALLINST std.String::equals(Ref.Class.std.String)
+	POP
+
+	LDLOC 0
+	LDINT 1
+	SUB
+	STLOC 0
+
+	LDLOC 0
+	LDINT 0
+	BGT 8
+
+	LDINT 0
+	RET
+}

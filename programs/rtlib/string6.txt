@@ -1,0 +1,16 @@
+func main() Int
+{
+	.locals 1
+	.local 0 Int
+
+	LDSTR "Hello"
+	NEWOBJ std.String::.constructor(Ref.Array[Char])
+
+	LDNULL
+
+	CALL std.equals(Ref.Class.std.String Ref.Class.std.String)
+	CALL std.println(Bool)
+
+	LDINT 0
+	RET
+}

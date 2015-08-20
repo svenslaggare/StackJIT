@@ -117,7 +117,7 @@ namespace {
 
 			if (localType != nullptr) {
 				if (localType == voidType) {
-					typeError(1, "Locals of 'Void' type are not allowed.");
+					typeError(0, "Locals of 'Void' type are not allowed.");
 				};
 			}
 		}
@@ -766,7 +766,7 @@ namespace {
 	void postCheckLocalsTypes(Function& function) {
 		for (std::size_t i = 0; i < function.numLocals(); i++) {
 			if (function.getLocal(i) == nullptr) {
-				typeError(1, "Local " + std::to_string(i) + " is not typed.");
+				typeError(0, "Local " + std::to_string(i) + " is not typed.");
 			}
 		}
 	}
@@ -778,7 +778,7 @@ void Verifier::verifyFunction(Function& function, VMState& vmState) {
 	const auto numInstructions = function.instructions.size();
 
 	if (numInstructions == 0) {
-		typeError(1, "Empty functions are not allowed.");
+		typeError(0, "Empty functions are not allowed.");
 	}
 
 	//Check that local types are valid
@@ -787,7 +787,7 @@ void Verifier::verifyFunction(Function& function, VMState& vmState) {
 	//Check the function definition
 	verifyFunctionDefinition(function);
 
-	std::size_t index = 1;
+	std::size_t index = 0;
 	std::vector<BranchCheck> branches;
 
 	//Check instructions
@@ -802,7 +802,7 @@ void Verifier::verifyFunction(Function& function, VMState& vmState) {
 
 		verifyInstruction(vmState, function, inst, index, operandStack, branches);
 
-		if (index == numInstructions) {
+		if (index == numInstructions - 1) {
 			if (inst.opCode() != OpCodes::RET) {
 				typeError(index, "Functions must end with a 'RET' instruction.");
 			}

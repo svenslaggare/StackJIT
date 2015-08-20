@@ -5,6 +5,7 @@
 #include "function.h"
 #include <iostream>
 #include <math.h>
+#include <string.h>
 
 extern VMState vmState;
 
@@ -54,6 +55,41 @@ int NativeLibrary::abs(int x) {
     }
 }
 
+bool NativeLibrary::stringEquals(RawClassRef str1, RawClassRef str2) {
+	if (str1 == nullptr || str2 == nullptr) {
+		return false;
+	}
+
+	if (str1 == str2) {
+		return true;
+	}
+
+	//Get references to the instances
+	auto str1Ref = vmState.gc().getClassRef(str1);
+	auto str2Ref = vmState.gc().getClassRef(str2);
+
+	auto charArrayType = vmState.typeProvider().makeType("Ref.Array[Char]");
+
+	//Get references to the char arrays
+	auto str1Chars = str1Ref.getField<RawArrayRef>("chars", charArrayType);
+	auto str2Chars = str2Ref.getField<RawArrayRef>("chars", charArrayType);
+
+	auto str1CharsRef = vmState.gc().getArrayRef<char>(*str1Chars.value());
+	auto str2CharsRef = vmState.gc().getArrayRef<char>(*str2Chars.value());
+
+	if (str1CharsRef.length() != str2CharsRef.length()) {
+		return false;
+	}
+
+	for (int i = 0; i < str1CharsRef.length(); i++) {
+		if (*str1CharsRef.getElement(i).value() != *str2CharsRef.getElement(i).value()) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void NativeLibrary::add(VMState& vmState) {
 	auto intType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Integer));
 	auto floatType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Float));
@@ -73,6 +109,7 @@ void NativeLibrary::add(VMState& vmState) {
 	void(*printlnBool)(bool) = &NativeLibrary::println;
 	void(*printlnChar)(char) = &NativeLibrary::println;
 
+	//IO
 	binder.define(FunctionDefinition("std.print", { intType }, voidType, (unsigned char*)(printInt)));
 	binder.define(FunctionDefinition("std.print", { floatType }, voidType, (unsigned char*)(printFloat)));
 	binder.define(FunctionDefinition("std.print", { boolType }, voidType, (unsigned char*)(printBool)));
@@ -89,4 +126,10 @@ void NativeLibrary::add(VMState& vmState) {
 	binder.define(FunctionDefinition("std.math.sqrt", { floatType }, floatType, (unsigned char*)(&sqrtf)));
 	binder.define(FunctionDefinition("std.math.sin", { floatType }, floatType, (unsigned char*)(&sinf)));
 	binder.define(FunctionDefinition("std.math.cos", { floatType }, floatType, (unsigned char*)(&cosf)));
+
+	//String
+	auto stringType = vmState.typeProvider().makeType("Ref.Class.std.String");
+	if (stringType != nullptr) {
+		binder.define(FunctionDefinition("std.equals", { stringType, stringType }, boolType, (unsigned char*)(&stringEquals)));
+	}
 }

@@ -1,0 +1,14 @@
+func main() Int
+{
+	.locals 1
+	.local 0 Int
+
+	LDNULL
+	LDNULL
+
+	CALL std.equals(Ref.Class.std.String Ref.Class.std.String)
+	CALL std.println(Bool)
+
+	LDINT 0
+	RET
+}
