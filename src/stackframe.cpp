@@ -13,17 +13,17 @@ StackFrame::StackFrame(RegisterValue* basePtr, const Function* function, const i
 	  mOperandTypes(function->instructions[instIndex].operandTypes()) {
 }
 
-StackFrameEntry StackFrame::getArgument(int index) {
+StackFrameEntry StackFrame::getArgument(std::int64_t index) {
 	RegisterValue* argsStart = mBasePtr - 1;
 	return StackFrameEntry(argsStart[-index], mFunction->parameters()[index]);
 }
 
-StackFrameEntry StackFrame::getLocal(int index) {
+StackFrameEntry StackFrame::getLocal(std::int64_t index) {
 	RegisterValue* localsStart = mBasePtr - 1 - mFunction->numParams();
 	return StackFrameEntry(localsStart[-index], mFunction->getLocal(index));
 }
 
-StackFrameEntry StackFrame::getStackOperand(int index) {
+StackFrameEntry StackFrame::getStackOperand(std::int64_t index) {
 	RegisterValue* stackStart = mBasePtr - 1 - mFunction->numParams() - mFunction->numLocals();
 	return StackFrameEntry(stackStart[-index], mOperandTypes[mOperandTypes.size() - 1 - index]);
 }

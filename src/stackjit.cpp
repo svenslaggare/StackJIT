@@ -93,7 +93,7 @@ void handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
 }
 
 //Returns the duration since last
-long getDuration(std::chrono::time_point<std::chrono::high_resolution_clock> start) {
+std::int64_t getDuration(std::chrono::time_point<std::chrono::high_resolution_clock> start) {
 	auto end = std::chrono::high_resolution_clock::now();
 	return std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 }

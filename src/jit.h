@@ -52,13 +52,13 @@ struct FunctionCompilationData {
 	Function& function;
 
 	//Unresolved branches
-	std::unordered_map<unsigned int, BranchTarget> unresolvedBranches;
+	std::unordered_map<std::size_t, BranchTarget> unresolvedBranches;
 
 	//Unresolved native branches
-	std::unordered_map<unsigned int, PtrValue> unresolvedNativeBranches;
+	std::unordered_map<std::size_t, PtrValue> unresolvedNativeBranches;
 
 	//Mapping from instruction number to native instruction offset
-	std::vector<unsigned int> instructionNumMapping;			
+	std::vector<std::size_t> instructionNumMapping;
 
 	//Unresolved function calls						 
 	std::vector<UnresolvedFunctionCall> unresolvedCalls;

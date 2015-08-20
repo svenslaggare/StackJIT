@@ -172,7 +172,7 @@ void Runtime::garbageCollect(RegisterValue* basePtr, Function* func, int instInd
     auto& gc = vmState.gc();
 
     if (gc.beginGC()) {
-        int startStrLength = 0;
+        std::size_t startStrLength = 0;
 
         if (vmState.enableDebug) {
             auto startStr = "---------------Start GC in func " + func->name() + " (" + std::to_string(instIndex) + ")---------------";
@@ -211,9 +211,9 @@ void Runtime::garbageCollect(RegisterValue* basePtr, Function* func, int instInd
 		}
 
         if (vmState.enableDebug) {
-            printTimes('-', startStrLength / 2 - 3);
+            printTimes('-', (int)startStrLength / 2 - 3);
             std::cout << "End GC";
-            printTimes('-', (startStrLength + 1) / 2 - 3);
+            printTimes('-', ((int)startStrLength + 1) / 2 - 3);
             std::cout << std::endl;
         }
 

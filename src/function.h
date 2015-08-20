@@ -58,13 +58,13 @@ public:
 	std::size_t numLocals() const;
 
 	//Sets the number of locals
-	void setNumLocals(int count);
+	void setNumLocals(std::size_t count);
 	
 	//Returns the local at the given index
-	const Type* getLocal(int index) const;
+	const Type* getLocal(std::size_t index) const;
 
 	//Sets the type for the local at the given index
-	void setLocal(int index, const Type* type);
+	void setLocal(std::size_t index, const Type* type);
 
 	//The size of the stack
 	std::size_t stackSize() const;

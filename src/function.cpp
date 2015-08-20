@@ -40,15 +40,15 @@ std::size_t Function::numLocals() const {
 	return mLocalTypes.size();
 }
 
-void Function::setNumLocals(int count) {
+void Function::setNumLocals(std::size_t count) {
 	mLocalTypes.resize(count);
 }
 
-const Type* Function::getLocal(int index) const {
+const Type* Function::getLocal(std::size_t index) const {
 	return mLocalTypes.at(index);
 }
 
-void Function::setLocal(int index, const Type* type) {
+void Function::setLocal(std::size_t index, const Type* type) {
 	mLocalTypes.at(index) = type;
 }
 
@@ -67,7 +67,6 @@ std::size_t Function::operandStackSize() const {
 void Function::setOperandStackSize(std::size_t size) {
     mOperandStackSize = size;
 }
-
 
 MacroFunctionContext::MacroFunctionContext(
 	const VMState& vmState,

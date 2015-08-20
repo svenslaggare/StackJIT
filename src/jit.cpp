@@ -108,16 +108,16 @@ void JITCompiler::resolveBranches(FunctionCompilationData& functionData) {
 
 	//Resolve managed branches
 	for (auto branch : functionData.unresolvedBranches) {
-		unsigned int source = branch.first;
+		auto source = branch.first;
 		auto branchTarget = branch.second;
 
-		unsigned int nativeTarget = functionData.instructionNumMapping[branchTarget.target];
+		auto nativeTarget = functionData.instructionNumMapping[branchTarget.target];
 
 		//Calculate the native jump location
-		int target = nativeTarget - source - branchTarget.instructionSize;
+		int target = (int)nativeTarget - (int)source - (int)branchTarget.instructionSize;
 
 		//Update the source with the native target
-		unsigned int sourceOffset = source + branchTarget.instructionSize - sizeof(int);
+		auto sourceOffset = (int)source + (int)branchTarget.instructionSize - sizeof(int);
 		Helpers::setInt(function.generatedCode, sourceOffset, target);
 	}
 
@@ -136,10 +136,10 @@ void JITCompiler::resolveNativeBranches(FunctionCompilationData& functionData) {
 		auto target = branch.second;
 
 		//Calculate the native jump location
-		int nativeTarget = target - (PtrValue)(funcCodePtr + source) - 6;
+		int nativeTarget = (int)(target - (PtrValue)(funcCodePtr + source) - 6);
 
 		//Update the source with the native target
-		unsigned int sourceOffset = source + 6 - sizeof(int);
+		auto sourceOffset = source + 6 - sizeof(int);
 		Helpers::setInt(funcCodePtr, sourceOffset, nativeTarget);
 	}
 

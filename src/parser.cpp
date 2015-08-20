@@ -90,9 +90,9 @@ AssemblyParser::Class::Class() {
 namespace {
 	std::string toLower(std::string str) {
 		std::string newStr { "" };
-		int length = str.length();
+		auto length = str.length();
 
-		for (int i = 0; i < length; i++) {
+		for (std::size_t i = 0; i < length; i++) {
 			newStr += std::tolower(str[i]);
 		}
 
@@ -145,9 +145,7 @@ namespace {
 	};
 
 	std::string nextToken(const std::vector<std::string>& tokens, std::size_t& index) {
-		int left = tokens.size() - (index + 1);
-
-		if (left > 0) {
+		if (tokens.size() >= (index + 1)) {
 			return tokens[++index];
 		} else {
 			throw std::runtime_error("Reached end of tokens.");
