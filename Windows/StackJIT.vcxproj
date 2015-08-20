@@ -229,4 +229,10 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <ItemGroup>
+      <RuntimeLibraryFiles Include="..\rtlib\*.*"/>
+  </ItemGroup>
+  <Target Name="AfterBuild">
+      <Copy SourceFiles="@(RuntimeLibraryFiles)" DestinationFolder="$(OutDir)\rtlib" />
+  </Target>
 </Project>

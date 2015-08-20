@@ -357,15 +357,15 @@ public:
     }
 
     void testRuntimeLibrary() {
-        TS_ASSERT_EQUALS(invokeVM("rtlib/program1", "-i " + baseDir + "rtlib/native.sbc"), "0.909297\n5\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("rtlib/program1", "-i rtlib/native.sbc"), "0.909297\n5\n0\n");
 
-        TS_ASSERT_EQUALS(invokeVM("rtlib/string1", "-i " + baseDir + "rtlib/string.sbc"), "Hello, World!\n0\n");
-        TS_ASSERT_EQUALS(invokeVM("rtlib/string2", "-i " + baseDir + "rtlib/string.sbc"), "true\n0\n");
-        TS_ASSERT_EQUALS(invokeVM("rtlib/string3", "-i " + baseDir + "rtlib/string.sbc"), "false\n0\n");
-        TS_ASSERT_EQUALS(invokeVM("rtlib/string4", "-i " + baseDir + "rtlib/string.sbc"), "false\n0\n");
-        TS_ASSERT_EQUALS(invokeVM("rtlib/string4", "-i " + baseDir + "rtlib/string.sbc"), "false\n0\n");
-        TS_ASSERT_EQUALS(invokeVM("rtlib/string5", "-i " + baseDir + "rtlib/string.sbc"), "false\n0\n");
-        TS_ASSERT_EQUALS(invokeVM("rtlib/string6", "-i " + baseDir + "rtlib/string.sbc"), "false\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("rtlib/string1", "-i rtlib/string.sbc"), "Hello, World!\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("rtlib/string2", "-i rtlib/string.sbc"), "true\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("rtlib/string3", "-i rtlib/string.sbc"), "false\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("rtlib/string4", "-i rtlib/string.sbc"), "false\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("rtlib/string4", "-i rtlib/string.sbc"), "false\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("rtlib/string5", "-i rtlib/string.sbc"), "false\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("rtlib/string6", "-i rtlib/string.sbc"), "false\n0\n");
     }
 
     void testNative() {
