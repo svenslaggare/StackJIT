@@ -16,12 +16,6 @@
     <Filter Include="Source Files\windows">
       <UniqueIdentifier>{94b43173-7bf7-4374-b744-b74303a2d7ea}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\linux">
-      <UniqueIdentifier>{06ccafe7-0cbb-43ed-bc72-9d2a3c3ebed6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\linux">
-      <UniqueIdentifier>{4b3a1e1a-dc87-44c2-bf58-b6a89e3fa37a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\windows">
       <UniqueIdentifier>{71dc2e96-fe21-4bf5-a514-a9b47d699af3}</UniqueIdentifier>
     </Filter>
@@ -114,12 +108,6 @@
     <ClInclude Include="..\src\vmstate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\linux\callingconvention.h">
-      <Filter>Header Files\linux</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\linux\memory.h">
-      <Filter>Header Files\linux</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\windows\callingconvention.h">
       <Filter>Header Files\windows</Filter>
     </ClInclude>
@@ -133,12 +121,6 @@
     </ClCompile>
     <ClCompile Include="..\src\windows\memory.cpp">
       <Filter>Source Files\windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\linux\callingconvetion.cpp">
-      <Filter>Source Files\linux</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\linux\memory.cpp">
-      <Filter>Source Files\linux</Filter>
     </ClCompile>
     <ClCompile Include="..\src\amd64.cpp">
       <Filter>Source Files</Filter>

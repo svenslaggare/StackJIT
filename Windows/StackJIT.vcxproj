@@ -33,8 +33,6 @@
     <ClInclude Include="..\src\instructions.h" />
     <ClInclude Include="..\src\instructionset.h" />
     <ClInclude Include="..\src\jit.h" />
-    <ClInclude Include="..\src\linux\callingconvention.h" />
-    <ClInclude Include="..\src\linux\memory.h" />
     <ClInclude Include="..\src\loader.h" />
     <ClInclude Include="..\src\memory.h" />
     <ClInclude Include="..\src\native.h" />
@@ -65,8 +63,6 @@
     <ClCompile Include="..\src\helpers.cpp" />
     <ClCompile Include="..\src\instructions.cpp" />
     <ClCompile Include="..\src\jit.cpp" />
-    <ClCompile Include="..\src\linux\callingconvetion.cpp" />
-    <ClCompile Include="..\src\linux\memory.cpp" />
     <ClCompile Include="..\src\loader.cpp" />
     <ClCompile Include="..\src\native.cpp" />
     <ClCompile Include="..\src\objectref.cpp" />
