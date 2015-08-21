@@ -7,9 +7,33 @@ class std.String
 member std.String::.constructor(Ref.Array[Char]) Void
 {
    @AccessModifier(value=public)
+   .locals 1
+   .local 0 Int
+
    LDARG 0
    LDARG 1
+   LDLEN
+   NEWARR Char
    STFIELD std.String::chars
+   LDINT 0
+   STLOC 0
+   LDLOC 0
+   LDARG 0
+   LDFIELD std.String::chars
+   LDLEN
+   BGE 24
+   LDARG 0
+   LDFIELD std.String::chars
+   LDLOC 0
+   LDARG 1
+   LDLOC 0
+   LDELEM Char
+   STELEM Char
+   LDLOC 0
+   LDINT 1
+   ADD
+   STLOC 0
+   BR 7
    RET
 }
 
