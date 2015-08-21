@@ -11,7 +11,7 @@ func main() Int
 	LDSTR "Hello"
 	STLOC 2
 
-	LDINT 300000
+	LDINT 500000
 	STLOC 0
 
 	LDLOC 1

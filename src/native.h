@@ -19,10 +19,10 @@ public:
 	static void setCharsField(RawClassRef stringRef, char* value);
 
 	//Returns the char at the given index
-	char charAt(int index);
+	inline char charAt(int index);
 
 	//Returns tte length of the string
-	int length() const;
+	inline int length() const;
 
 	//Initialize the string reference
 	static void initialize(VMState& vmState);
@@ -40,7 +40,7 @@ namespace NativeLibrary {
 	void println(float x);
 	void println(bool x);
 	void println(char x);
-	void println(RawArrayRef arrayRef);
+	void println(RawArrayRef rawArrayRef);
 
 	int abs(int x);
 

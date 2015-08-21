@@ -46,9 +46,9 @@ void NativeLibrary::println(char x) {
 	std::cout << x << std::endl;
 }
 
-void NativeLibrary::println(RawArrayRef objRef) {
-	if (objRef != nullptr) {
-		ArrayRef<char> arrayRef(objRef);
+void NativeLibrary::println(RawArrayRef rawArrayRef) {
+	if (rawArrayRef != nullptr) {
+		ArrayRef<char> arrayRef(rawArrayRef);
 		for (int i = 0; i < arrayRef.length(); i++) {
 			std::cout << arrayRef.getElement(i);
 		}

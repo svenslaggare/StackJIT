@@ -52,13 +52,13 @@ public:
 	ArrayRef(const RawArrayRef arrayRef);
 
 	//Returns a pointer to the elements
-	T* elementsPtr() const;
+	inline T* elementsPtr() const;
 
 	//Returns the value of the given element
-	T getElement(int index) const;
+	inline T getElement(int index) const;
 
 	//Returns the length of the array
-	int length() const;
+	inline int length() const;
 };
 
 #include "objectref.hpp"
