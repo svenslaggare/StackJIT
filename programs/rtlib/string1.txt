@@ -4,13 +4,9 @@ func main() Int
    .local 0 Int
 
    LDSTR "Hello"
-   NEWOBJ std.String::.constructor(Ref.Array[Char])
-
    LDSTR ", World!"
-   NEWOBJ std.String::.constructor(Ref.Array[Char])
 
    CALLINST std.String::concat(Ref.Class.std.String)
-
    CALL std.println(Ref.Class.std.String)
 
    LDINT 0

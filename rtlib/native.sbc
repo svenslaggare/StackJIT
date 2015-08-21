@@ -25,36 +25,7 @@ extern std.println(Char) Void
 extern std.printchar(Char) Void
 
 #Prints the given string followed by a new line
-func std.println(Ref.Array[Char]) Void
-{
-	.locals 1
-	.local 0 Int
-	
-	LDINT 0
-	STLOC 0
-
-	LDLOC 0
-	LDARG 0
-	LDLEN
-	BGE 15
-
-	LDARG 0
-	LDLOC 0
-	LDELEM Char
-	CALL std.printchar(Char)
-
-	LDLOC 0
-	LDINT 1
-	ADD
-	STLOC 0
-
-	BR 2
-	
-	LDCHAR 10
-	CALL std.printchar(Char)
-
-	RET
-}
+extern std.println(Ref.Array[Char]) Void
 
 #Invokes the garbage collector
 extern std.gc.collect() Void

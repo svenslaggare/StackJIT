@@ -4,8 +4,6 @@ func main() Int
 	.local 0 Int
 
 	LDSTR "Hello"
-	NEWOBJ std.String::.constructor(Ref.Array[Char])
-
 	LDNULL
 
 	CALL std.equals(Ref.Class.std.String Ref.Class.std.String)

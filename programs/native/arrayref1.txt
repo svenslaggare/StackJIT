@@ -1,7 +1,34 @@
 func main() Int
 {
-	ldstr "Hello, World!"
-	CALL rt.test.println(Ref.Array[Char])
+	.locals 1
+	.local 0 Ref.Array[Char]
+
+	LDINT 4
+	NEWARR Char
+	STLOC 0
+
+	LDLOC 0
+	LDINT 0
+	LDCHAR 65
+	STELEM Char
+
+	LDLOC 0
+	LDINT 1
+	LDCHAR 66
+	STELEM Char
+
+	LDLOC 0
+	LDINT 2
+	LDCHAR 67
+	STELEM Char
+
+	LDLOC 0
+	LDINT 3
+	LDCHAR 68
+	STELEM Char
+
+	LDLOC 0
+	CALL std.println(Ref.Array[Char])
 
 	LDINT 0
     RET

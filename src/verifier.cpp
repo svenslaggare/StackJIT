@@ -154,7 +154,7 @@ Verifier::Verifier(VMState& vmState)
 	mCharType = mVMState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Char));
 	mVoidType = mVMState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Void));
 	mNullType = mVMState.typeProvider().makeType("Ref.Null");
-	mStringType = mVMState.typeProvider().makeType("Ref.Array[Char]");
+	mStringType = mVMState.typeProvider().makeType(TypeSystem::stringTypeName);
 }
 
 void Verifier::verifyInstruction(Function& function, Instruction inst, std::size_t index,
@@ -766,6 +766,10 @@ void Verifier::verifyInstruction(Function& function, Instruction inst, std::size
 		}
 			break;
 		case OpCodes::LOAD_STRING:
+			if (mStringType == nullptr) {
+				typeError(index, "The 'LDSTR' instruction requires the runtime library to be loaded.");
+			}
+
 			operandStack.push(mStringType);
 			break;
 	}

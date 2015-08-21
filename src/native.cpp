@@ -25,6 +25,9 @@ void NativeLibrary::print(bool x) {
 	}
 }
 
+void NativeLibrary::print(char x) {
+	std::cout << x;
+}
 
 void NativeLibrary::println(int x) {
 	std::cout << x << std::endl;
@@ -43,8 +46,17 @@ void NativeLibrary::println(char x) {
 	std::cout << x << std::endl;
 }
 
-void NativeLibrary::printchar(char x) {
-	std::cout << x;
+void NativeLibrary::println(RawArrayRef objRef) {
+	if (objRef != nullptr) {
+		ArrayRef<char> arrayRef(objRef);
+		for (int i = 0; i < arrayRef.length(); i++) {
+			std::cout << arrayRef.getElement(i);
+		}
+
+		std::cout << std::endl;
+	} else {
+		Runtime::nullReferenceError();
+	}
 }
 
 int NativeLibrary::abs(int x) {
@@ -60,6 +72,10 @@ StringRef::StringRef(RawClassRef stringRef) {
 	ArrayRef<char> charsArray((unsigned char*)(*charsField));
 	mChars = charsArray.elementsPtr();
 	mLength = charsArray.length();
+}
+
+void StringRef::setCharsField(RawClassRef stringRef, char* value) {
+	*(char**)(stringRef + sCharsFieldOffset) = value;
 }
 
 //Returns the char at the given index
@@ -111,6 +127,7 @@ void NativeLibrary::add(VMState& vmState) {
 	auto charType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Char));
 	auto boolType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Bool));
 	auto voidType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Void));
+	auto charArrayType = vmState.typeProvider().makeType(TypeSystem::arrayTypeName(charType));
 
 	auto& binder = vmState.binder();
 
@@ -118,23 +135,25 @@ void NativeLibrary::add(VMState& vmState) {
 	void(*printInt)(int) = &NativeLibrary::print;
 	void(*printFloat)(float) = &NativeLibrary::print;
 	void(*printBool)(bool) = &NativeLibrary::print;
+	void(*printChar)(char) = &NativeLibrary::print;
 
 	void(*printlnInt)(int) = &NativeLibrary::println;
 	void(*printlnFloat)(float) = &NativeLibrary::println;
 	void(*printlnBool)(bool) = &NativeLibrary::println;
 	void(*printlnChar)(char) = &NativeLibrary::println;
+	void(*printlnCharArray)(RawArrayRef) = &NativeLibrary::println;
 
 	//IO
 	binder.define(FunctionDefinition("std.print", { intType }, voidType, (unsigned char*)(printInt)));
 	binder.define(FunctionDefinition("std.print", { floatType }, voidType, (unsigned char*)(printFloat)));
 	binder.define(FunctionDefinition("std.print", { boolType }, voidType, (unsigned char*)(printBool)));
+	binder.define(FunctionDefinition("std.printchar", { charType }, voidType, (unsigned char*)(printChar)));
 
 	binder.define(FunctionDefinition("std.println", { intType }, voidType, (unsigned char*)(printlnInt)));
 	binder.define(FunctionDefinition("std.println", { floatType }, voidType, (unsigned char*)(printlnFloat)));
 	binder.define(FunctionDefinition("std.println", { boolType }, voidType, (unsigned char*)(printlnBool)));
 	binder.define(FunctionDefinition("std.println", { charType }, voidType, (unsigned char*)(printlnChar)));
-
-	binder.define(FunctionDefinition("std.printchar", { charType }, voidType, (unsigned char*)(&printchar)));
+	binder.define(FunctionDefinition("std.println", { charArrayType }, voidType, (unsigned char*)(printlnCharArray)));
 
 	//Math
 	binder.define(FunctionDefinition("std.math.abs", { intType }, intType, (unsigned char*)(&abs)));
@@ -143,7 +162,7 @@ void NativeLibrary::add(VMState& vmState) {
 	binder.define(FunctionDefinition("std.math.cos", { floatType }, floatType, (unsigned char*)(&cosf)));
 
 	//String
-	auto stringType = vmState.typeProvider().makeType("Ref.Class.std.String");
+	auto stringType = vmState.typeProvider().makeType(TypeSystem::stringTypeName);
 	if (stringType != nullptr) {
 		StringRef::initialize(vmState);
 		binder.define(FunctionDefinition("std.equals", { stringType, stringType }, boolType, (unsigned char*)(&stringEquals)));

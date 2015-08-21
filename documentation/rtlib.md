@@ -28,6 +28,7 @@ The managed functions either wraps runtime functions or provide implementation i
 * `std.println(Bool) Void`: Prints a bool followed by a line break to standard output.
 * `std.println(Char) Void`: Prints a char followed by a line break to standard output
 * `std.println(Ref.Array[Char]) Void`: Prints the given char array followed by a new line.
+* `std.println(Ref.Class.std.String) Void`: Prints the given string followed by a new line.
 
 ### Math
 * `std.math.abs(Int) Int`: Computes the absolute value.

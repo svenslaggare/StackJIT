@@ -205,7 +205,7 @@ public:
 
     void testString() {
         TS_ASSERT_EQUALS(invokeVM("string/char1"), "A\n0\n");
-        TS_ASSERT_EQUALS(invokeVM("string/loadstring"), "Hello, World!\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("string/loadstring", ""), "Hello, World!\n0\n");
     }
 
     void testArray() {
@@ -372,7 +372,7 @@ public:
     }
 
     void testNative() {
-        TS_ASSERT_EQUALS(invokeVM("native/arrayref1", "--no-rtlib --test"), "Hello, World!\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("native/arrayref1", "--no-rtlib --test"), "ABCD\n0\n");
         TS_ASSERT_EQUALS(invokeVM("native/structref1", "--no-rtlib --test"), "1337:4711\n0\n");
     }
 

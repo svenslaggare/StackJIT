@@ -7,6 +7,7 @@
 #include "stackframe.h"
 #include "helpers.h"
 #include "stackjit.h"
+#include "native.h"
 #include <iostream>
 #include <string.h>
 
@@ -231,14 +232,22 @@ unsigned char* Runtime::newObject(const Type* type) {
 }
 
 unsigned char* Runtime::newString(const char* string, int length) {
+    //Allocate the underlying char array
     auto elemType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Char));
-    auto strPtr = vmState.gc().newArray(elemType, length);
+    auto charsPtr = vmState.gc().newArray(elemType, length);
 
     for (int i = 0; i < length; i++) {
-        strPtr[i + StackJIT::ARRAY_LENGTH_SIZE] = (unsigned char)string[i];
+        charsPtr[i + StackJIT::ARRAY_LENGTH_SIZE] = (unsigned char)string[i];
     }
 
-    return strPtr;
+	//Allocate the string object
+	auto strType = static_cast<const ClassType*>(vmState.typeProvider().getType(TypeSystem::stringTypeName));
+	auto strPr = vmState.gc().newClass(strType);
+
+	//Set the chars field
+	StringRef::setCharsField(strPr, (char*)charsPtr);
+
+    return strPr;
 }
 
 void Runtime::runtimeError(std::string errorMessage) {

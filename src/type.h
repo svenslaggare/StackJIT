@@ -72,6 +72,9 @@ enum PrimitiveTypes : unsigned char {
 class ClassMetadataProvider;
 
 namespace TypeSystem {
+	//The string type name
+	const std::string stringTypeName = "Ref.Class.std.String";
+
 	//Converts the given string into a primitive type. True if correct type.
 	bool fromString(std::string typeName, PrimitiveTypes& primitiveType);
 

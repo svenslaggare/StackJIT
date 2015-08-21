@@ -15,6 +15,9 @@ public:
 	//Creates a new reference for the given raw reference
 	StringRef(RawClassRef stringRef);
 
+	//Sets the value of the chars field
+	static void setCharsField(RawClassRef stringRef, char* value);
+
 	//Returns the char at the given index
 	char charAt(int index);
 
@@ -31,13 +34,13 @@ namespace NativeLibrary {
 	void print(int x);
 	void print(float x);
 	void print(bool x);
+	void print(char x);
 
 	void println(int x);
 	void println(float x);
 	void println(bool x);
 	void println(char x);
-
-	void printchar(char x);
+	void println(RawArrayRef arrayRef);
 
 	int abs(int x);
 
