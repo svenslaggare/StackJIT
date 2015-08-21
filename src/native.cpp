@@ -69,7 +69,13 @@ int NativeLibrary::abs(int x) {
 
 StringRef::StringRef(RawClassRef stringRef) {
 	auto charsField = (char**)(stringRef + sCharsFieldOffset);
-	ArrayRef<char> charsArray((unsigned char*)(*charsField));
+	auto chars = *charsField;
+
+	if (chars == nullptr) {
+		Runtime::nullReferenceError();
+	}
+
+	ArrayRef<char> charsArray((unsigned char*)(chars));
 	mChars = charsArray.elementsPtr();
 	mLength = charsArray.length();
 }
