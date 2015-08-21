@@ -6,11 +6,9 @@ func main() Int
 	.local 2 Ref.Class.std.String
 
 	LDSTR "Hello"
-	NEWOBJ std.String::.constructor(Ref.Array[Char])
 	STLOC 1
 
 	LDSTR "Hello"
-	NEWOBJ std.String::.constructor(Ref.Array[Char])
 	STLOC 2
 
 	LDINT 300000
@@ -29,7 +27,7 @@ func main() Int
 
 	LDLOC 0
 	LDINT 0
-	BGT 8
+	BGT 6
 
 	LDINT 0
 	RET

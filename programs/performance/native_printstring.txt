@@ -9,7 +9,7 @@ func main() Int
 	STLOC 0
 
 	LDLOC 1
-	CALL rt.println(Ref.Array[Char])
+	CALL std.println(Ref.Class.std.String)
 
 	LDLOC 0
 	LDINT 1
