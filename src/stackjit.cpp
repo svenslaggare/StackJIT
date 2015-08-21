@@ -96,28 +96,28 @@ std::int64_t getDuration(std::chrono::time_point<std::chrono::high_resolution_cl
 	return std::chrono::duration_cast<std::chrono::milliseconds>(end - timePoint).count();
 }
 
+//Returns the directory of the executing VM
 std::string getExecutableDir() {
-	const int bufferSize = 1024;
-
 #if defined(_WIN64) || defined(__MINGW32__)
 	char buffer[MAX_PATH];
 	int bytes = GetModuleFileNameA(nullptr, buffer, MAX_PATH);
 
-	//To remove the name
+	//Remove the name
 	buffer[bytes - 12] = '\0';
 
 	return std::string(buffer);
 #else
-        char buffer[bufferSize];
-	char szTmp[32];
-	sprintf(szTmp, "/proc/%d/exe", getpid());
-	int bytes = std::min((int)readlink(szTmp, buffer, bufferSize), bufferSize - 1);
+	const int bufferSize = 512;
+	char buffer[bufferSize];
+	char temp[32];
+	sprintf(temp, "/proc/%d/exe", getpid());
+	int bytes = std::min((int)readlink(temp, buffer, bufferSize), bufferSize - 1);
 
 	if (bytes >= 0) {
 		buffer[bytes] = '\0';
 	}
 
-	//To remove the name
+	//Remove the name
 	buffer[bytes - 8] = '\0';
 
 	return std::string(buffer);
@@ -140,7 +140,7 @@ int main(int argc, char* argv[]) {
 		engine.loadAssembly(*program, AssemblyType::Program);
 
 		if (!vmState.lazyJIT) {
-			//Compile all functions to native code
+			//Compile all functions
 			engine.compile();
 		}
 		else {

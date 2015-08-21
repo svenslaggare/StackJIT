@@ -309,7 +309,7 @@ public:
     void testInvalid() {
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/void_local")), "0: Locals of 'Void' type are not allowed.");
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/empty_func")), "0: Empty functions are not allowed.");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/not_end_in_return")), "0: Functions must end with a 'RET' instruction.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/not_end_in_return")), "0: Functions must end with the 'RET' instruction.");
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/branch_target")), "0: Invalid jump target (4).");
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/untyped_local1")), "0: Cannot load untyped local (0).");
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/untyped_local2")), "0: Local 0 is not typed.");

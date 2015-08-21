@@ -151,10 +151,10 @@ void ExecutionEngine::loadAssembly(AssemblyParser::Assembly& assembly, AssemblyT
 
 void ExecutionEngine::loadRuntimeLibrary() {
 	if (mVMState.loadRuntimeLibrary) {
-		bool loaded = false;
+		bool loaded = true;
 
-		loaded = loadLibrary(mBaseDir + "rtlib/native.sbc");
-		loaded = loadLibrary(mBaseDir + "rtlib/string.sbc");
+		loaded &= loadLibrary(mBaseDir + "rtlib/native.sbc");
+		loaded &= loadLibrary(mBaseDir + "rtlib/string.sbc");
 
 		if (!loaded) {
 			throw std::runtime_error("Could not load runtime library.");
@@ -245,7 +245,8 @@ void ExecutionEngine::loadDefinitions() {
 
 void ExecutionEngine::compileFunction(Function* function, std::string signature, bool resolveSymbols) {
 	//Type check the function
-	Verifier::verifyFunction(*function, mVMState);
+	Verifier verifier(mVMState);
+	verifier.verifyFunction(*function);
 
 	//Compile it
 	auto funcPtr = mJIT.compileFunction(function);
