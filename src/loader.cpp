@@ -25,7 +25,7 @@ namespace {
         	throw std::runtime_error("'" + typeName + "' is not a defined class.");
         }
 
-		return (const ClassType*)vmState.typeProvider().makeType("Ref.Class." + typeName);
+		return (const ClassType*)vmState.typeProvider().makeType("Ref." + typeName);
 	}
 
 	//Loads the given instruction

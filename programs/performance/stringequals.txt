@@ -2,8 +2,8 @@ func main() Int
 {
 	.locals 3
 	.local 0 Int
-	.local 1 Ref.Class.std.String
-	.local 2 Ref.Class.std.String
+	.local 1 Ref.std.String
+	.local 2 Ref.std.String
 
 	LDSTR "Hello"
 	STLOC 1
@@ -16,8 +16,8 @@ func main() Int
 
 	LDLOC 1
 	LDLOC 2
-	CALL std.equals(Ref.Class.std.String Ref.Class.std.String)
-	#CALLINST std.String::equals(Ref.Class.std.String)
+	CALL std.equals(Ref.std.String Ref.std.String)
+	#CALLINST std.String::equals(Ref.std.String)
 	POP
 
 	LDLOC 0

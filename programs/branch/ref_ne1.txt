@@ -13,7 +13,7 @@ func main() Int
 {
 	.locals 2
 	.local 0 Int
-	.local 1 Ref.Class.Point
+	.local 1 Ref.Point
 
 	NEWOBJ Point::.constructor()
 	STLOC 1

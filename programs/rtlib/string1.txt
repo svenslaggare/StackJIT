@@ -6,8 +6,8 @@ func main() Int
    LDSTR "Hello"
    LDSTR ", World!"
 
-   CALLINST std.String::concat(Ref.Class.std.String)
-   CALL std.println(Ref.Class.std.String)
+   CALLINST std.String::concat(Ref.std.String)
+   CALL std.println(Ref.std.String)
 
    LDINT 0
    RET

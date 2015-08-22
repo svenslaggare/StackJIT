@@ -1,6 +1,6 @@
 class List
 {
-	data Ref.Class.Point
+	data Ref.Point
 }
 
 member List::.constructor() Void

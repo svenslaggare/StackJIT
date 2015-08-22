@@ -36,7 +36,7 @@ void TestLibrary::add(VMState& vmState) {
 
 	binder.define(FunctionDefinition("rt.test.fib", { intType }, intType, (unsigned char*)(&fibonacci)));
 
-	auto pointType = vmState.typeProvider().makeType("Ref.Class.Point");
+	auto pointType = vmState.typeProvider().makeType("Ref.Point");
 	if (pointType != nullptr) {
 		binder.define(FunctionDefinition("rt.test.println", { pointType }, voidType, (unsigned char*)(&printPoint)));
 	}

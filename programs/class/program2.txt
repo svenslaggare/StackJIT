@@ -14,22 +14,22 @@ func main() Int
 	.locals 1
 	
 	LDINT 4
-	NEWARR Ref.Class.Point
+	NEWARR Ref.Point
 	STLOC 0
 
 	LDLOC 0
 	LDINT 0
 	NEWOBJ Point::.constructor()
-	STELEM Ref.Class.Point
+	STELEM Ref.Point
 
 	LDLOC 0
 	LDINT 1
 	NEWOBJ Point::.constructor()
-	STELEM Ref.Class.Point
+	STELEM Ref.Point
 
 	LDLOC 0
 	LDINT 0
-	LDELEM Ref.Class.Point
+	LDELEM Ref.Point
 	LDINT 4711
 	STFIELD Point::x
 
@@ -39,7 +39,7 @@ func main() Int
 
 	LDLOC 0
 	LDINT 0
-	LDELEM Ref.Class.Point
+	LDELEM Ref.Point
 	LDFIELD Point::x
 
 	RET

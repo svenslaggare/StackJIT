@@ -20,7 +20,7 @@ member Point::.constructor(Float Float) Void
 func main() Int
 {
    .locals 1
-   .local 0 Ref.Class.Point
+   .local 0 Ref.Point
 
    LDFLOAT 1.000000
    LDFLOAT 2.000000

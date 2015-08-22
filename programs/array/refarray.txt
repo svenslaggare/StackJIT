@@ -17,7 +17,7 @@ member Point::.constructor(Int Int) Void
 	RET
 }
 
-func println(Ref.Class.Point) Void
+func println(Ref.Point) Void
 {
 	LDARG 0
 	LDFIELD Point::x
@@ -39,10 +39,10 @@ func println(Ref.Class.Point) Void
 func main() Int
 {
 	.locals 1
-	.local 0 Ref.Array[Ref.Class.Point]
+	.local 0 Ref.Array[Ref.Point]
 
 	LDINT 4
-	NEWARR Ref.Class.Point
+	NEWARR Ref.Point
 	STLOC 0
 
 	LDLOC 0
@@ -50,48 +50,48 @@ func main() Int
 	LDINT 1
 	LDINT 2
 	NEWOBJ Point::.constructor(Int Int)
-	STELEM Ref.Class.Point
+	STELEM Ref.Point
 
 	LDLOC 0
 	LDINT 1
 	LDINT 2
 	LDINT 3
 	NEWOBJ Point::.constructor(Int Int)
-	STELEM Ref.Class.Point
+	STELEM Ref.Point
 
 	LDLOC 0
 	LDINT 2
 	LDINT 3
 	LDINT 4
 	NEWOBJ Point::.constructor(Int Int)
-	STELEM Ref.Class.Point
+	STELEM Ref.Point
 
 	LDLOC 0
 	LDINT 3
 	LDINT 4
 	LDINT 5
 	NEWOBJ Point::.constructor(Int Int)
-	STELEM Ref.Class.Point
+	STELEM Ref.Point
 
 	LDLOC 0
 	LDINT 0
-	LDELEM Ref.Class.Point
-	CALL println(Ref.Class.Point)
+	LDELEM Ref.Point
+	CALL println(Ref.Point)
 
 	LDLOC 0
 	LDINT 1
-	LDELEM Ref.Class.Point
-	CALL println(Ref.Class.Point)
+	LDELEM Ref.Point
+	CALL println(Ref.Point)
 
 	LDLOC 0
 	LDINT 2
-	LDELEM Ref.Class.Point
-	CALL println(Ref.Class.Point)
+	LDELEM Ref.Point
+	CALL println(Ref.Point)
 
 	LDLOC 0
 	LDINT 3
-	LDELEM Ref.Class.Point
-	CALL println(Ref.Class.Point)
+	LDELEM Ref.Point
+	CALL println(Ref.Point)
 
 	LDINT 0
 	RET

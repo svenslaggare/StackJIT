@@ -35,7 +35,7 @@ func main() Int
 {
 	.locals 2
 	.local 0 Ref.Array[Char]
-	.local 1 Ref.Class.std.String
+	.local 1 Ref.std.String
 
 	CALL createCharArray()
 	STLOC 0
@@ -53,7 +53,7 @@ func main() Int
 	CALL std.println(Ref.Array[Char])
 
 	LDLOC 1
-	CALL std.println(Ref.Class.std.String)
+	CALL std.println(Ref.std.String)
 
 	LDINT 0
 	RET

@@ -6,8 +6,8 @@ class Point
 
 class ListNode
 {
-	data Ref.Class.Point
-	next Ref.Class.ListNode
+	data Ref.Point
+	next Ref.ListNode
 }
 
 func main() Int

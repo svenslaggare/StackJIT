@@ -43,7 +43,7 @@ member List::.constructor() Void
 func main() Int
 {
 	.locals 1
-	.local 0 Ref.Class.List
+	.local 0 Ref.List
 
 	NEWOBJ List::.constructor()
 	STLOC 0

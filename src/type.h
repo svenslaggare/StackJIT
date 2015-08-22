@@ -51,7 +51,7 @@ public:
 //Represents a class type
 class ClassType : public ReferenceType {
 private:
-	const std::string mStructName;
+	const std::string mClassName;
 public:
 	//Creates a new class type
 	ClassType(std::string name);
@@ -73,7 +73,7 @@ class ClassMetadataProvider;
 
 namespace TypeSystem {
 	//The string type name
-	const std::string stringTypeName = "Ref.Class.std.String";
+	const std::string stringTypeName = "Ref.std.String";
 
 	//Converts the given string into a primitive type. True if correct type.
 	bool fromString(std::string typeName, PrimitiveTypes& primitiveType);
@@ -82,7 +82,7 @@ namespace TypeSystem {
 	std::string toString(PrimitiveTypes primitiveType);
 
 	//Creates a new type from the given string
-	Type* makeTypeFromString(std::string typeName, const ClassMetadataProvider& structProvider);
+	Type* makeTypeFromString(std::string typeName, const ClassMetadataProvider& classProvider);
 
 	//Indicates if the given type is of the given primitive type
 	bool isPrimitiveType(const Type* type, PrimitiveTypes primitiveType);

@@ -11,7 +11,7 @@ member Point::.constructor() Void
 
 class Pair
 {
-	first Ref.Class.Point
+	first Ref.Point
 	second Int
 }
 
@@ -23,7 +23,7 @@ member Pair::.constructor() Void
 func main3() Int
 {
 	.locals 1
-	.local 0 Ref.Class.Pair
+	.local 0 Ref.Pair
 
 	NEWOBJ Pair::.constructor()
 	STLOC 0

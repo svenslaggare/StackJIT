@@ -68,7 +68,7 @@ member std.String::length() Int
    RET
 }
 
-member std.String::concat(Ref.Class.std.String) Ref.Class.std.String
+member std.String::concat(Ref.std.String) Ref.std.String
 {
    @AccessModifier(value=public)
    .locals 5
@@ -76,7 +76,7 @@ member std.String::concat(Ref.Class.std.String) Ref.Class.std.String
    .local 1 Int
    .local 3 Int
    .local 4 Int
-   .local 0 Ref.Class.std.String
+   .local 0 Ref.std.String
 
    LDARG 0
    LDFIELD std.String::chars
@@ -136,7 +136,7 @@ member std.String::concat(Ref.Class.std.String) Ref.Class.std.String
    RET
 }
 
-member std.String::equals(Ref.Class.std.String) Bool
+member std.String::equals(Ref.std.String) Bool
 {
    @AccessModifier(value=public)
    .locals 2
@@ -191,7 +191,7 @@ member std.String::equals(Ref.Class.std.String) Bool
    RET
 }
 
-func std.println(Ref.Class.std.String) Void
+func std.println(Ref.std.String) Void
 {
    .locals 1
    .local 0 Int

@@ -9,7 +9,7 @@ member Point::.constructor() Void
    RET
 }
 
-member Point::addX(Ref.Class.Point) Float
+member Point::addX(Ref.Point) Float
 {
    LDARG 0
    LDFIELD Point::x
@@ -41,7 +41,7 @@ func main() Int
 
    LDLOC 0
    LDLOC 1
-   CALLINST Point::addX(Ref.Class.Point)
+   CALLINST Point::addX(Ref.Point)
    CALL std.println(Float)
 
    LDINT 0

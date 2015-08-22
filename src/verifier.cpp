@@ -696,7 +696,7 @@ void Verifier::verifyInstruction(Function& function, Instruction inst, std::size
 				}
 
 				auto structMetadata = mVMState.classProvider().getMetadata(className);
-				auto classType = mVMState.typeProvider().makeType("Ref.Class." + className);
+				auto classType = mVMState.typeProvider().makeType("Ref." + className);
 
 				if (!isNull) {
 					auto error = checkType(classType, classRefType);
@@ -747,7 +747,7 @@ void Verifier::verifyInstruction(Function& function, Instruction inst, std::size
 					typeError(index, "There exists no field '" + fieldName + "' in the '" + className + "' class.");
 				}
 
-				auto classType = mVMState.typeProvider().makeType("Ref.Class." + className);
+				auto classType = mVMState.typeProvider().makeType("Ref." + className);
 
 				if (!isNull) {
 					auto error = checkType(classType, classRefType);

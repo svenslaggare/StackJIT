@@ -1,4 +1,4 @@
-func printPoint(Ref.Class.Point) Void
+func printPoint(Ref.Point) Void
 {
 	LDARG 0
 	LDFIELD Point::x

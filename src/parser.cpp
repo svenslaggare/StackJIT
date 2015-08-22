@@ -604,13 +604,13 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
                 throw std::runtime_error("Expected '::' in member function name.");
             }
 
-            auto structTypeName = funcName.substr(0, structNamePos);
+            auto classTypeName = funcName.substr(0, structNamePos);
             auto memberFunctionName = funcName.substr(structNamePos + 2);
 
             //Add the implicit this reference
-            currentFunc.parameters.insert(currentFunc.parameters.begin(), "Ref.Class." + structTypeName);
+            currentFunc.parameters.insert(currentFunc.parameters.begin(), "Ref." + classTypeName);
 
-			currentFunc.className = structTypeName;
+			currentFunc.className = classTypeName;
 			currentFunc.memberFunctionName = memberFunctionName;
 			currentFunc.isMemberFunction = true;
 

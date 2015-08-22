@@ -52,12 +52,12 @@ ArrayType::~ArrayType() {
 }
 
 ClassType::ClassType(std::string name)
-	: ReferenceType("Class." + name), mStructName(name) {
+	: ReferenceType(name), mClassName(name) {
 
 }
 
 std::string ClassType::className() const {
-	return mStructName;
+	return mClassName;
 }
 
 bool TypeSystem::fromString(std::string typeName, PrimitiveTypes& primitiveType) {
@@ -170,7 +170,7 @@ namespace {
 	}
 }
 
-Type* TypeSystem::makeTypeFromString(std::string typeName, const ClassMetadataProvider& structProvider) {
+Type* TypeSystem::makeTypeFromString(std::string typeName, const ClassMetadataProvider& classProvider) {
 	//Split the type name
 	std::vector<std::string> typeParts = splitTypeName(typeName);
 	PrimitiveTypes primitiveType;
@@ -180,30 +180,30 @@ Type* TypeSystem::makeTypeFromString(std::string typeName, const ClassMetadataPr
 	} else if (typeParts.at(0) == "Ref") {
 		std::string elementType;
 		if (extractElementType(typeParts.at(1), elementType)) {
-			return new ArrayType(makeTypeFromString(elementType, structProvider));
-		} else if (typeParts.at(1) == "Class") {
-			if (typeParts.size() >= 3) {
-				std::string structName = "";
+			return new ArrayType(makeTypeFromString(elementType, classProvider));
+		} else if (typeParts.at(1) == "Null") {
+			return new NullReferenceType();
+		} else {
+			if (typeParts.size() >= 2) {
+				std::string className = "";
 				bool isFirst = true;
 
-				for (std::size_t i = 2; i < typeParts.size(); i++) {
+				for (std::size_t i = 1; i < typeParts.size(); i++) {
 					if (isFirst) {
 						isFirst = false;
 					} else {
-						structName += ".";
+						className += ".";
 					}
 
-					structName += typeParts.at(i);
+					className += typeParts.at(i);
 				}
 
-				if (structProvider.isDefined(structName)) {
-					return new ClassType(structName);
+				if (classProvider.isDefined(className)) {
+					return new ClassType(className);
 				} else {
 					return nullptr;
 				}
 			}
-		} else if (typeParts.at(1) == "Null") {
-			return new NullReferenceType();
 		}
 	}
 
@@ -247,7 +247,7 @@ bool TypeSystem::isClass(const Type* type) {
 		return false;
 	}
 
-	return type->name().find("Ref.Class.") != std::string::npos;
+	return dynamic_cast<const ClassType*>(type) != nullptr;
 }
 
 std::string TypeSystem::arrayTypeName(const Type* type) {

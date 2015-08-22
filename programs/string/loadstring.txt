@@ -1,7 +1,7 @@
 func main() Int
 {
 	LDSTR "Hello, World!"
-	CALL std.println(Ref.Class.std.String)
+	CALL std.println(Ref.std.String)
 
 	LDINT 0
 	RET

@@ -6,7 +6,7 @@ func main() Int
 	LDSTR "Hello"
 	LDNULL
 
-	CALL std.equals(Ref.Class.std.String Ref.Class.std.String)
+	CALL std.equals(Ref.std.String Ref.std.String)
 	CALL std.println(Bool)
 
 	LDINT 0

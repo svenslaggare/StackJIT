@@ -11,7 +11,7 @@ The VM supports the following types:
 
 ### Reference types
 * Arrays: `Ref.Array[<Element type>]`.
-* Classes: `Ref.Class.<Class name>`.
+* Classes: `Ref.<Class name>`.
 
 ### Strings
-A string is of type `Ref.Class.std.String`. The syntax for declaring a string is `"string value"`.
+A string is of type `Ref.std.String`. The syntax for declaring a string is `"string value"`.

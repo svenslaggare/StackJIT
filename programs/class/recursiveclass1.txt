@@ -1,7 +1,7 @@
 class ListNode
 {
 	data Int
-	next Ref.Class.ListNode
+	next Ref.ListNode
 }
 
 func main() Int

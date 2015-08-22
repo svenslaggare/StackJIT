@@ -246,7 +246,7 @@ public:
 
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program1")), "\'Point\' is not a defined class.");
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program2")), "1: \'Point\' is not a class type.");
-        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program3")), "There exists no type called 'Ref.Class.Point'.");
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program3")), "There exists no type called 'Ref.Point'.");
 
         TS_ASSERT_EQUALS(invokeVM("class/constructor1"), "1\n2\n0\n");
         TS_ASSERT_EQUALS(invokeVM("class/constructor2"), "15\n");
@@ -260,7 +260,7 @@ public:
 
         TS_ASSERT_EQUALS(stripErrorMessage(
 			invokeVM("class/invalid_constructor2")),
-			"0: The constructor \'Point::.constructor(Ref.Class.Point)\' is not defined.");
+			"0: The constructor \'Point::.constructor(Ref.Point)\' is not defined.");
 
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_memberfunction1")), "Error: Null reference.");
     }

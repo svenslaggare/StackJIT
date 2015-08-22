@@ -25,7 +25,7 @@ func main() Int
 	STFIELD Point::y
 
 	LDLOC 0
-    CALL rt.test.println(Ref.Class.Point)
+    CALL rt.test.println(Ref.Point)
 
 	LDINT 0
 	RET
