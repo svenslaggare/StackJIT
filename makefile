@@ -24,7 +24,12 @@ AMD64_TEST_EXECUTABLE=amd64-test
 VM_TEST_EXECUTABLE=vm-test
 TEST_WITH_VALGRIND=0
 
-all: $(OBJDIR) $(SOURCES) $(EXECUTABLE)
+ASSEMBLER_DIR=assembler
+RTLIB=rtlib
+RTLIB_FILES=$(wildcard $(RTLIB)/*.sbc)
+RTLIB_OUT=$(RTLIB)/rtlib.simg
+
+all: $(OBJDIR) $(SOURCES) $(EXECUTABLE) $(RTLIB_OUT)
 
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
@@ -35,6 +40,10 @@ $(EXECUTABLE): $(OBJECTS)
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(HEADERS) $(TEMPLATE_HEADERS)
 	$(CC) $(CFLAGS) $< -o $@
+
+$(RTLIB_OUT): $(RTLIB_FILES)
+	make -C $(ASSEMBLER_DIR) all
+	$(ASSEMBLER_DIR)/stackasm -o rtlib/rtlib.simg $(RTLIB_FILES)
 
 test: test-amd64 test-vm
 
@@ -49,7 +58,7 @@ test-amd64: $(TESTS_DIR)/amd64-test.h $(OBJDIR) $(OBJDIR)/amd64.o
 	$(CC) $(LDFLAGS) -o $(AMD64_TEST_EXECUTABLE) $(OBJDIR)/amd64.o -I $(CXXTEST) $(TEST_RUNNERS_DIR)/amd64test_runner.cpp
 	./$(AMD64_TEST_EXECUTABLE)
 
-test-vm: $(TESTS_DIR)/vm-test.h  $(OBJDIR) $(EXECUTABLE)
+test-vm: $(RTLIB_OUT) $(TESTS_DIR)/vm-test.h $(OBJDIR) $(EXECUTABLE)
 	mkdir -p $(TEST_RUNNERS_DIR)
 	cxxtestgen --error-printer -o $(TEST_RUNNERS_DIR)/vmtest_runner.cpp $(TESTS_DIR)/vm-test.h
 	$(CC) $(LDFLAGS) -o $(VM_TEST_EXECUTABLE) -I $(CXXTEST) $(TEST_RUNNERS_DIR)/vmtest_runner.cpp -DUSE_VALGRIND=$(TEST_WITH_VALGRIND)
@@ -61,3 +70,5 @@ clean:
 	rm -f $(EXECUTABLE)
 	rm -f $(AMD64_TEST_EXECUTABLE)
 	rm -f $(VM_TEST_EXECUTABLE)
+	make -C $(ASSEMBLER_DIR) clean
+	rm -f $(RTLIB_OUT)

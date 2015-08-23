@@ -47,7 +47,7 @@ std::string programsPath = "programs";
 
 //Invokes the assembler with the given program
 std::string invokeAsm(std::string programName) {
-	std::string tmpName = std::to_string(std::time(nullptr)) + ".slib";
+	std::string tmpName = std::to_string(std::time(nullptr)) + ".simg";
 	executeCmd((executable + " -o " + tmpName + " " + programsPath + "/" + programName + ".txt").data());
 	std::string returnData = executeCmd((executable + " -d " + tmpName).data());
 	std::remove(tmpName.data());
@@ -70,9 +70,15 @@ std::string readFile(std::string programName) {
 
 class AssemblerTestSuite : public CxxTest::TestSuite {
 public:
-	void testAssembler() {
+	void testCase1() {
 		TS_ASSERT_EQUALS(invokeAsm("test1"), readFile("test1"));
+	}
+
+	void testCase2() {
 		TS_ASSERT_EQUALS(invokeAsm("test2"), readFile("test2"));
+	}
+
+	void testCase3() {
 		TS_ASSERT_EQUALS(invokeAsm("test3"), readFile("test3"));
 	}
 };

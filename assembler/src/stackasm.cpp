@@ -7,7 +7,7 @@
 
 int main(int argc, char* argv[]) {
 	std::vector<AssemblyParser::Assembly> assemblies;
-	std::string outputFile = "library.slib";
+	std::string outputFile = "library.simg";
 
 	bool disassemble = false;
 	std::vector<BinaryData> images;
