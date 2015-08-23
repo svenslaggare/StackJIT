@@ -1,5 +1,4 @@
 #include "assembler.h"
-#include "helpers.h"
 #include <iostream>
 
 namespace {
@@ -156,7 +155,7 @@ void Assembler::generateImage(std::vector<AssemblyParser::Assembly>& assemblies,
 	for (auto& assembly : assemblies) {
 		for (auto& func : assembly.functions) {
 			generateFunctionDefinition(data, func);
-			funcBodyOffsets.insert({ Helpers::getSignature(func), data.size() });
+			funcBodyOffsets.insert({ AssemblyParser::getSignature(func), data.size() });
 			addData<std::size_t>(data, 0);
 		}
 	}
@@ -176,7 +175,7 @@ void Assembler::generateImage(std::vector<AssemblyParser::Assembly>& assemblies,
 	for (auto& assembly : assemblies) {
 		for (auto& func : assembly.functions) {
 			//Patch the offset
-			setData<std::size_t>(data, funcBodyOffsets.at(Helpers::getSignature(func)), data.size());
+			setData<std::size_t>(data, funcBodyOffsets.at(AssemblyParser::getSignature(func)), data.size());
 			generateFunctionBody(data, func);
 		}
 	}

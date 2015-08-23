@@ -62,6 +62,10 @@ set(SOURCE_FILES
     src/windows/memory.h
     src/windows/memory.cpp
     src/windows/callingconvention.h
-    src/windows/callingconvetion.cpp)
+    src/windows/callingconvetion.cpp
+    src/bytecodegenerator.h
+    src/bytecodegenerator.cpp
+    src/imageloader.h
+    src/imageloader.cpp)
 
 add_executable(stackjit ${SOURCE_FILES})
