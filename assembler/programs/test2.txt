@@ -1,0 +1,34 @@
+member Point::.constructor(Float Float) Void
+{
+	LDARG 0
+	LDARG 1
+	STFIELD Point::x
+	LDARG 0
+	LDARG 2
+	STFIELD Point::y
+	RET
+}
+
+func main() Int
+{
+	.locals 1
+	.local 0 Ref.Point
+	LDFLOAT 1
+	LDFLOAT 2
+	NEWOBJ Point::.constructor(Float Float)
+	STLOC 0
+	LDLOC 0
+	LDFIELD Point::x
+	CALL std.println(Float)
+	LDLOC 0
+	LDFIELD Point::y
+	CALL std.println(Float)
+	LDINT 0
+	RET
+}
+
+class Point
+{
+	y Float
+	x Float
+}

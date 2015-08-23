@@ -6,8 +6,22 @@
 
 //The assembly parser
 namespace AssemblyParser {
+	//The instruction formats
+	enum class InstructionFormats : char {
+		OpCodeOnly,
+		IntData,
+		FloatData,
+		CharData,
+		StrData,
+		Call,
+		CallInstance,
+	};
+
 	//Represents a parsed but not bound instruction.
 	struct Instruction {
+		//The instruction format
+		InstructionFormats format;
+
 	    //The op code
 	    OpCodes opCode;
 

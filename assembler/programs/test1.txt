@@ -1,0 +1,19 @@
+func add2(Int Int) Int
+{
+	LDARG 0
+	LDARG 1
+	ADD
+	RET
+}
+
+func main() Int
+{
+	.locals 1
+	.local 0 Int
+	LDINT 4
+	LDINT 5
+	CALL add2(Int Int)
+	STLOC 0
+	LDLOC 0
+	RET
+}

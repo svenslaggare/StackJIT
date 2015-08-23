@@ -40,7 +40,7 @@ std::string executable = "StackJIT.exe";
 std::string baseDir = "../../../";
 std::string programsPath = baseDir + "programs";
 #else
-std::string executable = "../StackJIT/stackjit";
+std::string executable = "./stackjit";
 std::string baseDir = "";
 std::string programsPath = "programs";
 #endif

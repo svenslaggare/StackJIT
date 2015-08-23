@@ -13,6 +13,7 @@ AssemblyParser::Instruction::Instruction() {
 AssemblyParser::Instruction AssemblyParser::Instruction::make(OpCodes opCode) {
 	AssemblyParser::Instruction inst;
 	inst.opCode = opCode;
+	inst.format = InstructionFormats::OpCodeOnly;
 	return inst;
 }
 
@@ -20,6 +21,7 @@ AssemblyParser::Instruction AssemblyParser::Instruction::makeWithInt(OpCodes opC
 	AssemblyParser::Instruction inst;
 	inst.intValue = value;
 	inst.opCode = opCode;
+	inst.format = InstructionFormats::IntData;
 	return inst;
 }
 
@@ -27,6 +29,7 @@ AssemblyParser::Instruction AssemblyParser::Instruction::makeWithFloat(OpCodes o
 	AssemblyParser::Instruction inst;
 	inst.floatValue = value;
 	inst.opCode = opCode;
+	inst.format = InstructionFormats::FloatData;
 	return inst;
 }
 
@@ -34,6 +37,7 @@ AssemblyParser::Instruction AssemblyParser::Instruction::makeWithChar(OpCodes op
 	AssemblyParser::Instruction inst;
 	inst.charValue = value;
 	inst.opCode = opCode;
+	inst.format = InstructionFormats::CharData;
 	return inst;
 }
 
@@ -41,6 +45,7 @@ AssemblyParser::Instruction AssemblyParser::Instruction::makeWithStr(OpCodes opC
 	AssemblyParser::Instruction inst;
 	inst.strValue = value;
 	inst.opCode = opCode;
+	inst.format = InstructionFormats::StrData;
 	return inst;
 }
 
@@ -49,6 +54,7 @@ AssemblyParser::Instruction AssemblyParser::Instruction::makeCall(std::string fu
 	inst.strValue = funcName;
 	inst.parameters = parameters;
 	inst.opCode = OpCodes::CALL;
+	inst.format = InstructionFormats::Call;
 	return inst;
 }
 
@@ -58,6 +64,7 @@ AssemblyParser::Instruction AssemblyParser::Instruction::makeCallInstance(std::s
 	inst.strValue = funcName;
 	inst.parameters = parameters;
 	inst.opCode = OpCodes::CALL_INSTANCE;
+	inst.format = InstructionFormats::CallInstance;
 	return inst;
 }
 
@@ -67,6 +74,7 @@ AssemblyParser::Instruction AssemblyParser::Instruction::makeNewObject(std::stri
 	inst.strValue = ".constructor";
 	inst.parameters = parameters;
 	inst.opCode = OpCodes::NEW_OBJECT;
+	inst.format = InstructionFormats::CallInstance;
 	return inst;
 }
 

@@ -85,7 +85,7 @@ JitFunction JITCompiler::compileFunction(Function* function) {
 
     //Indicates if to output the generated code to a file
     if (mVMState.outputGeneratedCode) {
-        std::ofstream asmFile (function->name() + ".jit", std::ios::binary);
+        std::ofstream asmFile(function->name() + ".jit", std::ios::binary);
 
         if (asmFile.is_open()) {
             asmFile.write((char*)code, length);
