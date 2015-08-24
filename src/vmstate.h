@@ -20,6 +20,9 @@ public:
     //Indicates if testing mode is enabled
 	bool testMode = false;
 
+    //Indicates if the input program is an image or from stdin
+    bool imageMode = false;
+
 	//Prints the info about the stack frame
 	bool printStackFrame = false;
 

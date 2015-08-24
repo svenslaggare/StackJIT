@@ -18,6 +18,9 @@ private:
 	std::map<std::string, AssemblyParser::Class> mClasses;
 public:
 	//Creates a new image
+	AssemblyImage();
+
+	//Creates a new image
 	AssemblyImage(
 		BinaryData imageData,
 		std::unordered_map<std::string, std::size_t> functionBodyOffset,
@@ -53,5 +56,5 @@ namespace AssemblyImageLoader {
 	AssemblyParser::Class loadClassDefinition(BinaryData& data, std::size_t& index);
 
 	//Loads an assembly image from given data
-	AssemblyImage load(BinaryData& imageData);
+	void load(BinaryData& imageData, AssemblyImage& image);
 };

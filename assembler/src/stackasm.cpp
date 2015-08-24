@@ -64,7 +64,8 @@ int main(int argc, char* argv[]) {
 	} else {
 		//Load the image
 		for (auto& imageData : images) {
-			auto image = AssemblyImageLoader::load(imageData);
+			AssemblyImage image;
+			AssemblyImageLoader::load(imageData, image);
 
 			std::size_t i = 0;
 			for (auto& func : image.functions()) {

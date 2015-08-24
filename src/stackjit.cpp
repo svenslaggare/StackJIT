@@ -15,7 +15,9 @@
 VMState vmState;
 
 //Parses the options
-void handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
+std::string handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
+	std::string program = "";
+
 	for (int i = 1; i < argc; i++) {
 		std::string switchStr = argv[i];
 
@@ -72,12 +74,16 @@ void handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
 			continue;
 		}
 
+		if (switchStr == "-im" || switchStr == "--image-mode") {
+			vmState.imageMode = true;
+			continue;
+		}
+
 		if (switchStr == "-i") {
 			int next = i + 1;
 
 			if (next < argc) {
-				//Load the library
-				engine.loadLibrary(argv[next]);
+				engine.loadAssembly(argv[next]);
 				i++;
 			} else {
 				std::cout << "Expected a library file after '-i' option." << std::endl;
@@ -86,8 +92,15 @@ void handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
 			continue;
 		}
 
+		if (switchStr.find(".simg") != std::string::npos) {
+			program = switchStr;
+			continue;
+		}
+
 		std::cout << "Unhandled option: " << switchStr << std::endl;
 	}
+
+	return program;
 }
 
 //Returns the duration since the given time point
@@ -132,20 +145,23 @@ int main(int argc, char* argv[]) {
 		engine.setBaseDir(getExecutableDir());
 
 		//Handle options
-		handleOptions(argc, argv, engine);
+		auto programPath = handleOptions(argc, argv, engine);
 
 		//Load the program
-		AssemblyParser::Assembly program;
-		Loader::load(std::cin, vmState, program);
-		engine.loadAssembly(program, AssemblyType::Program);
+		if (vmState.imageMode) {
+			engine.loadAssembly(programPath, AssemblyType::Program);
+		} else {
+			AssemblyParser::Assembly program;
+			Loader::load(std::cin, vmState, program);
+			engine.loadAssembly(program, AssemblyType::Program);
+		}
 
 		if (!vmState.lazyJIT) {
 			//Compile all functions
 			engine.compile();
-		}
-		else {
+		} else {
 			//Load definitions
-			engine.loadDefinitions();
+			engine.load();
 
 			//Compile the entry point
 			engine.compileFunction("main()");

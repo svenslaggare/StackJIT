@@ -47,9 +47,6 @@ public:
 	//Marks that the given function points to the given image
 	void addFunction(std::string function, AssemblyImage* image);
 
-	//Marks that the given class points to the given image
-	void addClass(std::string className, AssemblyImage* image);
-
 	//Returns the given function
 	const AssemblyParser::Function* getFunction(std::string function) const;
 
@@ -76,11 +73,11 @@ private:
 	//Generates code for loaded functions
 	void generateCode();
 
-	//Loads the assemblies
-	void load();
-
 	//Loads the runtime library
 	void loadRuntimeLibrary();
+
+	//Loads the given image
+	void loadImage(AssemblyImage* image, AssemblyType assemblyType);
 
 	//Compiles the given function
 	void compileFunction(Function* function, std::string signature = "", bool resolveSymbols = false);
@@ -103,14 +100,17 @@ public:
 	//Returns the entry point
 	EntryPointFunction entryPoint() const; 
 
-	//Loads the given library from a file
-	bool loadLibrary(std::string filePath);
+	//Loads the given assembly from a file
+	bool loadAssembly(std::string filePath, AssemblyType assemblyType = AssemblyType::Library);
 
 	//Loads the given assembly
 	void loadAssembly(AssemblyParser::Assembly& assembly, AssemblyType assemblyType);
 
-	//Loads definitions
-	void loadDefinitions();
+	//Loads the given image from the given stream
+	void loadImage(std::ifstream& stream, AssemblyType assemblyType);
+
+	//Loads assemblies
+	void load(bool loadBodies = false);
 
 	//Compiles the function with the given signature
 	bool compileFunction(std::string signature);

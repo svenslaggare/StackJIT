@@ -28,14 +28,18 @@ const std::vector<AssemblyImage*>& ImageContainer::images() const {
 
 void ImageContainer::addImage(AssemblyImage* image) {
 	mImages.push_back(image);
+
+	for (auto& classDef : image->classes()) {
+		mClassToImage.insert({ classDef.first, image });
+	}
+
+	for (auto& func : image->functions()) {
+		mFuncToImage.insert({ func.first, image });
+	}
 }
 
 void ImageContainer::addFunction(std::string function, AssemblyImage* image) {
 	mFuncToImage.insert({ function, image });
-}
-
-void ImageContainer::addClass(std::string className, AssemblyImage* image) {
-	mClassToImage.insert({ className, image });
 }
 
 const AssemblyParser::Function* ImageContainer::getFunction(std::string function) const {
@@ -90,8 +94,9 @@ EntryPointFunction ExecutionEngine::entryPoint() const {
 }
 
 //Returns the function with the given name
-AssemblyParser::Function* getFunction(AssemblyParser::Assembly& assembly, std::string funcName) {
-	for (auto& func : assembly.functions) {
+const AssemblyParser::Function* getFunction(AssemblyImage& image, std::string funcName) {
+	for (auto& current : image.functions()) {
+		auto& func = current.second;
 		if (func.name == funcName) {
 			return &func;
 		}
@@ -100,23 +105,9 @@ AssemblyParser::Function* getFunction(AssemblyParser::Assembly& assembly, std::s
 	return nullptr;
 }
 
-bool ExecutionEngine::loadLibrary(std::string filePath) {
-	std::ifstream fileStream(filePath);
-
-	if (!fileStream.is_open()) {
-		std::cout << "Could not load library '" << filePath << "'." << std::endl;
-		return false;
-	}
-
-	AssemblyParser::Assembly lib;
-	Loader::load(fileStream, mVMState, lib);
-	loadAssembly(lib, AssemblyType::Library);
-	return true;
-}
-
-void ExecutionEngine::loadAssembly(AssemblyParser::Assembly& assembly, AssemblyType assemblyType) {
-    if (assemblyType == AssemblyType::Program) {
-		auto mainFunc = getFunction(assembly, "main");
+void ExecutionEngine::loadImage(AssemblyImage* image, AssemblyType assemblyType) {
+	if (assemblyType == AssemblyType::Program) {
+		auto mainFunc = getFunction(*image, "main");
 
 		if (mainFunc != nullptr) {
 			if (!(mainFunc->parameters.size() == 0
@@ -126,18 +117,58 @@ void ExecutionEngine::loadAssembly(AssemblyParser::Assembly& assembly, AssemblyT
 		} else {
 			throw std::runtime_error("The main function must be defined.");
 		}
-    }
+	}
 
-	//Add the loaded assembly
-	mImageContainer.addImage(new AssemblyImage(assembly));
+	mImageContainer.addImage(image);
+}
+
+void ExecutionEngine::loadAssembly(AssemblyParser::Assembly& assembly, AssemblyType assemblyType) {
+    loadImage(new AssemblyImage(assembly), assemblyType);
+}
+
+bool ExecutionEngine::loadAssembly(std::string filePath, AssemblyType assemblyType) {
+	std::ios::openmode openMode = std::ios::in;
+
+	if (filePath.find(".simg") != std::string::npos) {
+		openMode = std::ios::binary;
+	}
+
+	std::ifstream fileStream(filePath, openMode);
+
+	if (!fileStream.is_open()) {
+		std::cout << "Could not load assembly '" << filePath << "'." << std::endl;
+		return false;
+	}
+
+	if (openMode == std::ios::binary) {
+		loadImage(fileStream, assemblyType);
+	} else {
+		AssemblyParser::Assembly assembly;
+		Loader::load(fileStream, mVMState, assembly);
+		loadAssembly(assembly, assemblyType);
+	}
+
+	return true;
+}
+
+void ExecutionEngine::loadImage(std::ifstream& stream, AssemblyType assemblyType) {
+	stream.seekg(0, std::ios::end);
+	auto size = (std::size_t)stream.tellg();
+	stream.seekg(0, std::ios::beg);
+
+	BinaryData imageData(size);
+	if (!stream.read(imageData.data(), size)) {
+		throw std::runtime_error("Could not load image.");
+	}
+
+	auto image = new AssemblyImage();
+	AssemblyImageLoader::load(imageData, *image);
+	loadImage(image, assemblyType);
 }
 
 void ExecutionEngine::loadRuntimeLibrary() {
 	if (mVMState.loadRuntimeLibrary) {
-		bool loaded = true;
-
-		loaded &= loadLibrary(mBaseDir + "rtlib/native.sbc");
-		loaded &= loadLibrary(mBaseDir + "rtlib/string.sbc");
+		bool loaded = loadAssembly(mBaseDir + "rtlib/rtlib.simg");
 
 		if (!loaded) {
 			throw std::runtime_error("Could not load runtime library.");
@@ -145,7 +176,7 @@ void ExecutionEngine::loadRuntimeLibrary() {
 	}
 }
 
-void ExecutionEngine::load() {
+void ExecutionEngine::load(bool loadBodies) {
 	auto& binder = mVMState.binder();
 
 	//Load runtime library
@@ -166,52 +197,11 @@ void ExecutionEngine::load() {
 	for (auto& image : mImageContainer.images()) {
 		for (auto& current : image->functions()) {
 			auto& currentFunc = current.second;
-			image->loadFunctionBody(current.first);
-
 			FunctionDefinition funcDef;
 
-			if (!currentFunc.isExternal) {
-				auto func = Loader::loadManagedFunction(mVMState, currentFunc);
-
-				mLoadedFunctions.insert({ binder.functionSignature(*func), func });
-
-				funcDef = FunctionDefinition(
-					func->name(),
-					func->parameters(),
-					func->returnType(),
-					func->isMemberFunction());
-			} else {
-				Loader::loadExternalFunction(mVMState, currentFunc, funcDef);
+			if (loadBodies) {
+				image->loadFunctionBody(current.first);
 			}
-
-			binder.define(funcDef);
-		}
-	}
-}
-
-void ExecutionEngine::loadDefinitions() {
-	auto& binder = mVMState.binder();
-
-	//Load runtime library
-	loadRuntimeLibrary();
-
-	//Load classes
-	Loader::loadClasses(mVMState, mImageContainer);
-
-	//Load native functions
-	NativeLibrary::add(mVMState);
-
-	if (mVMState.testMode) {
-		//Load test functions
-		TestLibrary::add(mVMState);
-	}
-
-	//Load functions
-	for (auto& image : mImageContainer.images()) {
-		for (auto& current : image->functions()) {
-			auto& currentFunc = current.second;
-
-			FunctionDefinition funcDef;
 
 			if (!currentFunc.isExternal) {
 				Loader::generateDefinition(mVMState, currentFunc, funcDef);
@@ -220,8 +210,6 @@ void ExecutionEngine::loadDefinitions() {
 				if (binder.isDefined(signature)) {
 					throw std::runtime_error("The function '" + signature + "' is already defined.");
 				}
-
-				mImageContainer.addFunction(current.first, image);
 			} else {
 				Loader::loadExternalFunction(mVMState, currentFunc, funcDef);
 			}
@@ -286,7 +274,7 @@ void ExecutionEngine::generateCode() {
 }
 
 void ExecutionEngine::compile() {
-	load();
+	load(true);
 	generateCode();
     mJIT.makeExecutable();
 }

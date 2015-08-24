@@ -28,6 +28,10 @@ namespace {
 	}
 }
 
+AssemblyImage::AssemblyImage() {
+
+}
+
 AssemblyImage::AssemblyImage(std::vector<char> imageData,
 							 std::unordered_map<std::string, std::size_t> functionBodyOffset,
 							 std::unordered_map<std::string, std::size_t> classBodyOffsets,
@@ -235,7 +239,7 @@ AssemblyParser::Class AssemblyImageLoader::loadClassDefinition(BinaryData& data,
 	return classDef;
 }
 
-AssemblyImage AssemblyImageLoader::load(BinaryData& imageData) {
+void AssemblyImageLoader::load(BinaryData& imageData, AssemblyImage& image) {
 	std::unordered_map<std::string, std::size_t> functionBodyOffset;
 	std::unordered_map<std::string, std::size_t> classBodyOffsets;
 	std::map<std::string, AssemblyParser::Function> functions;
@@ -273,11 +277,11 @@ AssemblyImage AssemblyImageLoader::load(BinaryData& imageData) {
 		classes.emplace(classDef.name, classDef);
 	}
 
-	return {
-		std::move(imageData),
-		std::move(functionBodyOffset),
-		std::move(classBodyOffsets),
-		std::move(functions),
-		std::move(classes)
-	};
+	image = std::move(AssemblyImage(
+		  std::move(imageData),
+		  std::move(functionBodyOffset),
+		  std::move(classBodyOffsets),
+		  std::move(functions),
+		  std::move(classes)
+	));
 }
