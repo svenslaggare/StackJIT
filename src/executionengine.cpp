@@ -27,22 +27,20 @@ const std::vector<AssemblyImage*>& ImageContainer::images() const {
 }
 
 void ImageContainer::addImage(AssemblyImage* image) {
-	std::size_t index = mImages.size();
 	mImages.push_back(image);
+}
 
-	for (auto& func : image->functions()) {
-		mFuncToImage.insert({ func.first, index });
-	}
+void ImageContainer::addFunction(std::string function, AssemblyImage* image) {
+	mFuncToImage.insert({ function, image });
+}
 
-	for (auto& classDef : image->classes()) {
-		mClassToImage.insert({ classDef.first, index });
-	}
+void ImageContainer::addClass(std::string className, AssemblyImage* image) {
+	mClassToImage.insert({ className, image });
 }
 
 const AssemblyParser::Function* ImageContainer::getFunction(std::string function) const {
 	if (mFuncToImage.count(function) > 0) {
-		auto imageIndex = mFuncToImage.at(function);
-		return &mImages.at(imageIndex)->functions().at(function);
+		return &mFuncToImage.at(function)->functions().at(function);
 	}
 
 	return nullptr;
@@ -50,15 +48,13 @@ const AssemblyParser::Function* ImageContainer::getFunction(std::string function
 
 void ImageContainer::loadFunctionBody(std::string function) {
 	if (mFuncToImage.count(function) > 0) {
-		auto imageIndex = mFuncToImage[function];
-		mImages[imageIndex]->loadFunctionBody(function);
+		mFuncToImage[function]->loadFunctionBody(function);
 	}
 }
 
 void ImageContainer::loadClassBody(std::string className) {
 	if (mClassToImage.count(className) > 0) {
-		auto imageIndex = mClassToImage[className];
-		mImages[imageIndex]->loadClassBody(className);
+		mClassToImage[className]->loadClassBody(className);
 	}
 }
 
@@ -138,6 +134,7 @@ void ExecutionEngine::loadAssembly(AssemblyParser::Assembly& assembly, AssemblyT
 
 	//Add the loaded assembly
 	mAssemblies.push_back(&assembly);
+	mImageContainer.addImage(new AssemblyImage(assembly));
 }
 
 void ExecutionEngine::loadRuntimeLibrary() {
@@ -201,7 +198,7 @@ void ExecutionEngine::loadDefinitions() {
 	loadRuntimeLibrary();
 
 	//Load classes
-	Loader::loadClasses(mVMState, mAssemblies);
+	Loader::loadClasses(mVMState, mImageContainer);
 
 	//Load native functions
 	NativeLibrary::add(mVMState);
@@ -212,8 +209,10 @@ void ExecutionEngine::loadDefinitions() {
 	}
 
 	//Load functions
-	for (auto assembly : mAssemblies) {
-		for (auto& currentFunc : assembly->functions) {
+	for (auto& image : mImageContainer.images()) {
+		for (auto& current : image->functions()) {
+			auto& currentFunc = current.second;
+
 			FunctionDefinition funcDef;
 
 			if (!currentFunc.isExternal) {
@@ -224,7 +223,7 @@ void ExecutionEngine::loadDefinitions() {
 					throw std::runtime_error("The function '" + signature + "' is already defined.");
 				}
 
-				mLoadedDefinitions.insert({ signature, currentFunc });
+				mImageContainer.addFunction(current.first, image);
 			} else {
 				Loader::loadExternalFunction(mVMState, currentFunc, funcDef);
 			}
@@ -262,10 +261,12 @@ void ExecutionEngine::compileFunction(Function* function, std::string signature,
 }
 
 bool ExecutionEngine::compileFunction(std::string signature) {
-	if (mLoadedDefinitions.count(signature) > 0 && !mJIT.hasCompiled(signature)) {
+	auto funcDef = mImageContainer.getFunction(signature);
+
+	if (funcDef != nullptr && !mJIT.hasCompiled(signature)) {
 		//Load the function
-		auto funcDef = mLoadedDefinitions[signature];
-		auto func = Loader::loadManagedFunction(mVMState, funcDef, false);
+		mImageContainer.loadFunctionBody(signature);
+		auto func = Loader::loadManagedFunction(mVMState, *funcDef, false);
 		mLoadedFunctions.insert({ mVMState.binder().functionSignature(*func), func });
 
 		//Compile it

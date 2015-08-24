@@ -108,7 +108,16 @@
     <ClInclude Include="..\src\vmstate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\imageloader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\bytecodegenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\windows\callingconvention.h">
+      <Filter>Header Files\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\windows\callstack.h">
       <Filter>Header Files\windows</Filter>
     </ClInclude>
     <ClInclude Include="..\src\windows\memory.h">
@@ -192,6 +201,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\vmstate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\callstack.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\bytecodegenerator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\imageloader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

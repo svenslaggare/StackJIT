@@ -82,7 +82,7 @@ void ByteCodeGenerator::generateFunction(std::ostream& stream, const AssemblyPar
 			stream << "func ";
 		}
 
-		stream << AssemblyParser::getSignature(function) << " " << function.returnType << std::endl;
+		stream << AssemblyParser::getSignature(function, true) << " " << function.returnType << std::endl;
 
 		stream << "{" << std::endl;
 

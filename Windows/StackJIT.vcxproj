@@ -48,6 +48,9 @@
     <ClInclude Include="..\src\typeprovider.h" />
     <ClInclude Include="..\src\verifier.h" />
     <ClInclude Include="..\src\vmstate.h" />
+    <ClInclude Include="..\src\imageloader.h" />
+    <ClInclude Include="..\src\bytecodegenerator.h" />
+    <ClInclude Include="..\src\callstack.h" />
     <ClInclude Include="..\src\windows\callingconvention.h" />
     <ClInclude Include="..\src\windows\memory.h" />
   </ItemGroup>
@@ -76,6 +79,9 @@
     <ClCompile Include="..\src\typeprovider.cpp" />
     <ClCompile Include="..\src\verifier.cpp" />
     <ClCompile Include="..\src\vmstate.cpp" />
+    <ClCompile Include="..\src\callstack.cpp" />
+    <ClCompile Include="..\src\imageloader.cpp" />
+    <ClCompile Include="..\src\bytecodegenerator.cpp" />
     <ClCompile Include="..\src\windows\callingconvetion.cpp" />
     <ClCompile Include="..\src\windows\memory.cpp" />
   </ItemGroup>

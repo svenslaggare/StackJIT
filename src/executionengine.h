@@ -31,8 +31,8 @@ typedef int (*EntryPointFunction)();
 class ImageContainer {
 private:
 	std::vector<AssemblyImage*> mImages;
-	std::unordered_map<std::string, std::size_t> mFuncToImage;
-	std::unordered_map<std::string, std::size_t> mClassToImage;
+	std::unordered_map<std::string, AssemblyImage*> mFuncToImage;
+	std::unordered_map<std::string, AssemblyImage*> mClassToImage;
 public:
 	//Creates a new image container
 	ImageContainer();
@@ -43,6 +43,12 @@ public:
 
 	//Adds the given image to the container
 	void addImage(AssemblyImage* image);
+
+	//Marks that the given function points to the given image
+	void addFunction(std::string function, AssemblyImage* image);
+
+	//Marks that the given class points to the given image
+	void addClass(std::string className, AssemblyImage* image);
 
 	//Returns the given function
 	const AssemblyParser::Function* getFunction(std::string function) const;
@@ -64,10 +70,9 @@ private:
 	std::string mBaseDir;
 
 	std::vector<AssemblyParser::Assembly*> mAssemblies;
-	ImageContainer imageContainer;
+	ImageContainer mImageContainer;
 
 	std::unordered_map<std::string, Function*> mLoadedFunctions;
-	std::unordered_map<std::string, AssemblyParser::Function> mLoadedDefinitions;
 
 	//Generates code for loaded functions
 	void generateCode();

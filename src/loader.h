@@ -7,6 +7,7 @@
 class Assembly;
 class VMState;
 class FunctionDefinition;
+class ImageContainer;
 
 //Represents a loader
 namespace Loader {
@@ -16,12 +17,15 @@ namespace Loader {
 	//Loads the given classes from the given assemblies
 	void loadClasses(VMState& vmState, std::vector<AssemblyParser::Assembly*>& assemblies);
 
+	//Loads the given classes from the given images container
+	void loadClasses(VMState& vmState, ImageContainer& imageContainer);
+
 	//Generates a definition for the given function
-	void generateDefinition(VMState& vmState, AssemblyParser::Function& function, FunctionDefinition& definition);
+	void generateDefinition(VMState& vmState, const AssemblyParser::Function& function, FunctionDefinition& definition);
 
 	//Loads the given external function
-	void loadExternalFunction(VMState& vmState, AssemblyParser::Function& function, FunctionDefinition& loadedFunction);
+	void loadExternalFunction(VMState& vmState, const AssemblyParser::Function& function, FunctionDefinition& loadedFunction);
 
 	//Loads the given managed function
-	Function* loadManagedFunction(VMState& vmState, AssemblyParser::Function& function, bool checkIfDefined = true);
+	Function* loadManagedFunction(VMState& vmState, const AssemblyParser::Function& function, bool checkIfDefined = true);
 }

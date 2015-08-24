@@ -43,10 +43,20 @@ AssemblyImage::AssemblyImage(std::vector<char> imageData,
 
 AssemblyImage::AssemblyImage(const AssemblyParser::Assembly& assembly) {
 	for (auto func : assembly.functions) {
-		mFunctions.emplace(AssemblyParser::getSignature(func), func);
+		auto signature = AssemblyParser::getSignature(func);
+
+		if (mFunctions.count(signature) > 0) {
+			throw std::runtime_error("The function '" + signature + "' is already defined.");
+		}
+
+		mFunctions.emplace(signature, func);
 	}
 
 	for (auto classDef : assembly.classes) {
+		if (mClasses.count(classDef.name) > 0) {
+			throw std::runtime_error("The class '" + classDef.name + "' is already defined.");
+		}
+
 		mClasses.emplace(classDef.name, classDef);
 	}
 }
@@ -240,15 +250,24 @@ AssemblyImage AssemblyImageLoader::load(BinaryData& imageData) {
 	for (std::size_t i = 0; i < numFuncs; i++) {
 		auto func = loadFunctionDefinition(imageData, index);
 		auto bodyOffset = loadData<std::size_t>(imageData, index);
+		auto signature = AssemblyParser::getSignature(func);
 
-		functionBodyOffset.emplace(AssemblyParser::getSignature(func), bodyOffset);
-		functions.emplace(AssemblyParser::getSignature(func), func);
+		if (functions.count(signature) > 0) {
+			throw std::runtime_error("The function '" + signature + "' is already defined.");
+		}
+
+		functionBodyOffset.emplace(signature, bodyOffset);
+		functions.emplace(signature, func);
 	}
 
 	//Load class defs
 	for (std::size_t i = 0; i < numClasses; i++) {
 		auto classDef = loadClassDefinition(imageData, index);
 		auto bodyOffset = loadData<std::size_t>(imageData, index);
+
+		if (classes.count(classDef.name) > 0) {
+			throw std::runtime_error("The class '" + classDef.name + "' is already defined.");
+		}
 
 		classBodyOffsets.emplace(classDef.name, bodyOffset);
 		classes.emplace(classDef.name, classDef);

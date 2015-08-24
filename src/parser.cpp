@@ -232,7 +232,7 @@ namespace {
 	}
 }
 
-std::string AssemblyParser::getSignature(const AssemblyParser::Function& function) {
+std::string AssemblyParser::getSignature(const AssemblyParser::Function& function, bool ignoreMemberThisRef) {
 	std::string signature = "";
 
 	signature += function.name;
@@ -242,7 +242,7 @@ std::string AssemblyParser::getSignature(const AssemblyParser::Function& functio
 
 	std::size_t start = 0;
 
-	if (function.isMemberFunction) {
+	if (function.isMemberFunction && ignoreMemberThisRef) {
 		start = 1;
 	}
 

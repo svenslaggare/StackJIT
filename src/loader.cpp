@@ -51,7 +51,7 @@ namespace {
 	}
 }
 
-void Loader::generateDefinition(VMState& vmState, AssemblyParser::Function& function, FunctionDefinition& definition) {
+void Loader::generateDefinition(VMState& vmState, const AssemblyParser::Function& function, FunctionDefinition& definition) {
 	auto returnType = getType(vmState, function.returnType);
 
 	std::vector<const Type*> parameters;
@@ -66,7 +66,7 @@ void Loader::generateDefinition(VMState& vmState, AssemblyParser::Function& func
 		function.isMemberFunction);
 }
 
-void Loader::loadExternalFunction(VMState& vmState, AssemblyParser::Function& function, FunctionDefinition& loadedFunction) {
+void Loader::loadExternalFunction(VMState& vmState, const AssemblyParser::Function& function, FunctionDefinition& loadedFunction) {
 	if (!function.isExternal) {
 		throw std::runtime_error("Expected an external function");
 	}
@@ -81,7 +81,7 @@ void Loader::loadExternalFunction(VMState& vmState, AssemblyParser::Function& fu
 	}
 }
 
-Function* Loader::loadManagedFunction(VMState& vmState, AssemblyParser::Function& function, bool checkIfDefined) {
+Function* Loader::loadManagedFunction(VMState& vmState, const AssemblyParser::Function& function, bool checkIfDefined) {
 	if (function.isExternal) {
 		throw std::runtime_error("Expected a managed function");
 	}
@@ -129,18 +129,41 @@ Function* Loader::loadManagedFunction(VMState& vmState, AssemblyParser::Function
 
 void Loader::loadClasses(VMState& vmState, std::vector<AssemblyParser::Assembly*>& assemblies) {
 	//First, create the classes
-	for (auto assembly : assemblies) {
-		for (auto& structure : assembly->classes) {
-			vmState.classProvider().add(structure.name, ClassMetadata());
+	for (auto& assembly : assemblies) {
+		for (auto& classDef : assembly->classes) {
+			vmState.classProvider().add(classDef.name, ClassMetadata());
 		}
 	}
 
 	//Then add the fields
-	for (auto assembly : assemblies) {
-		for (auto& currentClass : assembly->classes) {
-			ClassMetadata& classMetadata = vmState.classProvider().getMetadata(currentClass.name);
+	for (auto& assembly : assemblies) {
+		for (auto& classDef : assembly->classes) {
+			auto& classMetadata = vmState.classProvider().getMetadata(classDef.name);
 
-			for (auto field : currentClass.fields) {
+			for (auto& field : classDef.fields) {
+				classMetadata.addField(field.name, getType(vmState, field.type));
+			}
+		}
+	}
+}
+
+void Loader::loadClasses(VMState& vmState, ImageContainer& imageContainer) {
+	//First, create the classes
+	for (auto& image : imageContainer.images()) {
+		for (auto& classDef : image->classes()) {
+			vmState.classProvider().add(classDef.second.name, ClassMetadata());
+		}
+	}
+
+	//Then add the fields
+	for (auto& image : imageContainer.images()) {
+		for (auto& current : image->classes()) {
+			auto& classDef = current.second;
+
+			imageContainer.loadClassBody(classDef.name);
+			auto& classMetadata = vmState.classProvider().getMetadata(classDef.name);
+
+			for (auto& field : classDef.fields) {
 				classMetadata.addField(field.name, getType(vmState, field.type));
 			}
 		}
