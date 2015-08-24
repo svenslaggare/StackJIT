@@ -10,4 +10,6 @@ install:
     - sudo apt-get install -qq g++-4.8
     - sudo apt-get install -qq valgrind
 env: CXXTEST=/usr/include
-script: make test-valgrind
+script:
+    - make test-valgrind
+    - make -C assembler test
