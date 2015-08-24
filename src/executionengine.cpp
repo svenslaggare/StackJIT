@@ -64,10 +64,6 @@ ExecutionEngine::ExecutionEngine(VMState& vmState)
 }
 
 ExecutionEngine::~ExecutionEngine() {
-	for (auto assembly : mAssemblies) {
-		delete assembly;
-	}
-
 	for (auto func : mLoadedFunctions) {
 		delete func.second;
 	}
@@ -112,9 +108,9 @@ bool ExecutionEngine::loadLibrary(std::string filePath) {
 		return false;
 	}
 
-	auto lib = new AssemblyParser::Assembly;
-	Loader::load(fileStream, mVMState, *lib);
-	loadAssembly(*lib, AssemblyType::Library);
+	AssemblyParser::Assembly lib;
+	Loader::load(fileStream, mVMState, lib);
+	loadAssembly(lib, AssemblyType::Library);
 	return true;
 }
 
@@ -133,7 +129,6 @@ void ExecutionEngine::loadAssembly(AssemblyParser::Assembly& assembly, AssemblyT
     }
 
 	//Add the loaded assembly
-	mAssemblies.push_back(&assembly);
 	mImageContainer.addImage(new AssemblyImage(assembly));
 }
 
@@ -157,7 +152,7 @@ void ExecutionEngine::load() {
 	loadRuntimeLibrary();
 
 	//Load classes
-	Loader::loadClasses(mVMState, mAssemblies);
+	Loader::loadClasses(mVMState, mImageContainer);
 
 	//Load native functions
 	NativeLibrary::add(mVMState);
@@ -168,8 +163,11 @@ void ExecutionEngine::load() {
 	}
 
 	//Load functions
-	for (auto assembly : mAssemblies) {
-		for (auto& currentFunc : assembly->functions) {
+	for (auto& image : mImageContainer.images()) {
+		for (auto& current : image->functions()) {
+			auto& currentFunc = current.second;
+			image->loadFunctionBody(current.first);
+
 			FunctionDefinition funcDef;
 
 			if (!currentFunc.isExternal) {

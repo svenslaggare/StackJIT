@@ -69,7 +69,6 @@ private:
 
 	std::string mBaseDir;
 
-	std::vector<AssemblyParser::Assembly*> mAssemblies;
 	ImageContainer mImageContainer;
 
 	std::unordered_map<std::string, Function*> mLoadedFunctions;

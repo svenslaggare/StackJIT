@@ -135,9 +135,9 @@ int main(int argc, char* argv[]) {
 		handleOptions(argc, argv, engine);
 
 		//Load the program
-		auto program = new AssemblyParser::Assembly;
-		Loader::load(std::cin, vmState, *program);
-		engine.loadAssembly(*program, AssemblyType::Program);
+		AssemblyParser::Assembly program;
+		Loader::load(std::cin, vmState, program);
+		engine.loadAssembly(program, AssemblyType::Program);
 
 		if (!vmState.lazyJIT) {
 			//Compile all functions
