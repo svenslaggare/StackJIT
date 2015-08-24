@@ -122,6 +122,21 @@ void ExecutionEngine::loadImage(AssemblyImage* image, AssemblyType assemblyType)
 	mImageContainer.addImage(image);
 }
 
+void ExecutionEngine::loadImage(std::ifstream& stream, AssemblyType assemblyType) {
+	stream.seekg(0, std::ios::end);
+	auto size = (std::size_t)stream.tellg();
+	stream.seekg(0, std::ios::beg);
+
+	BinaryData imageData(size);
+	if (!stream.read(imageData.data(), size)) {
+		throw std::runtime_error("Could not load image.");
+	}
+
+	auto image = new AssemblyImage();
+	AssemblyImageLoader::load(imageData, *image);
+	loadImage(image, assemblyType);
+}
+
 void ExecutionEngine::loadAssembly(AssemblyParser::Assembly& assembly, AssemblyType assemblyType) {
     loadImage(new AssemblyImage(assembly), assemblyType);
 }
@@ -149,21 +164,6 @@ bool ExecutionEngine::loadAssembly(std::string filePath, AssemblyType assemblyTy
 	}
 
 	return true;
-}
-
-void ExecutionEngine::loadImage(std::ifstream& stream, AssemblyType assemblyType) {
-	stream.seekg(0, std::ios::end);
-	auto size = (std::size_t)stream.tellg();
-	stream.seekg(0, std::ios::beg);
-
-	BinaryData imageData(size);
-	if (!stream.read(imageData.data(), size)) {
-		throw std::runtime_error("Could not load image.");
-	}
-
-	auto image = new AssemblyImage();
-	AssemblyImageLoader::load(imageData, *image);
-	loadImage(image, assemblyType);
 }
 
 void ExecutionEngine::loadRuntimeLibrary() {

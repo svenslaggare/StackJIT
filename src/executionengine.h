@@ -79,6 +79,9 @@ private:
 	//Loads the given image
 	void loadImage(AssemblyImage* image, AssemblyType assemblyType);
 
+	//Loads the given image from the given stream
+	void loadImage(std::ifstream& stream, AssemblyType assemblyType);
+
 	//Compiles the given function
 	void compileFunction(Function* function, std::string signature = "", bool resolveSymbols = false);
 public:
@@ -105,9 +108,6 @@ public:
 
 	//Loads the given assembly
 	void loadAssembly(AssemblyParser::Assembly& assembly, AssemblyType assemblyType);
-
-	//Loads the given image from the given stream
-	void loadImage(std::ifstream& stream, AssemblyType assemblyType);
 
 	//Loads assemblies
 	void load(bool loadBodies = false);
