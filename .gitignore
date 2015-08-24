@@ -14,4 +14,5 @@ Windows/ipch
 Windows/StackJIT.opensdf
 Windows/StackJIT.sdf
 Windows/tests/x64
+Windows/StackAssembler/x64
 *.simg
