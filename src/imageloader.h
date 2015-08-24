@@ -25,6 +25,9 @@ public:
 		std::map<std::string, AssemblyParser::Function> functions,
 		std::map<std::string, AssemblyParser::Class> classes);
 
+	//Creates a new image from the given loaded assembly
+	AssemblyImage(const AssemblyParser::Assembly& assembly);
+
 	//Returns the functions
 	const std::map<std::string, AssemblyParser::Function>& functions() const;
 
@@ -32,10 +35,10 @@ public:
 	const std::map<std::string, AssemblyParser::Class>& classes() const;
 
 	//Loads the body of the given function
-	void loadFunctionBody(std::string function);
+	bool loadFunctionBody(std::string function);
 
 	//Loads the body of the given class
-	void loadClassBody(std::string className);
+	bool loadClassBody(std::string className);
 };
 
 //Loads assembly images

@@ -6,68 +6,60 @@
 #include "type.h"
 #include "loader.h"
 #include "native.h"
+#include "imageloader.h"
 #include "test.h"
-
 #include <iostream>
 #include <stdexcept>
 #include <fstream>
 
-CallStackEntry::CallStackEntry(Function* function, int callPoint)
-	: function(function), callPoint(callPoint) {
+ImageContainer::ImageContainer() {
 
 }
 
-CallStackEntry::CallStackEntry()
-	: function(nullptr), callPoint(0) {
-
-}
-
-CallStack::CallStack(std::size_t size)
-	: mSize(size), mStart(new CallStackEntry[size]), mTop(mStart) {
-
-}
-
-CallStack::~CallStack() {
-	delete[] mStart;
-}
-
-void CallStack::push(Function* function, int callPoint) {
-	if (mTop + 1 < mStart + mSize) {
-		mTop++;
-		*mTop = CallStackEntry(function, callPoint);
-	} else {
-		throw std::runtime_error("Stack overflow.");
+ImageContainer::~ImageContainer() {
+	for (auto image : mImages) {
+		delete image;
 	}
 }
 
-CallStackEntry CallStack::pop() {
-	if (mTop == mStart) {
-		throw std::runtime_error("Stack underflow.");
+const std::vector<AssemblyImage*>& ImageContainer::images() const {
+	return mImages;
+}
+
+void ImageContainer::addImage(AssemblyImage* image) {
+	std::size_t index = mImages.size();
+	mImages.push_back(image);
+
+	for (auto& func : image->functions()) {
+		mFuncToImage.insert({ func.first, index });
 	}
 
-	auto top = *mTop;
-	mTop--;
-	return top;
+	for (auto& classDef : image->classes()) {
+		mClassToImage.insert({ classDef.first, index });
+	}
 }
 
-std::size_t CallStack::size() const {
-	return mSize;
+const AssemblyParser::Function* ImageContainer::getFunction(std::string function) const {
+	if (mFuncToImage.count(function) > 0) {
+		auto imageIndex = mFuncToImage.at(function);
+		return &mImages.at(imageIndex)->functions().at(function);
+	}
+
+	return nullptr;
 }
 
-CallStackEntry* CallStack::start() {
-	return mStart;
+void ImageContainer::loadFunctionBody(std::string function) {
+	if (mFuncToImage.count(function) > 0) {
+		auto imageIndex = mFuncToImage[function];
+		mImages[imageIndex]->loadFunctionBody(function);
+	}
 }
 
-CallStackEntry* const CallStack::start() const {
-	return mStart;
-}
-
-CallStackEntry* CallStack::top() {
-	return mTop;
-}
-
-CallStackEntry* const * const CallStack::topPtr() const {
-	return &mTop;
+void ImageContainer::loadClassBody(std::string className) {
+	if (mClassToImage.count(className) > 0) {
+		auto imageIndex = mClassToImage[className];
+		mImages[imageIndex]->loadClassBody(className);
+	}
 }
 
 ExecutionEngine::ExecutionEngine(VMState& vmState)
@@ -88,7 +80,6 @@ ExecutionEngine::~ExecutionEngine() {
 JITCompiler& ExecutionEngine::jitCompiler() {
 	return mJIT;
 }
-
 
 const JITCompiler& ExecutionEngine::jitCompiler() const {
 	return mJIT;

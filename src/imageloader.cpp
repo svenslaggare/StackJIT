@@ -41,6 +41,16 @@ AssemblyImage::AssemblyImage(std::vector<char> imageData,
 
 }
 
+AssemblyImage::AssemblyImage(const AssemblyParser::Assembly& assembly) {
+	for (auto func : assembly.functions) {
+		mFunctions.emplace(AssemblyParser::getSignature(func), func);
+	}
+
+	for (auto classDef : assembly.classes) {
+		mClasses.emplace(classDef.name, classDef);
+	}
+}
+
 const std::map<std::string, AssemblyParser::Function>& AssemblyImage::functions() const {
 	return mFunctions;
 }
@@ -49,7 +59,7 @@ const std::map<std::string, AssemblyParser::Class>& AssemblyImage::classes() con
 	return mClasses;
 }
 
-void AssemblyImage::loadFunctionBody(std::string function) {
+bool AssemblyImage::loadFunctionBody(std::string function) {
 	if (mFunctionBodyOffsets.count(function) > 0) {
 		auto bodyOffset = mFunctionBodyOffsets[function];
 
@@ -135,10 +145,13 @@ void AssemblyImage::loadFunctionBody(std::string function) {
 		}
 
 		mFunctionBodyOffsets.erase(function);
+		return true;
 	}
+
+	return false;
 }
 
-void AssemblyImage::loadClassBody(std::string className) {
+bool AssemblyImage::loadClassBody(std::string className) {
 	if (mClassBodyOffsets.count(className) > 0) {
 		auto bodyOffset = mClassBodyOffsets[className];
 
@@ -155,7 +168,10 @@ void AssemblyImage::loadClassBody(std::string className) {
 		}
 
 		mClassBodyOffsets.erase(className);
+		return true;
 	}
+
+	return false;
 }
 
 AssemblyParser::AttributeContainer AssemblyImageLoader::loadAttributes(BinaryData& data, std::size_t& index) {

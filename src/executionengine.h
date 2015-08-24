@@ -2,66 +2,56 @@
 #include "binder.h"
 #include "jit.h"
 #include "parser.h"
+#include "callstack.h"
+#include "imageloader.h"
 #include <vector>
 #include <unordered_map>
 
 class VMState;
 class Assembly;
 class Function;
-
-//The type of the assembly
-enum class AssemblyType {
-	//The assembly is a program. This requires an entry point (main function)
-	Program,
-	//The assembly is a library. A library cannot be executed.
-	Library
-};
+class AssemblyImage;
 
 namespace AssemblyParser {
 	struct Assembly;
 }
 
-//Represents a entry point
-typedef int (*EntryPointFunction)();
-
-//Represents a call stack entry
-struct CallStackEntry {
-	Function* function;
-	int callPoint;
-
-	CallStackEntry(Function* function, int callPoint);
-	CallStackEntry();
+//The type of the assembly
+enum class AssemblyType {
+	//The assembly is a program. This requires an entry point (main function).
+	Program,
+	//The assembly is a library. A library cannot be executed.
+	Library
 };
 
-//Manages the call stack
-class CallStack {
+//Represents an entry point
+typedef int (*EntryPointFunction)();
+
+//Container for images
+class ImageContainer {
 private:
-	std::size_t mSize;
-	CallStackEntry* mStart;
-	CallStackEntry* mTop;
+	std::vector<AssemblyImage*> mImages;
+	std::unordered_map<std::string, std::size_t> mFuncToImage;
+	std::unordered_map<std::string, std::size_t> mClassToImage;
 public:
-	//Creates a new call stack of the given size
-	CallStack(std::size_t size);
-	~CallStack();
+	//Creates a new image container
+	ImageContainer();
+	~ImageContainer();
 
-	//Pushes the given function to the stack
-	void push(Function* function, int callPoint);
+	//Returns the loaded images
+	const std::vector<AssemblyImage*>& images() const;
 
-	//Pops the top entry
-	CallStackEntry pop();
+	//Adds the given image to the container
+	void addImage(AssemblyImage* image);
 
-	//Returns the size of the stack
-	std::size_t size() const;
+	//Returns the given function
+	const AssemblyParser::Function* getFunction(std::string function) const;
 
-	//Returns the start of the stack
-	CallStackEntry* start();
-	CallStackEntry* const start() const;
+	//Loads the body given function if not already loaded
+	void loadFunctionBody(std::string function);
 
-	//Returns top of the stack
-	CallStackEntry* top();
-
-	//Pointer to the top variable
-	CallStackEntry* const * const topPtr() const;
+	//Loads the body given class if not already loaded
+	void loadClassBody(std::string className);
 };
 
 //Represents the execution engine
@@ -74,6 +64,8 @@ private:
 	std::string mBaseDir;
 
 	std::vector<AssemblyParser::Assembly*> mAssemblies;
+	ImageContainer imageContainer;
+
 	std::unordered_map<std::string, Function*> mLoadedFunctions;
 	std::unordered_map<std::string, AssemblyParser::Function> mLoadedDefinitions;
 
