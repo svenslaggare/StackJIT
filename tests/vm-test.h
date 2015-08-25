@@ -366,11 +366,11 @@ public:
 
         TS_ASSERT_EQUALS(gcTest.allocatedObjects.size(), 3);
         TS_ASSERT_EQUALS(gcTest.collections.size(), 2);
-        TS_ASSERT_EQUALS(gcTest.collections[0].deallocatedObjects.size(), 0);
-        TS_ASSERT_EQUALS(gcTest.collections[1].deallocatedObjects.size(), 3);
-        TS_ASSERT_EQUALS(gcTest.collections[1].hasDeallocated(gcTest.allocatedObjects[0]), true);
-        TS_ASSERT_EQUALS(gcTest.collections[1].hasDeallocated(gcTest.allocatedObjects[1]), true);
-        TS_ASSERT_EQUALS(gcTest.collections[1].hasDeallocated(gcTest.allocatedObjects[2]), true);
+        TS_ASSERT_EQUALS(gcTest.collections.at(0).deallocatedObjects.size(), 0);
+        TS_ASSERT_EQUALS(gcTest.collections.at(1).deallocatedObjects.size(), 3);
+        TS_ASSERT_EQUALS(gcTest.collections.at(1).hasDeallocated(gcTest.allocatedObjects.at(0)), true);
+        TS_ASSERT_EQUALS(gcTest.collections.at(1).hasDeallocated(gcTest.allocatedObjects.at(1)), true);
+        TS_ASSERT_EQUALS(gcTest.collections.at(1).hasDeallocated(gcTest.allocatedObjects.at(2)), true);
 
         TS_ASSERT_EQUALS(
             parseGCData(invokeVM("gc/alive_on_stack1", "--no-gc --no-rtlib " + options), gcTest),
@@ -378,11 +378,11 @@ public:
 
         TS_ASSERT_EQUALS(gcTest.allocatedObjects.size(), 2);
         TS_ASSERT_EQUALS(gcTest.collections.size(), 3);
-        TS_ASSERT_EQUALS(gcTest.collections[0].deallocatedObjects.size(), 0);
-        TS_ASSERT_EQUALS(gcTest.collections[1].deallocatedObjects.size(), 1);
-        TS_ASSERT_EQUALS(gcTest.collections[1].hasDeallocated(gcTest.allocatedObjects[1]), true);
-        TS_ASSERT_EQUALS(gcTest.collections[2].deallocatedObjects.size(), 1);
-        TS_ASSERT_EQUALS(gcTest.collections[2].hasDeallocated(gcTest.allocatedObjects[0]), true);
+        TS_ASSERT_EQUALS(gcTest.collections.at(0).deallocatedObjects.size(), 0);
+        TS_ASSERT_EQUALS(gcTest.collections.at(1).deallocatedObjects.size(), 1);
+        TS_ASSERT_EQUALS(gcTest.collections.at(1).hasDeallocated(gcTest.allocatedObjects.at(1)), true);
+        TS_ASSERT_EQUALS(gcTest.collections.at(2).deallocatedObjects.size(), 1);
+        TS_ASSERT_EQUALS(gcTest.collections.at(2).hasDeallocated(gcTest.allocatedObjects.at(0)), true);
 
         TS_ASSERT_EQUALS(
             parseGCData(invokeVM("gc/locals1", "--no-gc --no-rtlib " + options), gcTest),
@@ -390,7 +390,7 @@ public:
 
         TS_ASSERT_EQUALS(gcTest.allocatedObjects.size(), 2);
         TS_ASSERT_EQUALS(gcTest.collections.size(), 1);
-        TS_ASSERT_EQUALS(gcTest.collections[0].deallocatedObjects.size(), 0);
+        TS_ASSERT_EQUALS(gcTest.collections.at(0).deallocatedObjects.size(), 0);
 
         TS_ASSERT_EQUALS(
             parseGCData(invokeVM("gc/locals2", "--no-gc --no-rtlib " + options), gcTest),
@@ -398,9 +398,9 @@ public:
 
         TS_ASSERT_EQUALS(gcTest.allocatedObjects.size(), 3);
         TS_ASSERT_EQUALS(gcTest.collections.size(), 1);
-        TS_ASSERT_EQUALS(gcTest.collections[0].deallocatedObjects.size(), 2);
-        TS_ASSERT_EQUALS(gcTest.collections[0].hasDeallocated(gcTest.allocatedObjects[0]), true);
-        TS_ASSERT_EQUALS(gcTest.collections[0].hasDeallocated(gcTest.allocatedObjects[1]), true);
+        TS_ASSERT_EQUALS(gcTest.collections.at(0).deallocatedObjects.size(), 2);
+        TS_ASSERT_EQUALS(gcTest.collections.at(0).hasDeallocated(gcTest.allocatedObjects.at(0)), true);
+        TS_ASSERT_EQUALS(gcTest.collections.at(0).hasDeallocated(gcTest.allocatedObjects.at(1)), true);
 
         TS_ASSERT_EQUALS(
             parseGCData(invokeVM("gc/ref_elements", "--no-gc --no-rtlib " + options), gcTest),
@@ -408,7 +408,7 @@ public:
 
         TS_ASSERT_EQUALS(gcTest.allocatedObjects.size(), 4);
         TS_ASSERT_EQUALS(gcTest.collections.size(), 1);
-        TS_ASSERT_EQUALS(gcTest.collections[0].deallocatedObjects.size(), 0);
+        TS_ASSERT_EQUALS(gcTest.collections.at(0).deallocatedObjects.size(), 0);
 
         TS_ASSERT_EQUALS(
             parseGCData(invokeVM("gc/ref_fields", "--no-gc --no-rtlib " + options), gcTest),
@@ -416,9 +416,9 @@ public:
 
         TS_ASSERT_EQUALS(gcTest.allocatedObjects.size(), 2);
         TS_ASSERT_EQUALS(gcTest.collections.size(), 3);
-        TS_ASSERT_EQUALS(gcTest.collections[0].deallocatedObjects.size(), 0);
-        TS_ASSERT_EQUALS(gcTest.collections[1].deallocatedObjects.size(), 0);
-        TS_ASSERT_EQUALS(gcTest.collections[2].deallocatedObjects.size(), 0);
+        TS_ASSERT_EQUALS(gcTest.collections.at(0).deallocatedObjects.size(), 0);
+        TS_ASSERT_EQUALS(gcTest.collections.at(1).deallocatedObjects.size(), 0);
+        TS_ASSERT_EQUALS(gcTest.collections.at(2).deallocatedObjects.size(), 0);
     }
 
     void testGCImplicit() {
