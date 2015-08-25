@@ -1,0 +1,37 @@
+class Point
+{
+	x Int
+	y Int
+}
+
+member Point::.constructor() Void
+{
+	RET
+}
+
+func isNull(Ref.Point) Void
+{
+	LDARG 0
+	LDNULL
+	CMPEQ
+	CALL std.println(Bool)
+	RET
+}
+
+func createNull() Ref.Point
+{
+	LDNULL
+	RET
+}
+
+func main() Int
+{
+	CALL createNull()
+	CALL isNull(Ref.Point)
+
+	NEWOBJ Point::.constructor()
+	CALL isNull(Ref.Point)
+
+	LDINT 0
+	RET
+}

@@ -1,0 +1,109 @@
+class Point
+{
+	x Int
+	y Int
+}
+
+member Point::.constructor(Int Int) Void
+{
+	LDARG 0
+	LDARG 1
+	STFIELD Point::x
+
+	LDARG 0
+	LDARG 2
+	STFIELD Point::y
+
+	RET
+}
+
+func printNull() Void
+{
+	LDSTR "null"
+	CALL std.println(Ref.std.String)
+	RET
+}
+
+func println(Ref.Point) Void
+{
+	LDARG 0
+	LDNULL
+	BNE 5
+	CALL printNull()
+	RET
+
+	LDARG 0
+	LDFIELD Point::x
+	CALL std.print(Int)
+
+	LDCHAR 58
+	CALL std.printchar(Char)
+
+	LDARG 0
+	LDFIELD Point::y
+	CALL std.print(Int)
+
+	LDCHAR 10
+    CALL std.printchar(Char)
+
+	RET
+}
+
+func main() Int
+{
+	.locals 1
+	.local 0 Ref.Array[Ref.Point]
+
+	LDINT 4
+	NEWARR Ref.Point
+	STLOC 0
+
+	LDLOC 0
+	LDINT 0
+	LDINT 1
+	LDINT 2
+	NEWOBJ Point::.constructor(Int Int)
+	STELEM Ref.Point
+
+	LDLOC 0
+	LDINT 1
+	LDINT 2
+	LDINT 3
+	NEWOBJ Point::.constructor(Int Int)
+	STELEM Ref.Point
+
+	LDLOC 0
+	LDINT 2
+	LDINT 3
+	LDINT 4
+	NEWOBJ Point::.constructor(Int Int)
+	STELEM Ref.Point
+
+	LDLOC 0
+	LDINT 3
+	LDNULL
+	STELEM Ref.Point
+
+	LDLOC 0
+	LDINT 0
+	LDELEM Ref.Point
+	CALL println(Ref.Point)
+
+	LDLOC 0
+	LDINT 1
+	LDELEM Ref.Point
+	CALL println(Ref.Point)
+
+	LDLOC 0
+	LDINT 2
+	LDELEM Ref.Point
+	CALL println(Ref.Point)
+
+	LDLOC 0
+	LDINT 3
+	LDELEM Ref.Point
+	CALL println(Ref.Point)
+
+	LDINT 0
+	RET
+}

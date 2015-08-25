@@ -9,7 +9,7 @@ member Point::.constructor() Void
    RET
 }
 
-func main2() Int
+func call1() Void
 {
 	.locals 1
 	.local 0 Ref.Array[Ref.Point]
@@ -30,16 +30,22 @@ func main2() Int
 
 	LDNULL
 	STLOC 0
-    CALL std.gc.collect()
 
-	LDINT 0
+	CALL call2()
+	RET
+}
+
+func call2() Void
+{
+	CALL std.gc.collect()
 	RET
 }
 
 func main() Int
 {
-	.locals 1
-	.local 0 Int
-	CALL main2()
+	CALL call1()
+	CALL std.gc.collect()
+
+	LDINT 0
 	RET
 }

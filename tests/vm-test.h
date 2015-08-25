@@ -223,6 +223,7 @@ public:
         TS_ASSERT_EQUALS(invokeVM("array/boolarray"), "false\ntrue\nfalse\ntrue\n0\n");
         TS_ASSERT_EQUALS(invokeVM("array/refarray"), "1:2\n2:3\n3:4\n4:5\n0\n");
         TS_ASSERT_EQUALS(invokeVM("array/chararray"), "A\nB\nC\nD\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("array/refwithnullarray", ""), "1:2\n2:3\n3:4\nnull\n0\n");
 
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program1")), "1: Arrays of type 'Void' is not allowed.");
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program2")), "1: 'RT' is not a valid type.");
@@ -254,6 +255,9 @@ public:
 
         TS_ASSERT_EQUALS(invokeVM("class/largeclass1"), "1337\n");
 
+        TS_ASSERT_EQUALS(invokeVM("class/null1"), "true\nfalse\n0\n");
+        TS_ASSERT_EQUALS(invokeVM("class/null2"), "true\nfalse\n0\n");
+
         TS_ASSERT_EQUALS(stripErrorMessage(
             invokeVM("class/invalid_constructor1")),
             "Constructors must have return type 'Void'.");
@@ -282,18 +286,20 @@ public:
 
     void testGC() {
 		//Without GC enabled
-        TS_ASSERT_EQUALS(invokeVM("gc/program1", "--no-gc --no-rtlib"), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("gc/program2", "--no-gc --no-rtlib"), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("gc/program3", "--no-gc --no-rtlib"), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("gc/program4", "--no-gc --no-rtlib"), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("gc/program5", "--no-gc --no-rtlib"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/callstack1", "--no-gc --no-rtlib"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/alive_on_stack1", "--no-gc --no-rtlib"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/locals1", "--no-gc --no-rtlib"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/locals2", "--no-gc --no-rtlib"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/ref_elements", "--no-gc --no-rtlib"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/ref_fields", "--no-gc --no-rtlib"), "0\n");
 
 		//With GC enabled
-        TS_ASSERT_EQUALS(invokeVM("gc/program1"), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("gc/program2"), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("gc/program3"), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("gc/program4"), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("gc/program5"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/callstack1", "--no-rtlib"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/alive_on_stack1", "--no-rtlib"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/locals1", "--no-rtlib"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/locals2", "--no-rtlib"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/ref_elements", "--no-rtlib"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/ref_fields", "--no-rtlib"), "0\n");
     }
 
     void testFunction() {

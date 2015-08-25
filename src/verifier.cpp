@@ -178,85 +178,85 @@ void Verifier::verifyInstruction(Function& function, Instruction inst, std::size
 			popType(operandStack);
 			break;
 		case OpCodes::DUPLICATE:
-		{
-			assertOperandCount(index, operandStack, 1);
-			auto topType = operandStack.top();
-			operandStack.push(topType);
-		}
+			{
+				assertOperandCount(index, operandStack, 1);
+				auto topType = operandStack.top();
+				operandStack.push(topType);
+			}
 			break;
 		case OpCodes::ADD:
 		case OpCodes::SUB:
 		case OpCodes::MUL:
 		case OpCodes::DIV:
-		{
-			assertOperandCount(index, operandStack, 2);
+			{
+				assertOperandCount(index, operandStack, 2);
 
-			auto op1 = popType(operandStack);
-			auto op2 = popType(operandStack);
+				auto op1 = popType(operandStack);
+				auto op2 = popType(operandStack);
 
-			if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Integer)) {
-				if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
-					operandStack.push(mIntType);
+				if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Integer)) {
+					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
+						operandStack.push(mIntType);
+					} else {
+						typeError(index, "Expected 2 operands of type Int on the stack.");
+					}
+				} else if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Float)) {
+					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Float)) {
+						operandStack.push(mFloatType);
+					} else {
+						typeError(index, "Expected 2 operands of type Float on the stack.");
+					}
 				} else {
-					typeError(index, "Expected 2 operands of type Int on the stack.");
+					typeError(index, "Expected 2 operands of type Int or Float on the stack.");
 				}
-			} else if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Float)) {
-				if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Float)) {
-					operandStack.push(mFloatType);
-				} else {
-					typeError(index, "Expected 2 operands of type Float on the stack.");
-				}
-			} else {
-				typeError(index, "Expected 2 operands of type Int or Float on the stack.");
 			}
-		}
 			break;
 		case OpCodes::LOAD_TRUE:
 		case OpCodes::LOAD_FALSE:
-		{
-			operandStack.push(mBoolType);
-		}
+			{
+				operandStack.push(mBoolType);
+			}
 			break;
 		case OpCodes::AND:
 		case OpCodes::OR:
-		{
-			assertOperandCount(index, operandStack, 2);
+			{
+				assertOperandCount(index, operandStack, 2);
 
-			auto op1 = popType(operandStack);
-			auto op2 = popType(operandStack);
+				auto op1 = popType(operandStack);
+				auto op2 = popType(operandStack);
 
-			if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Bool) && TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Bool)) {
-				operandStack.push(mBoolType);
-			} else {
-				typeError(index, "Expected 2 operands of type Bool on the stack.");
+				if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Bool) && TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Bool)) {
+					operandStack.push(mBoolType);
+				} else {
+					typeError(index, "Expected 2 operands of type Bool on the stack.");
+				}
 			}
-		}
 			break;
 		case OpCodes::CONVERT_INT_TO_FLOAT:
-		{
-			assertOperandCount(index, operandStack, 1);
+			{
+				assertOperandCount(index, operandStack, 1);
 
-			auto op = popType(operandStack);
+				auto op = popType(operandStack);
 
-			if (TypeSystem::isPrimitiveType(op, PrimitiveTypes::Integer)) {
-				operandStack.push(mFloatType);
-			} else {
-				typeError(index, "Expected 1 operand of type Int on the stack.");
+				if (TypeSystem::isPrimitiveType(op, PrimitiveTypes::Integer)) {
+					operandStack.push(mFloatType);
+				} else {
+					typeError(index, "Expected 1 operand of type Int on the stack.");
+				}
 			}
-		}
 			break;
 		case OpCodes::CONVERT_FLOAT_TO_INT:
-		{
-			assertOperandCount(index, operandStack, 1);
+			{
+				assertOperandCount(index, operandStack, 1);
 
-			auto op = popType(operandStack);
+				auto op = popType(operandStack);
 
-			if (TypeSystem::isPrimitiveType(op, PrimitiveTypes::Float)) {
-				operandStack.push(mIntType);
-			} else {
-				typeError(index, "Expected 1 operand of type Float on the stack.");
+				if (TypeSystem::isPrimitiveType(op, PrimitiveTypes::Float)) {
+					operandStack.push(mIntType);
+				} else {
+					typeError(index, "Expected 1 operand of type Float on the stack.");
+				}
 			}
-		}
 			break;
 		case OpCodes::COMPARE_EQUAL:
 		case OpCodes::COMPARE_NOT_EQUAL:
@@ -264,259 +264,259 @@ void Verifier::verifyInstruction(Function& function, Instruction inst, std::size
 		case OpCodes::COMPARE_GREATER_THAN_OR_EQUAL:
 		case OpCodes::COMPARE_LESS_THAN:
 		case OpCodes::COMPARE_LESS_THAN_OR_EQUAL:
-		{
-			assertOperandCount(index, operandStack, 2);
+			{
+				assertOperandCount(index, operandStack, 2);
 
-			auto op1 = popType(operandStack);
-			auto op2 = popType(operandStack);
+				auto op1 = popType(operandStack);
+				auto op2 = popType(operandStack);
 
-			if (inst.opCode() == OpCodes::COMPARE_EQUAL || inst.opCode() == OpCodes::COMPARE_NOT_EQUAL) {
-				if (*op1 == *mIntType) {
-					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
+				if (inst.opCode() == OpCodes::COMPARE_EQUAL || inst.opCode() == OpCodes::COMPARE_NOT_EQUAL) {
+					if (*op1 == *mIntType) {
+						if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
+							operandStack.push(mBoolType);
+						} else {
+							typeError(index, "Expected 2 operands of type Int on the stack.");
+						}
+					} else if (*op1 == *mBoolType) {
+						if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Bool)) {
+							operandStack.push(mBoolType);
+						} else {
+							typeError(index, "Expected 2 operands of type Bool on the stack.");
+						}
+					} else if (*op1 == *mFloatType) {
+						if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Float)) {
+							operandStack.push(mBoolType);
+						} else {
+							typeError(index, "Expected 2 operands of type Float on the stack.");
+						}
+					} else if (*op1 == *mCharType) {
+						if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Char)) {
+							operandStack.push(mBoolType);
+						} else {
+							typeError(index, "Expected 2 operands of type Char on the stack.");
+						}
+					} else if (sameType(op1, op2)) {
 						operandStack.push(mBoolType);
 					} else {
-						typeError(index, "Expected 2 operands of type Int on the stack.");
+						typeError(index, "Expected 2 operands of comparable type on the stack.");
 					}
-				} else if (*op1 == *mBoolType) {
-					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Bool)) {
-						operandStack.push(mBoolType);
-					} else {
-						typeError(index, "Expected 2 operands of type Bool on the stack.");
-					}
-				} else if (*op1 == *mFloatType) {
-					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Float)) {
-						operandStack.push(mBoolType);
-					} else {
-						typeError(index, "Expected 2 operands of type Float on the stack.");
-					}
-				} else if (*op1 == *mCharType) {
-					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Char)) {
-						operandStack.push(mBoolType);
-					} else {
-						typeError(index, "Expected 2 operands of type Char on the stack.");
-					}
-				} else if (sameType(op1, op2)) {
-					operandStack.push(mBoolType);
 				} else {
-					typeError(index, "Expected 2 operands of comparable type on the stack.");
-				}
-			} else {
-				if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Integer) && TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
-					operandStack.push(mBoolType);
-				} else if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Float) && TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Float)) {
-					operandStack.push(mBoolType);
-				} else if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Char) && TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Char)) {
-					operandStack.push(mBoolType);
-				} else {
-					typeError(index, "Expected 2 operands of type Int, Char or Float on the stack.");
+					if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Integer) && TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
+						operandStack.push(mBoolType);
+					} else if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Float) && TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Float)) {
+						operandStack.push(mBoolType);
+					} else if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Char) && TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Char)) {
+						operandStack.push(mBoolType);
+					} else {
+						typeError(index, "Expected 2 operands of type Int, Char or Float on the stack.");
+					}
 				}
 			}
-		}
 			break;
 		case OpCodes::NOT:
-		{
-			assertOperandCount(index, operandStack, 1);
+			{
+				assertOperandCount(index, operandStack, 1);
 
-			auto op = popType(operandStack);
+				auto op = popType(operandStack);
 
-			if (TypeSystem::isPrimitiveType(op, PrimitiveTypes::Bool)) {
-				operandStack.push(mBoolType);
-			} else {
-				typeError(index, "Expected 1 operand of type Bool on the stack.");
+				if (TypeSystem::isPrimitiveType(op, PrimitiveTypes::Bool)) {
+					operandStack.push(mBoolType);
+				} else {
+					typeError(index, "Expected 1 operand of type Bool on the stack.");
+				}
 			}
-		}
 			break;
 		case OpCodes::LOAD_LOCAL:
-		{
-			auto localType = function.getLocal(inst.intValue);
+			{
+				auto localType = function.getLocal(inst.intValue);
 
-			if (localType != nullptr) {
-				operandStack.push(localType);
-			} else {
-				typeError(index, "Cannot load untyped local (" + std::to_string(inst.intValue) + ").");
+				if (localType != nullptr) {
+					operandStack.push(localType);
+				} else {
+					typeError(index, "Cannot load untyped local (" + std::to_string(inst.intValue) + ").");
+				}
 			}
-		}
 			break;
 		case OpCodes::STORE_LOCAL:
-		{
-			assertOperandCount(index, operandStack, 1);
+			{
+				assertOperandCount(index, operandStack, 1);
 
-			auto localIndex = inst.intValue;
-			auto valueType = popType(operandStack);
-			auto localType = function.getLocal(localIndex);
+				auto localIndex = inst.intValue;
+				auto valueType = popType(operandStack);
+				auto localType = function.getLocal(localIndex);
 
-			auto error = checkType(localType, valueType);
+				auto error = checkType(localType, valueType);
 
-			if (error == "") {
-				if (localType == nullptr) {
-					function.setLocal(localIndex, valueType);
-				}
-			} else {
-				typeError(index, error);
-			}
-		}
-			break;
-		case OpCodes::CALL:
-		case OpCodes::CALL_INSTANCE:
-		{
-			bool isInstance = inst.opCode() == OpCodes::CALL_INSTANCE;
-
-			std::string signature = "";
-
-			if (!isInstance) {
-				signature = mVMState.binder().functionSignature(
-					inst.strValue,
-					inst.parameters);
-			} else {
-				signature = mVMState.binder().memberFunctionSignature(
-					inst.classType,
-					inst.strValue,
-					inst.parameters);
-			}
-
-			if (!mVMState.binder().isDefined(signature)) {
-				typeError(index, "The function '" + signature + "' is not defined.");
-			}
-
-			auto calledFunc = mVMState.binder().getFunction(signature);
-
-			if (!isInstance && calledFunc.isMemberFunction()) {
-				typeError(index, "Member functions must be called with the 'CALLINST' instruction.");
-			}
-
-			auto calledFuncNumArgs = calledFunc.parameters().size();
-			assertOperandCount(index, operandStack, calledFuncNumArgs);
-
-			//Check the arguments
-			for (int i = (int)calledFuncNumArgs - 1; i >= 0; i--) {
-				auto argType = popType(operandStack);
-				auto error = checkType(calledFunc.parameters()[i], argType);
-
-				if (error != "") {
+				if (error == "") {
+					if (localType == nullptr) {
+						function.setLocal(localIndex, valueType);
+					}
+				} else {
 					typeError(index, error);
 				}
 			}
-
-			//Return type
-			if (!TypeSystem::isPrimitiveType(calledFunc.returnType(), PrimitiveTypes::Void)) {
-				operandStack.push(calledFunc.returnType());
-			}
-		}
 			break;
-		case OpCodes::RET:
-		{
-			std::size_t returnCount = 1;
+		case OpCodes::CALL:
+		case OpCodes::CALL_INSTANCE:
+			{
+				bool isInstance = inst.opCode() == OpCodes::CALL_INSTANCE;
 
-			if (TypeSystem::isPrimitiveType(function.returnType(), PrimitiveTypes::Void)) {
-				returnCount = 0;
-			}
+				std::string signature = "";
 
-			if (operandStack.size() == returnCount) {
-				if (returnCount > 0) {
-					auto returnType = popType(operandStack);
+				if (!isInstance) {
+					signature = mVMState.binder().functionSignature(
+						inst.strValue,
+						inst.parameters);
+				} else {
+					signature = mVMState.binder().memberFunctionSignature(
+						inst.classType,
+						inst.strValue,
+						inst.parameters);
+				}
 
-					if (*returnType != *function.returnType()) {
-						throw std::runtime_error("Expected '" + typeToString(function.returnType()) + "' as return type.");
+				if (!mVMState.binder().isDefined(signature)) {
+					typeError(index, "The function '" + signature + "' is not defined.");
+				}
+
+				auto calledFunc = mVMState.binder().getFunction(signature);
+
+				if (!isInstance && calledFunc.isMemberFunction()) {
+					typeError(index, "Member functions must be called with the 'CALLINST' instruction.");
+				}
+
+				auto calledFuncNumArgs = calledFunc.parameters().size();
+				assertOperandCount(index, operandStack, calledFuncNumArgs);
+
+				//Check the arguments
+				for (int i = (int)calledFuncNumArgs - 1; i >= 0; i--) {
+					auto argType = popType(operandStack);
+					auto error = checkType(calledFunc.parameters()[i], argType);
+
+					if (error != "") {
+						typeError(index, error);
 					}
 				}
-			} else {
-				typeError(
-					index,
-					"Expected " + std::to_string(returnCount) + " operand on the stack but got "
-					+ std::to_string(operandStack.size()) + " when returning.");
+
+				//Return type
+				if (!TypeSystem::isPrimitiveType(calledFunc.returnType(), PrimitiveTypes::Void)) {
+					operandStack.push(calledFunc.returnType());
+				}
 			}
-		}
+			break;
+		case OpCodes::RET:
+			{
+				std::size_t returnCount = 1;
+
+				if (TypeSystem::isPrimitiveType(function.returnType(), PrimitiveTypes::Void)) {
+					returnCount = 0;
+				}
+
+				if (operandStack.size() == returnCount) {
+					if (returnCount > 0) {
+						auto returnType = popType(operandStack);
+
+						if (!sameType(returnType, function.returnType())) {
+							throw std::runtime_error("Expected '" + typeToString(function.returnType()) + "' as return type.");
+						}
+					}
+				} else {
+					typeError(
+						index,
+						"Expected " + std::to_string(returnCount) + " operand on the stack but got "
+						+ std::to_string(operandStack.size()) + " when returning.");
+				}
+			}
 			break;
 		case OpCodes::LOAD_ARG:
 			operandStack.push(function.parameters()[inst.intValue]);
 			break;
 		case OpCodes::BRANCH_EQUAL:
 		case OpCodes::BRANCH_NOT_EQUAL:
-		{
-			assertOperandCount(index, operandStack, 2);
+			{
+				assertOperandCount(index, operandStack, 2);
 
-			//Check if valid target
-			if (!(inst.intValue >= 0 && inst.intValue < (int) numInstructions)) {
-				typeError(index, "Invalid jump target (" + std::to_string(inst.intValue) + ").");
+				//Check if valid target
+				if (!(inst.intValue >= 0 && inst.intValue < (int) numInstructions)) {
+					typeError(index, "Invalid jump target (" + std::to_string(inst.intValue) + ").");
+				}
+
+				auto op1 = popType(operandStack);
+				auto op2 = popType(operandStack);
+
+				if (*op1 == *mIntType) {
+					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
+						branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
+					} else {
+						typeError(index, "Expected 2 operands of type Int on the stack.");
+					}
+				} else if (*op1 == *mBoolType) {
+					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Bool)) {
+						branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
+					} else {
+						typeError(index, "Expected 2 operands of type Bool on the stack.");
+					}
+				} else if (*op1 == *mFloatType) {
+					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Float)) {
+						branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
+					} else {
+						typeError(index, "Expected 2 operands of type Float on the stack.");
+					}
+				} else if (*op1 == *mCharType) {
+					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Char)) {
+						branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
+					} else {
+						typeError(index, "Expected 2 operands of type Char on the stack.");
+					}
+				} else if (sameType(op1, op2)) {
+					branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
+				} else {
+					typeError(index, "Expected 2 operands of comparable type on the stack.");
+				}
 			}
-
-			auto op1 = popType(operandStack);
-			auto op2 = popType(operandStack);
-
-			if (*op1 == *mIntType) {
-				if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
-					branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
-				} else {
-					typeError(index, "Expected 2 operands of type Int on the stack.");
-				}
-			} else if (*op1 == *mBoolType) {
-				if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Bool)) {
-					branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
-				} else {
-					typeError(index, "Expected 2 operands of type Bool on the stack.");
-				}
-			} else if (*op1 == *mFloatType) {
-				if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Float)) {
-					branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
-				} else {
-					typeError(index, "Expected 2 operands of type Float on the stack.");
-				}
-			} else if (*op1 == *mCharType) {
-				if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Char)) {
-					branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
-				} else {
-					typeError(index, "Expected 2 operands of type Char on the stack.");
-				}
-			} else if (sameType(op1, op2)) {
-				branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
-			} else {
-				typeError(index, "Expected 2 operands of comparable type on the stack.");
-			}
-		}
 			break;
 		case OpCodes::BRANCH_GREATER_THAN:
 		case OpCodes::BRANCH_GREATER_THAN_OR_EQUAL:
 		case OpCodes::BRANCH_LESS_THAN:
 		case OpCodes::BRANCH_LESS_THAN_OR_EQUAL:
-		{
-			assertOperandCount(index, operandStack, 2);
+			{
+				assertOperandCount(index, operandStack, 2);
 
-			//Check if valid target
-			if (!(inst.intValue >= 0 && inst.intValue < (int) numInstructions)) {
-				typeError(index, "Invalid jump target (" + std::to_string(inst.intValue) + ").");
+				//Check if valid target
+				if (!(inst.intValue >= 0 && inst.intValue < (int) numInstructions)) {
+					typeError(index, "Invalid jump target (" + std::to_string(inst.intValue) + ").");
+				}
+
+				auto op1 = popType(operandStack);
+				auto op2 = popType(operandStack);
+
+				if (*op1 == *mIntType) {
+					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
+						branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
+					} else {
+						typeError(index, "Expected 2 operands of type Int on the stack.");
+					}
+				} else if (*op1 == *mBoolType) {
+					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Bool)) {
+						branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
+					} else {
+						typeError(index, "Expected 2 operands of type Bool on the stack.");
+					}
+				} else if (*op1 == *mFloatType) {
+					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Float)) {
+						branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
+					} else {
+						typeError(index, "Expected 2 operands of type Float on the stack.");
+					}
+				} else if (*op1 == *mCharType) {
+					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Char)) {
+						branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
+					} else {
+						typeError(index, "Expected 2 operands of type Char on the stack.");
+					}
+				} else {
+					typeError(index, "Expected 2 operands of comparable type on the stack.");
+				}
 			}
-
-			auto op1 = popType(operandStack);
-			auto op2 = popType(operandStack);
-
-			if (*op1 == *mIntType) {
-				if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
-					branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
-				} else {
-					typeError(index, "Expected 2 operands of type Int on the stack.");
-				}
-			} else if (*op1 == *mBoolType) {
-				if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Bool)) {
-					branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
-				} else {
-					typeError(index, "Expected 2 operands of type Bool on the stack.");
-				}
-			} else if (*op1 == *mFloatType) {
-				if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Float)) {
-					branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
-				} else {
-					typeError(index, "Expected 2 operands of type Float on the stack.");
-				}
-			} else if (*op1 == *mCharType) {
-				if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Char)) {
-					branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
-				} else {
-					typeError(index, "Expected 2 operands of type Char on the stack.");
-				}
-			} else {
-				typeError(index, "Expected 2 operands of comparable type on the stack.");
-			}
-		}
 			break;
 		case OpCodes::BRANCH:
 			//Check if valid target
@@ -527,243 +527,243 @@ void Verifier::verifyInstruction(Function& function, Instruction inst, std::size
 			branches.push_back({ index, (std::size_t)inst.intValue, operandStack });
 			break;
 		case OpCodes::LOAD_NULL:
-		{
-			operandStack.push(mNullType);
-		}
+			{
+				operandStack.push(mNullType);
+			}
 			break;
 		case OpCodes::NEW_ARRAY:
-		{
-			assertOperandCount(index, operandStack, 1);
+			{
+				assertOperandCount(index, operandStack, 1);
 
-			auto error = checkType(mIntType, popType(operandStack));
+				auto error = checkType(mIntType, popType(operandStack));
 
-			if (error != "") {
-				typeError(index, error);
+				if (error != "") {
+					typeError(index, error);
+				}
+
+				auto elemType = mVMState.typeProvider().makeType(inst.strValue);
+
+				if (elemType == nullptr) {
+					typeError(index, "'" + inst.strValue + "' is not a valid type.");
+				}
+
+				if (*elemType == *mVoidType) {
+					typeError(index, "Arrays of type 'Void' is not allowed.");
+				}
+
+				operandStack.push(mVMState.typeProvider().makeType("Ref.Array[" + inst.strValue + "]"));
 			}
-
-			auto elemType = mVMState.typeProvider().makeType(inst.strValue);
-
-			if (elemType == nullptr) {
-				typeError(index, "'" + inst.strValue + "' is not a valid type.");
-			}
-
-			if (*elemType == *mVoidType) {
-				typeError(index, "Arrays of type 'Void' is not allowed.");
-			}
-
-			operandStack.push(mVMState.typeProvider().makeType("Ref.Array[" + inst.strValue + "]"));
-		}
 			break;
 		case OpCodes::STORE_ELEMENT:
-		{
-			assertOperandCount(index, operandStack, 3);
+			{
+				assertOperandCount(index, operandStack, 3);
 
-			auto valueType = popType(operandStack);
-			auto indexType = popType(operandStack);
-			auto arrayRefType = popType(operandStack);
+				auto valueType = popType(operandStack);
+				auto indexType = popType(operandStack);
+				auto arrayRefType = popType(operandStack);
 
-			bool isNull = arrayRefType == mNullType;
+				bool isNull = arrayRefType == mNullType;
 
-			if (!TypeSystem::isArray(arrayRefType) && !isNull) {
-				typeError(index, "Expected first operand to be an array reference, but got type: " + arrayRefType->name() + ".");
-			}
+				if (!TypeSystem::isArray(arrayRefType) && !isNull) {
+					typeError(index, "Expected first operand to be an array reference, but got type: " + arrayRefType->name() + ".");
+				}
 
-			if (!TypeSystem::isPrimitiveType(indexType, PrimitiveTypes::Integer)) {
-				typeError(index, "Expected second operand to be of type Int but got type: " + indexType->name() + ".");
-			}
+				if (!TypeSystem::isPrimitiveType(indexType, PrimitiveTypes::Integer)) {
+					typeError(index, "Expected second operand to be of type Int but got type: " + indexType->name() + ".");
+				}
 
-			auto elemType = mVMState.typeProvider().makeType(inst.strValue);
+				auto elemType = mVMState.typeProvider().makeType(inst.strValue);
 
-			if (elemType == nullptr) {
-				typeError(index, "There exists no type '" + inst.strValue + "'.");
-			}
+				if (elemType == nullptr) {
+					typeError(index, "There exists no type '" + inst.strValue + "'.");
+				}
 
-			assertNotVoidType(index, elemType);
+				assertNotVoidType(index, elemType);
 
-			if (!isNull) {
-				auto arrayElemType = dynamic_cast<const ArrayType*>(arrayRefType)->elementType();
+				if (!isNull) {
+					auto arrayElemType = dynamic_cast<const ArrayType*>(arrayRefType)->elementType();
 
-				auto error = checkType(arrayElemType, elemType);
+					auto error = checkType(arrayElemType, elemType);
 
-				if (error != "") {
-					typeError(index, error);
+					if (error != "") {
+						typeError(index, error);
+					}
+				}
+
+				if (!sameType(valueType, elemType)) {
+					typeError(index, "Expected third operand to be of type " + elemType->name() + ".");
 				}
 			}
-
-			if (*valueType != *elemType) {
-				typeError(index, "Expected third operand to be of type " + elemType->name() + ".");
-			}
-		}
 			break;
 		case OpCodes::LOAD_ELEMENT:
-		{
-			assertOperandCount(index, operandStack, 2);
+			{
+				assertOperandCount(index, operandStack, 2);
 
-			auto indexType = popType(operandStack);
-			auto arrayRefType = popType(operandStack);
+				auto indexType = popType(operandStack);
+				auto arrayRefType = popType(operandStack);
 
-			bool isNull = arrayRefType == mNullType;
+				bool isNull = arrayRefType == mNullType;
 
-			if (!TypeSystem::isArray(arrayRefType) && !isNull) {
-				typeError(index, "Expected first operand to be an array reference, but got type: " + arrayRefType->name() + ".");
-			}
-
-			if (!TypeSystem::isPrimitiveType(indexType, PrimitiveTypes::Integer)) {
-				typeError(index, "Expected second operand to be of type Int but got type: " + indexType->name() + ".");
-			}
-
-			auto elemType = mVMState.typeProvider().makeType(inst.strValue);
-
-			if (elemType == nullptr) {
-				typeError(index, "There exists no type '" + inst.strValue + "'.");
-			}
-
-			assertNotVoidType(index, elemType);
-
-			if (!isNull) {
-				auto arrayElemType = dynamic_cast<const ArrayType*>(arrayRefType)->elementType();
-
-				auto error = checkType(arrayElemType, elemType);
-
-				if (error != "") {
-					typeError(index, error);
+				if (!TypeSystem::isArray(arrayRefType) && !isNull) {
+					typeError(index, "Expected first operand to be an array reference, but got type: " + arrayRefType->name() + ".");
 				}
-			}
 
-			operandStack.push(elemType);
-		}
+				if (!TypeSystem::isPrimitiveType(indexType, PrimitiveTypes::Integer)) {
+					typeError(index, "Expected second operand to be of type Int but got type: " + indexType->name() + ".");
+				}
+
+				auto elemType = mVMState.typeProvider().makeType(inst.strValue);
+
+				if (elemType == nullptr) {
+					typeError(index, "There exists no type '" + inst.strValue + "'.");
+				}
+
+				assertNotVoidType(index, elemType);
+
+				if (!isNull) {
+					auto arrayElemType = dynamic_cast<const ArrayType*>(arrayRefType)->elementType();
+
+					auto error = checkType(arrayElemType, elemType);
+
+					if (error != "") {
+						typeError(index, error);
+					}
+				}
+
+				operandStack.push(elemType);
+			}
 			break;
 		case OpCodes::LOAD_ARRAY_LENGTH:
-		{
-			assertOperandCount(index, operandStack, 1);
-			auto arrayRefType = popType(operandStack);
+			{
+				assertOperandCount(index, operandStack, 1);
+				auto arrayRefType = popType(operandStack);
 
-			if (!TypeSystem::isArray(arrayRefType) && arrayRefType != mNullType) {
-				typeError(index, "Expected operand to be an array reference.");
+				if (!TypeSystem::isArray(arrayRefType) && arrayRefType != mNullType) {
+					typeError(index, "Expected operand to be an array reference.");
+				}
+
+				operandStack.push(mIntType);
 			}
-
-			operandStack.push(mIntType);
-		}
 			break;
 		case OpCodes::NEW_OBJECT:
-		{
-			std::string signature = mVMState.binder().memberFunctionSignature(
-				inst.classType,
-				inst.strValue,
-				inst.parameters);
+			{
+				std::string signature = mVMState.binder().memberFunctionSignature(
+					inst.classType,
+					inst.strValue,
+					inst.parameters);
 
-			if (!mVMState.binder().isDefined(signature)) {
-				typeError(index, "The constructor '" + signature + "' is not defined.");
-			}
-
-			auto calledFunc = mVMState.binder().getFunction(signature);
-
-			auto calledFuncNumArgs = calledFunc.parameters().size();
-			assertOperandCount(index, operandStack, calledFuncNumArgs - 1);
-
-			//Check the arguments
-			for (int i = (int)calledFuncNumArgs - 1; i >= 1; i--) {
-				auto argType = popType(operandStack);
-				auto error = checkType(calledFunc.parameters()[i], argType);
-
-				if (error != "") {
-					typeError(index, error);
+				if (!mVMState.binder().isDefined(signature)) {
+					typeError(index, "The constructor '" + signature + "' is not defined.");
 				}
-			}
 
-			operandStack.push(inst.classType);
-		}
+				auto calledFunc = mVMState.binder().getFunction(signature);
+
+				auto calledFuncNumArgs = calledFunc.parameters().size();
+				assertOperandCount(index, operandStack, calledFuncNumArgs - 1);
+
+				//Check the arguments
+				for (int i = (int)calledFuncNumArgs - 1; i >= 1; i--) {
+					auto argType = popType(operandStack);
+					auto error = checkType(calledFunc.parameters()[i], argType);
+
+					if (error != "") {
+						typeError(index, error);
+					}
+				}
+
+				operandStack.push(inst.classType);
+			}
 			break;
 		case OpCodes::LOAD_FIELD:
-		{
-			assertOperandCount(index, operandStack, 1);
+			{
+				assertOperandCount(index, operandStack, 1);
 
-			auto classRefType = popType(operandStack);
-			bool isNull = classRefType == mNullType;
+				auto classRefType = popType(operandStack);
+				bool isNull = classRefType == mNullType;
 
-			if (!TypeSystem::isClass(classRefType) && !isNull) {
-				typeError(index, "Expected first operand to be a class reference, but got type: " + classRefType->name() + ".");
-			}
-
-			std::pair<std::string, std::string> structAndField;
-
-			if (TypeSystem::getClassAndField(inst.strValue, structAndField)) {
-				auto className = structAndField.first;
-				auto fieldName = structAndField.second;
-
-				if (!mVMState.classProvider().isDefined(className)) {
-					typeError(index, "'" + className + "' is not a class type.");
+				if (!TypeSystem::isClass(classRefType) && !isNull) {
+					typeError(index, "Expected first operand to be a class reference, but got type: " + classRefType->name() + ".");
 				}
 
-				auto structMetadata = mVMState.classProvider().getMetadata(className);
-				auto classType = mVMState.typeProvider().makeType("Ref." + className);
+				std::pair<std::string, std::string> structAndField;
 
-				if (!isNull) {
-					auto error = checkType(classType, classRefType);
+				if (TypeSystem::getClassAndField(inst.strValue, structAndField)) {
+					auto className = structAndField.first;
+					auto fieldName = structAndField.second;
 
-					if (error != "") {
-						typeError(index, error);
+					if (!mVMState.classProvider().isDefined(className)) {
+						typeError(index, "'" + className + "' is not a class type.");
 					}
+
+					auto structMetadata = mVMState.classProvider().getMetadata(className);
+					auto classType = mVMState.typeProvider().makeType("Ref." + className);
+
+					if (!isNull) {
+						auto error = checkType(classType, classRefType);
+
+						if (error != "") {
+							typeError(index, error);
+						}
+					}
+
+					auto fieldType = structMetadata.fields().at(fieldName).type();
+
+					if (fieldType == nullptr) {
+						typeError(index, "There exists no field '" + fieldName + "' in the '" + className + "' class.");
+					}
+
+					operandStack.push(fieldType);
+				} else {
+					typeError(index, "Invalid field reference.");
 				}
-
-				auto fieldType = structMetadata.fields().at(fieldName).type();
-
-				if (fieldType == nullptr) {
-					typeError(index, "There exists no field '" + fieldName + "' in the '" + className + "' class.");
-				}
-
-				operandStack.push(fieldType);
-			} else {
-				typeError(index, "Invalid field reference.");
 			}
-		}
 			break;
 		case OpCodes::STORE_FIELD:
-		{
-			assertOperandCount(index, operandStack, 2);
+			{
+				assertOperandCount(index, operandStack, 2);
 
-			auto valueType = popType(operandStack);
-			auto classRefType = popType(operandStack);
-			bool isNull = classRefType == mNullType;
+				auto valueType = popType(operandStack);
+				auto classRefType = popType(operandStack);
+				bool isNull = classRefType == mNullType;
 
-			if (!TypeSystem::isClass(classRefType) && !isNull) {
-				typeError(index, "Expected first operand to be a class reference, but got type: " + classRefType->name() + ".");
-			}
-
-			std::pair<std::string, std::string> structAndField;
-
-			if (TypeSystem::getClassAndField(inst.strValue, structAndField)) {
-				auto className = structAndField.first;
-				auto fieldName = structAndField.second;
-
-				if (!mVMState.classProvider().isDefined(className)) {
-					typeError(index, "'" + className + "' is not a class type.");
+				if (!TypeSystem::isClass(classRefType) && !isNull) {
+					typeError(index, "Expected first operand to be a class reference, but got type: " + classRefType->name() + ".");
 				}
 
-				auto classMetadata = mVMState.classProvider().getMetadata(className);
-				auto fieldType = classMetadata.fields().at(fieldName).type();
+				std::pair<std::string, std::string> structAndField;
 
-				if (fieldType == nullptr) {
-					typeError(index, "There exists no field '" + fieldName + "' in the '" + className + "' class.");
-				}
+				if (TypeSystem::getClassAndField(inst.strValue, structAndField)) {
+					auto className = structAndField.first;
+					auto fieldName = structAndField.second;
 
-				auto classType = mVMState.typeProvider().makeType("Ref." + className);
-
-				if (!isNull) {
-					auto error = checkType(classType, classRefType);
-
-					if (error != "") {
-						typeError(index, error);
+					if (!mVMState.classProvider().isDefined(className)) {
+						typeError(index, "'" + className + "' is not a class type.");
 					}
-				}
 
-				if (*valueType != *fieldType) {
-					typeError(index, "Expected the second operand to be of type " + fieldType->name() + ".");
+					auto classMetadata = mVMState.classProvider().getMetadata(className);
+					auto fieldType = classMetadata.fields().at(fieldName).type();
+
+					if (fieldType == nullptr) {
+						typeError(index, "There exists no field '" + fieldName + "' in the '" + className + "' class.");
+					}
+
+					auto classType = mVMState.typeProvider().makeType("Ref." + className);
+
+					if (!isNull) {
+						auto error = checkType(classType, classRefType);
+
+						if (error != "") {
+							typeError(index, error);
+						}
+					}
+
+					if (!sameType(valueType, fieldType)) {
+						typeError(index, "Expected the second operand to be of type " + fieldType->name() + ".");
+					}
+				} else {
+					typeError(index, "Invalid field reference.");
 				}
-			} else {
-				typeError(index, "Invalid field reference.");
 			}
-		}
 			break;
 		case OpCodes::LOAD_STRING:
 			if (mStringType == nullptr) {

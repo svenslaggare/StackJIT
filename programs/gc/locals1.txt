@@ -11,13 +11,19 @@ member Point::.constructor() Void
 
 func main() Int
 {
-	.locals 1
+	.locals 3
 	.local 0 Ref.Point
+	.local 1 Ref.Point
+	.local 2 Ref.Point
 
 	NEWOBJ Point::.constructor()
+	STLOC 0
+
 	NEWOBJ Point::.constructor()
-	STLOC 0
-	STLOC 0
+	STLOC 1
+
+	LDNULL
+	STLOC 2
 
 	CALL std.gc.collect()
 

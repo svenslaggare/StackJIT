@@ -1,0 +1,46 @@
+class Point
+{
+	x Int
+	y Int
+}
+
+member Point::.constructor() Void
+{
+   RET
+}
+
+class List
+{
+	data1 Ref.Point
+	data2 Ref.Point
+}
+
+member List::.constructor() Void
+{
+	RET
+}
+
+func main() Int
+{
+	.locals 1
+
+	NEWOBJ List::.constructor()
+	STLOC 0
+
+	CALL std.gc.collect()
+
+	LDLOC 0
+	NEWOBJ Point::.constructor()
+	STFIELD List::data1
+
+	CALL std.gc.collect()
+
+	LDLOC 0
+	LDNULL
+	STFIELD List::data2
+
+	CALL std.gc.collect()
+
+	LDINT 0
+	RET
+}
