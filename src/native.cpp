@@ -9,6 +9,52 @@
 
 extern VMState vmState;
 
+StringRef::StringRef(RawClassRef stringRef) {
+	auto charsField = (char**)(stringRef + sCharsFieldOffset);
+	auto chars = *charsField;
+
+	if (chars == nullptr) {
+		Runtime::nullReferenceError();
+	}
+
+	ArrayRef<char> charsArray((unsigned char*)(chars));
+	mChars = charsArray.elementsPtr();
+	mLength = charsArray.length();
+}
+
+std::size_t StringRef::sCharsFieldOffset;
+const Type* StringRef::sCharType;
+const ClassType* StringRef::sStringType;
+
+char StringRef::charAt(int index) {
+	return mChars[index];
+}
+
+int StringRef::length() const {
+	return mLength;
+}
+
+const Type* StringRef::charType() {
+	return sCharType;
+}
+
+const ClassType* StringRef::stringType() {
+	return sStringType;
+}
+
+void StringRef::setCharsField(RawClassRef stringRef, char* value) {
+	*(char**)(stringRef + sCharsFieldOffset) = value;
+}
+
+void StringRef::initialize(VMState& vmState) {
+	auto& classMetadata = vmState.classProvider().getMetadata("std.String");
+	auto& typeProvider = vmState.typeProvider();
+
+	sCharsFieldOffset = classMetadata.fields().at("chars").offset();
+	sStringType = static_cast<const ClassType*>(typeProvider.makeType(TypeSystem::stringTypeName));
+	sCharType = typeProvider.makeType(TypeSystem::toString(PrimitiveTypes::Char));
+}
+
 void NativeLibrary::print(int x) {
 	std::cout << x;
 }
@@ -65,40 +111,6 @@ int NativeLibrary::abs(int x) {
     } else {
         return x;
     }
-}
-
-StringRef::StringRef(RawClassRef stringRef) {
-	auto charsField = (char**)(stringRef + sCharsFieldOffset);
-	auto chars = *charsField;
-
-	if (chars == nullptr) {
-		Runtime::nullReferenceError();
-	}
-
-	ArrayRef<char> charsArray((unsigned char*)(chars));
-	mChars = charsArray.elementsPtr();
-	mLength = charsArray.length();
-}
-
-void StringRef::setCharsField(RawClassRef stringRef, char* value) {
-	*(char**)(stringRef + sCharsFieldOffset) = value;
-}
-
-//Returns the char at the given index
-char StringRef::charAt(int index) {
-	return mChars[index];
-}
-
-//Returns the length of the string
-int StringRef::length() const {
-	return mLength;
-}
-
-std::size_t StringRef::sCharsFieldOffset;
-
-void StringRef::initialize(VMState& vmState) {
-	auto& classMetadata = vmState.classProvider().getMetadata("std.String");
-	sCharsFieldOffset = classMetadata.fields().at("chars").offset();
 }
 
 bool NativeLibrary::stringEquals(RawClassRef str1, RawClassRef str2) {

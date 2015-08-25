@@ -1,8 +1,9 @@
 #pragma once
-
 #include "objectref.h"
 
 class VMState;
+class Type;
+class ClassType;
 
 //Represents a string reference
 class StringRef {
@@ -11,18 +12,26 @@ private:
 	int mLength;
 
 	static std::size_t sCharsFieldOffset;
+	static const Type* sCharType;
+	static const ClassType* sStringType;
 public:
 	//Creates a new reference for the given raw reference
 	StringRef(RawClassRef stringRef);
-
-	//Sets the value of the chars field
-	static void setCharsField(RawClassRef stringRef, char* value);
 
 	//Returns the char at the given index
 	inline char charAt(int index);
 
 	//Returns tte length of the string
 	inline int length() const;
+
+	//Returns the char type
+	static const Type* charType();
+
+	//Returns the string type
+	static const ClassType* stringType();
+
+	//Sets the value of the chars field
+	static void setCharsField(RawClassRef stringRef, char* value);
 
 	//Initialize the string reference
 	static void initialize(VMState& vmState);

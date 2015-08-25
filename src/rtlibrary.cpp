@@ -233,16 +233,14 @@ unsigned char* Runtime::newObject(const Type* type) {
 
 unsigned char* Runtime::newString(const char* string, int length) {
     //Allocate the underlying char array
-    auto elemType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Char));
-    auto charsPtr = vmState.gc().newArray(elemType, length);
+    auto charsPtr = vmState.gc().newArray(StringRef::charType(), length);
 
     for (int i = 0; i < length; i++) {
         charsPtr[i + StackJIT::ARRAY_LENGTH_SIZE] = (unsigned char)string[i];
     }
 
 	//Allocate the string object
-	auto strType = static_cast<const ClassType*>(vmState.typeProvider().getType(TypeSystem::stringTypeName));
-	auto strPr = vmState.gc().newClass(strType);
+	auto strPr = vmState.gc().newClass(StringRef::stringType());
 
 	//Set the chars field
 	StringRef::setCharsField(strPr, (char*)charsPtr);
