@@ -11,5 +11,5 @@ install:
     - sudo apt-get install -qq valgrind
 env: CXXTEST=/usr/include
 script:
-    - make test-valgrind
+    - make test
     - make -C assembler test
