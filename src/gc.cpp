@@ -113,7 +113,7 @@ void GarbageCollector::markObject(ObjectHandle* handle) {
                 auto field = fieldEntry.second;
 
                 if (TypeSystem::isReferenceType(field.type())) {
-                    RegisterValue fieldValue = *((RegisterValue*)handle->handle() + field.offset());
+                    RegisterValue fieldValue = *(RegisterValue*)(handle->handle() + field.offset());
                     markValue(fieldValue, field.type());
                 }
             }
