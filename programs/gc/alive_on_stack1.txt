@@ -15,7 +15,11 @@ func main() Int
 	NEWOBJ Point::.constructor()
 	CALL std.gc.collect()
 	POP
+
+	CALL std.gc.collect()
 	POP
+
+	CALL std.gc.collect()
 
 	LDINT 0
 	RET

@@ -26,23 +26,8 @@ std::string handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
 			continue;
 		}
 
-		if (switchStr == "-psf" || switchStr == "--print-stack-frame") {
-			vmState.printStackFrame = true;
-			continue;
-		}
-
 		if (switchStr == "-ogc" || switchStr == "--output-generated-code") {
 			vmState.outputGeneratedCode = true;
-			continue;
-		}
-
-		if (switchStr == "-pfg" || switchStr == "--print-function-generation") {
-			vmState.printFunctionGeneration = true;
-			continue;
-		}
-
-		if (switchStr == "-plp" || switchStr == "--print-lazy-patching") {
-			vmState.printLazyPatching = true;
 			continue;
 		}
 
@@ -76,6 +61,46 @@ std::string handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
 
 		if (switchStr == "-im" || switchStr == "--image-mode") {
 			vmState.imageMode = true;
+			continue;
+		}
+
+		if (switchStr == "-psf" || switchStr == "--print-stack-frame") {
+			vmState.printStackFrame = true;
+			continue;
+		}
+
+		if (switchStr == "-pfg" || switchStr == "--print-function-generation") {
+			vmState.printFunctionGeneration = true;
+			continue;
+		}
+
+		if (switchStr == "-plp" || switchStr == "--print-lazy-patching") {
+			vmState.printLazyPatching = true;
+			continue;
+		}
+
+		if (switchStr == "--print-gc-period") {
+			vmState.printGCPeriod = true;
+			continue;
+		}
+
+		if (switchStr == "--print-alive-objects") {
+			vmState.printAliveObjects = true;
+			continue;
+		}
+
+		if (switchStr == "--print-gc-stack-trace") {
+			vmState.printGCStackTrace = true;
+			continue;
+		}
+
+		if (switchStr == "--print-alloc") {
+			vmState.printAllocation = true;
+			continue;
+		}
+
+		if (switchStr == "--print-dealloc") {
+			vmState.printDeallocation = true;
 			continue;
 		}
 

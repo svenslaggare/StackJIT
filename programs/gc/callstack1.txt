@@ -28,9 +28,6 @@ func call1() Void
 	NEWOBJ Point::.constructor()
 	STELEM Ref.Point
 
-	LDNULL
-	STLOC 0
-
 	CALL call2()
 	RET
 }

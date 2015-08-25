@@ -23,26 +23,41 @@ public:
     //Indicates if the input program is an image or from stdin
     bool imageMode = false;
 
-	//Prints the info about the stack frame
-	bool printStackFrame = false;
-
 	//Indicates if the generated code is outputted as a file
 	bool outputGeneratedCode = false;
 
     //Indicates if the GC is disabled
     bool disableGC = false;
 
-    //Indicates if the runtime library is loaded.
+    //Indicates if the runtime library is loaded at startup.
     bool loadRuntimeLibrary = true;
-
-    //Prints when a function has been compiled
-    bool printFunctionGeneration = false;
 
     //Indicates if the functions are lazily compiled
     bool lazyJIT = true;
 
+    //Prints the info about the stack frame
+    bool printStackFrame = false;
+
     //Prints when lazy calls are patched
     bool printLazyPatching = false;
+
+    //Prints when a function has been compiled
+    bool printFunctionGeneration = false;
+
+    //Indicates if the start and end of a GC is printed
+    bool printGCPeriod = false;
+
+    //Indicates if alive objects are printed at GC
+    bool printAliveObjects = false;
+
+    //Indicates if the stack trace is printed at GC
+    bool printGCStackTrace = false;
+
+    //Indicates if an allocation is printed
+    bool printAllocation = false;
+
+    //Indicates if a deallocation is printed
+    bool printDeallocation = false;
 
     //Creates a new VM State
     VMState();

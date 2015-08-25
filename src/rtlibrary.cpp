@@ -175,13 +175,13 @@ void Runtime::garbageCollect(RegisterValue* basePtr, Function* func, int instInd
     if (gc.beginGC()) {
         std::size_t startStrLength = 0;
 
-        if (vmState.enableDebug) {
+        if (vmState.enableDebug && vmState.printGCPeriod) {
             auto startStr = "---------------Start GC in func " + func->name() + " (" + std::to_string(instIndex) + ")---------------";
             std::cout << startStr << std::endl;
             startStrLength = startStr.length();
         }
         
-        if (vmState.enableDebug) {
+        if (vmState.enableDebug && vmState.printGCStackTrace) {
             std::cout << "Stack trace: " << std::endl;
             std::cout << func->name() << " (" << instIndex << ")" << std::endl;
             printAliveObjects(basePtr, func, instIndex, "\t");
@@ -197,11 +197,8 @@ void Runtime::garbageCollect(RegisterValue* basePtr, Function* func, int instInd
             auto callPoint = callEntry.callPoint;
             auto callBasePtr = findBasePtr(basePtr, 0, topFuncIndex);
 
-			if (vmState.enableDebug) {
+			if (vmState.enableDebug && vmState.printGCStackTrace) {
                 std::cout << topFunc->name() << " (" << callPoint << ")" << std::endl;
-            }
-
-            if (vmState.enableDebug) {
                 printAliveObjects(callBasePtr, topFunc, callPoint, "\t");
             }
 
@@ -211,14 +208,14 @@ void Runtime::garbageCollect(RegisterValue* basePtr, Function* func, int instInd
 			topFuncIndex++;
 		}
 
-        if (vmState.enableDebug) {
+        gc.endGC();
+
+        if (vmState.enableDebug && vmState.printGCPeriod) {
             printTimes('-', (int)startStrLength / 2 - 3);
             std::cout << "End GC";
             printTimes('-', ((int)startStrLength + 1) / 2 - 3);
             std::cout << std::endl;
         }
-
-        gc.endGC();
     }
 }
 

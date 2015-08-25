@@ -57,7 +57,7 @@ unsigned char* GarbageCollector::newArray(const Type* elementType, int length) {
     arrayPtr[2] = converter.byteValues[2];
     arrayPtr[3] = converter.byteValues[3];
 
-    if (vmState.enableDebug) {
+    if (vmState.enableDebug && vmState.printAllocation) {
         std::cout
             << "Allocated array ("
             << "size: " << memSize << " bytes, "
@@ -77,7 +77,7 @@ unsigned char* GarbageCollector::newClass(const ClassType* classType) {
     //Add the struct to the list of objects
     newObject(new ClassHandle(classPtr, memSize, classType));
 
-    if (vmState.enableDebug) {
+    if (vmState.enableDebug && vmState.printAllocation) {
         std::cout
             << "Allocated object (size: " << memSize << " bytes, type: " <<  classType->name()
             << ") at 0x" << std::hex << (PtrValue)classPtr << std::dec
@@ -113,7 +113,7 @@ void GarbageCollector::markObject(ObjectHandle* handle) {
                 auto field = fieldEntry.second;
 
                 if (TypeSystem::isReferenceType(field.type())) {
-                    RegisterValue fieldValue = *(RegisterValue*)(handle->handle() + field.offset());
+                    RegisterValue fieldValue = *(PtrValue*)(handle->handle() + field.offset());
                     markValue(fieldValue, field.type());
                 }
             }
@@ -148,7 +148,7 @@ void GarbageCollector::sweepObjects() {
         if (!obj->isMarked()) {
             mObjectsToRemove.push_back(obj);
 
-            if (vmState.enableDebug) {
+            if (vmState.enableDebug && vmState.printDeallocation) {
                 std::cout << "Deleted object: ";
                 printObject(obj);
             }
@@ -166,7 +166,7 @@ void GarbageCollector::sweepObjects() {
 
 bool GarbageCollector::beginGC() {
     if (mNumAllocated >= mAllocatedBeforeCollection) {
-        if (vmState.enableDebug) {
+        if (vmState.enableDebug && vmState.printAliveObjects) {
             std::cout << "Alive objects: " << std::endl;
 
             for (auto objEntry : mObjects) {
