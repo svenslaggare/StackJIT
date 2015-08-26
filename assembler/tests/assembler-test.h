@@ -48,8 +48,8 @@ std::string programsPath = "programs";
 //Invokes the assembler with the given program
 std::string invokeAsm(std::string programName) {
 	std::string tmpName = std::to_string(std::time(nullptr)) + ".simg";
-	executeCmd((executable + " -o " + tmpName + " " + programsPath + "/" + programName + ".txt").data());
-	std::string returnData = executeCmd((executable + " -d " + tmpName).data());
+	executeCmd((executable + " -o " + tmpName + " " + programsPath + "/" + programName + ".txt 2>&1").data());
+	std::string returnData = executeCmd((executable + " -d " + tmpName + " 2>&1").data());
 	std::remove(tmpName.data());
 	return returnData;
 }
@@ -80,5 +80,13 @@ public:
 
 	void testCase3() {
 		TS_ASSERT_EQUALS(invokeAsm("test3"), readFile("test3"));
+	}
+
+	void testCase4() {
+		TS_ASSERT_EQUALS(invokeAsm("test4"), readFile("test4"));
+	}
+
+	void testCase5() {
+		TS_ASSERT_EQUALS(invokeAsm("test5"), "The function 'test(Int)' is already defined.\n");
 	}
 };
