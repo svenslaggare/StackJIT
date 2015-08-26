@@ -227,11 +227,15 @@ bool TypeSystem::isReferenceType(const Type* type) {
 		return false;
 	}
 
-	return type->name().find("Ref.") != std::string::npos;
+	return dynamic_cast<const ReferenceType*>(type) != nullptr;
 }
 
-bool TypeSystem::isNull(const Type* type) {
-	return type->name() == "Ref.Null";
+bool TypeSystem::isNullType(const Type* type) {
+	if (type == nullptr) {
+		return false;
+	}
+
+	return dynamic_cast<const NullReferenceType*>(type) != nullptr;
 }
 
 bool TypeSystem::isArray(const Type* type) {
@@ -239,7 +243,7 @@ bool TypeSystem::isArray(const Type* type) {
 		return false;
 	}
 
-	return type->name().find("Ref.Array") != std::string::npos;
+	return dynamic_cast<const ArrayType*>(type) != nullptr;
 }
 
 bool TypeSystem::isClass(const Type* type) {
@@ -284,7 +288,7 @@ std::size_t TypeSystem::sizeOfType(const Type* type) {
 	return 0;
 }
 
-bool TypeSystem::getClassAndField(std::string str, std::pair<std::string, std::string>& res) {
+bool TypeSystem::getClassAndFieldName(std::string str, std::pair<std::string, std::string>& res) {
     auto fieldSepPos = str.find("::");
 
     if (fieldSepPos != std::string::npos) {

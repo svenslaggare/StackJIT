@@ -23,7 +23,7 @@ StringRef::StringRef(RawClassRef stringRef) {
 }
 
 std::size_t StringRef::sCharsFieldOffset;
-const Type* StringRef::sCharType;
+const ArrayType* StringRef::sCharArrayType;
 const ClassType* StringRef::sStringType;
 
 char StringRef::charAt(int index) {
@@ -34,8 +34,8 @@ int StringRef::length() const {
 	return mLength;
 }
 
-const Type* StringRef::charType() {
-	return sCharType;
+const ArrayType* StringRef::charArrayType() {
+	return sCharArrayType;
 }
 
 const ClassType* StringRef::stringType() {
@@ -50,9 +50,11 @@ void StringRef::initialize(VMState& vmState) {
 	auto& classMetadata = vmState.classProvider().getMetadata("std.String");
 	auto& typeProvider = vmState.typeProvider();
 
+	auto charType = typeProvider.makeType(TypeSystem::toString(PrimitiveTypes::Char));
+
 	sCharsFieldOffset = classMetadata.fields().at("chars").offset();
 	sStringType = static_cast<const ClassType*>(typeProvider.makeType(TypeSystem::stringTypeName));
-	sCharType = typeProvider.makeType(TypeSystem::toString(PrimitiveTypes::Char));
+	sCharArrayType = static_cast<const ArrayType*>(typeProvider.makeType(TypeSystem::arrayTypeName(charType)));
 }
 
 void NativeLibrary::print(int x) {

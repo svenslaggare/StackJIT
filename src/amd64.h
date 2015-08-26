@@ -162,6 +162,9 @@ namespace Amd64Backend {
 	//Subtracts the second register from the first
 	void subRegFromReg(CodeGen&, Registers, Registers, bool is32bits = false);
 
+	//Subtracts the given constant from  the given register
+	void subConstantFromReg(CodeGen&, Registers, int, bool is32bits = false);
+
 	//Subtracts the given byte from the given register
 	void subByteFromReg(CodeGen&, Registers, char, bool is32bits = false);
 

@@ -43,12 +43,12 @@ namespace {
 	bool sameType(const Type* type1, const Type* type2) {
 		return
 			*type1 == *type2
-			|| (TypeSystem::isReferenceType(type1) && TypeSystem::isNull(type2))
-			|| (TypeSystem::isReferenceType(type2) && TypeSystem::isNull(type1));
+			|| (TypeSystem::isReferenceType(type1) && TypeSystem::isNullType(type2))
+			|| (TypeSystem::isReferenceType(type2) && TypeSystem::isNullType(type1));
 	}
 
 	std::string checkType(const Type* expectedType, const Type* actualType) {
-		if (expectedType == nullptr || *expectedType == *actualType || TypeSystem::isNull(actualType)) {
+		if (*expectedType == *actualType || TypeSystem::isNullType(actualType)) {
 			return "";
 		} else {
 			return
@@ -114,7 +114,7 @@ namespace {
 
 	//Verifies the branches
 	void verifyBranches(Function& function, std::vector<BranchCheck>& branches) {
-		for (auto branch : branches) {
+		for (auto& branch : branches) {
 			auto postSourceTypes = branch.branchTypes;
 			auto preTargetTypes = function.instructions[branch.target].operandTypes();
 
@@ -153,7 +153,7 @@ Verifier::Verifier(VMState& vmState)
 	mBoolType = mVMState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Bool));
 	mCharType = mVMState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Char));
 	mVoidType = mVMState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Void));
-	mNullType = mVMState.typeProvider().makeType("Ref.Null");
+	mNullType = mVMState.typeProvider().makeType(TypeSystem::nullTypeName);
 	mStringType = mVMState.typeProvider().makeType(TypeSystem::stringTypeName);
 }
 
@@ -328,7 +328,7 @@ void Verifier::verifyInstruction(Function& function, Instruction inst, std::size
 			break;
 		case OpCodes::LOAD_LOCAL:
 			{
-				auto localType = function.getLocal(inst.intValue);
+				auto localType = function.getLocal((std::size_t)inst.intValue);
 
 				if (localType != nullptr) {
 					operandStack.push(localType);
@@ -341,14 +341,21 @@ void Verifier::verifyInstruction(Function& function, Instruction inst, std::size
 			{
 				assertOperandCount(index, operandStack, 1);
 
-				auto localIndex = inst.intValue;
+				auto localIndex = (std::size_t)inst.intValue;
 				auto valueType = popType(operandStack);
 				auto localType = function.getLocal(localIndex);
+				bool setType = false;
+
+				//We allow implicit typed locals.
+				if (localType == nullptr) {
+					localType = valueType;
+					setType = true;
+				}
 
 				auto error = checkType(localType, valueType);
 
 				if (error == "") {
-					if (localType == nullptr) {
+					if (setType) {
 						function.setLocal(localIndex, valueType);
 					}
 				} else {
@@ -582,7 +589,6 @@ void Verifier::verifyInstruction(Function& function, Instruction inst, std::size
 
 				if (!isNull) {
 					auto arrayElemType = dynamic_cast<const ArrayType*>(arrayRefType)->elementType();
-
 					auto error = checkType(arrayElemType, elemType);
 
 					if (error != "") {
@@ -685,17 +691,17 @@ void Verifier::verifyInstruction(Function& function, Instruction inst, std::size
 					typeError(index, "Expected first operand to be a class reference, but got type: " + classRefType->name() + ".");
 				}
 
-				std::pair<std::string, std::string> structAndField;
+				std::pair<std::string, std::string> classAndFieldName;
 
-				if (TypeSystem::getClassAndField(inst.strValue, structAndField)) {
-					auto className = structAndField.first;
-					auto fieldName = structAndField.second;
+				if (TypeSystem::getClassAndFieldName(inst.strValue, classAndFieldName)) {
+					auto className = classAndFieldName.first;
+					auto fieldName = classAndFieldName.second;
 
 					if (!mVMState.classProvider().isDefined(className)) {
 						typeError(index, "'" + className + "' is not a class type.");
 					}
 
-					auto structMetadata = mVMState.classProvider().getMetadata(className);
+					auto& structMetadata = mVMState.classProvider().getMetadata(className);
 					auto classType = mVMState.typeProvider().makeType("Ref." + className);
 
 					if (!isNull) {
@@ -732,7 +738,7 @@ void Verifier::verifyInstruction(Function& function, Instruction inst, std::size
 
 				std::pair<std::string, std::string> structAndField;
 
-				if (TypeSystem::getClassAndField(inst.strValue, structAndField)) {
+				if (TypeSystem::getClassAndFieldName(inst.strValue, structAndField)) {
 					auto className = structAndField.first;
 					auto fieldName = structAndField.second;
 
@@ -740,7 +746,7 @@ void Verifier::verifyInstruction(Function& function, Instruction inst, std::size
 						typeError(index, "'" + className + "' is not a class type.");
 					}
 
-					auto classMetadata = mVMState.classProvider().getMetadata(className);
+					auto& classMetadata = mVMState.classProvider().getMetadata(className);
 					auto fieldType = classMetadata.fields().at(fieldName).type();
 
 					if (fieldType == nullptr) {

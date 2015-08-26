@@ -38,6 +38,9 @@ private:
 	//Indicates if the given function needs to be compiled at runtime
 	bool compileAtRuntime(const VMState& vmState, const FunctionDefinition& funcToCall, std::string funcSignature);
 
+	//Generates a compile call for the given function
+	std::size_t generateCompileCall(CodeGen& generatedCode, Function& function, const FunctionDefinition& funcToCall);
+
 	//Zeroes the locals
 	void zeroLocals(FunctionCompilationData& functionData);
 

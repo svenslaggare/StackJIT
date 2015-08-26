@@ -4,6 +4,7 @@
 class VMState;
 class Type;
 class ClassType;
+class ArrayType;
 
 //Represents a string reference
 class StringRef {
@@ -12,7 +13,7 @@ private:
 	int mLength;
 
 	static std::size_t sCharsFieldOffset;
-	static const Type* sCharType;
+	static const ArrayType* sCharArrayType;
 	static const ClassType* sStringType;
 public:
 	//Creates a new reference for the given raw reference
@@ -24,8 +25,8 @@ public:
 	//Returns tte length of the string
 	inline int length() const;
 
-	//Returns the char type
-	static const Type* charType();
+	//Returns the char array type
+	static const ArrayType* charArrayType();
 
 	//Returns the string type
 	static const ClassType* stringType();

@@ -1,6 +1,7 @@
 #include "loader.h"
 #include "vmstate.h"
 #include "executionengine.h"
+#include "helpers.h"
 #include <iostream>
 #include <fstream>
 #include <chrono>
@@ -64,6 +65,19 @@ std::string handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
 			continue;
 		}
 
+		if (switchStr == "--allocs-before-gc") {
+			int next = i + 1;
+
+			if (next < argc) {
+				vmState.allocationsBeforeGC = std::stoi(argv[next]);
+				i++;
+			} else {
+				std::cout << "Expected an number after the '--allocs-before-gc' option." << std::endl;
+			}
+
+			continue;
+		}
+
 		if (switchStr == "-psf" || switchStr == "--print-stack-frame") {
 			vmState.printStackFrame = true;
 			continue;
@@ -81,6 +95,11 @@ std::string handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
 
 		if (switchStr == "--print-gc-period") {
 			vmState.printGCPeriod = true;
+			continue;
+		}
+
+		if (switchStr == "--print-gc-stats") {
+			vmState.printGCStats = true;
 			continue;
 		}
 
@@ -128,12 +147,6 @@ std::string handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
 	return program;
 }
 
-//Returns the duration since the given time point
-std::int64_t getDuration(std::chrono::time_point<std::chrono::high_resolution_clock> timePoint) {
-	auto end = std::chrono::high_resolution_clock::now();
-	return std::chrono::duration_cast<std::chrono::milliseconds>(end - timePoint).count();
-}
-
 //Returns the directory of the executing VM
 std::string getExecutableDir() {
 #if defined(_WIN64) || defined(__MINGW32__)
@@ -171,6 +184,7 @@ int main(int argc, char* argv[]) {
 
 		//Handle options
 		auto programPath = handleOptions(argc, argv, engine);
+		vmState.gc().initialize();
 
 		//Load the program
 		if (vmState.imageMode) {
@@ -194,7 +208,7 @@ int main(int argc, char* argv[]) {
 
 		//Execute the program
 		if (vmState.enableDebug) {
-			std::cout << "Load time: " << getDuration(start) << " ms." << std::endl;
+			std::cout << "Load time: " << Helpers::getDuration(start) << " ms." << std::endl;
 			std::cout << "Program output:" << std::endl;
 		}
 
@@ -204,7 +218,7 @@ int main(int argc, char* argv[]) {
 		int res = programPtr();
 
 		if (vmState.enableDebug) {
-			std::cout << "Return value (executed for " << getDuration(start) << " ms): " << std::endl;
+			std::cout << "Return value (executed for " << Helpers::getDuration(start) << " ms): " << std::endl;
 		}
 
 		std::cout << res << std::endl;

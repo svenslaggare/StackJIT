@@ -48,7 +48,7 @@ std::string programsPath = "programs";
 #endif
 
 //Invokes the VM with the given program
-std::string invokeVM(std::string programName, std::string options = "--no-rtlib") {
+std::string invokeVM(std::string programName, std::string options = "--no-rtlib --allocs-before-gc 0") {
     std::string valgrindExecutable = "";
 
     #if USE_VALGRIND
@@ -357,11 +357,11 @@ public:
     }
 
     void testGCExplicit() {
-        std::string options = "-d --print-alloc --print-dealloc --print-gc-period";
+        std::string options = "-d --print-alloc --print-dealloc --print-gc-period --allocs-before-gc 0 --no-gc --no-rtlib";
         GCTest gcTest;
 
         TS_ASSERT_EQUALS(
-            parseGCData(invokeVM("gc/callstack1", "--no-gc --no-rtlib " + options), gcTest),
+            parseGCData(invokeVM("gc/callstack1", options), gcTest),
             "0\n");
 
         TS_ASSERT_EQUALS(gcTest.allocatedObjects.size(), 3);
@@ -373,7 +373,7 @@ public:
         TS_ASSERT_EQUALS(gcTest.collections.at(1).hasDeallocated(gcTest.allocatedObjects.at(2)), true);
 
         TS_ASSERT_EQUALS(
-            parseGCData(invokeVM("gc/alive_on_stack1", "--no-gc --no-rtlib " + options), gcTest),
+            parseGCData(invokeVM("gc/alive_on_stack1", options), gcTest),
             "0\n");
 
         TS_ASSERT_EQUALS(gcTest.allocatedObjects.size(), 2);
@@ -385,7 +385,7 @@ public:
         TS_ASSERT_EQUALS(gcTest.collections.at(2).hasDeallocated(gcTest.allocatedObjects.at(0)), true);
 
         TS_ASSERT_EQUALS(
-            parseGCData(invokeVM("gc/locals1", "--no-gc --no-rtlib " + options), gcTest),
+            parseGCData(invokeVM("gc/locals1", options), gcTest),
             "0\n");
 
         TS_ASSERT_EQUALS(gcTest.allocatedObjects.size(), 2);
@@ -393,7 +393,7 @@ public:
         TS_ASSERT_EQUALS(gcTest.collections.at(0).deallocatedObjects.size(), 0);
 
         TS_ASSERT_EQUALS(
-            parseGCData(invokeVM("gc/locals2", "--no-gc --no-rtlib " + options), gcTest),
+            parseGCData(invokeVM("gc/locals2", options), gcTest),
             "0\n");
 
         TS_ASSERT_EQUALS(gcTest.allocatedObjects.size(), 3);
@@ -403,7 +403,7 @@ public:
         TS_ASSERT_EQUALS(gcTest.collections.at(0).hasDeallocated(gcTest.allocatedObjects.at(1)), true);
 
         TS_ASSERT_EQUALS(
-            parseGCData(invokeVM("gc/ref_elements", "--no-gc --no-rtlib " + options), gcTest),
+            parseGCData(invokeVM("gc/ref_elements", options), gcTest),
             "0\n");
 
         TS_ASSERT_EQUALS(gcTest.allocatedObjects.size(), 4);
@@ -411,7 +411,7 @@ public:
         TS_ASSERT_EQUALS(gcTest.collections.at(0).deallocatedObjects.size(), 0);
 
         TS_ASSERT_EQUALS(
-            parseGCData(invokeVM("gc/ref_fields", "--no-gc --no-rtlib " + options), gcTest),
+            parseGCData(invokeVM("gc/ref_fields", options), gcTest),
             "0\n");
 
         TS_ASSERT_EQUALS(gcTest.allocatedObjects.size(), 2);
@@ -422,12 +422,25 @@ public:
     }
 
     void testGCImplicit() {
-        TS_ASSERT_EQUALS(invokeVM("gc/callstack1", "--no-rtlib"), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("gc/alive_on_stack1", "--no-rtlib"), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("gc/locals1", "--no-rtlib"), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("gc/locals2", "--no-rtlib"), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("gc/ref_elements", "--no-rtlib"), "0\n");
-        TS_ASSERT_EQUALS(invokeVM("gc/ref_fields", "--no-rtlib"), "0\n")
+        TS_ASSERT_EQUALS(invokeVM("gc/callstack1"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/alive_on_stack1"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/locals1"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/locals2"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/ref_elements"), "0\n");
+        TS_ASSERT_EQUALS(invokeVM("gc/ref_fields"), "0\n")
+
+        std::string options = "-d --print-alloc --print-dealloc --print-gc-period --no-rtlib";
+        GCTest gcTest;
+
+        TS_ASSERT_EQUALS(
+            parseGCData(invokeVM("gc/gctime", options + " --allocs-before-gc 2"), gcTest),
+            "0\n");
+
+        TS_ASSERT_EQUALS(gcTest.allocatedObjects.size(), 4);
+        TS_ASSERT_EQUALS(gcTest.collections.size(), 1);
+        TS_ASSERT_EQUALS(gcTest.collections.at(0).deallocatedObjects.size(), 2);
+        TS_ASSERT_EQUALS(gcTest.collections.at(0).hasDeallocated(gcTest.allocatedObjects.at(0)), true);
+        TS_ASSERT_EQUALS(gcTest.collections.at(0).hasDeallocated(gcTest.allocatedObjects.at(1)), true);
     }
 
     void testFunction() {
@@ -453,7 +466,7 @@ public:
     }
 
     void testLibrary() {
-		std::string options = "--no-rtlib ";
+		std::string options = "--no-rtlib --allocs-before-gc 0 ";
 
 		TS_ASSERT_EQUALS(invokeVM(
 			"libraries/program1", options + "-i " + programsPath + "/libraries/lib1.txt -i " + programsPath + "/libraries/lib2.txt"),

@@ -1,10 +1,13 @@
 #pragma once
 #include <string>
 #include "stackjit.h"
+#include "type.h"
 
 class Function;
 class FunctionDefinition;
 class Type;
+class ClassType;
+class ArrayType;
 
 //The runtime library
 namespace Runtime {
@@ -27,10 +30,10 @@ namespace Runtime {
 	void garbageCollect(RegisterValue* basePtr, Function* func, int instIndex);
 
 	//Creates a new array of the given type and length
-	unsigned char* newArray(const Type* elementType, int length);
+	unsigned char* newArray(const ArrayType* arrayType, int length);
 
 	//Creates a new class of the given type
-	unsigned char* newObject(const Type* type);
+	unsigned char* newObject(const ClassType* classType);
 
 	//Creates a new string of the given length
 	unsigned char* newString(const char* string, int length);

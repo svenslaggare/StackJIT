@@ -9,7 +9,6 @@
 #include "stackjit.h"
 #include "native.h"
 #include <iostream>
-#include <string.h>
 
 extern VMState vmState;
 
@@ -38,18 +37,20 @@ namespace {
         }
     }
 
-    RegisterValue* findBasePtr(RegisterValue* basePtr, int currentIndex, int index) {
-        if (basePtr == nullptr) {
+    //Finds the base ptr for the function at the given index
+    RegisterValue* findBasePtr(RegisterValue* currentBasePtr, int currentIndex, int targetIndex) {
+        if (currentBasePtr == nullptr) {
             return nullptr;
         }
 
-        if (currentIndex == index) {
-            return (RegisterValue*)*basePtr;
+        if (currentIndex == targetIndex) {
+            return (RegisterValue*)*currentBasePtr;
         }
 
-        return findBasePtr((RegisterValue*)*basePtr, currentIndex + 1, index);
+        return findBasePtr((RegisterValue*)*currentBasePtr, currentIndex + 1, targetIndex);
     }
 
+    //Prints the given value
     void printValue(RegisterValue value, const Type* type) {
         if (TypeSystem::isReferenceType(type)) {
             if (value == 0) {
@@ -72,6 +73,7 @@ namespace {
 void Runtime::compileFunction(Function* callee, int callOffset, int checkStart, int checkEnd, FunctionDefinition* funcToCall) {
 	auto toCallSignature = vmState.binder().functionSignature(*funcToCall);
 
+    //Compile the function (if needed)
     try {
 	   vmState.engine().compileFunction(toCallSignature);
     } catch (std::runtime_error& e) {
@@ -93,11 +95,11 @@ void Runtime::compileFunction(Function* callee, int callOffset, int checkStart, 
 
 	//Update the call target
 	int target = (int)(calledFuncPtr - (funcCodePtr + callOffset + 5));
-	Helpers::setInt(funcCodePtr, callOffset + 1, target);
+	Helpers::setInt(funcCodePtr, (std::size_t)callOffset + 1, target);
 
 	//Replace this check at the call site with a branch to end of the check
 	funcCodePtr[checkStart] = 0xe9;
-	Helpers::setInt(funcCodePtr, checkStart + 1, checkEnd - (checkStart + 5));
+	Helpers::setInt(funcCodePtr, (std::size_t)checkStart + 1, checkEnd - (checkStart + 5));
 }
 
 void Runtime::Internal::printAliveObjects(RegisterValue* basePtr, Function* func, int instIndex, std::string indentation) {
@@ -219,18 +221,17 @@ void Runtime::garbageCollect(RegisterValue* basePtr, Function* func, int instInd
     }
 }
 
-unsigned char* Runtime::newArray(const Type* elementType, int length) {
-    return vmState.gc().newArray(elementType, length);
+unsigned char* Runtime::newArray(const ArrayType* arrayType, int length) {
+    return vmState.gc().newArray(arrayType, length);
 }
 
-unsigned char* Runtime::newObject(const Type* type) {
-    auto classType = static_cast<const ClassType*>(type);
+unsigned char* Runtime::newObject(const ClassType* classType) {
     return vmState.gc().newClass(classType);
 }
 
 unsigned char* Runtime::newString(const char* string, int length) {
     //Allocate the underlying char array
-    auto charsPtr = vmState.gc().newArray(StringRef::charType(), length);
+    auto charsPtr = vmState.gc().newArray(StringRef::charArrayType(), length);
 
     for (int i = 0; i < length; i++) {
         charsPtr[i + StackJIT::ARRAY_LENGTH_SIZE] = (unsigned char)string[i];

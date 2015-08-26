@@ -1,0 +1,20 @@
+func main() Int
+{
+	.locals 1
+	LDINT 500000
+	STLOC 0
+
+	LDINT 3
+	NEWARR Int
+	POP
+	LDLOC 0
+	LDINT 1
+	SUB
+	DUP
+	STLOC 0
+	LDINT 0
+	BGT 2
+
+	LDINT 0
+	RET
+}

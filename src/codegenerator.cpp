@@ -28,53 +28,6 @@ namespace {
 	bool validCharValue(int value) {
 		return value >= -128 && value < 128;
 	}
-
-	//Generates a compile call for the given function
-	std::size_t generateCompileCall(CodeGen& generatedCode, Function& function, const FunctionDefinition& funcToCall) {
-#if defined(_WIN64) || defined(__MINGW32__)
-		std::size_t callIndex;
-		std::size_t checkEndIndex;
-
-		Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (PtrValue)&function); //The current function
-		Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg1, 0); //Offset of the call
-		callIndex = generatedCode.size() - sizeof(int);
-		Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg2, (int)generatedCode.size()); //The offset for this check
-		Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg3, 0); //The end of the this check
-		checkEndIndex = generatedCode.size() - sizeof(int);
-
-		//The function to compile
-		Amd64Backend::subByteFromReg(generatedCode, Registers::SP, 8); //Alignment
-		Amd64Backend::moveLongToReg(generatedCode, NumberedRegisters::R10, (PtrValue)(&funcToCall));
-		Amd64Backend::pushReg(generatedCode, NumberedRegisters::R10);
-		Amd64Backend::subByteFromReg(generatedCode, Registers::SP, 32); //Shadow space
-
-		Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (PtrValue)&Runtime::compileFunction);
-		Amd64Backend::callInReg(generatedCode, Registers::AX);
-		Amd64Backend::addByteToReg(generatedCode, Registers::SP, 16 + 32); //Used stack
-
-		Helpers::setInt(generatedCode, checkEndIndex, (int)generatedCode.size());
-
-		return callIndex;
-#else
-		std::size_t callIndex;
-		std::size_t checkEndIndex;
-
-		Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (PtrValue)&function); //The current function
-		Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg1, 0); //Offset of the call
-		callIndex = generatedCode.size() - sizeof(int);
-		Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg2, (int)generatedCode.size()); //The offset for this check
-		Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg3, 0); //The end of the this check
-		checkEndIndex = generatedCode.size() - sizeof(int);
-		Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg4, (PtrValue)(&funcToCall)); //The function to compile
-
-		Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (PtrValue)&Runtime::compileFunction);
-		Amd64Backend::callInReg(generatedCode, Registers::AX);
-
-		Helpers::setInt(generatedCode, checkEndIndex, (int)generatedCode.size());
-
-		return callIndex;
-#endif
-	}
 }
 
 void OperandStack::duplicate(Function& function, int operandStackIndex) {
@@ -197,16 +150,63 @@ bool CodeGenerator::compileAtRuntime(const VMState& vmState, const FunctionDefin
 		   && !vmState.engine().jitCompiler().hasCompiled(funcSignature);
 }
 
+std::size_t CodeGenerator::generateCompileCall(CodeGen& generatedCode, Function& function, const FunctionDefinition& funcToCall) {
+#if defined(_WIN64) || defined(__MINGW32__)
+	char shadowStackSize = (char)mCallingConvention.calculateShadowStackSize();
+	std::size_t callIndex;
+	std::size_t checkEndIndex;
+
+	Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (PtrValue)&function); //The current function
+	Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg1, 0); //Offset of the call
+	callIndex = generatedCode.size() - sizeof(int);
+	Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg2, (int)generatedCode.size()); //The offset for this check
+	Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg3, 0); //The end of the this check
+	checkEndIndex = generatedCode.size() - sizeof(int);
+
+	//The function to compile
+	Amd64Backend::subByteFromReg(generatedCode, Registers::SP, 8); //Alignment
+	Amd64Backend::moveLongToReg(generatedCode, NumberedRegisters::R10, (PtrValue)(&funcToCall));
+	Amd64Backend::pushReg(generatedCode, NumberedRegisters::R10);
+	Amd64Backend::subByteFromReg(generatedCode, Registers::SP, shadowStackSize); //Shadow space
+
+	Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (PtrValue)&Runtime::compileFunction);
+	Amd64Backend::callInReg(generatedCode, Registers::AX);
+	Amd64Backend::addByteToReg(generatedCode, Registers::SP, 16 + shadowStackSize); //Used stack
+
+	Helpers::setInt(generatedCode, checkEndIndex, (int)generatedCode.size());
+
+	return callIndex;
+#else
+	std::size_t callIndex;
+	std::size_t checkEndIndex;
+
+	Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (PtrValue)&function); //The current function
+	Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg1, 0); //Offset of the call
+	callIndex = generatedCode.size() - sizeof(int);
+	Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg2, (int)generatedCode.size()); //The offset for this check
+	Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg3, 0); //The end of the this check
+	checkEndIndex = generatedCode.size() - sizeof(int);
+	Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg4, (PtrValue)(&funcToCall)); //The function to compile
+
+	Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (PtrValue)&Runtime::compileFunction);
+	Amd64Backend::callInReg(generatedCode, Registers::AX);
+
+	Helpers::setInt(generatedCode, checkEndIndex, (int)generatedCode.size());
+
+	return callIndex;
+#endif
+}
+
 void CodeGenerator::generateCall(CodeGen& codeGen, unsigned char* funcPtr, Registers addrReg, bool shadowSpaceNeeded) {
 	if (shadowSpaceNeeded) {
-		Amd64Backend::subByteFromReg(codeGen, Registers::SP, mCallingConvention.calculateShadowStackSize());
+		Amd64Backend::subConstantFromReg(codeGen, Registers::SP, mCallingConvention.calculateShadowStackSize());
 	}
 
 	Amd64Backend::moveLongToReg(codeGen, addrReg, (PtrValue)funcPtr);
 	Amd64Backend::callInReg(codeGen, addrReg);
 
 	if (shadowSpaceNeeded) {
-		Amd64Backend::addByteToReg(codeGen, Registers::SP, mCallingConvention.calculateShadowStackSize());
+		Amd64Backend::addConstantToReg(codeGen, Registers::SP, mCallingConvention.calculateShadowStackSize());
 	}
 }
 
@@ -642,7 +642,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 				//Shadow stack size may be needed
 				int shadowStack = mCallingConvention.calculateShadowStackSize();
 				if (shadowStack > 0) {
-					Amd64Backend::subByteFromReg(generatedCode, Registers::SP, shadowStack);
+					Amd64Backend::subConstantFromReg(generatedCode, Registers::SP, shadowStack);
 				}
 
 				if (inst.opCode() == OpCodes::CALL_INSTANCE) {
@@ -828,13 +828,14 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::NEW_ARRAY:
         {
             auto elemType = vmState.typeProvider().getType(inst.strValue);
+			auto arrayType = static_cast<const ArrayType*>(vmState.typeProvider().getType(TypeSystem::arrayTypeName(elemType)));
 
             if (!vmState.disableGC) {
                 generateGCCall(generatedCode, function, instIndex);
             }
 
             //The pointer to the type as the first arg
-            Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (PtrValue)elemType); //mov rdi, <addr of type pointer>
+            Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (PtrValue)arrayType); //mov rdi, <addr of type pointer>
 
             //Pop the size as the second arg
 			OperandStack::popReg(function, topOperandIndex, RegisterCallArguments::Arg1);
@@ -1032,7 +1033,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         {
             //Get the field
             std::pair<std::string, std::string> structAndField;
-			TypeSystem::getClassAndField(inst.strValue, structAndField);
+			TypeSystem::getClassAndFieldName(inst.strValue, structAndField);
 
             auto structMetadata = vmState.classProvider().getMetadata(structAndField.first);
             auto& field = structMetadata.fields().at(structAndField.second);

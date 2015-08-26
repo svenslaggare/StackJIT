@@ -4,7 +4,7 @@
 #include "objects.h"
 #include "amd64.h"
 #include "stackjit.h"
-
+#include "helpers.h"
 #include <iostream>
 #include <string.h>
 
@@ -17,6 +17,10 @@ GarbageCollector::~GarbageCollector() {
     for (auto objEntry : mObjects) {
         delete objEntry.second;
     }
+}
+
+void GarbageCollector::initialize() {
+    mAllocatedBeforeCollection = (std::size_t)vmState.allocationsBeforeGC;
 }
 
 void GarbageCollector::newObject(ObjectHandle* handle) {
@@ -35,7 +39,8 @@ void GarbageCollector::printObject(ObjectHandle* handle) {
         << " bytes (" << handle->type()->name() << ")" << std::endl;
 }
 
-unsigned char* GarbageCollector::newArray(const Type* elementType, int length) {
+unsigned char* GarbageCollector::newArray(const ArrayType* arrayType, int length) {
+    auto elementType = arrayType->elementType();
     auto elemSize = TypeSystem::sizeOfType(elementType);
 
     std::size_t memSize = sizeof(int) + (length * elemSize);
@@ -46,7 +51,7 @@ unsigned char* GarbageCollector::newArray(const Type* elementType, int length) {
     newObject(new ArrayHandle(
         arrayPtr,
         memSize,
-        vmState.typeProvider().getType(TypeSystem::arrayTypeName(elementType)),
+        arrayType,
         length));
 
     //Set the size of the array
@@ -90,14 +95,14 @@ unsigned char* GarbageCollector::newClass(const ClassType* classType) {
 void GarbageCollector::markObject(ObjectHandle* handle) {
     if (!handle->isMarked()) {
         if (TypeSystem::isArray(handle->type())) {
+            handle->mark();
+
             auto arrayHandle = static_cast<ArrayHandle*>(handle);
             auto arrayType = static_cast<const ArrayType*>(handle->type());
 
-            handle->mark();
-
             //Mark ref elements
             if (TypeSystem::isReferenceType(arrayType->elementType())) {
-                ArrayRef<RegisterValue> arrayRef((unsigned char*)arrayHandle->handle());
+                ArrayRef<PtrValue> arrayRef((unsigned char*)arrayHandle->handle());
                 for (int i = 0; i < arrayRef.length(); i++) {
                     markValue(arrayRef.getElement(i), arrayType->elementType());
                 }
@@ -106,7 +111,7 @@ void GarbageCollector::markObject(ObjectHandle* handle) {
             handle->mark();
 
             auto structType = static_cast<const ClassType*>(handle->type());
-            auto structMetadata = vmState.classProvider().getMetadata(structType);
+            auto& structMetadata = vmState.classProvider().getMetadata(structType);
 
             //Mark ref fields
             for (auto fieldEntry : structMetadata.fields()) {
@@ -123,21 +128,14 @@ void GarbageCollector::markObject(ObjectHandle* handle) {
 
 void GarbageCollector::markValue(RegisterValue value, const Type* type) {
     if (TypeSystem::isReferenceType(type)) {
-        unsigned char* objPtr = (unsigned char*)value;
+        auto objPtr = (unsigned char*)value;
 
         //Don't mark nulls
         if (objPtr == nullptr) {
             return;
         }
-        
-        if (mObjects.count(objPtr) > 0) {
-            markObject(mObjects.at(objPtr));
-        } else {
-            if (vmState.enableDebug) {
-                //This should never happen
-                std::cout << "Marking invalid object (0x" << std::hex << value << std::dec << ")" << std::endl;
-            }
-        }
+
+        markObject(mObjects.at(objPtr));
     }
 }
 
@@ -161,11 +159,16 @@ void GarbageCollector::sweepObjects() {
         deleteObject(obj);
     }
 
+    if (vmState.enableDebug && vmState.printGCStats) {
+        std::cout << "Deallocated: " << mObjectsToRemove.size() << " objects." << std::endl;
+        std::cout << "GC time: " << Helpers::getDuration(mGCStart) << " ms." << std::endl;
+    }
+
     mObjectsToRemove.clear();
 }
 
-bool GarbageCollector::beginGC() {
-    if (mNumAllocated >= mAllocatedBeforeCollection) {
+bool GarbageCollector::beginGC(bool forceGC) {
+    if (mNumAllocated >= mAllocatedBeforeCollection || forceGC) {
         if (vmState.enableDebug && vmState.printAliveObjects) {
             std::cout << "Alive objects: " << std::endl;
 
@@ -173,6 +176,10 @@ bool GarbageCollector::beginGC() {
                 auto obj = objEntry.second;
                 printObject(obj);
             }
+        }
+
+        if (vmState.enableDebug && vmState.printGCStats) {
+            mGCStart = std::chrono::high_resolution_clock::now();
         }
 
         return true;

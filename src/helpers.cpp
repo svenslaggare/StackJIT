@@ -54,3 +54,8 @@ void Helpers::setPointer(unsigned char* source, std::size_t startIndex, unsigned
 		source[startIndex + i] = converter.byteValues[i];
 	}
 }
+
+std::int64_t Helpers::getDuration(std::chrono::time_point<std::chrono::high_resolution_clock> timePoint) {
+	auto end = std::chrono::high_resolution_clock::now();
+	return std::chrono::duration_cast<std::chrono::milliseconds>(end - timePoint).count();
+}

@@ -438,6 +438,14 @@ void Amd64Backend::subRegFromReg(CodeGen& codeGen, Registers dest, Registers src
     codeGen.push_back(0xc0 | dest | (src << 3));
 }
 
+void Amd64Backend::subConstantFromReg(CodeGen& codeGen, Registers destReg, int value, bool is32bits) {
+	if (validCharValue(value)) {
+		subByteFromReg(codeGen, destReg, (char)value, is32bits);
+	} else {
+		subIntFromReg(codeGen, destReg, value, is32bits);
+	}
+}
+
 void Amd64Backend::subByteFromReg(CodeGen& codeGen, Registers destReg, char value, bool is32bits) {
     if (!is32bits) {
         codeGen.push_back(0x48);

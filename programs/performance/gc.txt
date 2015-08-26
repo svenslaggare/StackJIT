@@ -1,0 +1,61 @@
+class Point
+{
+	x Int
+	y Int
+	z Int
+}
+
+member Point::.constructor() Void
+{
+	RET
+}
+
+func createArray(Int) Ref.Array[Ref.Point]
+{
+	.locals 2
+	LDINT 0
+	STLOC 0
+
+	LDARG 0
+	NEWARR Ref.Point
+	STLOC 1
+
+	LDLOC 1
+	LDLOC 0
+	NEWOBJ Point::.constructor()
+	STELEM Ref.Point
+
+	LDLOC 0
+	LDINT 1
+	ADD
+	DUP
+	STLOC 0
+	LDARG 0
+	BLT 5
+
+	LDLOC 1
+	RET
+}
+
+func main() Int
+{
+	.locals 1
+	LDINT 5000
+	STLOC 0
+
+	LDINT 100
+	CALL createArray(Int)
+	POP
+	LDLOC 0
+	LDINT 1
+	SUB
+	DUP
+	STLOC 0
+	LDINT 0
+	BGT 2
+
+	CALL std.gc.collect()
+
+	LDINT 0
+	RET
+}

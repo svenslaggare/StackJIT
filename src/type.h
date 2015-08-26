@@ -75,6 +75,9 @@ namespace TypeSystem {
 	//The string type name
 	const std::string stringTypeName = "Ref.std.String";
 
+	//The type type name
+	const std::string nullTypeName = "Ref.Null";
+
 	//Converts the given string into a primitive type. True if correct type.
 	bool fromString(std::string typeName, PrimitiveTypes& primitiveType);
 
@@ -91,7 +94,7 @@ namespace TypeSystem {
 	bool isReferenceType(const Type* type);
 
 	//Indicates if the given type is the null type
-	bool isNull(const Type* type);
+	bool isNullType(const Type* type);
 
 	//Indicates if the given type is an array
 	bool isArray(const Type* type);
@@ -108,6 +111,6 @@ namespace TypeSystem {
 	//Returns the size (in bytes) for the given type
 	std::size_t sizeOfType(const Type* type);
 
-	//Gets the class name and field from the given string
-	bool getClassAndField(std::string str, std::pair<std::string, std::string>& res);
+	//Gets the class- and field name from the given string
+	bool getClassAndFieldName(std::string str, std::pair<std::string, std::string>& res);
 }

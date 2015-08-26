@@ -1,7 +1,7 @@
 #pragma once
-
-#include <vector>
 #include "amd64.h"
+#include <vector>
+#include <chrono>
 
 //Contains helper methods
 namespace Helpers {
@@ -16,4 +16,7 @@ namespace Helpers {
 	//Sets the pointer in the given byte vector starting at the given index
 	void setPointer(std::vector<unsigned char>& source, std::size_t startIndex, unsigned char* value);
 	void setPointer(unsigned char* source, std::size_t startIndex, unsigned char* value);
+
+	//Returns the duration since the given time point
+	std::int64_t getDuration(std::chrono::time_point<std::chrono::high_resolution_clock> timePoint);
 }

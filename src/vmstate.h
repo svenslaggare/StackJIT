@@ -35,6 +35,9 @@ public:
     //Indicates if the functions are lazily compiled
     bool lazyJIT = true;
 
+    //The number of allocations before a GC happens
+    int allocationsBeforeGC = 1000;
+
     //Prints the info about the stack frame
     bool printStackFrame = false;
 
@@ -46,6 +49,9 @@ public:
 
     //Indicates if the start and end of a GC is printed
     bool printGCPeriod = false;
+
+    //Indicates if stats about the GC is printed
+    bool printGCStats = false;
 
     //Indicates if alive objects are printed at GC
     bool printAliveObjects = false;
