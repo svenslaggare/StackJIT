@@ -34,7 +34,12 @@ public:
 	std::vector<unsigned char> generatedCode;
 
 	//Creates a new function
-	Function(std::string name, std::vector<const Type*> parameters, const Type* returnType, bool isMemberFunction = false, bool isConstructor = false);
+	Function(
+		std::string name,
+		std::vector<const Type*> parameters,
+		const Type* returnType,
+		bool isMemberFunction = false,
+		bool isConstructor = false);
 
 	//The name of the function
 	std::string name() const;
@@ -119,13 +124,26 @@ private:
 	MacroFunction mMacroFunction;
 public:
 	//Creates a new managed function definition
-	FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, bool isMemberFunction = false);
+	FunctionDefinition(
+		std::string name,
+		std::vector<const Type*> parameters,
+		const Type* returnType,
+		bool isMemberFunction = false);
 
 	//Creates a new external function definition
-	FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, unsigned char* entryPoint);
+	FunctionDefinition(
+		std::string name,
+		std::vector<const Type*> parameters,
+		const Type* returnType,
+		unsigned char* entryPoint,
+		bool isMemberFunction = false);
 
 	//Creates a new macro function definition
-	FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, MacroFunction macroFunction);
+	FunctionDefinition(
+		std::string name,
+		std::vector<const Type*> parameters,
+		const Type* returnType,
+		MacroFunction macroFunction);
 
 	FunctionDefinition();
 

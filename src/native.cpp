@@ -151,7 +151,7 @@ void NativeLibrary::add(VMState& vmState) {
 
 	auto& binder = vmState.binder();
 
-	//Print
+	//IO
 	void(*printInt)(int) = &NativeLibrary::print;
 	void(*printFloat)(float) = &NativeLibrary::print;
 	void(*printBool)(bool) = &NativeLibrary::print;
@@ -163,7 +163,6 @@ void NativeLibrary::add(VMState& vmState) {
 	void(*printlnChar)(char) = &NativeLibrary::println;
 	void(*printlnCharArray)(RawArrayRef) = &NativeLibrary::println;
 
-	//IO
 	binder.define(FunctionDefinition("std.print", { intType }, voidType, (unsigned char*)(printInt)));
 	binder.define(FunctionDefinition("std.print", { floatType }, voidType, (unsigned char*)(printFloat)));
 	binder.define(FunctionDefinition("std.print", { boolType }, voidType, (unsigned char*)(printBool)));

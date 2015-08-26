@@ -152,7 +152,7 @@ void JITCompiler::resolveCallTargets(FunctionCompilationData& functionData) {
 		.getFunction(functionData.function)
 		.entryPoint();
 
-	for (auto unresolvedCall : functionData.unresolvedCalls) {
+	for (auto& unresolvedCall : functionData.unresolvedCalls) {
 		auto callType = unresolvedCall.type;
 		auto offset = unresolvedCall.callOffset;
 

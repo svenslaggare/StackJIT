@@ -44,9 +44,6 @@ public:
 	//Adds the given image to the container
 	void addImage(AssemblyImage* image);
 
-	//Marks that the given function points to the given image
-	void addFunction(std::string function, AssemblyImage* image);
-
 	//Returns the given function
 	const AssemblyParser::Function* getFunction(std::string function) const;
 
@@ -67,7 +64,6 @@ private:
 	std::string mBaseDir;
 
 	ImageContainer mImageContainer;
-
 	std::unordered_map<std::string, Function*> mLoadedFunctions;
 
 	//Generates code for loaded functions
@@ -110,12 +106,12 @@ public:
 	void loadAssembly(AssemblyParser::Assembly& assembly, AssemblyType assemblyType);
 
 	//Loads assemblies
-	void load(bool loadBodies = false);
+	void load(bool loadBody = false);
 
 	//Compiles the function with the given signature
 	bool compileFunction(std::string signature);
 
-	//Compiles the functions
+	//Compiles all functions
 	void compile();
 
 	//Returns the call stack

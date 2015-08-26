@@ -99,13 +99,18 @@ FunctionDefinition::FunctionDefinition(
 
 }
 
-FunctionDefinition::FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, unsigned char* entryPoint)
+FunctionDefinition::FunctionDefinition(
+	std::string name,
+	std::vector<const Type*> parameters,
+	const Type* returnType,
+	unsigned char* entryPoint,
+	bool isMemberFunction)
     : mName(name),
       mParameters(parameters),
       mReturnType(returnType),
       mEntryPoint(entryPoint),
       mIsManaged(false),
-      mIsMemberFunction(false),
+      mIsMemberFunction(isMemberFunction),
 	  mIsMacroFunction(false) {
 
 }

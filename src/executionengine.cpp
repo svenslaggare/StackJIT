@@ -38,10 +38,6 @@ void ImageContainer::addImage(AssemblyImage* image) {
 	}
 }
 
-void ImageContainer::addFunction(std::string function, AssemblyImage* image) {
-	mFuncToImage.insert({ function, image });
-}
-
 const AssemblyParser::Function* ImageContainer::getFunction(std::string function) const {
 	if (mFuncToImage.count(function) > 0) {
 		return &mFuncToImage.at(function)->functions().at(function);
@@ -176,7 +172,7 @@ void ExecutionEngine::loadRuntimeLibrary() {
 	}
 }
 
-void ExecutionEngine::load(bool loadBodies) {
+void ExecutionEngine::load(bool loadBody) {
 	auto& binder = mVMState.binder();
 
 	//Load runtime library
@@ -199,7 +195,7 @@ void ExecutionEngine::load(bool loadBodies) {
 			auto& currentFunc = current.second;
 			FunctionDefinition funcDef;
 
-			if (loadBodies) {
+			if (loadBody) {
 				image->loadFunctionBody(current.first);
 			}
 
