@@ -117,11 +117,8 @@
     <ClInclude Include="..\src\windows\callingconvention.h">
       <Filter>Header Files\windows</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\windows\callstack.h">
-      <Filter>Header Files\windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\memory.h">
-      <Filter>Header Files\windows</Filter>
+    <ClInclude Include="..\src\callstack.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

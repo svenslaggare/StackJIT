@@ -52,7 +52,6 @@
     <ClInclude Include="..\src\bytecodegenerator.h" />
     <ClInclude Include="..\src\callstack.h" />
     <ClInclude Include="..\src\windows\callingconvention.h" />
-    <ClInclude Include="..\src\windows\memory.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\amd64.cpp" />
@@ -236,9 +235,9 @@
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
   <ItemGroup>
-      <RuntimeLibraryFiles Include="..\rtlib\*.*"/>
+    <RuntimeLibraryFiles Include="..\rtlib\*.*" />
   </ItemGroup>
   <Target Name="AfterBuild">
-      <Copy SourceFiles="@(RuntimeLibraryFiles)" DestinationFolder="$(OutDir)\rtlib" />
+    <Copy SourceFiles="@(RuntimeLibraryFiles)" DestinationFolder="$(OutDir)\rtlib" />
   </Target>
 </Project>
