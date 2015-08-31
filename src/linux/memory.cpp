@@ -1,5 +1,5 @@
 #ifdef __unix__
-#include "memory.h"
+#include "../memory.h"
 #include "../jit.h"
 #include "../function.h"
 #include <iostream>

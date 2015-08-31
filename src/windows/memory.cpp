@@ -1,5 +1,5 @@
 #if defined(_WIN64) || defined(__MINGW32__)
-#include "memory.h"
+#include "../memory.h"
 #include "../jit.h"
 #include "../function.h"
 #include <iostream>

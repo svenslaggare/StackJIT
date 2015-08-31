@@ -1,6 +1,6 @@
 #ifdef __unix__
 #include "callingconvention.h"
-#include "../amd64.h"
+#include "../callingconvention.h"
 #include "../jit.h"
 #include "../function.h"
 #include "../type.h"

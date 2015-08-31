@@ -115,6 +115,6 @@ public:
 	void compile();
 
 	//Returns the call stack
-    CallStack& callStack();
-    const CallStack& callStack() const;
+	CallStack& callStack();
+	const CallStack& callStack() const;
 };

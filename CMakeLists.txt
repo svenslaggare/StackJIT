@@ -55,11 +55,9 @@ set(SOURCE_FILES
     src/test.cpp
     src/exceptions.h
     src/exceptions.cpp
-    src/linux/memory.h
     src/linux/memory.cpp
     src/linux/callingconvention.h
     src/linux/callingconvetion.cpp
-    src/windows/memory.h
     src/windows/memory.cpp
     src/windows/callingconvention.h
     src/windows/callingconvetion.cpp
