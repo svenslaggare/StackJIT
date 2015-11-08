@@ -15,11 +15,11 @@ extern VMState vmState;
 void Runtime::printStackFrame(RegisterValue* basePtr, ManagedFunction* func) {
     using namespace Runtime::Internal;
 
-    auto numArgs = func->numParams();
+    auto numArgs = func->def().numParams();
     auto numLocals = func->numLocals();
 
     std::cout << "----Start StackFrame----" << std::endl;
-    std::cout << "Func: " << func->name() << std::endl;
+    std::cout << "Func: " << func->def().name() << std::endl;
     std::cout << "Num args: " << numArgs << std::endl;
     std::cout << "Num locals: " << numLocals << std::endl;
 
@@ -104,7 +104,7 @@ void Runtime::compileFunction(ManagedFunction* callee, int callOffset, int check
 
 void Runtime::Internal::printAliveObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex, std::string indentation) {
 	StackFrame stackFrame(basePtr, func, instIndex);
-	auto numArgs = func->numParams();
+	auto numArgs = func->def().numParams();
 	auto numLocals = func->numLocals();
 	auto stackSize = stackFrame.operandStackSize();
 
@@ -150,7 +150,7 @@ void Runtime::Internal::markObjects(RegisterValue* basePtr, ManagedFunction* fun
     auto& gc = vmState.gc();
 
 	StackFrame stackFrame(basePtr, func, instIndex);
-	auto numArgs = func->numParams();
+	auto numArgs = func->def().numParams();
 	auto numLocals = func->numLocals();
     auto stackSize = stackFrame.operandStackSize();
 
@@ -178,14 +178,14 @@ void Runtime::garbageCollect(RegisterValue* basePtr, ManagedFunction* func, int 
         std::size_t startStrLength = 0;
 
         if (vmState.enableDebug && vmState.printGCPeriod) {
-            auto startStr = "---------------Start GC in func " + func->name() + " (" + std::to_string(instIndex) + ")---------------";
+            auto startStr = "---------------Start GC in func " + func->def().name() + " (" + std::to_string(instIndex) + ")---------------";
             std::cout << startStr << std::endl;
             startStrLength = startStr.length();
         }
         
         if (vmState.enableDebug && vmState.printGCStackTrace) {
             std::cout << "Stack trace: " << std::endl;
-            std::cout << func->name() << " (" << instIndex << ")" << std::endl;
+            std::cout << func->def().name() << " (" << instIndex << ")" << std::endl;
             printAliveObjects(basePtr, func, instIndex, "\t");
         }
 
@@ -200,7 +200,7 @@ void Runtime::garbageCollect(RegisterValue* basePtr, ManagedFunction* func, int 
             auto callBasePtr = findBasePtr(basePtr, 0, topFuncIndex);
 
 			if (vmState.enableDebug && vmState.printGCStackTrace) {
-                std::cout << topFunc->name() << " (" << callPoint << ")" << std::endl;
+                std::cout << topFunc->def().name() << " (" << callPoint << ")" << std::endl;
                 printAliveObjects(callBasePtr, topFunc, callPoint, "\t");
             }
 

@@ -225,7 +225,7 @@ void ExecutionEngine::compileFunction(ManagedFunction* function, std::string sig
 
 	if (mVMState.enableDebug && mVMState.printFunctionGeneration) {
 		std::cout
-			<< "Defined function '" << function->name() << "' at 0x" << std::hex << (PtrValue)funcPtr << std::dec << "."
+			<< "Defined function '" << function->def().name() << "' at 0x" << std::hex << (PtrValue)funcPtr << std::dec << "."
 			<< std::endl;
 	}
 

@@ -22,13 +22,15 @@ private:
 
 	bool mIsManaged;
 	bool mIsMemberFunction;
+	bool mIsConstructor;
 public:
 	//Creates a new managed function definition
 	FunctionDefinition(
 		std::string name,
 		std::vector<const Type*> parameters,
 		const Type* returnType,
-		bool isMemberFunction = false);
+		bool isMemberFunction = false,
+		bool isConstructor = false);
 
 	//Creates a new external function definition
 	FunctionDefinition(
@@ -36,7 +38,8 @@ public:
 		std::vector<const Type*> parameters,
 		const Type* returnType,
 		unsigned char* entryPoint,
-		bool isMemberFunction = false);
+		bool isMemberFunction = false,
+		bool isConstructor = false);
 
 	FunctionDefinition();
 
@@ -49,11 +52,17 @@ public:
 	//Returns the types of the arguments
 	const std::vector<const Type*>& parameters() const;
 
+	//The number of parameters
+	std::size_t numParams() const;
+
 	//Indicates if the function is implemented in managed code
 	bool isManaged() const;
 
 	//Indicates if the function is a member function
 	bool isMemberFunction() const;
+
+	//Indicates if the function is a constructor
+	bool isConstructor() const;
 
 	//Sets the entry point
 	void setEntryPoint(unsigned char* entryPoint);
@@ -71,9 +80,6 @@ private:
 
 	std::size_t mStackSize;
 	std::size_t mOperandStackSize;
-
-	bool mIsMemberFunction;
-	bool mIsConstructor;
 public:
 	//The instructions
 	std::vector<Instruction> instructions;
@@ -81,26 +87,11 @@ public:
 	//The generated code
 	std::vector<unsigned char> generatedCode;
 
-	//Creates a new function
-	ManagedFunction(const FunctionDefinition& definition, bool isConstructor = false);
+	//Creates a new managed function
+	ManagedFunction(const FunctionDefinition& definition);
 
-	//The name of the function
-	std::string name() const;
-
-	//The parameters
-	const std::vector<const Type*>& parameters() const;
-
-	//The number of parameters
-	std::size_t numParams() const;
-
-	//The return type
-	const Type* returnType() const;
-
-	//Indicates if the function is a member function
-	bool isMemberFunction() const;
-
-	//Indicates if the function is a constructor
-	bool isConstructor() const;
+	//Returns the definition of the function
+	const FunctionDefinition& def() const;
 
 	//The number of locals
 	std::size_t numLocals() const;

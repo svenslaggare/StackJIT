@@ -81,14 +81,14 @@ JitFunction JITCompiler::compileFunction(ManagedFunction* function) {
     if (mVMState.enableDebug && mVMState.printFunctionGeneration) {
 		auto funcSignature = mVMState.binder().functionSignature(*function);
 		std::cout
-			<< "Generated function '" << funcSignature << " " << function->returnType()->name()
+			<< "Generated function '" << funcSignature << " " << function->def().returnType()->name()
 			<< "' of size " << length << " bytes."
 			<< std::endl;
     }
 
     //Indicates if to output the generated code to a file
     if (mVMState.outputGeneratedCode) {
-        std::ofstream asmFile(function->name() + ".jit", std::ios::binary);
+        std::ofstream asmFile(function->def().name() + ".jit", std::ios::binary);
 
         if (asmFile.is_open()) {
             asmFile.write((char*)code, length);

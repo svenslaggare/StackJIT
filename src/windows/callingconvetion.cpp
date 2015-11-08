@@ -46,7 +46,7 @@ namespace {
 	//Returns the stack argument index for the given argument
 	int getStackArgumentIndex(FunctionCompilationData& functionData, int argIndex) {
 		int stackArgIndex = 0;
-		auto& parameters = functionData.function.parameters();
+		auto& parameters = functionData.function.def().parameters();
 
 		int index = 0;
 		for (auto param : parameters) {
@@ -161,10 +161,10 @@ namespace {
 
 void CallingConvention::moveArgsToStack(FunctionCompilationData& functionData) const {
 	auto& function = functionData.function;
-	auto& parameters = function.parameters();
+	auto& parameters = function.def().parameters();
 
-	for (int arg = (int)function.numParams() - 1; arg >= 0; arg--) {
-		if (TypeSystem::isPrimitiveType(function.parameters()[arg], PrimitiveTypes::Float)) {
+	for (int arg = (int)function.def().numParams() - 1; arg >= 0; arg--) {
+		if (TypeSystem::isPrimitiveType(function.def().parameters()[arg], PrimitiveTypes::Float)) {
 			moveFloatArgToStack(functionData, arg, getFloatArgIndex(parameters, arg));
 		} else {
 			moveNoneFloatArgToStack(functionData, arg, getNoneFloatArgIndex(parameters, arg));
@@ -255,9 +255,9 @@ int CallingConvention::calculateShadowStackSize() const {
 void CallingConvention::makeReturnValue(FunctionCompilationData& functionData,	int numStackOperands) const {
 	auto& function = functionData.function;
 
-	if (!TypeSystem::isPrimitiveType(function.returnType(), PrimitiveTypes::Void)) {
+	if (!TypeSystem::isPrimitiveType(function.def().returnType(), PrimitiveTypes::Void)) {
 		//Pop the return value
-		if (TypeSystem::isPrimitiveType(function.returnType(), PrimitiveTypes::Float)) {
+		if (TypeSystem::isPrimitiveType(function.def().returnType(), PrimitiveTypes::Float)) {
 			OperandStack::popReg(function, numStackOperands - 1, FloatRegisters::XMM0);
 		} else {
 			OperandStack::popReg(function, numStackOperands - 1, Registers::AX);

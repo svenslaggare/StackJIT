@@ -35,7 +35,7 @@ std::string Binder::functionSignature(const FunctionDefinition& funcDef) const {
 }
 
 std::string Binder::functionSignature(const ManagedFunction& func) const {
-	return functionSignature(func.name(), func.parameters());
+	return functionSignature(func.def());
 }
 
 bool Binder::define(FunctionDefinition funcDef) {

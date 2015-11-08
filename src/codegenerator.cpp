@@ -37,7 +37,7 @@ namespace {
 
 	//Returns the offset for a stack operand
 	int getStackOperandOffset(ManagedFunction& function, int operandStackIndex) {
-		return -(int)(Amd64Backend::REG_SIZE * (1 + function.numLocals() + function.numParams() + operandStackIndex));
+		return -(int)(Amd64Backend::REG_SIZE * (1 + function.numLocals() + function.def().numParams() + operandStackIndex));
 	}
 
 	//Indicates if the given value fits in a char
@@ -242,7 +242,7 @@ void CodeGenerator::initializeFunction(FunctionCompilationData& functionData) {
     auto& function = functionData.function;
 
     //Calculate the size of the stack aligned to 16 bytes
-    std::size_t neededStackSize = (function.numParams() + function.numLocals() + function.operandStackSize()) * Amd64Backend::REG_SIZE;
+    std::size_t neededStackSize = (function.def().numParams() + function.numLocals() + function.operandStackSize()) * Amd64Backend::REG_SIZE;
     std::size_t stackSize = ((neededStackSize + 15) / 16) * 16;
 
     function.setStackSize(stackSize);
@@ -275,7 +275,7 @@ void CodeGenerator::zeroLocals(FunctionCompilationData& functionData) {
 			Registers::AX, Registers::AX); //xor rax, rax
 
 		for (int i = 0; i < function.numLocals(); i++) {
-			int localOffset = (int)((i + function.numParams() + 1) * -Amd64Backend::REG_SIZE);
+			int localOffset = (int)((i + function.def().numParams() + 1) * -Amd64Backend::REG_SIZE);
 			Amd64Backend::moveRegToMemoryRegWithOffset(
 				function.generatedCode,
 				Registers::BP, localOffset, Registers::AX); //mov [rbp-local], rax
@@ -593,7 +593,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::LOAD_LOCAL:
         {
             //Load rax with the locals offset
-            int localOffset = (stackOffset + inst.intValue + (int)function.numParams()) * -Amd64Backend::REG_SIZE;
+            int localOffset = (stackOffset + inst.intValue + (int)function.def().numParams()) * -Amd64Backend::REG_SIZE;
 
 			//Load rax with the local
 			Amd64Backend::moveMemoryRegWithOffsetToReg(
@@ -610,7 +610,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             //Pop the top operand
 			OperandStack::popReg(function, topOperandIndex, Registers::AX);
 
-            int localOffset = (stackOffset + inst.intValue + (int)function.numParams()) * -Amd64Backend::REG_SIZE;
+            int localOffset = (stackOffset + inst.intValue + (int)function.def().numParams()) * -Amd64Backend::REG_SIZE;
 
 			//Store the operand at the given local
 			Amd64Backend::moveRegToMemoryRegWithOffset(

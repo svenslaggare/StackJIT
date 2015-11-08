@@ -63,7 +63,8 @@ void Loader::generateDefinition(VMState& vmState, const AssemblyParser::Function
 		function.name,
 		parameters,
 		returnType,
-		function.isMemberFunction);
+		function.isMemberFunction,
+		function.memberFunctionName == ".constructor");
 }
 
 void Loader::loadExternalFunction(VMState& vmState, const AssemblyParser::Function& function, FunctionDefinition& loadedFunction) {
@@ -95,7 +96,7 @@ ManagedFunction* Loader::loadManagedFunction(VMState& vmState, const AssemblyPar
 		throw std::runtime_error("The function '" + signature + "' is already defined.");
 	}
 
-	auto loadedFunc = new ManagedFunction(definition, function.memberFunctionName == ".constructor");
+	auto loadedFunc = new ManagedFunction(definition);
 
 	//Locals
 	loadedFunc->setNumLocals(function.localTypes.size());

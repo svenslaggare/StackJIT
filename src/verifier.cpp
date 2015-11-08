@@ -77,19 +77,19 @@ namespace {
 
 	//Verifies a function definition
 	void verifyFunctionDefinition(ManagedFunction& function) {
-		if (function.returnType() == nullptr) {
+		if (function.def().returnType() == nullptr) {
 			throw std::runtime_error("A function cannot have return type 'Untyped'.");
 		}
 
-		if (function.isConstructor() && !TypeSystem::isPrimitiveType(function.returnType(), PrimitiveTypes::Void)) {
+		if (function.def().isConstructor() && !TypeSystem::isPrimitiveType(function.def().returnType(), PrimitiveTypes::Void)) {
 			throw std::runtime_error("Constructors must have return type 'Void'.");
 		}
 
 		int i = 0;
-		for (auto arg : function.parameters()) {
+		for (auto arg : function.def().parameters()) {
 			if (arg == nullptr || TypeSystem::isPrimitiveType(arg, PrimitiveTypes::Void)) {
 				throw std::runtime_error(
-					"Parameter: " + std::to_string(i) + " in function '" + function.name()
+					"Parameter: " + std::to_string(i) + " in function '" + function.def().name()
 					+ "' cannot be of type '" + typeToString(arg) + "'.");
 			}
 
@@ -414,7 +414,7 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction inst, st
 			{
 				std::size_t returnCount = 1;
 
-				if (TypeSystem::isPrimitiveType(function.returnType(), PrimitiveTypes::Void)) {
+				if (TypeSystem::isPrimitiveType(function.def().returnType(), PrimitiveTypes::Void)) {
 					returnCount = 0;
 				}
 
@@ -422,8 +422,8 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction inst, st
 					if (returnCount > 0) {
 						auto returnType = popType(operandStack);
 
-						if (!sameType(returnType, function.returnType())) {
-							throw std::runtime_error("Expected '" + typeToString(function.returnType()) + "' as return type.");
+						if (!sameType(returnType, function.def().returnType())) {
+							throw std::runtime_error("Expected '" + typeToString(function.def().returnType()) + "' as return type.");
 						}
 					}
 				} else {
@@ -435,7 +435,7 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction inst, st
 			}
 			break;
 		case OpCodes::LOAD_ARG:
-			operandStack.push(function.parameters()[inst.intValue]);
+			operandStack.push(function.def().parameters()[inst.intValue]);
 			break;
 		case OpCodes::BRANCH_EQUAL:
 		case OpCodes::BRANCH_NOT_EQUAL:

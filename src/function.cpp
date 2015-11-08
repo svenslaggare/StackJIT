@@ -1,36 +1,15 @@
 #include "function.h"
 #include "codegenerator.h"
 
-ManagedFunction::ManagedFunction(const FunctionDefinition& definition, bool isConstructor)
+ManagedFunction::ManagedFunction(const FunctionDefinition& definition)
 	: mDefinition(definition),
 	  mStackSize(0),
-	  mOperandStackSize(0),
-	  mIsConstructor(isConstructor) {
+	  mOperandStackSize(0) {
 
 }
 
-std::string ManagedFunction::name() const {
-	return mDefinition.name();
-}
-
-const std::vector<const Type*>& ManagedFunction::parameters() const {
-	return mDefinition.parameters();
-}
-
-std::size_t ManagedFunction::numParams() const {
-	return mDefinition.parameters().size();
-}
-
-const Type* ManagedFunction::returnType() const {
-	return mDefinition.returnType();
-}
-
-bool ManagedFunction::isMemberFunction() const {
-    return mIsMemberFunction;
-}
-
-bool ManagedFunction::isConstructor() const {
-    return mIsConstructor;
+const FunctionDefinition& ManagedFunction::def() const {
+	return mDefinition;
 }
 
 std::size_t ManagedFunction::numLocals() const {
@@ -69,13 +48,15 @@ FunctionDefinition::FunctionDefinition(
     std::string name,
     std::vector<const Type*> parameters,
     const Type* returnType,
-    bool isMemberFunction)
+    bool isMemberFunction,
+	bool isConstructor)
     : mName(name),
       mParameters(parameters),
       mReturnType(returnType),
       mEntryPoint(nullptr),
       mIsManaged(true),
-      mIsMemberFunction(isMemberFunction) {
+      mIsMemberFunction(isMemberFunction),
+	  mIsConstructor(isConstructor) {
 
 }
 
@@ -84,13 +65,15 @@ FunctionDefinition::FunctionDefinition(
 	std::vector<const Type*> parameters,
 	const Type* returnType,
 	unsigned char* entryPoint,
-	bool isMemberFunction)
+	bool isMemberFunction,
+	bool isConstructor)
     : mName(name),
       mParameters(parameters),
       mReturnType(returnType),
       mEntryPoint(entryPoint),
       mIsManaged(false),
-      mIsMemberFunction(isMemberFunction) {
+      mIsMemberFunction(isMemberFunction),
+	  mIsConstructor(isConstructor) {
 
 }
 
@@ -112,8 +95,16 @@ const std::vector<const Type*>& FunctionDefinition::parameters() const {
     return mParameters;
 }
 
+std::size_t FunctionDefinition::numParams() const {
+	return mParameters.size();
+}
+
 bool FunctionDefinition::isMemberFunction() const {
     return mIsMemberFunction;
+}
+
+bool FunctionDefinition::isConstructor() const {
+	return mIsConstructor;
 }
 
 bool FunctionDefinition::isManaged() const {
