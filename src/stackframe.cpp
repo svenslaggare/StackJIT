@@ -7,7 +7,7 @@ StackFrameEntry::StackFrameEntry(RegisterValue value, const Type* type)
 }
 
 //Stack frame
-StackFrame::StackFrame(RegisterValue* basePtr, const Function* function, const int instIndex)
+StackFrame::StackFrame(RegisterValue* basePtr, const ManagedFunction* function, const int instIndex)
 	: mBasePtr(basePtr),
 	  mFunction(function),
 	  mOperandTypes(function->instructions[instIndex].operandTypes()) {

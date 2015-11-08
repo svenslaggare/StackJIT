@@ -3,7 +3,7 @@
 #include <string>
 #include "vmstate.h"
 
-class Function;
+class ManagedFunction;
 class VMState;
 class Type;
 
@@ -35,11 +35,11 @@ private:
 	const Type* mStringType;
 
 	//Verifies the given instruction
-	void verifyInstruction(Function& function, Instruction inst, std::size_t index,
+	void verifyInstruction(ManagedFunction& function, Instruction inst, std::size_t index,
 						   InstructionTypes& operandStack, std::vector<BranchCheck>& branches);
 public:
 	Verifier(VMState& vmState);
 
 	//Verifies the given function
-	void verifyFunction(Function& function);
+	void verifyFunction(ManagedFunction& function);
 };

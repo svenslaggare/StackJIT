@@ -76,7 +76,7 @@ namespace {
 	}
 
 	//Verifies a function definition
-	void verifyFunctionDefinition(Function& function) {
+	void verifyFunctionDefinition(ManagedFunction& function) {
 		if (function.returnType() == nullptr) {
 			throw std::runtime_error("A function cannot have return type 'Untyped'.");
 		}
@@ -98,7 +98,7 @@ namespace {
 	}
 
 	//Checks the local types
-	void preCheckLocalsTypes(VMState& vmState, Function& function) {
+	void preCheckLocalsTypes(VMState& vmState, ManagedFunction& function) {
 		const auto voidType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Void));
 
 		for (std::size_t i = 0; i < function.numLocals(); i++) {
@@ -113,7 +113,7 @@ namespace {
 	}
 
 	//Verifies the branches
-	void verifyBranches(Function& function, std::vector<BranchCheck>& branches) {
+	void verifyBranches(ManagedFunction& function, std::vector<BranchCheck>& branches) {
 		for (auto& branch : branches) {
 			auto postSourceTypes = branch.branchTypes;
 			auto preTargetTypes = function.instructions[branch.target].operandTypes();
@@ -135,7 +135,7 @@ namespace {
 	}
 
 	//Checks the local types
-	void postCheckLocalsTypes(Function& function) {
+	void postCheckLocalsTypes(ManagedFunction& function) {
 		for (std::size_t i = 0; i < function.numLocals(); i++) {
 			if (function.getLocal(i) == nullptr) {
 				typeError(0, "Local " + std::to_string(i) + " is not typed.");
@@ -157,8 +157,8 @@ Verifier::Verifier(VMState& vmState)
 	mStringType = mVMState.typeProvider().makeType(TypeSystem::stringTypeName);
 }
 
-void Verifier::verifyInstruction(Function& function, Instruction inst, std::size_t index,
-					   			 InstructionTypes& operandStack, std::vector<BranchCheck>& branches) {
+void Verifier::verifyInstruction(ManagedFunction& function, Instruction inst, std::size_t index,
+								 InstructionTypes& operandStack, std::vector<BranchCheck>& branches) {
 	const auto numInstructions = function.instructions.size();
 
 	switch (inst.opCode()) {
@@ -781,7 +781,7 @@ void Verifier::verifyInstruction(Function& function, Instruction inst, std::size
 	}
 }
 
-void Verifier::verifyFunction(Function& function) {
+void Verifier::verifyFunction(ManagedFunction& function) {
 	InstructionTypes operandStack;
 
 	const auto numInstructions = function.instructions.size();

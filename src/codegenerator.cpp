@@ -12,6 +12,22 @@
 #include <string.h>
 #include <iostream>
 
+MacroFunctionContext::MacroFunctionContext(
+		const VMState& vmState,
+		const CallingConvention& callingConvention,
+		const ExceptionHandling& exceptionHandling,
+		FunctionCompilationData& functionData,
+		const Instruction& inst,
+		const int instIndex)
+		: vmState(vmState),
+		  callingConvention(callingConvention),
+		  exceptionHandling(exceptionHandling),
+		  functionData(functionData),
+		  inst(inst),
+		  instIndex(instIndex) {
+
+}
+
 namespace {
 	void pushArray(std::vector<unsigned char>& dest, const std::vector<unsigned char>& values) {
 		for (auto current : values) {
@@ -20,7 +36,7 @@ namespace {
 	}
 
 	//Returns the offset for a stack operand
-	int getStackOperandOffset(Function& function, int operandStackIndex) {
+	int getStackOperandOffset(ManagedFunction& function, int operandStackIndex) {
 		return -(int)(Amd64Backend::REG_SIZE * (1 + function.numLocals() + function.numParams() + operandStackIndex));
 	}
 
@@ -30,7 +46,7 @@ namespace {
 	}
 }
 
-void OperandStack::duplicate(Function& function, int operandStackIndex) {
+void OperandStack::duplicate(ManagedFunction& function, int operandStackIndex) {
 	int stackOffset1 = getStackOperandOffset(function, operandStackIndex);
 	int stackOffset2 = getStackOperandOffset(function, operandStackIndex + 1);
 
@@ -43,7 +59,7 @@ void OperandStack::duplicate(Function& function, int operandStackIndex) {
 		Registers::BP, stackOffset2, Registers::AX); //mov [rbp+<operand2 offset>], rax
 }
 
-void OperandStack::popReg(Function& function, int operandStackIndex, Registers reg) {
+void OperandStack::popReg(ManagedFunction& function, int operandStackIndex, Registers reg) {
 	int stackOffset = getStackOperandOffset(function, operandStackIndex);
 
 	Amd64Backend::moveMemoryRegWithOffsetToReg(
@@ -51,7 +67,7 @@ void OperandStack::popReg(Function& function, int operandStackIndex, Registers r
 		reg, Registers::BP, stackOffset); //mov <reg>, [rbp+<operand offset>]
 }
 
-void OperandStack::popReg(Function& function, int operandStackIndex, NumberedRegisters reg) {
+void OperandStack::popReg(ManagedFunction& function, int operandStackIndex, NumberedRegisters reg) {
 	int stackOffset = getStackOperandOffset(function, operandStackIndex);
 
 	if (validCharValue(stackOffset)) {
@@ -73,7 +89,7 @@ void OperandStack::popReg(Function& function, int operandStackIndex, NumberedReg
 	}
 }
 
-void OperandStack::popReg(Function& function, int operandStackIndex, FloatRegisters reg) {
+void OperandStack::popReg(ManagedFunction& function, int operandStackIndex, FloatRegisters reg) {
 	int stackOffset = getStackOperandOffset(function, operandStackIndex);
 
 	if (validCharValue(stackOffset)) {
@@ -95,7 +111,7 @@ void OperandStack::popReg(Function& function, int operandStackIndex, FloatRegist
 	}
 }
 
-void OperandStack::pushReg(Function& function, int operandStackIndex, Registers reg) {
+void OperandStack::pushReg(ManagedFunction& function, int operandStackIndex, Registers reg) {
 	int stackOffset = getStackOperandOffset(function, operandStackIndex);
 
 	Amd64Backend::moveRegToMemoryRegWithOffset(
@@ -103,7 +119,7 @@ void OperandStack::pushReg(Function& function, int operandStackIndex, Registers 
 		Registers::BP, stackOffset, reg); //mov [rbp+<operand offset>], <reg>
 }
 
-void OperandStack::pushReg(Function& function, int operandStackIndex, FloatRegisters reg) {
+void OperandStack::pushReg(ManagedFunction& function, int operandStackIndex, FloatRegisters reg) {
 	int stackOffset = getStackOperandOffset(function, operandStackIndex);
 
 	Amd64Backend::moveRegToMemoryRegWithOffset(
@@ -112,7 +128,7 @@ void OperandStack::pushReg(Function& function, int operandStackIndex, FloatRegis
 		stackOffset, reg); //movss [rbp+<operand offset>], <float reg>
 }
 
-void OperandStack::pushInt(Function& function, int operandStackIndex, int value) {
+void OperandStack::pushInt(ManagedFunction& function, int operandStackIndex, int value) {
 	int stackOffset = getStackOperandOffset(function, operandStackIndex);
 
 	//mov [rbp+<operand offset>], value
@@ -144,13 +160,18 @@ CodeGenerator::CodeGenerator(const CallingConvention& callingConvention, const E
 
 }
 
+void CodeGenerator::defineMacro(const Binder& binder, const FunctionDefinition& function, MacroFunction macroFunction) {
+	auto signature = binder.functionSignature(function);
+	mMacros.insert({ signature, macroFunction });
+}
+
 bool CodeGenerator::compileAtRuntime(const VMState& vmState, const FunctionDefinition& funcToCall, std::string funcSignature) {
 	return vmState.lazyJIT
 		   && funcToCall.isManaged()
 		   && !vmState.engine().jitCompiler().hasCompiled(funcSignature);
 }
 
-std::size_t CodeGenerator::generateCompileCall(CodeGen& generatedCode, Function& function, const FunctionDefinition& funcToCall) {
+std::size_t CodeGenerator::generateCompileCall(CodeGen& generatedCode, ManagedFunction& function, const FunctionDefinition& funcToCall) {
 #if defined(_WIN64) || defined(__MINGW32__)
 	char shadowStackSize = (char)mCallingConvention.calculateShadowStackSize();
 	std::size_t callIndex;
@@ -210,7 +231,7 @@ void CodeGenerator::generateCall(CodeGen& codeGen, unsigned char* funcPtr, Regis
 	}
 }
 
-void CodeGenerator::generateGCCall(CodeGen& generatedCode, Function& function, int instIndex) {
+void CodeGenerator::generateGCCall(CodeGen& generatedCode, ManagedFunction& function, int instIndex) {
 	Amd64Backend::moveRegToReg(generatedCode, RegisterCallArguments::Arg0, Registers::BP); //BP as the first argument
 	Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg1, (PtrValue)&function); //Address of the function as second argument
 	Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg2, instIndex); //Current inst index as third argument
@@ -287,8 +308,8 @@ void CodeGenerator::pushFunc(const VMState& vmState, FunctionCompilationData& fu
 	Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::AX, 0, Registers::CX); //mov [rax], rcx
 	Amd64Backend::moveIntToReg(generatedCode, Registers::CX, instIndex); //mov rcx, <call point>
 	Amd64Backend::moveRegToMemoryRegWithOffset(
-		generatedCode,
-		Registers::AX, sizeof(Function*), Registers::CX); //mov [rax+<offset>], rcx
+			generatedCode,
+			Registers::AX, sizeof(ManagedFunction*), Registers::CX); //mov [rax+<offset>], rcx
 
 	//Update the top pointer
 	Amd64Backend::moveRegToMemory(
@@ -610,7 +631,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
             const auto& funcToCall = vmState.binder().getFunction(calledSignature);
 
-			if (!funcToCall.isMacroFunction()) {
+			if (mMacros.count(calledSignature) == 0) {
 				bool needsToCompile = compileAtRuntime(vmState, funcToCall, calledSignature);
 				std::size_t callIndex = 0;
 
@@ -700,7 +721,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			} else {
 				//Invoke the macro function
 				MacroFunctionContext context(vmState, mCallingConvention, mExceptionHandling, functionData, inst, instIndex);
-				funcToCall.macroFunction()(context);
+				mMacros[calledSignature](context);
 			}
         }
         break;

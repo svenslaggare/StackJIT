@@ -1,7 +1,7 @@
 #include "callstack.h"
 #include <stdexcept>
 
-CallStackEntry::CallStackEntry(Function* function, int callPoint)
+CallStackEntry::CallStackEntry(ManagedFunction* function, int callPoint)
 	: function(function), callPoint(callPoint) {
 
 }
@@ -20,7 +20,7 @@ CallStack::~CallStack() {
 	delete[] mStart;
 }
 
-void CallStack::push(Function* function, int callPoint) {
+void CallStack::push(ManagedFunction* function, int callPoint) {
 	if (mTop + 1 < mStart + mSize) {
 		mTop++;
 		*mTop = CallStackEntry(function, callPoint);

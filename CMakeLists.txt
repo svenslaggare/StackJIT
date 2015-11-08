@@ -55,6 +55,8 @@ set(SOURCE_FILES
     src/test.cpp
     src/exceptions.h
     src/exceptions.cpp
+    src/callstack.h
+    src/callstack.cpp
     src/linux/memory.cpp
     src/linux/callingconvention.h
     src/linux/callingconvetion.cpp

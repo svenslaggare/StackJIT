@@ -21,7 +21,7 @@ UnresolvedFunctionCall::UnresolvedFunctionCall(FunctionCallType type, std::size_
 	: type(type), callOffset(callOffset), funcToCall(funcToCall)  {
 
 }
-FunctionCompilationData::FunctionCompilationData(Function& function)
+FunctionCompilationData::FunctionCompilationData(ManagedFunction& function)
     : function(function) {
 
 }
@@ -39,10 +39,13 @@ MemoryManager& JITCompiler::memoryManager() {
 void JITCompiler::createMacros() {
 	auto& binder = mVMState.binder();
 	auto voidType = mVMState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Void));
-	binder.define(FunctionDefinition("std.gc.collect", {}, voidType, [this](MacroFunctionContext context) {
-		auto& function = context.functionData.function;
-		mCodeGen.generateGCCall(function.generatedCode, function, context.instIndex);
-	}));
+	FunctionDefinition gcDef("std.gc.collect", {}, voidType);
+	if (binder.define(gcDef)) {
+		mCodeGen.defineMacro(binder, gcDef, [this](MacroFunctionContext context) {
+			auto& function = context.functionData.function;
+			mCodeGen.generateGCCall(function.generatedCode, function, context.instIndex);
+		});
+	}
 }
 
 bool JITCompiler::hasCompiled(std::string signature) const {
@@ -53,7 +56,7 @@ const std::unordered_map<std::string, FunctionCompilationData>& JITCompiler::fun
 	return mFunctions;
 }
 
-JitFunction JITCompiler::compileFunction(Function* function) {
+JitFunction JITCompiler::compileFunction(ManagedFunction* function) {
 	auto signature = mVMState.binder().functionSignature(*function);
 	mFunctions.emplace(signature, FunctionCompilationData(*function));
 	auto& functionData = mFunctions.at(signature);

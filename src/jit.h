@@ -8,7 +8,7 @@
 #include <functional>
 
 class VMState;
-class Function;
+class ManagedFunction;
 class Type;
 
 //Represents a compiled function
@@ -49,7 +49,7 @@ struct UnresolvedFunctionCall {
 
 //Holds compilation data for a function
 struct FunctionCompilationData {
-	Function& function;
+	ManagedFunction& function;
 
 	//Unresolved branches
 	std::unordered_map<std::size_t, BranchTarget> unresolvedBranches;
@@ -64,7 +64,7 @@ struct FunctionCompilationData {
 	std::vector<UnresolvedFunctionCall> unresolvedCalls;
 
 	//Holds compilation data for the given function
-	FunctionCompilationData(Function& function);
+	FunctionCompilationData(ManagedFunction& function);
 };
 
 //Represents the JIT compiler
@@ -106,7 +106,7 @@ public:
 	const std::unordered_map<std::string, FunctionCompilationData>& functions() const;
 
 	//Compiles the given function
-	JitFunction compileFunction(Function* function);
+	JitFunction compileFunction(ManagedFunction* function);
 
 	//Resolves symbols for the given function
 	void resolveSymbols(std::string signature);

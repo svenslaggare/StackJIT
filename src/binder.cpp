@@ -34,7 +34,7 @@ std::string Binder::functionSignature(const FunctionDefinition& funcDef) const {
 	return functionSignature(funcDef.name(), funcDef.parameters());
 }
 
-std::string Binder::functionSignature(const Function& func) const {
+std::string Binder::functionSignature(const ManagedFunction& func) const {
 	return functionSignature(func.name(), func.parameters());
 }
 
@@ -77,6 +77,6 @@ const FunctionDefinition& Binder::getFunction(std::string signature) const {
 	return mFunctionTable.at(signature);
 }
 
-const FunctionDefinition& Binder::getFunction(const Function& function) const {
+const FunctionDefinition& Binder::getFunction(const ManagedFunction& function) const {
 	return mFunctionTable.at(functionSignature(function));
 }

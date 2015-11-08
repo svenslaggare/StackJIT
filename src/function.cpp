@@ -1,7 +1,7 @@
 #include "function.h"
 #include "codegenerator.h"
 
-Function::Function(std::string name, std::vector<const Type*> parameters, const Type* returnType, bool isMemberFunction, bool isConstructor)
+ManagedFunction::ManagedFunction(std::string name, std::vector<const Type*> parameters, const Type* returnType, bool isMemberFunction, bool isConstructor)
 	: mName(name),
       mParameters(parameters),
       mReturnType(returnType),
@@ -12,76 +12,60 @@ Function::Function(std::string name, std::vector<const Type*> parameters, const 
 
 }
 
-std::string Function::name() const {
+std::string ManagedFunction::name() const {
 	return mName;
 }
 
-const std::vector<const Type*>& Function::parameters() const {
+const std::vector<const Type*>& ManagedFunction::parameters() const {
 	return mParameters;
 }
 
-std::size_t Function::numParams() const {
+std::size_t ManagedFunction::numParams() const {
 	return mParameters.size();
 }
 
-const Type* Function::returnType() const {
+const Type* ManagedFunction::returnType() const {
 	return mReturnType;
 }
 
-bool Function::isMemberFunction() const {
+bool ManagedFunction::isMemberFunction() const {
     return mIsMemberFunction;
 }
 
-bool Function::isConstructor() const {
+bool ManagedFunction::isConstructor() const {
     return mIsConstructor;
 }
 
-std::size_t Function::numLocals() const {
+std::size_t ManagedFunction::numLocals() const {
 	return mLocalTypes.size();
 }
 
-void Function::setNumLocals(std::size_t count) {
+void ManagedFunction::setNumLocals(std::size_t count) {
 	mLocalTypes.resize(count);
 }
 
-const Type* Function::getLocal(std::size_t index) const {
+const Type* ManagedFunction::getLocal(std::size_t index) const {
 	return mLocalTypes.at(index);
 }
 
-void Function::setLocal(std::size_t index, const Type* type) {
+void ManagedFunction::setLocal(std::size_t index, const Type* type) {
 	mLocalTypes.at(index) = type;
 }
 
-std::size_t Function::stackSize() const {
+std::size_t ManagedFunction::stackSize() const {
 	return mStackSize;
 }
 
-void Function::setStackSize(std::size_t size) {
+void ManagedFunction::setStackSize(std::size_t size) {
 	mStackSize = size;
 }
 
-std::size_t Function::operandStackSize() const {
+std::size_t ManagedFunction::operandStackSize() const {
     return mOperandStackSize;
 }
 
-void Function::setOperandStackSize(std::size_t size) {
+void ManagedFunction::setOperandStackSize(std::size_t size) {
     mOperandStackSize = size;
-}
-
-MacroFunctionContext::MacroFunctionContext(
-	const VMState& vmState,
-	const CallingConvention& callingConvention,
-	const ExceptionHandling& exceptionHandling,
-	FunctionCompilationData& functionData,
-	const Instruction& inst,
-	const int instIndex)
-	: vmState(vmState),
-	  callingConvention(callingConvention),
-	  exceptionHandling(exceptionHandling),
-	  functionData(functionData),
-	  inst(inst),
-	  instIndex(instIndex) {
-
 }
 
 FunctionDefinition::FunctionDefinition(
@@ -94,8 +78,7 @@ FunctionDefinition::FunctionDefinition(
       mReturnType(returnType),
       mEntryPoint(nullptr),
       mIsManaged(true),
-      mIsMemberFunction(isMemberFunction),
-	  mIsMacroFunction(false) {
+      mIsMemberFunction(isMemberFunction) {
 
 }
 
@@ -110,27 +93,13 @@ FunctionDefinition::FunctionDefinition(
       mReturnType(returnType),
       mEntryPoint(entryPoint),
       mIsManaged(false),
-      mIsMemberFunction(isMemberFunction),
-	  mIsMacroFunction(false) {
-
-}
-
-FunctionDefinition::FunctionDefinition(std::string name, std::vector<const Type*> parameters, const Type* returnType, MacroFunction macroFunction)
-	: mName(name),
-	  mParameters(parameters),
-	  mReturnType(returnType),
-	  mEntryPoint(nullptr),
-	  mIsManaged(false),
-	  mIsMemberFunction(false),
-	  mIsMacroFunction(true),
-	  mMacroFunction(macroFunction) {
+      mIsMemberFunction(isMemberFunction) {
 
 }
 
 FunctionDefinition::FunctionDefinition()
     : mName(""), mReturnType(nullptr), mEntryPoint(nullptr),
-	  mIsManaged(false), mIsMemberFunction(false),
-	  mIsMacroFunction(false) {
+	  mIsManaged(false), mIsMemberFunction(false) {
 
 }
 
@@ -162,12 +131,4 @@ void FunctionDefinition::setEntryPoint(unsigned char* entryPoint) {
 
 unsigned char* FunctionDefinition::entryPoint() const {
     return mEntryPoint;
-}
-
-bool FunctionDefinition::isMacroFunction() const {
-	return mIsMacroFunction;
-}
-
-MacroFunction FunctionDefinition::macroFunction() const {
-	return mMacroFunction;
 }

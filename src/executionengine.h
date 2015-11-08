@@ -9,7 +9,7 @@
 
 class VMState;
 class Assembly;
-class Function;
+class ManagedFunction;
 class AssemblyImage;
 
 namespace AssemblyParser {
@@ -64,7 +64,7 @@ private:
 	std::string mBaseDir;
 
 	ImageContainer mImageContainer;
-	std::unordered_map<std::string, Function*> mLoadedFunctions;
+	std::unordered_map<std::string, ManagedFunction*> mLoadedFunctions;
 
 	//Generates code for loaded functions
 	void generateCode();
@@ -79,7 +79,7 @@ private:
 	void loadImage(std::ifstream& stream, AssemblyType assemblyType);
 
 	//Compiles the given function
-	void compileFunction(Function* function, std::string signature = "", bool resolveSymbols = false);
+	void compileFunction(ManagedFunction* function, std::string signature = "", bool resolveSymbols = false);
 public:
 	//Creates a new execution engine
 	ExecutionEngine(VMState& vmState);

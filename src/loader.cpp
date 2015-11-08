@@ -29,7 +29,7 @@ namespace {
 	}
 
 	//Loads the given instruction
-	Instruction loadInstruction(VMState& vmState, Function* function, AssemblyParser::Instruction inst) {
+	Instruction loadInstruction(VMState& vmState, ManagedFunction* function, AssemblyParser::Instruction inst) {
 		Instruction newInst(inst.opCode);
 
 		newInst.intValue = inst.intValue;
@@ -81,7 +81,7 @@ void Loader::loadExternalFunction(VMState& vmState, const AssemblyParser::Functi
 	}
 }
 
-Function* Loader::loadManagedFunction(VMState& vmState, const AssemblyParser::Function& function, bool checkIfDefined) {
+ManagedFunction* Loader::loadManagedFunction(VMState& vmState, const AssemblyParser::Function& function, bool checkIfDefined) {
 	if (function.isExternal) {
 		throw std::runtime_error("Expected a managed function");
 	}
@@ -102,7 +102,7 @@ Function* Loader::loadManagedFunction(VMState& vmState, const AssemblyParser::Fu
 		throw std::runtime_error("The function '" + signature + "' is already defined.");
 	}
 
-	auto loadedFunc = new Function(
+	auto loadedFunc = new ManagedFunction(
 		function.name,
 		parameters,
 		returnType,

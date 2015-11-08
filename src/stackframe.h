@@ -3,7 +3,7 @@
 #include <deque>
 #include "stackjit.h"
 
-class Function;
+class ManagedFunction;
 class Type;
 
 //Represents a stack frame entry (argument, local, operand)
@@ -18,11 +18,11 @@ struct StackFrameEntry {
 class StackFrame {
 private:
 	RegisterValue* mBasePtr;
-	const Function* mFunction;
+	const ManagedFunction* mFunction;
 	const std::deque<const Type*>& mOperandTypes;
 public:
 	//Creates a new stack frame
-	StackFrame(RegisterValue* basePtr, const Function* function, const int instIndex);
+	StackFrame(RegisterValue* basePtr, const ManagedFunction* function, const int instIndex);
 
 	//Returns the given function argument
 	StackFrameEntry getArgument(std::int64_t index);

@@ -22,7 +22,7 @@ public:
 
 	//Returns the function signature
 	std::string functionSignature(const FunctionDefinition& funcDef) const;
-	std::string functionSignature(const Function& func) const;
+	std::string functionSignature(const ManagedFunction& func) const;
 
 	//Defines the given function
 	bool define(FunctionDefinition funcDef);
@@ -38,5 +38,5 @@ public:
 	const FunctionDefinition& getFunction(std::string signature) const;
 
 	//Returns the definition for the given function
-	const FunctionDefinition& getFunction(const Function& function) const;
+	const FunctionDefinition& getFunction(const ManagedFunction& function) const;
 };

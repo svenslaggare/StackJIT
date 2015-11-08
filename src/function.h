@@ -12,7 +12,7 @@ class CallingConvention;
 class ExceptionHandling;
 
 //Represents an user defined function
-class Function {
+class ManagedFunction {
 private:
 	std::string mName;
 
@@ -34,7 +34,7 @@ public:
 	std::vector<unsigned char> generatedCode;
 
 	//Creates a new function
-	Function(
+	ManagedFunction(
 		std::string name,
 		std::vector<const Type*> parameters,
 		const Type* returnType,
@@ -83,31 +83,6 @@ public:
 	//Sets the size of the operand stack
 	void setOperandStackSize(std::size_t size);
 };
-
-//Represents context for a macro function
-struct MacroFunctionContext {
-	const VMState& vmState;
-
-	const CallingConvention& callingConvention;
-	const ExceptionHandling& exceptionHandling;
-
-	FunctionCompilationData& functionData;
-
-	const Instruction& inst;
-	const int instIndex;
-
-	MacroFunctionContext(
-		const VMState& vmState,
-		const CallingConvention& callingConvention,
-		const ExceptionHandling& exceptionHandling,
-		FunctionCompilationData& functionData,
-		const Instruction& inst,
-		const int instIndex);
-};
-
-//Represents a macro function
-using MacroFunction = std::function<void (MacroFunctionContext)>;
-
 //Represents a definition for a function
 class FunctionDefinition {
 private:
@@ -119,9 +94,6 @@ private:
 
 	bool mIsManaged;
 	bool mIsMemberFunction;
-
-	bool mIsMacroFunction;
-	MacroFunction mMacroFunction;
 public:
 	//Creates a new managed function definition
 	FunctionDefinition(
@@ -137,13 +109,6 @@ public:
 		const Type* returnType,
 		unsigned char* entryPoint,
 		bool isMemberFunction = false);
-
-	//Creates a new macro function definition
-	FunctionDefinition(
-		std::string name,
-		std::vector<const Type*> parameters,
-		const Type* returnType,
-		MacroFunction macroFunction);
 
 	FunctionDefinition();
 
@@ -167,10 +132,4 @@ public:
 
 	//The entry point
 	unsigned char* entryPoint() const;
-
-	//Indicates if the current function is macro
-	bool isMacroFunction() const;
-
-	//Returns the macro function
-	MacroFunction macroFunction() const;
 };

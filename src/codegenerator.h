@@ -1,45 +1,74 @@
 #pragma once
 #include "amd64.h"
+#include "function.h"
+#include "binder.h"
 #include <string>
+#include <functional>
+#include <bits/unordered_map.h>
 
 struct FunctionCompilationData;
 class VMState;
 class Instruction;
 class CallingConvention;
 class MemoryManager;
-class Function;
+class ManagedFunction;
 class ExceptionHandling;
 class FunctionDefinition;
 
 //Manages the operand stack
 namespace OperandStack {
 	//Duplicates the top operand
-	void duplicate(Function& function, int operandStackIndex);
+	void duplicate(ManagedFunction& function, int operandStackIndex);
 
 	//Pops an operand from the operand stack to the given register
-	void popReg(Function& function, int operandStackIndex, Registers reg);
-	void popReg(Function& function, int operandStackIndex, NumberedRegisters reg);
-	void popReg(Function& function, int operandStackIndex, FloatRegisters reg);
+	void popReg(ManagedFunction& function, int operandStackIndex, Registers reg);
+	void popReg(ManagedFunction& function, int operandStackIndex, NumberedRegisters reg);
+	void popReg(ManagedFunction& function, int operandStackIndex, FloatRegisters reg);
 
 	//Pushes the given register to the operand stack
-	void pushReg(Function& function, int operandStackIndex, Registers reg);
-	void pushReg(Function& function, int operandStackIndex, FloatRegisters reg);
+	void pushReg(ManagedFunction& function, int operandStackIndex, Registers reg);
+	void pushReg(ManagedFunction& function, int operandStackIndex, FloatRegisters reg);
 
 	//Pushes the given value to the operand stack
-	void pushInt(Function& function, int operandStackIndex, int value);
+	void pushInt(ManagedFunction& function, int operandStackIndex, int value);
 }
+
+//Represents context for a macro function
+struct MacroFunctionContext {
+	const VMState& vmState;
+
+	const CallingConvention& callingConvention;
+	const ExceptionHandling& exceptionHandling;
+
+	FunctionCompilationData& functionData;
+
+	const Instruction& inst;
+	const int instIndex;
+
+	MacroFunctionContext(
+			const VMState& vmState,
+			const CallingConvention& callingConvention,
+			const ExceptionHandling& exceptionHandling,
+			FunctionCompilationData& functionData,
+			const Instruction& inst,
+			const int instIndex);
+};
+
+//Represents a macro function
+using MacroFunction = std::function<void (MacroFunctionContext)>;
 
 //Represents a code generator
 class CodeGenerator {
 private:
 	const CallingConvention& mCallingConvention;
 	const ExceptionHandling& mExceptionHandling;
+	std::unordered_map<std::string, MacroFunction> mMacros;
 
 	//Indicates if the given function needs to be compiled at runtime
 	bool compileAtRuntime(const VMState& vmState, const FunctionDefinition& funcToCall, std::string funcSignature);
 
 	//Generates a compile call for the given function
-	std::size_t generateCompileCall(CodeGen& generatedCode, Function& function, const FunctionDefinition& funcToCall);
+	std::size_t generateCompileCall(CodeGen& generatedCode, ManagedFunction& function, const FunctionDefinition& funcToCall);
 
 	//Zeroes the locals
 	void zeroLocals(FunctionCompilationData& functionData);
@@ -53,11 +82,14 @@ public:
 	//Creates a new code generator
 	CodeGenerator(const CallingConvention& callingConvention, const ExceptionHandling& exceptionHandling);
 
+	//Defines the given macro function
+	void defineMacro(const Binder& binder, const FunctionDefinition& function, MacroFunction macroFunction);
+
 	//Generates a call to the given function
 	void generateCall(CodeGen& codeGen, unsigned char* funcPtr, Registers addrReg = Registers::AX, bool shadowSpaceNeeded = true);
 
 	//Generates a call to the garbage collect runtime function
-	void generateGCCall(CodeGen& generatedCode, Function& function, int instIndex);
+	void generateGCCall(CodeGen& generatedCode, ManagedFunction& function, int instIndex);
 
 	//Initializes the given function
 	void initializeFunction(FunctionCompilationData& functionData);

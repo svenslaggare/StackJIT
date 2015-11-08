@@ -1,14 +1,14 @@
 #pragma once
 #include <cstdlib>
 
-class Function;
+class ManagedFunction;
 
 //Represents a call stack entry
 struct CallStackEntry {
-	Function* function;
+	ManagedFunction* function;
 	int callPoint;
 
-	CallStackEntry(Function* function, int callPoint);
+	CallStackEntry(ManagedFunction* function, int callPoint);
 	CallStackEntry();
 };
 
@@ -24,7 +24,7 @@ public:
 	~CallStack();
 
 	//Pushes the given function to the stack
-	void push(Function* function, int callPoint);
+	void push(ManagedFunction* function, int callPoint);
 
 	//Pops the top entry
 	CallStackEntry pop();

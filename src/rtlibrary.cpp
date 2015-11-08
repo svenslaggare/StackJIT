@@ -12,7 +12,7 @@
 
 extern VMState vmState;
 
-void Runtime::printStackFrame(RegisterValue* basePtr, Function* func) {
+void Runtime::printStackFrame(RegisterValue* basePtr, ManagedFunction* func) {
     using namespace Runtime::Internal;
 
     auto numArgs = func->numParams();
@@ -70,7 +70,7 @@ namespace {
     }
 }
 
-void Runtime::compileFunction(Function* callee, int callOffset, int checkStart, int checkEnd, FunctionDefinition* funcToCall) {
+void Runtime::compileFunction(ManagedFunction* callee, int callOffset, int checkStart, int checkEnd, FunctionDefinition* funcToCall) {
 	auto toCallSignature = vmState.binder().functionSignature(*funcToCall);
 
     //Compile the function (if needed)
@@ -102,7 +102,7 @@ void Runtime::compileFunction(Function* callee, int callOffset, int checkStart, 
 	Helpers::setInt(funcCodePtr, (std::size_t)checkStart + 1, checkEnd - (checkStart + 5));
 }
 
-void Runtime::Internal::printAliveObjects(RegisterValue* basePtr, Function* func, int instIndex, std::string indentation) {
+void Runtime::Internal::printAliveObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex, std::string indentation) {
 	StackFrame stackFrame(basePtr, func, instIndex);
 	auto numArgs = func->numParams();
 	auto numLocals = func->numLocals();
@@ -146,7 +146,7 @@ void Runtime::Internal::printAliveObjects(RegisterValue* basePtr, Function* func
 	}
 }
 
-void Runtime::Internal::markObjects(RegisterValue* basePtr, Function* func, int instIndex) {
+void Runtime::Internal::markObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex) {
     auto& gc = vmState.gc();
 
 	StackFrame stackFrame(basePtr, func, instIndex);
@@ -170,7 +170,7 @@ void Runtime::Internal::markObjects(RegisterValue* basePtr, Function* func, int 
 	}
 }
 
-void Runtime::garbageCollect(RegisterValue* basePtr, Function* func, int instIndex) {
+void Runtime::garbageCollect(RegisterValue* basePtr, ManagedFunction* func, int instIndex) {
     using namespace Runtime::Internal;
     auto& gc = vmState.gc();
 

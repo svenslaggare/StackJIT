@@ -3,7 +3,7 @@
 #include "stackjit.h"
 #include "type.h"
 
-class Function;
+class ManagedFunction;
 class FunctionDefinition;
 class Type;
 class ClassType;
@@ -12,22 +12,22 @@ class ArrayType;
 //The runtime library
 namespace Runtime {
 	//Prints the given stack frame
-	void printStackFrame(RegisterValue* basePtr, Function* func);
+	void printStackFrame(RegisterValue* basePtr, ManagedFunction* func);
 
 	//Internal functions
 	namespace Internal {
 		//Prints the alive objects
-		void printAliveObjects(RegisterValue* basePtr, Function* func, int instIndex, std::string indentation = "");
+		void printAliveObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex, std::string indentation = "");
 
 		//Marks all the objects
-		void markObjects(RegisterValue* basePtr, Function* func, int instIndex);
+		void markObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex);
 	};
 
 	//Compiles the given function
-	void compileFunction(Function* callee, int callOffset, int checkStart, int checkEnd, FunctionDefinition* funcToCall);
+	void compileFunction(ManagedFunction* callee, int callOffset, int checkStart, int checkEnd, FunctionDefinition* funcToCall);
 
 	//Tries to collect garbage
-	void garbageCollect(RegisterValue* basePtr, Function* func, int instIndex);
+	void garbageCollect(RegisterValue* basePtr, ManagedFunction* func, int instIndex);
 
 	//Creates a new array of the given type and length
 	unsigned char* newArray(const ArrayType* arrayType, int length);

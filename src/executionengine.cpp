@@ -215,7 +215,7 @@ void ExecutionEngine::load(bool loadBody) {
 	}
 }
 
-void ExecutionEngine::compileFunction(Function* function, std::string signature, bool resolveSymbols) {
+void ExecutionEngine::compileFunction(ManagedFunction* function, std::string signature, bool resolveSymbols) {
 	//Type check the function
 	Verifier verifier(mVMState);
 	verifier.verifyFunction(*function);
