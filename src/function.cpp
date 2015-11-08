@@ -1,31 +1,28 @@
 #include "function.h"
 #include "codegenerator.h"
 
-ManagedFunction::ManagedFunction(std::string name, std::vector<const Type*> parameters, const Type* returnType, bool isMemberFunction, bool isConstructor)
-	: mName(name),
-      mParameters(parameters),
-      mReturnType(returnType),
-      mStackSize(0), 
-      mOperandStackSize(0),
-      mIsMemberFunction(isMemberFunction),
-      mIsConstructor(isConstructor) {
+ManagedFunction::ManagedFunction(const FunctionDefinition& definition, bool isConstructor)
+	: mDefinition(definition),
+	  mStackSize(0),
+	  mOperandStackSize(0),
+	  mIsConstructor(isConstructor) {
 
 }
 
 std::string ManagedFunction::name() const {
-	return mName;
+	return mDefinition.name();
 }
 
 const std::vector<const Type*>& ManagedFunction::parameters() const {
-	return mParameters;
+	return mDefinition.parameters();
 }
 
 std::size_t ManagedFunction::numParams() const {
-	return mParameters.size();
+	return mDefinition.parameters().size();
 }
 
 const Type* ManagedFunction::returnType() const {
-	return mReturnType;
+	return mDefinition.returnType();
 }
 
 bool ManagedFunction::isMemberFunction() const {

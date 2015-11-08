@@ -11,78 +11,6 @@ class VMState;
 class CallingConvention;
 class ExceptionHandling;
 
-//Represents an user defined function
-class ManagedFunction {
-private:
-	std::string mName;
-
-	const std::vector<const Type*> mParameters;
-	const Type* mReturnType;
-
-	std::vector<const Type*> mLocalTypes;
-
-	std::size_t mStackSize;
-	std::size_t mOperandStackSize;
-
-	bool mIsMemberFunction;
-	bool mIsConstructor;
-public:
-	//The instructions
-	std::vector<Instruction> instructions;
-
-	//The generated code
-	std::vector<unsigned char> generatedCode;
-
-	//Creates a new function
-	ManagedFunction(
-		std::string name,
-		std::vector<const Type*> parameters,
-		const Type* returnType,
-		bool isMemberFunction = false,
-		bool isConstructor = false);
-
-	//The name of the function
-	std::string name() const;
-
-	//The parameters
-	const std::vector<const Type*>& parameters() const;
-
-	//The number of parameters
-	std::size_t numParams() const;
-
-	//The return type
-	const Type* returnType() const;
-
-	//Indicates if the function is a member function
-	bool isMemberFunction() const;
-
-	//Indicates if the function is a constructor
-	bool isConstructor() const;
-
-	//The number of locals
-	std::size_t numLocals() const;
-
-	//Sets the number of locals
-	void setNumLocals(std::size_t count);
-	
-	//Returns the local at the given index
-	const Type* getLocal(std::size_t index) const;
-
-	//Sets the type for the local at the given index
-	void setLocal(std::size_t index, const Type* type);
-
-	//The size of the stack
-	std::size_t stackSize() const;
-
-	//Sets the size of the stack
-	void setStackSize(std::size_t size);
-
-	//The size of the operand stack
-	std::size_t operandStackSize() const;
-
-	//Sets the size of the operand stack
-	void setOperandStackSize(std::size_t size);
-};
 //Represents a definition for a function
 class FunctionDefinition {
 private:
@@ -132,4 +60,69 @@ public:
 
 	//The entry point
 	unsigned char* entryPoint() const;
+};
+
+//Represents an user defined function
+class ManagedFunction {
+private:
+	const FunctionDefinition mDefinition;
+
+	std::vector<const Type*> mLocalTypes;
+
+	std::size_t mStackSize;
+	std::size_t mOperandStackSize;
+
+	bool mIsMemberFunction;
+	bool mIsConstructor;
+public:
+	//The instructions
+	std::vector<Instruction> instructions;
+
+	//The generated code
+	std::vector<unsigned char> generatedCode;
+
+	//Creates a new function
+	ManagedFunction(const FunctionDefinition& definition, bool isConstructor = false);
+
+	//The name of the function
+	std::string name() const;
+
+	//The parameters
+	const std::vector<const Type*>& parameters() const;
+
+	//The number of parameters
+	std::size_t numParams() const;
+
+	//The return type
+	const Type* returnType() const;
+
+	//Indicates if the function is a member function
+	bool isMemberFunction() const;
+
+	//Indicates if the function is a constructor
+	bool isConstructor() const;
+
+	//The number of locals
+	std::size_t numLocals() const;
+
+	//Sets the number of locals
+	void setNumLocals(std::size_t count);
+
+	//Returns the local at the given index
+	const Type* getLocal(std::size_t index) const;
+
+	//Sets the type for the local at the given index
+	void setLocal(std::size_t index, const Type* type);
+
+	//The size of the stack
+	std::size_t stackSize() const;
+
+	//Sets the size of the stack
+	void setStackSize(std::size_t size);
+
+	//The size of the operand stack
+	std::size_t operandStackSize() const;
+
+	//Sets the size of the operand stack
+	void setOperandStackSize(std::size_t size);
 };

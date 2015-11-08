@@ -86,28 +86,16 @@ ManagedFunction* Loader::loadManagedFunction(VMState& vmState, const AssemblyPar
 		throw std::runtime_error("Expected a managed function");
 	}
 
-	auto returnType = getType(vmState, function.returnType);
-
-	std::vector<const Type*> parameters;
-	for (auto param : function.parameters) {
-		parameters.push_back(getType(vmState, param));
-	}
-
 	//Check if defined
-	auto signature = vmState.binder().functionSignature(
-		function.name,
-		parameters);
+	FunctionDefinition definition;
+	generateDefinition(vmState, function, definition);
 
+	auto signature = vmState.binder().functionSignature(definition);
 	if (checkIfDefined && vmState.binder().isDefined(signature)) {
 		throw std::runtime_error("The function '" + signature + "' is already defined.");
 	}
 
-	auto loadedFunc = new ManagedFunction(
-		function.name,
-		parameters,
-		returnType,
-		function.isMemberFunction,
-		function.memberFunctionName == ".constructor");
+	auto loadedFunc = new ManagedFunction(definition, function.memberFunctionName == ".constructor");
 
 	//Locals
 	loadedFunc->setNumLocals(function.localTypes.size());
