@@ -364,13 +364,10 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         {
             //Extract the byte pattern for the float
             const int* floatData = reinterpret_cast<const int*>(&inst.floatValue);
-
-            //Push the value
 			OperandStack::pushInt(function, topOperandIndex + 1, *floatData);
         }
         break;
      case OpCodes::LOAD_CHAR:
-        //Push the value
 		OperandStack::pushInt(function, topOperandIndex + 1, inst.charValue);
         break;
     case OpCodes::ADD:
@@ -561,6 +558,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			trueBranchStart = generatedCode.size();
 			OperandStack::pushInt(function, topOperandIndex - 1, 1);
 
+			//Set the jump targets
 			Helpers::setInt(generatedCode, jump + 1, (int)(generatedCode.size() - trueBranchStart));
 			Helpers::setInt(generatedCode, compareJump + 2, (int)(trueBranchStart - falseBranchStart));
         }
@@ -704,8 +702,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         {
             //If debug is enabled, print the stack frame before return
             if (vmState.enableDebug && vmState.printStackFrame) {
-                Amd64Backend::moveRegToReg(generatedCode, RegisterCallArguments::Arg0, Registers::BP); //BP as the first argument
-                Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg1, (PtrValue)&function); //Address of the function as second argument
+                Amd64Backend::moveRegToReg(generatedCode, RegisterCallArguments::Arg0, Registers::BP);
+                Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg1, (PtrValue)&function);
                 generateCall(generatedCode, (unsigned char*)&Runtime::printStackFrame);
             }
 
