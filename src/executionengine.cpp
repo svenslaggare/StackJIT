@@ -8,6 +8,7 @@
 #include "native.h"
 #include "imageloader.h"
 #include "test.h"
+#include "functionsignature.h"
 #include <iostream>
 #include <stdexcept>
 #include <fstream>
@@ -202,7 +203,7 @@ void ExecutionEngine::load(bool loadBody) {
 			if (!currentFunc.isExternal) {
 				Loader::generateDefinition(mVMState, currentFunc, funcDef);
 
-				auto signature = binder.functionSignature(funcDef);
+				auto signature = FunctionSignature::from(funcDef).str();
 				if (binder.isDefined(signature)) {
 					throw std::runtime_error("The function '" + signature + "' is already defined.");
 				}
@@ -230,7 +231,7 @@ void ExecutionEngine::compileFunction(ManagedFunction* function, std::string sig
 	}
 
 	if (signature == "") {
-		signature = mVMState.binder().functionSignature(*function);
+		signature = FunctionSignature::from(function->def()).str();
 	}
 
 	//Set the entry point & size for the function
@@ -249,7 +250,7 @@ bool ExecutionEngine::compileFunction(std::string signature) {
 		//Load the function
 		mImageContainer.loadFunctionBody(signature);
 		auto func = Loader::loadManagedFunction(mVMState, *funcDef, false);
-		mLoadedFunctions.insert({ mVMState.binder().functionSignature(*func), func });
+		mLoadedFunctions.insert({ FunctionSignature::from(func->def()).str(), func });
 
 		//Compile it
 		compileFunction(func, signature, true);

@@ -14,16 +14,6 @@ public:
 	//Returns the function table
 	const std::unordered_map<std::string, FunctionDefinition>& functionTable() const;
 
-	//Returns the function signature
-	std::string functionSignature(std::string name, const std::vector<const Type*>& parameters) const;
-
-	//Returns the signature for the given member function
-	std::string memberFunctionSignature(const ClassType* structType, std::string name, const std::vector<const Type*>& parameters) const;
-
-	//Returns the function signature
-	std::string functionSignature(const FunctionDefinition& funcDef) const;
-	std::string functionSignature(const ManagedFunction& func) const;
-
 	//Defines the given function
 	bool define(FunctionDefinition funcDef);
 

@@ -112,5 +112,5 @@ namespace TypeSystem {
 	std::size_t sizeOfType(const Type* type);
 
 	//Gets the class- and field name from the given string
-	bool getClassAndFieldName(std::string str, std::pair<std::string, std::string>& res);
+	bool getClassAndFieldName(std::string str, std::string& className, std::string& fieldName);
 }

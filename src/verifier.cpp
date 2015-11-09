@@ -4,6 +4,7 @@
 #include "instructions.h"
 #include "type.h"
 #include "classmetadata.h"
+#include "functionsignature.h"
 
 #include <iostream>
 #include <vector>
@@ -371,14 +372,14 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction inst, st
 				std::string signature = "";
 
 				if (!isInstance) {
-					signature = mVMState.binder().functionSignature(
+					signature = FunctionSignature::function(
 						inst.strValue,
-						inst.parameters);
+						inst.parameters).str();
 				} else {
-					signature = mVMState.binder().memberFunctionSignature(
+					signature = FunctionSignature::memberFunction(
 						inst.classType,
 						inst.strValue,
-						inst.parameters);
+						inst.parameters).str();
 				}
 
 				if (!mVMState.binder().isDefined(signature)) {
@@ -653,10 +654,10 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction inst, st
 			break;
 		case OpCodes::NEW_OBJECT:
 			{
-				std::string signature = mVMState.binder().memberFunctionSignature(
+				std::string signature = FunctionSignature::memberFunction(
 					inst.classType,
 					inst.strValue,
-					inst.parameters);
+					inst.parameters).str();
 
 				if (!mVMState.binder().isDefined(signature)) {
 					typeError(index, "The constructor '" + signature + "' is not defined.");
@@ -691,12 +692,10 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction inst, st
 					typeError(index, "Expected first operand to be a class reference, but got type: " + classRefType->name() + ".");
 				}
 
-				std::pair<std::string, std::string> classAndFieldName;
+				std::string className;
+				std::string fieldName;
 
-				if (TypeSystem::getClassAndFieldName(inst.strValue, classAndFieldName)) {
-					auto className = classAndFieldName.first;
-					auto fieldName = classAndFieldName.second;
-
+				if (TypeSystem::getClassAndFieldName(inst.strValue, className, fieldName)) {
 					if (!mVMState.classProvider().isDefined(className)) {
 						typeError(index, "'" + className + "' is not a class type.");
 					}
@@ -736,12 +735,10 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction inst, st
 					typeError(index, "Expected first operand to be a class reference, but got type: " + classRefType->name() + ".");
 				}
 
-				std::pair<std::string, std::string> structAndField;
+				std::string className;
+				std::string fieldName;
 
-				if (TypeSystem::getClassAndFieldName(inst.strValue, structAndField)) {
-					auto className = structAndField.first;
-					auto fieldName = structAndField.second;
-
+				if (TypeSystem::getClassAndFieldName(inst.strValue, className, fieldName)) {
 					if (!mVMState.classProvider().isDefined(className)) {
 						typeError(index, "'" + className + "' is not a class type.");
 					}

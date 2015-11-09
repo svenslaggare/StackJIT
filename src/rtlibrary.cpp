@@ -8,6 +8,7 @@
 #include "helpers.h"
 #include "stackjit.h"
 #include "native.h"
+#include "functionsignature.h"
 #include <iostream>
 
 extern VMState vmState;
@@ -71,7 +72,7 @@ namespace {
 }
 
 void Runtime::compileFunction(ManagedFunction* callee, int callOffset, int checkStart, int checkEnd, FunctionDefinition* funcToCall) {
-	auto toCallSignature = vmState.binder().functionSignature(*funcToCall);
+	auto toCallSignature = FunctionSignature::from(*funcToCall).str();
 
     //Compile the function (if needed)
     try {
@@ -83,7 +84,7 @@ void Runtime::compileFunction(ManagedFunction* callee, int callOffset, int check
 
 	if (vmState.enableDebug && vmState.printLazyPatching) {
 		std::cout
-			<< "Patching call to " << toCallSignature << " at " << vmState.binder().functionSignature(*callee)
+			<< "Patching call to " << toCallSignature << " at " << FunctionSignature::from(callee->def()).str()
 			<< ", offset: " << callOffset << ", check offset: " << checkStart << "." << std::endl;
 	}
 

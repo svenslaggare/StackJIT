@@ -1,45 +1,15 @@
 #include "binder.h"
 #include "verifier.h"
 #include "type.h"
+#include "functionsignature.h"
 #include <iostream>
 
 const std::unordered_map<std::string, FunctionDefinition>& Binder::functionTable() const {
 	return mFunctionTable;
 }
 
-std::string Binder::functionSignature(std::string name, const std::vector<const Type*>& parameters) const {
-	std::string argsStr = "";
-    bool isFirst = true;
-
-    for (auto param : parameters) {
-        if (isFirst) {
-            isFirst = false;
-        } else {
-            argsStr += " ";
-        }
-
-        argsStr += param->name();
-    }
-
-    return name + "(" + argsStr + ")";
-}
-
-std::string Binder::memberFunctionSignature(const ClassType* structType, std::string name, const std::vector<const Type*>& parameters) const {
-	auto params = parameters;
-	params.insert(params.begin(), structType);
-	return functionSignature(structType->className() + "::" + name, params);
-}
-
-std::string Binder::functionSignature(const FunctionDefinition& funcDef) const {
-	return functionSignature(funcDef.name(), funcDef.parameters());
-}
-
-std::string Binder::functionSignature(const ManagedFunction& func) const {
-	return functionSignature(func.def());
-}
-
 bool Binder::define(FunctionDefinition funcDef) {
-	std::string signature = functionSignature(funcDef);
+	std::string signature = FunctionSignature::from(funcDef).str();
 
 	if (mFunctionTable.count(signature) == 0) {
 		mFunctionTable.insert({ signature, funcDef });
@@ -78,5 +48,5 @@ const FunctionDefinition& Binder::getFunction(std::string signature) const {
 }
 
 const FunctionDefinition& Binder::getFunction(const ManagedFunction& function) const {
-	return mFunctionTable.at(functionSignature(function));
+	return mFunctionTable.at(FunctionSignature::from(function.def()).str());
 }

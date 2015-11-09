@@ -288,16 +288,12 @@ std::size_t TypeSystem::sizeOfType(const Type* type) {
 	return 0;
 }
 
-bool TypeSystem::getClassAndFieldName(std::string str, std::pair<std::string, std::string>& res) {
+bool TypeSystem::getClassAndFieldName(std::string str,  std::string& className, std::string& fieldName) {
     auto fieldSepPos = str.find("::");
 
     if (fieldSepPos != std::string::npos) {
-        auto className = str.substr(0, fieldSepPos);
-        auto fieldName = str.substr(fieldSepPos + 2);
-
-        res.first = className;
-        res.second = fieldName;
-
+        className = str.substr(0, fieldSepPos);
+        fieldName = str.substr(fieldSepPos + 2);
         return true;
     } else {
     	return false;

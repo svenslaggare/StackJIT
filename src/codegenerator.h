@@ -83,7 +83,7 @@ public:
 	CodeGenerator(const CallingConvention& callingConvention, const ExceptionHandling& exceptionHandling);
 
 	//Defines the given macro function
-	void defineMacro(const Binder& binder, const FunctionDefinition& function, MacroFunction macroFunction);
+	void defineMacro( const FunctionDefinition& function, MacroFunction macroFunction);
 
 	//Generates a call to the given function
 	void generateCall(CodeGen& codeGen, unsigned char* funcPtr, Registers addrReg = Registers::AX, bool shadowSpaceNeeded = true);

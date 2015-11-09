@@ -8,6 +8,7 @@
 #include "function.h"
 #include "helpers.h"
 #include "memory.h"
+#include "functionsignature.h"
 #include <string.h>
 #include <iostream>
 #include <fstream>
@@ -41,7 +42,7 @@ void JITCompiler::createMacros() {
 	auto voidType = mVMState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Void));
 	FunctionDefinition gcDef("std.gc.collect", {}, voidType);
 	if (binder.define(gcDef)) {
-		mCodeGen.defineMacro(binder, gcDef, [this](MacroFunctionContext context) {
+		mCodeGen.defineMacro(gcDef, [this](MacroFunctionContext context) {
 			auto& function = context.functionData.function;
 			mCodeGen.generateGCCall(function.generatedCode, function, context.instIndex);
 		});
@@ -57,7 +58,7 @@ const std::unordered_map<std::string, FunctionCompilationData>& JITCompiler::fun
 }
 
 JitFunction JITCompiler::compileFunction(ManagedFunction* function) {
-	auto signature = mVMState.binder().functionSignature(*function);
+	auto signature = FunctionSignature::from(function->def()).str();
 	mFunctions.emplace(signature, FunctionCompilationData(*function));
 	auto& functionData = mFunctions.at(signature);
 
@@ -79,7 +80,7 @@ JitFunction JITCompiler::compileFunction(ManagedFunction* function) {
     std::size_t length = function->generatedCode.size();
 
     if (mVMState.enableDebug && mVMState.printFunctionGeneration) {
-		auto funcSignature = mVMState.binder().functionSignature(*function);
+		auto funcSignature = FunctionSignature::from(function->def()).str();
 		std::cout
 			<< "Generated function '" << funcSignature << " " << function->def().returnType()->name()
 			<< "' of size " << length << " bytes."
@@ -194,7 +195,7 @@ void JITCompiler::makeExecutable() {
     //Check that all calls has been resolved
     for (auto& funcEntry : mFunctions) {
         auto& funcData = funcEntry.second;
-       	auto signature = mVMState.binder().functionSignature(funcData.function);
+       	auto signature = FunctionSignature::from(funcData.function.def()).str();
 
         if (funcData.unresolvedCalls.size() > 0) {
             throw std::runtime_error("The function '" + signature + "' has unresolved calls.");

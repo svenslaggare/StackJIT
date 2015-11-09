@@ -9,6 +9,7 @@
 #include "stackjit.h"
 #include "helpers.h"
 #include "callingconvention.h"
+#include "functionsignature.h"
 #include <string.h>
 #include <iostream>
 
@@ -160,9 +161,8 @@ CodeGenerator::CodeGenerator(const CallingConvention& callingConvention, const E
 
 }
 
-void CodeGenerator::defineMacro(const Binder& binder, const FunctionDefinition& function, MacroFunction macroFunction) {
-	auto signature = binder.functionSignature(function);
-	mMacros.insert({ signature, macroFunction });
+void CodeGenerator::defineMacro(const FunctionDefinition& function, MacroFunction macroFunction) {
+	mMacros.insert({ FunctionSignature::from(function).str(),  macroFunction });
 }
 
 bool CodeGenerator::compileAtRuntime(const VMState& vmState, const FunctionDefinition& funcToCall, std::string funcSignature) {
@@ -352,15 +352,12 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         generatedCode.push_back(0x90); //nop
         break;
     case OpCodes::POP:
-        //Pop the value
 		OperandStack::popReg(function, topOperandIndex, Registers::AX);
         break;
 	case OpCodes::DUPLICATE:
-		//Duplicate the top operand
 		OperandStack::duplicate(function, topOperandIndex);
 		break;
     case OpCodes::LOAD_INT:
-        //Push the value
 		OperandStack::pushInt(function, topOperandIndex + 1, inst.intValue);
         break;
     case OpCodes::LOAD_FLOAT:
@@ -439,11 +436,9 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         }
         break;
     case OpCodes::LOAD_TRUE:
-        //Push the value
 		OperandStack::pushInt(function, topOperandIndex + 1, 1);
         break;
     case OpCodes::LOAD_FALSE:
-        //Push the value
 		OperandStack::pushInt(function, topOperandIndex + 1, 0);
         break;
     case OpCodes::AND:
@@ -471,33 +466,18 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         }
         break;
     case OpCodes::NOT:
-        //Pop 1 operand
 		OperandStack::popReg(function, topOperandIndex, Registers::AX);
-
-        //NOT the value
         Amd64Backend::notReg(generatedCode, Registers::AX); //not rax
-
-        //Push the result
 		OperandStack::pushReg(function, topOperandIndex, Registers::AX);
         break;
     case OpCodes::CONVERT_INT_TO_FLOAT:
-        //Pop 1 operand
 		OperandStack::popReg(function, topOperandIndex, Registers::AX);
-
-        //Convert it
         pushArray(generatedCode, { 0xF3, 0x48, 0x0F, 0x2A, 0xC0 }); //cvtsi2ss xmm0, rax
-
-        //Push it
 		OperandStack::pushReg(function, topOperandIndex, FloatRegisters::XMM0);
         break;
     case OpCodes::CONVERT_FLOAT_TO_INT:
-        //Pop 1 operand
 		OperandStack::popReg(function, topOperandIndex, FloatRegisters::XMM0);
-
-        //Convert it
         pushArray(generatedCode, { 0xF3, 0x48, 0x0F, 0x2C, 0xC0 }); //cvttss2si rax, xmm0
-
-        //Push it
 		OperandStack::pushReg(function, topOperandIndex, Registers::AX);
         break;
     case OpCodes::COMPARE_EQUAL:
@@ -512,19 +492,14 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			bool intBasedType = !floatOp;
             bool unsignedComparison = false;
 
+			//Compare
             if (intBasedType) {
-                //Pop 2 operands
 				OperandStack::popReg(function, topOperandIndex, Registers::CX);
 				OperandStack::popReg(function, topOperandIndex - 1, Registers::AX);
-
-                //Compare
                 Amd64Backend::compareRegToReg(generatedCode, Registers::AX, Registers::CX); //cmp rax, rcx
             } else if (floatOp) {
-                //Pop 2 operands
 				OperandStack::popReg(function, topOperandIndex, FloatRegisters::XMM1);
 				OperandStack::popReg(function, topOperandIndex - 1, FloatRegisters::XMM0);
-
-                //Compare
                 pushArray(generatedCode, { 0x0F, 0x2E, 0xC1 }); //ucomiss xmm0, xmm1
                 unsignedComparison = true;
             }
@@ -576,13 +551,13 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
                     break;
             }
 
-            //False
+            //False branch
 			falseBranchStart = generatedCode.size();
 			OperandStack::pushInt(function, topOperandIndex - 1, 0);
 			jump = generatedCode.size();
             Amd64Backend::jump(generatedCode, 0);
 
-            //True
+            //True branch
 			trueBranchStart = generatedCode.size();
 			OperandStack::pushInt(function, topOperandIndex - 1, 1);
 
@@ -592,10 +567,10 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::LOAD_LOCAL:
         {
-            //Load rax with the locals offset
-            int localOffset = (stackOffset + inst.intValue + (int)function.def().numParams()) * -Amd64Backend::REG_SIZE;
+            //Load rax with the local
+            int localOffset = (stackOffset + inst.intValue + (int)function.def().numParams())
+							  * -Amd64Backend::REG_SIZE;
 
-			//Load rax with the local
 			Amd64Backend::moveMemoryRegWithOffsetToReg(
 				generatedCode,
 				Registers::AX,
@@ -607,10 +582,10 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
         break;
     case OpCodes::STORE_LOCAL:
         {
-            //Pop the top operand
 			OperandStack::popReg(function, topOperandIndex, Registers::AX);
 
-            int localOffset = (stackOffset + inst.intValue + (int)function.def().numParams()) * -Amd64Backend::REG_SIZE;
+            int localOffset = (stackOffset + inst.intValue + (int)function.def().numParams())
+							  * -Amd64Backend::REG_SIZE;
 
 			//Store the operand at the given local
 			Amd64Backend::moveRegToMemoryRegWithOffset(
@@ -624,9 +599,9 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
             std::string calledSignature = "";
 
             if (inst.opCode() == OpCodes::CALL_INSTANCE) {
-                calledSignature = vmState.binder().memberFunctionSignature(inst.classType, inst.strValue, inst.parameters);
+                calledSignature = FunctionSignature::memberFunction(inst.classType, inst.strValue, inst.parameters).str();
             } else {
-                calledSignature = vmState.binder().functionSignature(inst.strValue, inst.parameters);
+                calledSignature = FunctionSignature::function(inst.strValue, inst.parameters).str();
             }
 
             const auto& funcToCall = vmState.binder().getFunction(calledSignature);
@@ -780,19 +755,14 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			bool intBasedType = !floatOp;
             bool unsignedComparison = false;
 
+			//Compare
             if (intBasedType) {
-                //Pop 2 operands
 				OperandStack::popReg(function, topOperandIndex, Registers::CX);
 				OperandStack::popReg(function, topOperandIndex - 1, Registers::AX);
-
-                //Compare
                 Amd64Backend::compareRegToReg(generatedCode, Registers::AX, Registers::CX); //cmp rax, rcx
             } else if (floatOp) {
-                //Pop 2 operands
 				OperandStack::popReg(function, topOperandIndex, FloatRegisters::XMM1);
 				OperandStack::popReg(function, topOperandIndex - 1, FloatRegisters::XMM0);
-
-                //Compare
                 pushArray(generatedCode, { 0x0F, 0x2E, 0xC1 }); //ucomiss xmm0, xmm1
                 unsignedComparison = true;
             }
@@ -963,10 +933,10 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			pushFunc(vmState, functionData, instIndex);
 
 			//Call the constructor
-			std::string calledSignature = vmState.binder().memberFunctionSignature(
+			auto calledSignature = FunctionSignature::memberFunction(
 				inst.classType,
 				inst.strValue,
-				inst.parameters);
+				inst.parameters).str();
 
 			const auto& funcToCall = vmState.binder().getFunction(calledSignature);
 
@@ -1053,11 +1023,12 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
     case OpCodes::STORE_FIELD:
         {
             //Get the field
-            std::pair<std::string, std::string> structAndField;
-			TypeSystem::getClassAndFieldName(inst.strValue, structAndField);
+			std::string className;
+			std::string fieldName;
+			TypeSystem::getClassAndFieldName(inst.strValue, className, fieldName);
 
-            auto structMetadata = vmState.classProvider().getMetadata(structAndField.first);
-            auto& field = structMetadata.fields().at(structAndField.second);
+            auto classMetadata = vmState.classProvider().getMetadata(className);
+            auto& field = classMetadata.fields().at(fieldName);
             int fieldOffset = (int)field.offset();
 
             //Get the size of the field

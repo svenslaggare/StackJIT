@@ -4,6 +4,7 @@
 #include "vmstate.h"
 #include "instructions.h"
 #include "type.h"
+#include "functionsignature.h"
 #include <stdexcept>
 #include <iostream>
 
@@ -74,7 +75,7 @@ void Loader::loadExternalFunction(VMState& vmState, const AssemblyParser::Functi
 
 	generateDefinition(vmState, function, loadedFunction);
 
-	auto signature = vmState.binder().functionSignature(loadedFunction);
+	auto signature = FunctionSignature::from(loadedFunction).str();
 
 	//Check if defined
 	if (!vmState.binder().isDefined(signature)) {
@@ -91,7 +92,7 @@ ManagedFunction* Loader::loadManagedFunction(VMState& vmState, const AssemblyPar
 	FunctionDefinition definition;
 	generateDefinition(vmState, function, definition);
 
-	auto signature = vmState.binder().functionSignature(definition);
+	auto signature = FunctionSignature::from(definition).str();
 	if (checkIfDefined && vmState.binder().isDefined(signature)) {
 		throw std::runtime_error("The function '" + signature + "' is already defined.");
 	}
