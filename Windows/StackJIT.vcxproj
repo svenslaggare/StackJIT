@@ -28,6 +28,7 @@
     <ClInclude Include="..\src\exceptions.h" />
     <ClInclude Include="..\src\executionengine.h" />
     <ClInclude Include="..\src\function.h" />
+    <ClInclude Include="..\src\functionsignature.h" />
     <ClInclude Include="..\src\gc.h" />
     <ClInclude Include="..\src\helpers.h" />
     <ClInclude Include="..\src\instructions.h" />
@@ -52,7 +53,6 @@
     <ClInclude Include="..\src\bytecodegenerator.h" />
     <ClInclude Include="..\src\callstack.h" />
     <ClInclude Include="..\src\windows\callingconvention.h" />
-    <ClInclude Include="..\src\functionsignature.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\amd64.cpp" />
@@ -62,6 +62,7 @@
     <ClCompile Include="..\src\exceptions.cpp" />
     <ClCompile Include="..\src\executionengine.cpp" />
     <ClCompile Include="..\src\function.cpp" />
+    <ClCompile Include="..\src\functionsignature.cpp" />
     <ClCompile Include="..\src\gc.cpp" />
     <ClCompile Include="..\src\helpers.cpp" />
     <ClCompile Include="..\src\instructions.cpp" />
@@ -84,7 +85,6 @@
     <ClCompile Include="..\src\bytecodegenerator.cpp" />
     <ClCompile Include="..\src\windows\callingconvetion.cpp" />
     <ClCompile Include="..\src\windows\memory.cpp" />
-    <ClInclude Include="..\src\functionsignature.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{50A3A101-235D-4AE2-9619-75C3544B42B9}</ProjectGuid>
