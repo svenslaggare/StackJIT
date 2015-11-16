@@ -339,6 +339,12 @@ public:
 			"0: The constructor \'Point::.constructor(Ref.Point)\' is not defined.");
 
         TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_memberfunction1")), "Error: Null reference.");
+
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/callingprivate1")), "1: Cannot call private function 'Point::length(Ref.Point)'.");
+        TS_ASSERT_EQUALS(invokeVM("class/callingprivate2"), "0\n");
+
+        TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/accessingprivate1")), "1: Cannot read from private field 'x' of class 'Point'.");
+        TS_ASSERT_EQUALS(invokeVM("class/accessingprivate2"), "0\n");
     }
 
     void testException() {

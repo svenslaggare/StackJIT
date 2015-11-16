@@ -48,15 +48,19 @@ FunctionDefinition::FunctionDefinition(
     std::string name,
     std::vector<const Type*> parameters,
     const Type* returnType,
-    bool isMemberFunction,
+	const ClassType* classType,
+	AccessModifier accessModifier,
 	bool isConstructor)
     : mName(name),
       mParameters(parameters),
       mReturnType(returnType),
       mEntryPoint(nullptr),
       mIsManaged(true),
-      mIsMemberFunction(isMemberFunction),
-	  mIsConstructor(isConstructor) {
+      mIsMemberFunction(classType != nullptr),
+	  mClassType(classType),
+	  mAccessModifier(accessModifier),
+	  mIsConstructor(isConstructor)
+	  {
 
 }
 
@@ -65,14 +69,17 @@ FunctionDefinition::FunctionDefinition(
 	std::vector<const Type*> parameters,
 	const Type* returnType,
 	unsigned char* entryPoint,
-	bool isMemberFunction,
+	const ClassType* classType,
+	AccessModifier accessModifier,
 	bool isConstructor)
     : mName(name),
       mParameters(parameters),
       mReturnType(returnType),
       mEntryPoint(entryPoint),
       mIsManaged(false),
-      mIsMemberFunction(isMemberFunction),
+	  mIsMemberFunction(classType != nullptr),
+	  mClassType(classType),
+	  mAccessModifier(accessModifier),
 	  mIsConstructor(isConstructor) {
 
 }
@@ -99,16 +106,24 @@ std::size_t FunctionDefinition::numParams() const {
 	return mParameters.size();
 }
 
+bool FunctionDefinition::isManaged() const {
+	return mIsManaged;
+}
+
 bool FunctionDefinition::isMemberFunction() const {
     return mIsMemberFunction;
 }
 
-bool FunctionDefinition::isConstructor() const {
-	return mIsConstructor;
+const ClassType* FunctionDefinition::classType() const {
+	return mClassType;
 }
 
-bool FunctionDefinition::isManaged() const {
-    return mIsManaged;
+AccessModifier FunctionDefinition::accessModifier() const {
+	return mAccessModifier;
+}
+
+bool FunctionDefinition::isConstructor() const {
+	return mIsConstructor;
 }
 
 void FunctionDefinition::setEntryPoint(unsigned char* entryPoint) {

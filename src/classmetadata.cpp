@@ -3,8 +3,8 @@
 #include <stdexcept>
 
 //Field
-Field::Field(const Type* type, std::size_t offset)
-	: mType(type), mOffset(offset) {
+Field::Field(const Type* type, std::size_t offset, AccessModifier accessModifier)
+	: mType(type), mOffset(offset), mAccessModifier(accessModifier) {
 
 }
 
@@ -16,15 +16,23 @@ const std::size_t Field::offset() const {
 	return mOffset;
 }
 
-//Class metadata
-ClassMetadata::ClassMetadata(std::vector<std::pair<std::string, const Type*>> fields)
-	: mSize(0) {
-	for (auto field : fields) {
-		mFields.insert({ field.first, Field(field.second, mSize) });
-		mSize += TypeSystem::sizeOfType(field.second);
-	}
+const AccessModifier Field::accessModifier() const {
+	return mAccessModifier;
 }
 
+bool fromString(std::string str, AccessModifier& accessModifier) {
+	if (str == "public") {
+		accessModifier = AccessModifier::Public;
+		return true;
+	} else if (str == "private") {
+		accessModifier = AccessModifier::Private;
+		return true;
+	}
+
+	return false;
+}
+
+//Class metadata
 ClassMetadata::ClassMetadata()
 	: mSize(0) {
 
@@ -38,15 +46,15 @@ const std::unordered_map<std::string, Field>& ClassMetadata::fields() const {
 	return mFields;
 }
 
-void ClassMetadata::addField(std::string name, const Type* type) {
-	mFields.insert({ name, Field(type, mSize) });
+void ClassMetadata::addField(std::string name, const Type* type, AccessModifier accessModifier) {
+	mFields.insert({ name, Field(type, mSize, accessModifier) });
 	mSize += TypeSystem::sizeOfType(type);
 }
 
 //Provider
-void ClassMetadataProvider::add(std::string structName, ClassMetadata classMe) {
-	if (mClassesMetadata.count(structName) == 0) {
-        mClassesMetadata[structName] = classMe;
+void ClassMetadataProvider::add(std::string className, ClassMetadata metadata) {
+	if (mClassesMetadata.count(className) == 0) {
+        mClassesMetadata[className] = metadata;
     }
 }
 

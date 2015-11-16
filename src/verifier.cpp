@@ -76,6 +76,34 @@ namespace {
 		return typesList;
 	}
 
+	//Indicates if the given function can call the given member function
+	bool canCallMemberFunction(const FunctionDefinition& callingFunc, const FunctionDefinition& funcToCall) {
+		if (funcToCall.accessModifier() == AccessModifier::Public) {
+			return true;
+		} else {
+			if (callingFunc.classType() != nullptr) {
+				return callingFunc.classType() == funcToCall.classType();
+			} else {
+				return false;
+			}
+		}
+	}
+
+	//Indicates if the given function can read/write the given field
+	bool canReadOrWriteField(const FunctionDefinition& func, const ClassMetadata& classMetadata, const ClassType* classType, std::string fieldName) {
+		auto& field = classMetadata.fields().at(fieldName);
+
+		if (field.accessModifier() == AccessModifier::Public) {
+			return true;
+		} else {
+			if (func.classType() != nullptr) {
+				return func.classType() == classType;
+			} else {
+				return false;
+			}
+		}
+	}
+
 	//Verifies a function definition
 	void verifyFunctionDefinition(ManagedFunction& function) {
 		if (function.def().returnType() == nullptr) {
@@ -386,19 +414,26 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction inst, st
 					typeError(index, "The function '" + signature + "' is not defined.");
 				}
 
-				auto calledFunc = mVMState.binder().getFunction(signature);
+				auto& funcToCall = mVMState.binder().getFunction(signature);
 
-				if (!isInstance && calledFunc.isMemberFunction()) {
+				if (!isInstance && funcToCall.isMemberFunction()) {
 					typeError(index, "Member functions must be called with the 'CALLINST' instruction.");
 				}
 
-				auto calledFuncNumArgs = calledFunc.parameters().size();
+				//Check if the member function can be called
+				if (isInstance) {
+					if (!canCallMemberFunction(function.def(), funcToCall)) {
+						typeError(index, "Cannot call private function '" + signature + "'.");
+					}
+				}
+
+				auto calledFuncNumArgs = funcToCall.parameters().size();
 				assertOperandCount(index, operandStack, calledFuncNumArgs);
 
 				//Check the arguments
 				for (int i = (int)calledFuncNumArgs - 1; i >= 0; i--) {
 					auto argType = popType(operandStack);
-					auto error = checkType(calledFunc.parameters()[i], argType);
+					auto error = checkType(funcToCall.parameters()[i], argType);
 
 					if (error != "") {
 						typeError(index, error);
@@ -406,8 +441,8 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction inst, st
 				}
 
 				//Return type
-				if (!TypeSystem::isPrimitiveType(calledFunc.returnType(), PrimitiveTypes::Void)) {
-					operandStack.push(calledFunc.returnType());
+				if (!TypeSystem::isPrimitiveType(funcToCall.returnType(), PrimitiveTypes::Void)) {
+					operandStack.push(funcToCall.returnType());
 				}
 			}
 			break;
@@ -700,7 +735,7 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction inst, st
 						typeError(index, "'" + className + "' is not a class type.");
 					}
 
-					auto& structMetadata = mVMState.classProvider().getMetadata(className);
+					auto& classMetadata = mVMState.classProvider().getMetadata(className);
 					auto classType = mVMState.typeProvider().makeType("Ref." + className);
 
 					if (!isNull) {
@@ -711,10 +746,14 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction inst, st
 						}
 					}
 
-					auto fieldType = structMetadata.fields().at(fieldName).type();
+					auto fieldType = classMetadata.fields().at(fieldName).type();
 
 					if (fieldType == nullptr) {
 						typeError(index, "There exists no field '" + fieldName + "' in the '" + className + "' class.");
+					}
+
+					if (!canReadOrWriteField(function.def(), classMetadata, static_cast<const ClassType*>(classType), fieldName)) {
+						typeError(index, "Cannot read from private field '" + fieldName + "' of class '" + className + "'.");
 					}
 
 					operandStack.push(fieldType);
@@ -758,6 +797,10 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction inst, st
 						if (error != "") {
 							typeError(index, error);
 						}
+					}
+
+					if (!canReadOrWriteField(function.def(), classMetadata, static_cast<const ClassType*>(classType), fieldName)) {
+						typeError(index, "Cannot write to private field '" + fieldName + "' of class '" + className + "'.");
 					}
 
 					if (!sameType(valueType, fieldType)) {

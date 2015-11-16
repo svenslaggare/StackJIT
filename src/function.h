@@ -1,10 +1,12 @@
 #pragma once
 #include "instructions.h"
+#include "classmetadata.h"
 #include <vector>
 #include <string>
 #include <functional>
 
 class Type;
+class ClassType;
 class MemoryManager;
 struct FunctionCompilationData;
 class VMState;
@@ -21,7 +23,10 @@ private:
 	unsigned char* mEntryPoint;
 
 	bool mIsManaged;
+
 	bool mIsMemberFunction;
+	const ClassType* mClassType;
+	AccessModifier mAccessModifier;
 	bool mIsConstructor;
 public:
 	//Creates a new managed function definition
@@ -29,7 +34,8 @@ public:
 		std::string name,
 		std::vector<const Type*> parameters,
 		const Type* returnType,
-		bool isMemberFunction = false,
+	    const ClassType* classType = nullptr,
+	    AccessModifier accessModifier = ClassMetadata::DEFAULT_ACCESS_MODIFIER,
 		bool isConstructor = false);
 
 	//Creates a new external function definition
@@ -38,7 +44,8 @@ public:
 		std::vector<const Type*> parameters,
 		const Type* returnType,
 		unsigned char* entryPoint,
-		bool isMemberFunction = false,
+		const ClassType* classType = nullptr,
+		AccessModifier accessModifier = ClassMetadata::DEFAULT_ACCESS_MODIFIER,
 		bool isConstructor = false);
 
 	FunctionDefinition();
@@ -60,6 +67,12 @@ public:
 
 	//Indicates if the function is a member function
 	bool isMemberFunction() const;
+
+	//Returns the type of the class if a member function
+	const ClassType* classType() const;
+
+	//Returns the access modifier
+	AccessModifier accessModifier() const;
 
 	//Indicates if the function is a constructor
 	bool isConstructor() const;

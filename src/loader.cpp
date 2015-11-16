@@ -50,6 +50,23 @@ namespace {
 
 		return newInst;
 	}
+
+	//Returns the access modifier or the default modifier
+	AccessModifier getAccessModifier(const AssemblyParser::AttributeContainer& attributeContainer) {
+		AccessModifier accessModifier = ClassMetadata::DEFAULT_ACCESS_MODIFIER;
+
+		if (attributeContainer.attributes.count("AccessModifier") > 0) {
+			auto& accessModifierAttribute = attributeContainer.attributes.at("AccessModifier");
+			if (accessModifierAttribute.values.count("value") > 0) {
+				auto modifierValue = accessModifierAttribute.values.at("value");
+				if (!fromString(modifierValue, accessModifier)) {
+					throw std::runtime_error("'" + modifierValue + "' is not a valid access modifier.");
+				}
+			}
+		}
+
+		return accessModifier;
+	}
 }
 
 void Loader::generateDefinition(VMState& vmState, const AssemblyParser::Function& function, FunctionDefinition& definition) {
@@ -60,11 +77,24 @@ void Loader::generateDefinition(VMState& vmState, const AssemblyParser::Function
 		parameters.push_back(getType(vmState, param));
 	}
 
+	const ClassType* classType = nullptr;
+	AccessModifier accessModifier = ClassMetadata::DEFAULT_ACCESS_MODIFIER;
+
+	if (function.isMemberFunction) {
+		classType = dynamic_cast<const ClassType*>(getType(vmState, "Ref." + function.className));
+		if (classType == nullptr) {
+			throw std::runtime_error("'" + function.className + "' is not a class type.");
+		}
+
+		accessModifier = getAccessModifier(function.attributes);
+	}
+
 	definition = FunctionDefinition(
 		function.name,
 		parameters,
 		returnType,
-		function.isMemberFunction,
+		classType,
+		accessModifier,
 		function.memberFunctionName == ".constructor");
 }
 
@@ -74,7 +104,6 @@ void Loader::loadExternalFunction(VMState& vmState, const AssemblyParser::Functi
 	}
 
 	generateDefinition(vmState, function, loadedFunction);
-
 	auto signature = FunctionSignature::from(loadedFunction).str();
 
 	//Check if defined
@@ -131,7 +160,8 @@ void Loader::loadClasses(VMState& vmState, std::vector<AssemblyParser::Assembly*
 			auto& classMetadata = vmState.classProvider().getMetadata(classDef.name);
 
 			for (auto& field : classDef.fields) {
-				classMetadata.addField(field.name, getType(vmState, field.type));
+				auto accessModifier = getAccessModifier(field.attributes);
+				classMetadata.addField(field.name, getType(vmState, field.type), accessModifier);
 			}
 		}
 	}
@@ -154,7 +184,8 @@ void Loader::loadClasses(VMState& vmState, ImageContainer& imageContainer) {
 			auto& classMetadata = vmState.classProvider().getMetadata(classDef.name);
 
 			for (auto& field : classDef.fields) {
-				classMetadata.addField(field.name, getType(vmState, field.type));
+				auto accessModifier = getAccessModifier(field.attributes);
+				classMetadata.addField(field.name, getType(vmState, field.type), accessModifier);
 			}
 		}
 	}

@@ -1,0 +1,34 @@
+class Point
+{
+	x Int
+	y Int
+}
+
+member Point::.constructor() Void
+{
+	RET
+}
+
+member Point::lengthWrapper() Int
+{
+	@AccessModifier(value=public)
+	LDARG 0
+    CALLINST Point::length()
+    RET
+}
+
+member Point::length() Int
+{
+	@AccessModifier(value=private)
+	LDINT 0
+	RET
+}
+
+func main() Int
+{
+	.locals 1
+	.local 0 Ref.Point
+	NEWOBJ Point::.constructor()
+	CALLINST Point::lengthWrapper()
+	RET
+}
