@@ -1,18 +1,21 @@
 func println(Bool) Void
 {
-	LDARG 0
-	CALL std.println(Bool)
-	LDTRUE
-	BNE 6
-	LDINT 1
-	CALL std.println(Int)
-	BR 8
-	LDINT 0
-	CALL std.println(Int)
 	RET
 }
 
 func main() Int
+{
+	LDINT 3
+	LDINT 4
+	CMPEQ
+	#LDTRUE
+	CALL println(Bool)
+
+	LDINT 4711
+	RET
+}
+
+func main2() Int
 {
 	LDINT 3
 	LDINT 4
@@ -27,7 +30,8 @@ func main() Int
 	LDINT 5
 	LDINT 4
 	CMPEQ
-	CALL println(Bool)
+	#CALL println(Bool)
+	CALL std.println(Bool)
 
 	LDINT 4711
 	RET

@@ -239,97 +239,93 @@ void CallingConvention::moveArgsToStack(FunctionCompilationData& functionData) c
 }
 
 void CallingConvention::callFunctionArgument(FunctionCompilationData& functionData,
-												  int argIndex, const Type* argType, const FunctionDefinition& funcToCall,
-												  int numStackOperands) const {
+												  int argIndex, const Type* argType, const FunctionDefinition& funcToCall) const {
 	auto& generatedCode = functionData.function.generatedCode();
-	int numArgs = (int)funcToCall.parameters().size();
+	auto& operandStack = functionData.operandStack;
 
 	if (TypeSystem::isPrimitiveType(argType, PrimitiveTypes::Float)) {
 		//Arguments of index >= 8 are passed via the stack.
 		int relativeIndex = getFloatArgIndex(funcToCall.parameters(), argIndex);
-		int argOperandOffset = numStackOperands - (numArgs - argIndex);
 
 		if (relativeIndex >= 8) {
 			//Move from the operand stack to the normal stack
-			OperandStack::popReg(functionData.function, argOperandOffset, Registers::AX);
+			operandStack.popReg(Registers::AX);
 			Amd64Backend::pushReg(generatedCode, Registers::AX);
 		}
 
 		if (relativeIndex == 7) {
-			OperandStack::popReg(functionData.function, argOperandOffset, FloatRegisterCallArguments::Arg7);
+			operandStack.popReg(FloatRegisterCallArguments::Arg7);
 		}
 
 		if (relativeIndex == 6) {
-			OperandStack::popReg(functionData.function, argOperandOffset, FloatRegisterCallArguments::Arg6);
+			operandStack.popReg(FloatRegisterCallArguments::Arg6);
 		}
 
 		if (relativeIndex == 5) {
-			OperandStack::popReg(functionData.function, argOperandOffset, FloatRegisterCallArguments::Arg5);
+			operandStack.popReg(FloatRegisterCallArguments::Arg5);
 		}
 
 		if (relativeIndex == 4) {
-			OperandStack::popReg(functionData.function, argOperandOffset, FloatRegisterCallArguments::Arg4);
+			operandStack.popReg(FloatRegisterCallArguments::Arg4);
 		}
 
 		if (relativeIndex == 3) {
-			OperandStack::popReg(functionData.function, argOperandOffset, FloatRegisterCallArguments::Arg3);
+			operandStack.popReg(FloatRegisterCallArguments::Arg3);
 		}
 
 		if (relativeIndex == 2) {
-			OperandStack::popReg(functionData.function, argOperandOffset, FloatRegisterCallArguments::Arg2);
+			operandStack.popReg(FloatRegisterCallArguments::Arg2);
 		}
 
 		if (relativeIndex == 1) {
-			OperandStack::popReg(functionData.function, argOperandOffset, FloatRegisterCallArguments::Arg1);
+			operandStack.popReg(FloatRegisterCallArguments::Arg1);
 		}
 
 		if (relativeIndex == 0) {
-			OperandStack::popReg(functionData.function, argOperandOffset, FloatRegisterCallArguments::Arg0);
+			operandStack.popReg(FloatRegisterCallArguments::Arg0);
 		}
 	} else {
 		//Arguments of index >= 6 are passed via the stack
 		int relativeIndex = getNoneFloatArgIndex(funcToCall.parameters(), argIndex);
-		int argOperandOffset = numStackOperands - (numArgs - argIndex);
 
 		if (relativeIndex >= 6) {
 			//Move from the operand stack to the normal stack
-			OperandStack::popReg(functionData.function, argOperandOffset, Registers::AX);
+			operandStack.popReg(Registers::AX);
 			Amd64Backend::pushReg(generatedCode, Registers::AX);
 		}
 
 		if (relativeIndex == 5) {
-			OperandStack::popReg(functionData.function, argOperandOffset, RegisterCallArguments::Arg5);
+			operandStack.popReg(RegisterCallArguments::Arg5);
 		}
 
 		if (relativeIndex == 4) {
-			OperandStack::popReg(functionData.function, argOperandOffset, RegisterCallArguments::Arg4);
+			operandStack.popReg(RegisterCallArguments::Arg4);
 		}
 
 		if (relativeIndex == 3) {
-			OperandStack::popReg(functionData.function, argOperandOffset, RegisterCallArguments::Arg3);
+			operandStack.popReg(RegisterCallArguments::Arg3);
 		}
 
 		if (relativeIndex == 2) {
-			OperandStack::popReg(functionData.function, argOperandOffset, RegisterCallArguments::Arg2);
+			operandStack.popReg(RegisterCallArguments::Arg2);
 		}
 
 		if (relativeIndex == 1) {
-			OperandStack::popReg(functionData.function, argOperandOffset, RegisterCallArguments::Arg1);
+			operandStack.popReg(RegisterCallArguments::Arg1);
 		}
 
 		if (relativeIndex == 0) {
-			OperandStack::popReg(functionData.function, argOperandOffset, RegisterCallArguments::Arg0);
+			operandStack.popReg(RegisterCallArguments::Arg0);
 		}
 	}
 }
 
-void CallingConvention::callFunctionArguments(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall,
-												   int numStackOperands) const {
+void CallingConvention::callFunctionArguments(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall) const {
 	int numArgs = (int)funcToCall.parameters().size();
 
 	//Set the function arguments
 	for (int arg = numArgs - 1; arg >= 0; arg--) {
-		callFunctionArgument(functionData, arg, funcToCall.parameters().at(arg), funcToCall, numStackOperands);
+		callFunctionArgument(functionData, arg, funcToCall.parameters().at(arg), funcToCall);
 	}
 }
 
@@ -342,23 +338,24 @@ int CallingConvention::calculateShadowStackSize() const {
 	return 0;
 }
 
-void CallingConvention::makeReturnValue(FunctionCompilationData& functionData,	int numStackOperands) const {
+void CallingConvention::makeReturnValue(FunctionCompilationData& functionData) const {
 	auto& function = functionData.function;
+	auto& operandStack = functionData.operandStack;
 
 	if (!TypeSystem::isPrimitiveType(function.def().returnType(), PrimitiveTypes::Void)) {
 		//Pop the return value
 		if (TypeSystem::isPrimitiveType(function.def().returnType(), PrimitiveTypes::Float)) {
-			OperandStack::popReg(function, numStackOperands - 1, FloatRegisters::XMM0);
+			operandStack.popReg(FloatRegisters::XMM0);
 		} else {
-			OperandStack::popReg(function, numStackOperands - 1, Registers::AX);
+			operandStack.popReg(Registers::AX);
 		}
 	}
 }
 
 void CallingConvention::handleReturnValue(FunctionCompilationData& functionData,
-											   const FunctionDefinition& funcToCall,
-											   int numStackOperands) const {
+											   const FunctionDefinition& funcToCall) const {
 	auto& generatedCode = functionData.function.generatedCode();
+	auto& operandStack = functionData.operandStack;
 
 	//If we have passed arguments via the stack, adjust the stack pointer.
 	int numStackArgs = numStackArguments(funcToCall.parameters());
@@ -368,10 +365,11 @@ void CallingConvention::handleReturnValue(FunctionCompilationData& functionData,
 	}
 
 	if (!TypeSystem::isPrimitiveType(funcToCall.returnType(), PrimitiveTypes::Void)) {
+		//Push the return value
 		if (TypeSystem::isPrimitiveType(funcToCall.returnType(), PrimitiveTypes::Float)) {
-			OperandStack::pushReg(functionData.function, numStackOperands, FloatRegisters::XMM0);
+			operandStack.pushReg(FloatRegisters::XMM0);
 		} else {
-			OperandStack::pushReg(functionData.function, numStackOperands, Registers::AX);
+			operandStack.pushReg(Registers::AX);
 		}
 	}
 }

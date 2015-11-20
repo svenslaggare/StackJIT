@@ -61,7 +61,7 @@ const std::unordered_map<std::string, FunctionCompilationData>& JITCompiler::fun
 
 JitFunction JITCompiler::compileFunction(ManagedFunction* function) {
 	auto signature = FunctionSignature::from(function->def()).str();
-	mFunctions.emplace(signature, FunctionCompilationData(*function));
+	mFunctions.emplace(signature, *function);
 	auto& functionData = mFunctions.at(signature);
 
 	//Initialize the function

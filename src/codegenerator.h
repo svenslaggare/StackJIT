@@ -16,24 +16,6 @@ class ExceptionHandling;
 class FunctionDefinition;
 
 //Manages the operand stack
-namespace OperandStack {
-	//Duplicates the top operand
-	void duplicate(ManagedFunction& function, int operandStackIndex);
-
-	//Pops an operand from the operand stack to the given register
-	void popReg(ManagedFunction& function, int operandStackIndex, Registers reg);
-	void popReg(ManagedFunction& function, int operandStackIndex, NumberedRegisters reg);
-	void popReg(ManagedFunction& function, int operandStackIndex, FloatRegisters reg);
-
-	//Pushes the given register to the operand stack
-	void pushReg(ManagedFunction& function, int operandStackIndex, Registers reg);
-	void pushReg(ManagedFunction& function, int operandStackIndex, FloatRegisters reg);
-
-	//Pushes the given value to the operand stack
-	void pushInt(ManagedFunction& function, int operandStackIndex, int value);
-}
-
-//Manages the operand stack
 class ActualOperandStack {
 private:
 	ManagedFunction& mFunction;
@@ -47,6 +29,10 @@ private:
 public:
 	//Creates a new operand stack for the given function
 	ActualOperandStack(ManagedFunction& function);
+
+	//Prevent from being copied
+//	ActualOperandStack(const ActualOperandStack&) = delete;
+//	ActualOperandStack& operator=(const ActualOperandStack&) = delete;
 
 	//Duplicates the top operand
 	void duplicate();

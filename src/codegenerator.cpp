@@ -36,124 +36,9 @@ namespace {
 		}
 	}
 
-	//Returns the offset for a stack operand
-	int getStackOperandOffset(ManagedFunction& function, int operandStackIndex) {
-		return -(int)(Amd64Backend::REG_SIZE *
-					  (1 + function.numLocals() + function.def().numParams() + operandStackIndex));
-	}
-
 	//Indicates if the given value fits in a char
 	bool validCharValue(int value) {
 		return value >= -128 && value < 128;
-	}
-}
-
-void OperandStack::duplicate(ManagedFunction& function, int operandStackIndex) {
-	int stackOffset1 = getStackOperandOffset(function, operandStackIndex);
-	int stackOffset2 = getStackOperandOffset(function, operandStackIndex + 1);
-
-	Amd64Backend::moveMemoryRegWithOffsetToReg(
-		function.generatedCode(),
-		Registers::AX, Registers::BP, stackOffset1); //mov rax, [rbp+<operand1 offset>]
-
-	Amd64Backend::moveRegToMemoryRegWithOffset(
-		function.generatedCode(),
-		Registers::BP, stackOffset2, Registers::AX); //mov [rbp+<operand2 offset>], rax
-}
-
-void OperandStack::popReg(ManagedFunction& function, int operandStackIndex, Registers reg) {
-	int stackOffset = getStackOperandOffset(function, operandStackIndex);
-
-	Amd64Backend::moveMemoryRegWithOffsetToReg(
-		function.generatedCode(),
-		reg, Registers::BP, stackOffset); //mov <reg>, [rbp+<operand offset>]
-}
-
-void OperandStack::popReg(ManagedFunction& function, int operandStackIndex, NumberedRegisters reg) {
-	int stackOffset = getStackOperandOffset(function, operandStackIndex);
-
-	if (validCharValue(stackOffset)) {
-		pushArray(
-			function.generatedCode(),
-			{0x4C, 0x8B, (unsigned char)(0x45 | (reg << 3)),
-			 (unsigned char)stackOffset}); //mov <reg>, [rbp+<operand offset>]
-	} else {
-		pushArray(
-			function.generatedCode(),
-			{0x4C, 0x8B, (unsigned char)(0x85 | (reg << 3))});
-
-		IntToBytes converter;
-		converter.intValue = stackOffset;
-
-		for (std::size_t i = 0; i < sizeof(int); i++) {
-			function.generatedCode().push_back(converter.byteValues[i]);
-		}
-	}
-}
-
-void OperandStack::popReg(ManagedFunction& function, int operandStackIndex, FloatRegisters reg) {
-	int stackOffset = getStackOperandOffset(function, operandStackIndex);
-
-	if (validCharValue(stackOffset)) {
-		pushArray(
-			function.generatedCode(),
-			{0xF3, 0x0F, 0x10, (unsigned char)(0x45 | (reg << 3)),
-			 (unsigned char)getStackOperandOffset(function, operandStackIndex)}); //movss <reg>, [rbp+<operand offset>]
-	} else {
-		pushArray(
-			function.generatedCode(),
-			{0xF3, 0x0F, 0x10, (unsigned char)(0x85 | (reg << 3))});
-
-		IntToBytes converter;
-		converter.intValue = stackOffset;
-
-		for (std::size_t i = 0; i < sizeof(int); i++) {
-			function.generatedCode().push_back(converter.byteValues[i]);
-		}
-	}
-}
-
-void OperandStack::pushReg(ManagedFunction& function, int operandStackIndex, Registers reg) {
-	int stackOffset = getStackOperandOffset(function, operandStackIndex);
-
-	Amd64Backend::moveRegToMemoryRegWithOffset(
-		function.generatedCode(),
-		Registers::BP, stackOffset, reg); //mov [rbp+<operand offset>], <reg>
-}
-
-void OperandStack::pushReg(ManagedFunction& function, int operandStackIndex, FloatRegisters reg) {
-	int stackOffset = getStackOperandOffset(function, operandStackIndex);
-
-	Amd64Backend::moveRegToMemoryRegWithOffset(
-		function.generatedCode(),
-		Registers::BP,
-		stackOffset, reg); //movss [rbp+<operand offset>], <float reg>
-}
-
-void OperandStack::pushInt(ManagedFunction& function, int operandStackIndex, int value) {
-	int stackOffset = getStackOperandOffset(function, operandStackIndex);
-
-	//mov [rbp+<operand offset>], value
-	if (validCharValue(stackOffset)) {
-		pushArray(
-			function.generatedCode(),
-			{0x48, 0xC7, 0x45, (unsigned char)stackOffset});
-	} else {
-		pushArray(
-			function.generatedCode(),
-			{0x48, 0xC7, 0x85});
-
-		IntToBytes intToBytes;
-		intToBytes.intValue = stackOffset;
-		for (std::size_t i = 0; i < sizeof(int); i++) {
-			function.generatedCode().push_back(intToBytes.byteValues[i]);
-		}
-	}
-
-	IntToBytes intToBytes;
-	intToBytes.intValue = value;
-	for (std::size_t i = 0; i < sizeof(int); i++) {
-		function.generatedCode().push_back(intToBytes.byteValues[i]);
 	}
 }
 
@@ -170,7 +55,7 @@ void ActualOperandStack::assertNotEmpty() {
 
 int ActualOperandStack::getStackOperandOffset(int operandIndex) {
 	return -(int)(Amd64Backend::REG_SIZE *
-				  (1 + mFunction.numLocals() + mFunction.def().numParams() + operandIndex));
+				  (1 + mFunction.def().numParams() + mFunction.numLocals() + operandIndex));
 }
 
 void ActualOperandStack::duplicate() {
@@ -497,29 +382,27 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 	//Make the mapping
 	functionData.instructionNumMapping.push_back((int)generatedCode.size());
 
-	int topOperandIndex = (int)inst.operandTypes().size() - 1;
-
 	switch (inst.opCode()) {
 		case OpCodes::NOP:
 			generatedCode.push_back(0x90); //nop
 			break;
 		case OpCodes::POP:
-			OperandStack::popReg(function, topOperandIndex, Registers::AX);
+			operandStack.popReg(Registers::AX);
 			break;
 		case OpCodes::DUPLICATE:
-			OperandStack::duplicate(function, topOperandIndex);
+			operandStack.duplicate();
 			break;
 		case OpCodes::LOAD_INT:
-			OperandStack::pushInt(function, topOperandIndex + 1, inst.intValue);
+			operandStack.pushInt(inst.intValue);
 			break;
 		case OpCodes::LOAD_FLOAT: {
 			//Extract the byte pattern for the float
 			const int* floatData = reinterpret_cast<const int*>(&inst.floatValue);
-			OperandStack::pushInt(function, topOperandIndex + 1, *floatData);
+			operandStack.pushInt(*floatData);
 			break;
 		}
 		case OpCodes::LOAD_CHAR:
-			OperandStack::pushInt(function, topOperandIndex + 1, inst.charValue);
+			operandStack.pushInt(inst.charValue);
 			break;
 		case OpCodes::ADD:
 		case OpCodes::SUB:
@@ -532,11 +415,11 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
 			//Pop 2 operands
 			if (intOp) {
-				OperandStack::popReg(function, topOperandIndex, Registers::CX);
-				OperandStack::popReg(function, topOperandIndex - 1, Registers::AX);
+				operandStack.popReg(Registers::CX);
+				operandStack.popReg(Registers::AX);
 			} else if (floatOp) {
-				OperandStack::popReg(function, topOperandIndex, FloatRegisters::XMM0);
-				OperandStack::popReg(function, topOperandIndex - 1, FloatRegisters::XMM1);
+				operandStack.popReg(FloatRegisters::XMM0);
+				operandStack.popReg(FloatRegisters::XMM1);
 			}
 
 			//Apply the operator
@@ -588,23 +471,23 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
 			//Push the result
 			if (intOp) {
-				OperandStack::pushReg(function, topOperandIndex - 1, Registers::AX);
+				operandStack.pushReg(Registers::AX);
 			} else if (floatOp) {
-				OperandStack::pushReg(function, topOperandIndex - 1, FloatRegisters::XMM0);
+				operandStack.pushReg( FloatRegisters::XMM0);
 			}
 			break;
 		}
 		case OpCodes::LOAD_TRUE:
-			OperandStack::pushInt(function, topOperandIndex + 1, 1);
+			operandStack.pushInt(1);
 			break;
 		case OpCodes::LOAD_FALSE:
-			OperandStack::pushInt(function, topOperandIndex + 1, 0);
+			operandStack.pushInt(0);
 			break;
 		case OpCodes::AND:
 		case OpCodes::OR: {
 			//Pop 2 operands
-			OperandStack::popReg(function, topOperandIndex, Registers::CX);
-			OperandStack::popReg(function, topOperandIndex - 1, Registers::AX);
+			operandStack.popReg(Registers::CX);
+			operandStack.popReg(Registers::AX);
 			bool is32bits = false;
 
 			//Apply the operator
@@ -620,23 +503,23 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			}
 
 			//Push the result
-			OperandStack::pushReg(function, topOperandIndex - 1, Registers::AX);
+			operandStack.pushReg(Registers::AX);
 			break;
 		}
 		case OpCodes::NOT:
-			OperandStack::popReg(function, topOperandIndex, Registers::AX);
+			operandStack.popReg(Registers::AX);
 			Amd64Backend::notReg(generatedCode, Registers::AX); //not rax
-			OperandStack::pushReg(function, topOperandIndex, Registers::AX);
+			operandStack.pushReg(Registers::AX);
 			break;
 		case OpCodes::CONVERT_INT_TO_FLOAT:
-			OperandStack::popReg(function, topOperandIndex, Registers::AX);
+			operandStack.popReg(Registers::AX);
 			pushArray(generatedCode, {0xF3, 0x48, 0x0F, 0x2A, 0xC0}); //cvtsi2ss xmm0, rax
-			OperandStack::pushReg(function, topOperandIndex, FloatRegisters::XMM0);
+			operandStack.pushReg(FloatRegisters::XMM0);
 			break;
 		case OpCodes::CONVERT_FLOAT_TO_INT:
-			OperandStack::popReg(function, topOperandIndex, FloatRegisters::XMM0);
+			operandStack.popReg(FloatRegisters::XMM0);
 			pushArray(generatedCode, {0xF3, 0x48, 0x0F, 0x2C, 0xC0}); //cvttss2si rax, xmm0
-			OperandStack::pushReg(function, topOperandIndex, Registers::AX);
+			operandStack.pushReg(Registers::AX);
 			break;
 		case OpCodes::COMPARE_EQUAL:
 		case OpCodes::COMPARE_NOT_EQUAL:
@@ -651,13 +534,13 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
 			//Compare
 			if (intBasedType) {
-				OperandStack::popReg(function, topOperandIndex, Registers::CX);
-				OperandStack::popReg(function, topOperandIndex - 1, Registers::AX);
+				operandStack.popReg(Registers::CX);
+				operandStack.popReg(Registers::AX);
 				Amd64Backend::compareRegToReg(generatedCode, Registers::AX, Registers::CX); //cmp rax, rcx
 			} else if (floatOp) {
-				OperandStack::popReg(function, topOperandIndex, FloatRegisters::XMM1);
-				OperandStack::popReg(function, topOperandIndex - 1, FloatRegisters::XMM0);
-				pushArray(generatedCode, {0x0F, 0x2E, 0xC1}); //ucomiss xmm0, xmm1
+				operandStack.popReg(FloatRegisters::XMM1);
+				operandStack.popReg(FloatRegisters::XMM0);
+				pushArray(generatedCode, { 0x0F, 0x2E, 0xC1 }); //ucomiss xmm0, xmm1
 				unsignedComparison = true;
 			}
 
@@ -710,17 +593,19 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
 			//False branch
 			falseBranchStart = generatedCode.size();
-			OperandStack::pushInt(function, topOperandIndex - 1, 0);
+			operandStack.pushInt(0);
 			jump = generatedCode.size();
 			Amd64Backend::jump(generatedCode, 0);
 
 			//True branch
 			trueBranchStart = generatedCode.size();
-			OperandStack::pushInt(function, topOperandIndex - 1, 1);
+			operandStack.pushInt(1);
 
 			//Set the jump targets
 			Helpers::setInt(generatedCode, jump + 1, (int)(generatedCode.size() - trueBranchStart));
 			Helpers::setInt(generatedCode, compareJump + 2, (int)(trueBranchStart - falseBranchStart));
+
+			Amd64Backend::moveIntToReg(generatedCode, Registers::AX, 11);
 			break;
 		}
 		case OpCodes::LOAD_LOCAL: {
@@ -734,11 +619,11 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 				Registers::BP, localOffset);
 
 			//Push the loaded value
-			OperandStack::pushReg(function, topOperandIndex + 1, Registers::AX);
+			operandStack.pushReg(Registers::AX);
 			break;
 		}
 		case OpCodes::STORE_LOCAL: {
-			OperandStack::popReg(function, topOperandIndex, Registers::AX);
+			operandStack.popReg(Registers::AX);
 
 			int localOffset = (stackOffset + inst.intValue + (int)function.def().numParams())
 							  * -Amd64Backend::REG_SIZE;
@@ -776,7 +661,6 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
 				//Get the address of the function to call
 				unsigned char* funcAddr = nullptr;
-				int numArgs = (int)funcToCall.parameters().size();
 
 				//Align the stack
 				int stackAlignment = mCallingConvention.calculateStackAlignment(functionData, funcToCall);
@@ -789,7 +673,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 				}
 
 				//Set the function arguments
-				mCallingConvention.callFunctionArguments(functionData, funcToCall, (int)inst.operandTypes().size());
+				mCallingConvention.callFunctionArguments(functionData, funcToCall);
 
 				//Shadow stack size may be needed
 				int shadowStack = mCallingConvention.calculateShadowStackSize();
@@ -798,7 +682,6 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 				}
 
 				if (inst.opCode() == OpCodes::CALL_INSTANCE) {
-					//Null check
 					mExceptionHandling.addNullCheck(functionData, RegisterCallArguments::Arg0);
 				}
 
@@ -843,9 +726,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 				}
 
 				//Push the result
-				mCallingConvention.handleReturnValue(
-					functionData, funcToCall,
-					(int)inst.operandTypes().size() - numArgs);
+				mCallingConvention.handleReturnValue(functionData, funcToCall);
 
 				//Pop the call
 				popFunc(vmState, generatedCode);
@@ -871,7 +752,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 				generateCall(generatedCode, (unsigned char*)&Runtime::printStackFrame);
 			}
 
-			mCallingConvention.makeReturnValue(functionData, (int)inst.operandTypes().size());
+			mCallingConvention.makeReturnValue(functionData);
 
 			//Restore the base pointer
 			Amd64Backend::moveRegToReg(generatedCode, Registers::SP, Registers::BP); //mov rsp, rbp
@@ -890,7 +771,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 				Registers::AX, Registers::BP, argOffset); //mov rax [rbp+<arg offset>]
 
 			//Push the loaded value
-			OperandStack::pushReg(function, topOperandIndex + 1, Registers::AX);
+			operandStack.pushReg(Registers::AX);
 			break;
 		}
 		case OpCodes::BRANCH: {
@@ -916,12 +797,12 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
 			//Compare
 			if (intBasedType) {
-				OperandStack::popReg(function, topOperandIndex, Registers::CX);
-				OperandStack::popReg(function, topOperandIndex - 1, Registers::AX);
+				operandStack.popReg(Registers::CX);
+				operandStack.popReg(Registers::AX);
 				Amd64Backend::compareRegToReg(generatedCode, Registers::AX, Registers::CX); //cmp rax, rcx
 			} else if (floatOp) {
-				OperandStack::popReg(function, topOperandIndex, FloatRegisters::XMM1);
-				OperandStack::popReg(function, topOperandIndex - 1, FloatRegisters::XMM0);
+				operandStack.popReg(FloatRegisters::XMM1);
+				operandStack.popReg(FloatRegisters::XMM0);
 				pushArray(generatedCode, {0x0F, 0x2E, 0xC1}); //ucomiss xmm0, xmm1
 				unsignedComparison = true;
 			}
@@ -973,12 +854,12 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			break;
 		}
 		case OpCodes::LOAD_NULL:
-			OperandStack::pushInt(function, topOperandIndex + 1, 0);
+			operandStack.pushInt(0);
 			break;
 		case OpCodes::NEW_ARRAY: {
 			auto elemType = vmState.typeProvider().getType(inst.strValue);
-			auto arrayType = static_cast<const ArrayType*>(vmState.typeProvider().getType(
-				TypeSystem::arrayTypeName(elemType)));
+			auto arrayType = static_cast<const ArrayType*>(
+					vmState.typeProvider().getType(TypeSystem::arrayTypeName(elemType)));
 
 			if (!vmState.disableGC) {
 				generateGCCall(generatedCode, function, instIndex);
@@ -989,7 +870,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 										(PtrValue)arrayType); //mov rdi, <addr of type pointer>
 
 			//Pop the size as the second arg
-			OperandStack::popReg(function, topOperandIndex, RegisterCallArguments::Arg1);
+			operandStack.popReg(RegisterCallArguments::Arg1);
 
 			//Check that the size >= 0
 			mExceptionHandling.addArrayCreationCheck(functionData);
@@ -998,22 +879,19 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			generateCall(generatedCode, (unsigned char*)&Runtime::newArray);
 
 			//Push the returned pointer
-			OperandStack::pushReg(function, topOperandIndex, Registers::AX);
-
+			operandStack.pushReg(Registers::AX);
 			break;
 		}
 		case OpCodes::STORE_ELEMENT: {
 			auto elemType = vmState.typeProvider().getType(inst.strValue);
 
 			//Pop the operands
-			OperandStack::popReg(function, topOperandIndex, Registers::DX); //The value to store
-			OperandStack::popReg(function, topOperandIndex - 1, NumberedRegisters::R10); //The index of the element
-			OperandStack::popReg(function, topOperandIndex - 2, Registers::AX); //The address of the array
+			operandStack.popReg(Registers::DX); //The value to store
+			operandStack.popReg(NumberedRegisters::R10); //The index of the element
+			operandStack.popReg( Registers::AX); //The address of the array
 
-			//Null check
+			//Error checks
 			mExceptionHandling.addNullCheck(functionData);
-
-			//Bounds check
 			mExceptionHandling.addArrayBoundsCheck(functionData);
 
 			//Compute the address of the element
@@ -1042,21 +920,18 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			auto elemType = vmState.typeProvider().getType(inst.strValue);
 
 			//Pop the operands
-			OperandStack::popReg(function, topOperandIndex, NumberedRegisters::R10); //The index of the element
-			OperandStack::popReg(function, topOperandIndex - 1, Registers::AX); //The address of the ar
+			operandStack.popReg(NumberedRegisters::R10); //The index of the element
+			operandStack.popReg(Registers::AX); //The address of the ar
 
-			//Null check
+			//Error checks
 			mExceptionHandling.addNullCheck(functionData);
-
-			//Bounds check
 			mExceptionHandling.addArrayBoundsCheck(functionData);
 
 			//Compute the address of the element
 			pushArray(generatedCode,
 					  {0x4d, 0x6b, 0xd2, (unsigned char)TypeSystem::sizeOfType(elemType)}); //imul r10, <size of type>
 			Amd64Backend::addRegToReg(generatedCode, Registers::AX, NumberedRegisters::R10); //add rax, r10
-			Amd64Backend::addByteToReg(generatedCode, Registers::AX,
-									   StackJIT::ARRAY_LENGTH_SIZE); //add rax, <element offset>
+			Amd64Backend::addByteToReg(generatedCode, Registers::AX,  StackJIT::ARRAY_LENGTH_SIZE); //add rax, <element offset>
 
 			//Load the element
 			auto elemSize = TypeSystem::sizeOfType(elemType);
@@ -1070,12 +945,12 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 				pushArray(generatedCode, {0x8A, 0x08}); //mov cl, [rax]
 			}
 
-			OperandStack::pushReg(function, topOperandIndex - 1, Registers::CX);
+			operandStack.pushReg(Registers::CX);
 			break;
 		}
 		case OpCodes::LOAD_ARRAY_LENGTH:
 			//Pop the array ref
-			OperandStack::popReg(function, topOperandIndex, Registers::AX);
+			operandStack.popReg( Registers::AX);
 
 			//Null check
 			mExceptionHandling.addNullCheck(functionData);
@@ -1084,7 +959,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			Amd64Backend::moveMemoryByRegToReg(generatedCode, Registers::AX, Registers::AX, true); //mov eax, [rax]
 
 			//Push the size
-			OperandStack::pushReg(function, topOperandIndex, Registers::AX);
+			operandStack.pushReg(Registers::AX);
 			break;
 		case OpCodes::NEW_OBJECT: {
 			auto classType = inst.classType;
@@ -1142,13 +1017,12 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 					functionData,
 					i + 1,
 					inst.parameters.at(i),
-					funcToCall,
-					(int)inst.operandTypes().size());
+					funcToCall);
 			}
 
 			//Push the reference to the created object
 			Amd64Backend::moveRegToReg(generatedCode, Registers::AX, NumberedRegisters::R10);
-			OperandStack::pushReg(function, topOperandIndex + 1 - numArgs, Registers::AX);
+			operandStack.pushReg(Registers::AX);
 
 			//Shadow stack may be needed
 			int shadowStack = mCallingConvention.calculateShadowStackSize();
@@ -1179,7 +1053,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			}
 
 			//This is for clean up after a call, as the constructor returns nothing.
-			mCallingConvention.handleReturnValue(functionData, funcToCall, (int)inst.operandTypes().size() - numArgs);
+			mCallingConvention.handleReturnValue(functionData, funcToCall);
 
 			//Pop the call
 			popFunc(vmState, generatedCode);
@@ -1203,7 +1077,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
 			if (inst.opCode() == OpCodes::LOAD_FIELD) {
 				//Pop the operand
-				OperandStack::popReg(function, topOperandIndex, Registers::AX); //The address of the object
+				operandStack.popReg(Registers::AX); //The address of the object
 
 				//Null check
 				mExceptionHandling.addNullCheck(functionData);
@@ -1219,11 +1093,11 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 					pushArray(generatedCode, {0x8A, 0x08}); //mov cl, [rax]
 				}
 
-				OperandStack::pushReg(function, topOperandIndex, Registers::CX);
+				operandStack.pushReg(Registers::CX);
 			} else {
 				//Pop the operand
-				OperandStack::popReg(function, topOperandIndex, Registers::DX); //The value to store
-				OperandStack::popReg(function, topOperandIndex - 1, Registers::AX); //The address of the object
+				operandStack.popReg(Registers::DX); //The value to store
+				operandStack.popReg(Registers::AX); //The address of the object
 
 				//Null check
 				mExceptionHandling.addNullCheck(functionData);
@@ -1271,7 +1145,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			generateCall(generatedCode, (unsigned char*)&Runtime::newString);
 
 			//Push the returned pointer
-			OperandStack::pushReg(function, topOperandIndex + 1, Registers::AX);
+			operandStack.pushReg(Registers::AX);
 			break;
 		}
 	}

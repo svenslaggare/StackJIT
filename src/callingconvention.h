@@ -16,13 +16,11 @@ public:
 	void callFunctionArgument(FunctionCompilationData& functionData,
 							  int argIndex,
 							  const Type* argType,
-							  const FunctionDefinition& funcToCall,
-							  int numStackOperands) const;
+							  const FunctionDefinition& funcToCall) const;
 
 	//Generates code for calling the given function
 	void callFunctionArguments(FunctionCompilationData& functionData,
-							   const FunctionDefinition& funcToCall,
-							   int numStackOperands) const;
+							   const FunctionDefinition& funcToCall) const;
 
 	//Calculates how much the stack must be aligned to perform the call
 	int calculateStackAlignment(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall) const;
@@ -31,10 +29,9 @@ public:
 	int calculateShadowStackSize() const;
 
 	//Generates code for handling making return value for a function
-	void makeReturnValue(FunctionCompilationData& functionData, int numStackOperands) const;
+	void makeReturnValue(FunctionCompilationData& functionData) const;
 
 	//Generates code for handling a return value from a function
 	void handleReturnValue(FunctionCompilationData& functionData,
-						   const FunctionDefinition& funcToCall,
-						   int numStackOperands) const;
+						   const FunctionDefinition& funcToCall) const;
 };
