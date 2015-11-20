@@ -3,13 +3,28 @@
 
 ManagedFunction::ManagedFunction(const FunctionDefinition& definition)
 	: mDefinition(definition),
-	  mStackSize(0),
 	  mOperandStackSize(0) {
 
 }
 
 const FunctionDefinition& ManagedFunction::def() const {
 	return mDefinition;
+}
+
+std::vector<Instruction>& ManagedFunction::instructions() {
+	return mInstructions;
+}
+
+const std::vector<Instruction>& ManagedFunction::instructions() const {
+	return mInstructions;
+}
+
+std::vector<unsigned char>& ManagedFunction::generatedCode() {
+	return mGeneratedCode;
+}
+
+const std::vector<unsigned char>& ManagedFunction::generatedCode() const {
+	return mGeneratedCode;
 }
 
 std::size_t ManagedFunction::numLocals() const {
@@ -26,14 +41,6 @@ const Type* ManagedFunction::getLocal(std::size_t index) const {
 
 void ManagedFunction::setLocal(std::size_t index, const Type* type) {
 	mLocalTypes.at(index) = type;
-}
-
-std::size_t ManagedFunction::stackSize() const {
-	return mStackSize;
-}
-
-void ManagedFunction::setStackSize(std::size_t size) {
-	mStackSize = size;
 }
 
 std::size_t ManagedFunction::operandStackSize() const {

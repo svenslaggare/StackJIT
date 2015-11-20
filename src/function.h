@@ -87,24 +87,25 @@ public:
 //Represents an user defined function
 class ManagedFunction {
 private:
-	const FunctionDefinition mDefinition;
-
+	const FunctionDefinition& mDefinition;
 	std::vector<const Type*> mLocalTypes;
-
-	std::size_t mStackSize;
 	std::size_t mOperandStackSize;
+	std::vector<Instruction> mInstructions;
+	std::vector<unsigned char> mGeneratedCode;
 public:
-	//The instructions
-	std::vector<Instruction> instructions;
-
-	//The generated code
-	std::vector<unsigned char> generatedCode;
-
 	//Creates a new managed function
 	ManagedFunction(const FunctionDefinition& definition);
 
 	//Returns the definition of the function
 	const FunctionDefinition& def() const;
+
+	//Returns the instructions
+	std::vector<Instruction>& instructions();
+	const std::vector<Instruction>& instructions() const;
+
+	//Returns the generated code
+	std::vector<unsigned char>& generatedCode();
+	const std::vector<unsigned char>& generatedCode() const;
 
 	//The number of locals
 	std::size_t numLocals() const;
@@ -117,12 +118,6 @@ public:
 
 	//Sets the type for the local at the given index
 	void setLocal(std::size_t index, const Type* type);
-
-	//The size of the stack
-	std::size_t stackSize() const;
-
-	//Sets the size of the stack
-	void setStackSize(std::size_t size);
 
 	//The size of the operand stack
 	std::size_t operandStackSize() const;

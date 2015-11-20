@@ -10,7 +10,7 @@ StackFrameEntry::StackFrameEntry(RegisterValue value, const Type* type)
 StackFrame::StackFrame(RegisterValue* basePtr, const ManagedFunction* function, const int instIndex)
 	: mBasePtr(basePtr),
 	  mFunction(function),
-	  mOperandTypes(function->instructions[instIndex].operandTypes()) {
+	  mOperandTypes(function->instructions()[instIndex].operandTypes()) {
 }
 
 StackFrameEntry StackFrame::getArgument(std::int64_t index) {

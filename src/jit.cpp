@@ -18,12 +18,14 @@ BranchTarget::BranchTarget(unsigned int target, unsigned int instructionSize)
 
 }
 
-UnresolvedFunctionCall::UnresolvedFunctionCall(FunctionCallType type, std::size_t callOffset, const FunctionDefinition& funcToCall)
-	: type(type), callOffset(callOffset), funcToCall(funcToCall)  {
+UnresolvedFunctionCall::UnresolvedFunctionCall(FunctionCallType type, std::size_t callOffset,
+											   const FunctionDefinition& funcToCall)
+	: type(type), callOffset(callOffset), funcToCall(funcToCall) {
 
 }
+
 FunctionCompilationData::FunctionCompilationData(ManagedFunction& function)
-    : function(function) {
+	: function(function) {
 
 }
 
@@ -34,7 +36,7 @@ JITCompiler::JITCompiler(VMState& vmState)
 }
 
 MemoryManager& JITCompiler::memoryManager() {
-    return mMemoryManager;
+	return mMemoryManager;
 }
 
 void JITCompiler::createMacros() {
@@ -44,7 +46,7 @@ void JITCompiler::createMacros() {
 	if (binder.define(gcDef)) {
 		mCodeGen.defineMacro(gcDef, [this](MacroFunctionContext context) {
 			auto& function = context.functionData.function;
-			mCodeGen.generateGCCall(function.generatedCode, function, context.instIndex);
+			mCodeGen.generateGCCall(function.generatedCode(), function, context.instIndex);
 		});
 	}
 }
@@ -62,49 +64,49 @@ JitFunction JITCompiler::compileFunction(ManagedFunction* function) {
 	mFunctions.emplace(signature, FunctionCompilationData(*function));
 	auto& functionData = mFunctions.at(signature);
 
-    //Initialize the function
-    mCodeGen.initializeFunction(functionData);
+	//Initialize the function
+	mCodeGen.initializeFunction(functionData);
 
-    //Generate the native instructions for the program
-    int i = 0;
-    for (auto& current : function->instructions) {
-        mCodeGen.generateInstruction(functionData, mVMState, current, i);
-        i++;
-    }
+	//Generate the native instructions for the program
+	int i = 0;
+	for (auto& current : function->instructions()) {
+		mCodeGen.generateInstruction(functionData, mVMState, current, i);
+		i++;
+	}
 
-    //Patch branches with the native targets
-    resolveBranches(functionData);
+	//Patch branches with the native targets
+	resolveBranches(functionData);
 
-    //Get a pointer & size of the generated instructions
-    unsigned char* code = function->generatedCode.data();
-    std::size_t length = function->generatedCode.size();
+	//Get a pointer & size of the generated instructions
+	unsigned char* code = function->generatedCode().data();
+	std::size_t length = function->generatedCode().size();
 
-    if (mVMState.enableDebug && mVMState.printFunctionGeneration) {
+	if (mVMState.enableDebug && mVMState.printFunctionGeneration) {
 		auto funcSignature = FunctionSignature::from(function->def()).str();
 		std::cout
 			<< "Generated function '" << funcSignature << " " << function->def().returnType()->name()
 			<< "' of size " << length << " bytes."
 			<< std::endl;
-    }
+	}
 
-    //Indicates if to output the generated code to a file
-    if (mVMState.outputGeneratedCode) {
-        std::ofstream asmFile(function->def().name() + ".jit", std::ios::binary);
+	//Indicates if to output the generated code to a file
+	if (mVMState.outputGeneratedCode) {
+		std::ofstream asmFile(function->def().name() + ".jit", std::ios::binary);
 
-        if (asmFile.is_open()) {
-            asmFile.write((char*)code, length);
-            asmFile.close();
-        }
-    }
+		if (asmFile.is_open()) {
+			asmFile.write((char*)code, length);
+			asmFile.close();
+		}
+	}
 
-    //Allocate writable and readable memory
-    void* mem = mMemoryManager.allocateMemory(length);
+	//Allocate writable and readable memory
+	void* mem = mMemoryManager.allocateMemory(length);
 
-    //Copy the instructions
-    memcpy(mem, code, length);
+	//Copy the instructions
+	memcpy(mem, code, length);
 
-    //Return the generated instructions as a function pointer
-    return (JitFunction)mem;
+	//Return the generated instructions as a function pointer
+	return (JitFunction)mem;
 }
 
 void JITCompiler::resolveBranches(FunctionCompilationData& functionData) {
@@ -122,7 +124,7 @@ void JITCompiler::resolveBranches(FunctionCompilationData& functionData) {
 
 		//Update the source with the native target
 		auto sourceOffset = (int)source + (int)branchTarget.instructionSize - sizeof(int);
-		Helpers::setInt(function.generatedCode, sourceOffset, target);
+		Helpers::setInt(function.generatedCode(), sourceOffset, target);
 	}
 
 	functionData.unresolvedBranches.clear();
@@ -178,7 +180,6 @@ void JITCompiler::resolveCallTargets(FunctionCompilationData& functionData) {
 void JITCompiler::resolveSymbols(std::string signature) {
 	if (mFunctions.count(signature) > 0) {
 		auto& func = mFunctions.at(signature);
-
 		resolveCallTargets(func);
 		resolveNativeBranches(func);
 	}
@@ -192,16 +193,16 @@ void JITCompiler::resolveSymbols() {
 }
 
 void JITCompiler::makeExecutable() {
-    //Check that all calls has been resolved
-    for (auto& funcEntry : mFunctions) {
-        auto& funcData = funcEntry.second;
-       	auto signature = FunctionSignature::from(funcData.function.def()).str();
+	//Check that all calls has been resolved
+	for (auto& funcEntry : mFunctions) {
+		auto& funcData = funcEntry.second;
+		auto signature = FunctionSignature::from(funcData.function.def()).str();
 
-        if (funcData.unresolvedCalls.size() > 0) {
-            throw std::runtime_error("The function '" + signature + "' has unresolved calls.");
-	    }
-    }
+		if (funcData.unresolvedCalls.size() > 0) {
+			throw std::runtime_error("The function '" + signature + "' has unresolved calls.");
+		}
+	}
 
-    //Make the functions memory executable, but not writable.
-    mMemoryManager.makeMemoryExecutable();
+	//Make the functions memory executable, but not writable.
+	mMemoryManager.makeMemoryExecutable();
 }

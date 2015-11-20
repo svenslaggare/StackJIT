@@ -185,8 +185,8 @@ void ExecutionEngine::load(bool loadBody) {
 	//Load native functions
 	NativeLibrary::add(mVMState);
 
+	//Load test functions
 	if (mVMState.testMode) {
-		//Load test functions
 		TestLibrary::add(mVMState);
 	}
 
@@ -216,7 +216,7 @@ void ExecutionEngine::load(bool loadBody) {
 	}
 }
 
-void ExecutionEngine::compileFunction(ManagedFunction* function, std::string signature, bool resolveSymbols) {
+void ExecutionEngine::compileFunction(ManagedFunction* function, bool resolveSymbols) {
 	//Type check the function
 	Verifier verifier(mVMState);
 	verifier.verifyFunction(*function);
@@ -230,30 +230,30 @@ void ExecutionEngine::compileFunction(ManagedFunction* function, std::string sig
 			<< std::endl;
 	}
 
-	if (signature == "") {
-		signature = FunctionSignature::from(function->def()).str();
-	}
+	auto signature = FunctionSignature::from(function->def()).str();
 
 	//Set the entry point & size for the function
 	mVMState.binder().getFunction(signature).setEntryPoint((unsigned char*)funcPtr);
 
+	//Fix unresolved symbols
 	if (resolveSymbols) {
-		//Fix unresolved symbols
 		mJIT.resolveSymbols(signature);
 	}
 }
 
 bool ExecutionEngine::compileFunction(std::string signature) {
-	auto funcDef = mImageContainer.getFunction(signature);
+	auto funcImage = mImageContainer.getFunction(signature);
 
-	if (funcDef != nullptr && !mJIT.hasCompiled(signature)) {
+	if (funcImage != nullptr && !mJIT.hasCompiled(signature)) {
+		auto& funcDef = mVMState.binder().getFunction(signature);
+
 		//Load the function
 		mImageContainer.loadFunctionBody(signature);
-		auto func = Loader::loadManagedFunction(mVMState, *funcDef, false);
+		auto func = Loader::loadManagedFunction(mVMState, *funcImage, funcDef);
 		mLoadedFunctions.insert({ FunctionSignature::from(func->def()).str(), func });
 
 		//Compile it
-		compileFunction(func, signature, true);
+		compileFunction(func, true);
 		return true;
 	}
 

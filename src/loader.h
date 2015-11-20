@@ -27,5 +27,6 @@ namespace Loader {
 	void loadExternalFunction(VMState& vmState, const AssemblyParser::Function& function, FunctionDefinition& loadedFunction);
 
 	//Loads the given managed function
-	ManagedFunction* loadManagedFunction(VMState& vmState, const AssemblyParser::Function& function, bool checkIfDefined = true);
+	ManagedFunction* loadManagedFunction(VMState& vmState, const AssemblyParser::Function& function,
+										 const FunctionDefinition& functionDefinition);
 }

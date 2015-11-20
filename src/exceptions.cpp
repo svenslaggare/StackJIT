@@ -45,7 +45,7 @@ void ExceptionHandling::generateHandlers(MemoryManager& memoryManger, CallingCon
 }
 
 void ExceptionHandling::addNullCheck(FunctionCompilationData& function, Registers refReg, NumberedRegisters cmpReg) const {
-	auto& codeGen = function.function.generatedCode;
+	auto& codeGen = function.function.generatedCode();
 
 	//Compare the reference with null
 	Amd64Backend::xorRegToReg(codeGen, cmpReg, cmpReg); //Zero the register
@@ -57,7 +57,7 @@ void ExceptionHandling::addNullCheck(FunctionCompilationData& function, Register
 }
 
 void ExceptionHandling::addArrayBoundsCheck(FunctionCompilationData& function) const {
-	auto& codeGen = function.function.generatedCode;
+	auto& codeGen = function.function.generatedCode();
 
 	//Get the size of the array (an int)
 	Amd64Backend::moveMemoryByRegToReg(codeGen, Registers::CX, Registers::AX, true); //mov ecx, [rax]
@@ -71,7 +71,7 @@ void ExceptionHandling::addArrayBoundsCheck(FunctionCompilationData& function) c
 }
 
 void ExceptionHandling::addArrayCreationCheck(FunctionCompilationData& function) const {
-	auto& codeGen = function.function.generatedCode;
+	auto& codeGen = function.function.generatedCode();
 
 	Amd64Backend::xorRegToReg(codeGen, NumberedRegisters::R11, NumberedRegisters::R11); //Zero the register
 	Amd64Backend::compareRegToReg(codeGen, NumberedRegisters::R11, RegisterCallArguments::Arg1); //cmp rcx, <arg 1>
@@ -82,7 +82,7 @@ void ExceptionHandling::addArrayCreationCheck(FunctionCompilationData& function)
 }
 
 void ExceptionHandling::addStackOverflowCheck(FunctionCompilationData& function, PtrValue callStackEnd) const {
-	auto& codeGen = function.function.generatedCode;
+	auto& codeGen = function.function.generatedCode();
 
 	//Move the end of the call stack to register
 	Amd64Backend::moveLongToReg(codeGen, Registers::CX, callStackEnd); //mov rcx, <call stack end>

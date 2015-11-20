@@ -79,7 +79,7 @@ private:
 	void loadImage(std::ifstream& stream, AssemblyType assemblyType);
 
 	//Compiles the given function
-	void compileFunction(ManagedFunction* function, std::string signature = "", bool resolveSymbols = false);
+	void compileFunction(ManagedFunction* function, bool resolveSymbols = false);
 public:
 	//Creates a new execution engine
 	ExecutionEngine(VMState& vmState);

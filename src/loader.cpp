@@ -112,21 +112,13 @@ void Loader::loadExternalFunction(VMState& vmState, const AssemblyParser::Functi
 	}
 }
 
-ManagedFunction* Loader::loadManagedFunction(VMState& vmState, const AssemblyParser::Function& function, bool checkIfDefined) {
+ManagedFunction* Loader::loadManagedFunction(VMState& vmState, const AssemblyParser::Function& function,
+											 const FunctionDefinition& functionDefinition) {
 	if (function.isExternal) {
 		throw std::runtime_error("Expected a managed function");
 	}
 
-	//Check if defined
-	FunctionDefinition definition;
-	generateDefinition(vmState, function, definition);
-
-	auto signature = FunctionSignature::from(definition).str();
-	if (checkIfDefined && vmState.binder().isDefined(signature)) {
-		throw std::runtime_error("The function '" + signature + "' is already defined.");
-	}
-
-	auto loadedFunc = new ManagedFunction(definition);
+	auto loadedFunc = new ManagedFunction(functionDefinition);
 
 	//Locals
 	loadedFunc->setNumLocals(function.localTypes.size());
@@ -140,7 +132,7 @@ ManagedFunction* Loader::loadManagedFunction(VMState& vmState, const AssemblyPar
 
 	//Instructions
 	for (auto inst : function.instructions) {
-		loadedFunc->instructions.push_back(loadInstruction(vmState, loadedFunc, inst));
+		loadedFunc->instructions().push_back(loadInstruction(vmState, loadedFunc, inst));
 	}
 
 	return loadedFunc;

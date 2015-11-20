@@ -79,7 +79,7 @@ unsigned char* GarbageCollector::newClass(const ClassType* classType) {
     unsigned char* classPtr = new unsigned char[memSize];
     memset(classPtr, 0, memSize);
 
-    //Add the struct to the list of objects
+    //Add the class to the list of objects
     newObject(new ClassHandle(classPtr, memSize, classType));
 
     if (vmState.enableDebug && vmState.printAllocation) {
@@ -110,11 +110,11 @@ void GarbageCollector::markObject(ObjectHandle* handle) {
         } else if (TypeSystem::isClass(handle->type())) {
             handle->mark();
 
-            auto structType = static_cast<const ClassType*>(handle->type());
-            auto& structMetadata = vmState.classProvider().getMetadata(structType);
+            auto classType = static_cast<const ClassType*>(handle->type());
+            auto& classMetadata = vmState.classProvider().getMetadata(classType);
 
             //Mark ref fields
-            for (auto fieldEntry : structMetadata.fields()) {
+            for (auto fieldEntry : classMetadata.fields()) {
                 auto field = fieldEntry.second;
 
                 if (TypeSystem::isReferenceType(field.type())) {
