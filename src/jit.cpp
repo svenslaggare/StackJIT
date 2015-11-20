@@ -25,7 +25,7 @@ UnresolvedFunctionCall::UnresolvedFunctionCall(FunctionCallType type, std::size_
 }
 
 FunctionCompilationData::FunctionCompilationData(ManagedFunction& function)
-	: function(function) {
+	: function(function), operandStack(function) {
 
 }
 

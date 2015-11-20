@@ -157,6 +157,148 @@ void OperandStack::pushInt(ManagedFunction& function, int operandStackIndex, int
 	}
 }
 
+ActualOperandStack::ActualOperandStack(ManagedFunction& function)
+	: mFunction(function) {
+
+}
+
+void ActualOperandStack::assertNotEmpty() {
+	if (mTopIndex <= -1) {
+		throw std::runtime_error("The operand stack is empty");
+	}
+}
+
+int ActualOperandStack::getStackOperandOffset(int operandIndex) {
+	return -(int)(Amd64Backend::REG_SIZE *
+				  (1 + mFunction.numLocals() + mFunction.def().numParams() + operandIndex));
+}
+
+void ActualOperandStack::duplicate() {
+	assertNotEmpty();
+
+	int stackOffset1 = getStackOperandOffset(mTopIndex);
+	int stackOffset2 = getStackOperandOffset(mTopIndex + 1);
+
+	Amd64Backend::moveMemoryRegWithOffsetToReg(
+			mFunction.generatedCode(),
+			Registers::AX, Registers::BP, stackOffset1); //mov rax, [rbp+<operand1 offset>]
+
+	Amd64Backend::moveRegToMemoryRegWithOffset(
+			mFunction.generatedCode(),
+			Registers::BP, stackOffset2, Registers::AX); //mov [rbp+<operand2 offset>], rax
+
+	mTopIndex++;
+}
+
+void ActualOperandStack::popReg(Registers reg) {
+	assertNotEmpty();
+	int stackOffset = getStackOperandOffset(mTopIndex);
+
+	Amd64Backend::moveMemoryRegWithOffsetToReg(
+			mFunction.generatedCode(),
+			reg, Registers::BP, stackOffset); //mov <reg>, [rbp+<operand offset>]
+
+	mTopIndex--;
+}
+
+void ActualOperandStack::popReg(NumberedRegisters reg) {
+	assertNotEmpty();
+	int stackOffset = getStackOperandOffset(mTopIndex);
+
+	if (validCharValue(stackOffset)) {
+		pushArray(
+				mFunction.generatedCode(),
+				{0x4C, 0x8B, (unsigned char)(0x45 | (reg << 3)),
+				 (unsigned char)stackOffset}); //mov <reg>, [rbp+<operand offset>]
+	} else {
+		pushArray(
+				mFunction.generatedCode(),
+				{0x4C, 0x8B, (unsigned char)(0x85 | (reg << 3))});
+
+		IntToBytes converter;
+		converter.intValue = stackOffset;
+
+		for (std::size_t i = 0; i < sizeof(int); i++) {
+			mFunction.generatedCode().push_back(converter.byteValues[i]);
+		}
+	}
+
+	mTopIndex--;
+}
+
+void ActualOperandStack::popReg(FloatRegisters reg) {
+	assertNotEmpty();
+	int stackOffset = getStackOperandOffset(mTopIndex);
+
+	if (validCharValue(stackOffset)) {
+		pushArray(
+				mFunction.generatedCode(),
+				{0xF3, 0x0F, 0x10, (unsigned char)(0x45 | (reg << 3)),
+				 (unsigned char)stackOffset}); //movss <reg>, [rbp+<operand offset>]
+	} else {
+		pushArray(
+				mFunction.generatedCode(),
+				{0xF3, 0x0F, 0x10, (unsigned char)(0x85 | (reg << 3))});
+
+		IntToBytes converter;
+		converter.intValue = stackOffset;
+
+		for (std::size_t i = 0; i < sizeof(int); i++) {
+			mFunction.generatedCode().push_back(converter.byteValues[i]);
+		}
+	}
+
+	mTopIndex--;
+}
+
+void ActualOperandStack::pushReg(Registers reg) {
+	mTopIndex++;
+
+	int stackOffset = getStackOperandOffset(mTopIndex);
+
+	Amd64Backend::moveRegToMemoryRegWithOffset(
+			mFunction.generatedCode(),
+			Registers::BP, stackOffset, reg); //mov [rbp+<operand offset>], <reg>
+}
+
+void ActualOperandStack::pushReg(FloatRegisters reg) {
+	mTopIndex++;
+	int stackOffset = getStackOperandOffset(mTopIndex);
+
+	Amd64Backend::moveRegToMemoryRegWithOffset(
+			mFunction.generatedCode(),
+			Registers::BP,
+			stackOffset, reg); //movss [rbp+<operand offset>], <float reg>
+}
+
+void ActualOperandStack::pushInt(int value) {
+	mTopIndex++;
+	int stackOffset = getStackOperandOffset(mTopIndex);
+
+	//mov [rbp+<operand offset>], value
+	if (validCharValue(stackOffset)) {
+		pushArray(
+				mFunction.generatedCode(),
+				{0x48, 0xC7, 0x45, (unsigned char)stackOffset});
+	} else {
+		pushArray(
+				mFunction.generatedCode(),
+				{0x48, 0xC7, 0x85});
+
+		IntToBytes intToBytes;
+		intToBytes.intValue = stackOffset;
+		for (std::size_t i = 0; i < sizeof(int); i++) {
+			mFunction.generatedCode().push_back(intToBytes.byteValues[i]);
+		}
+	}
+
+	IntToBytes intToBytes;
+	intToBytes.intValue = value;
+	for (std::size_t i = 0; i < sizeof(int); i++) {
+		mFunction.generatedCode().push_back(intToBytes.byteValues[i]);
+	}
+}
+
 CodeGenerator::CodeGenerator(const CallingConvention& callingConvention, const ExceptionHandling& exceptionHandling)
 	: mCallingConvention(callingConvention), mExceptionHandling(exceptionHandling) {
 
@@ -348,6 +490,7 @@ void CodeGenerator::popFunc(const VMState& vmState, CodeGen& generatedCode) {
 void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, const VMState& vmState,
 										const Instruction& inst, int instIndex) {
 	auto& function = functionData.function;
+	auto& operandStack = functionData.operandStack;
 	auto& generatedCode = function.generatedCode();
 	int stackOffset = 1; //The offset for variables allocated on the stack
 

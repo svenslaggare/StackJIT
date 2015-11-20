@@ -138,27 +138,6 @@ ManagedFunction* Loader::loadManagedFunction(VMState& vmState, const AssemblyPar
 	return loadedFunc;
 }
 
-void Loader::loadClasses(VMState& vmState, std::vector<AssemblyParser::Assembly*>& assemblies) {
-	//First, create the classes
-	for (auto& assembly : assemblies) {
-		for (auto& classDef : assembly->classes) {
-			vmState.classProvider().add(classDef.name, ClassMetadata());
-		}
-	}
-
-	//Then add the fields
-	for (auto& assembly : assemblies) {
-		for (auto& classDef : assembly->classes) {
-			auto& classMetadata = vmState.classProvider().getMetadata(classDef.name);
-
-			for (auto& field : classDef.fields) {
-				auto accessModifier = getAccessModifier(field.attributes);
-				classMetadata.addField(field.name, getType(vmState, field.type), accessModifier);
-			}
-		}
-	}
-}
-
 void Loader::loadClasses(VMState& vmState, ImageContainer& imageContainer) {
 	//First, create the classes
 	for (auto& image : imageContainer.images()) {

@@ -14,9 +14,6 @@ namespace Loader {
 	//Loads an assembly from the given stream
 	void load(std::istream& stream, VMState& vmState, AssemblyParser::Assembly& assembly);
 
-	//Loads the given classes from the given assemblies
-	void loadClasses(VMState& vmState, std::vector<AssemblyParser::Assembly*>& assemblies);
-
 	//Loads the given classes from the given images container
 	void loadClasses(VMState& vmState, ImageContainer& imageContainer);
 

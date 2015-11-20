@@ -51,6 +51,8 @@ struct UnresolvedFunctionCall {
 struct FunctionCompilationData {
 	ManagedFunction& function;
 
+	ActualOperandStack operandStack;
+
 	//Unresolved branches
 	std::unordered_map<std::size_t, BranchTarget> unresolvedBranches;
 
