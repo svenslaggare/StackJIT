@@ -16,7 +16,7 @@ class ExceptionHandling;
 class FunctionDefinition;
 
 //Manages the operand stack
-class ActualOperandStack {
+class OperandStack {
 private:
 	ManagedFunction& mFunction;
 	int mTopIndex = -1;
@@ -28,11 +28,10 @@ private:
 	int getStackOperandOffset(int operandIndex);
 public:
 	//Creates a new operand stack for the given function
-	ActualOperandStack(ManagedFunction& function);
+	OperandStack(ManagedFunction& function);
 
-	//Prevent from being copied
-//	ActualOperandStack(const ActualOperandStack&) = delete;
-//	ActualOperandStack& operator=(const ActualOperandStack&) = delete;
+	//Reserves space for an operand on the stack
+	void reserveSpace();
 
 	//Duplicates the top operand
 	void duplicate();
@@ -47,7 +46,7 @@ public:
 	void pushReg(FloatRegisters reg);
 
 	//Pushes the given value to the operand stack
-	void pushInt(int value);
+	void pushInt(int value, bool increaseStack = true);
 };
 
 //Represents context for a macro function

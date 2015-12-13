@@ -42,23 +42,27 @@ namespace {
 	}
 }
 
-ActualOperandStack::ActualOperandStack(ManagedFunction& function)
+OperandStack::OperandStack(ManagedFunction& function)
 	: mFunction(function) {
 
 }
 
-void ActualOperandStack::assertNotEmpty() {
+void OperandStack::assertNotEmpty() {
 	if (mTopIndex <= -1) {
 		throw std::runtime_error("The operand stack is empty");
 	}
 }
 
-int ActualOperandStack::getStackOperandOffset(int operandIndex) {
+int OperandStack::getStackOperandOffset(int operandIndex) {
 	return -(int)(Amd64Backend::REG_SIZE *
 				  (1 + mFunction.def().numParams() + mFunction.numLocals() + operandIndex));
 }
 
-void ActualOperandStack::duplicate() {
+void OperandStack::reserveSpace() {
+	mTopIndex++;
+}
+
+void OperandStack::duplicate() {
 	assertNotEmpty();
 
 	int stackOffset1 = getStackOperandOffset(mTopIndex);
@@ -75,7 +79,7 @@ void ActualOperandStack::duplicate() {
 	mTopIndex++;
 }
 
-void ActualOperandStack::popReg(Registers reg) {
+void OperandStack::popReg(Registers reg) {
 	assertNotEmpty();
 	int stackOffset = getStackOperandOffset(mTopIndex);
 
@@ -86,7 +90,7 @@ void ActualOperandStack::popReg(Registers reg) {
 	mTopIndex--;
 }
 
-void ActualOperandStack::popReg(NumberedRegisters reg) {
+void OperandStack::popReg(NumberedRegisters reg) {
 	assertNotEmpty();
 	int stackOffset = getStackOperandOffset(mTopIndex);
 
@@ -111,7 +115,7 @@ void ActualOperandStack::popReg(NumberedRegisters reg) {
 	mTopIndex--;
 }
 
-void ActualOperandStack::popReg(FloatRegisters reg) {
+void OperandStack::popReg(FloatRegisters reg) {
 	assertNotEmpty();
 	int stackOffset = getStackOperandOffset(mTopIndex);
 
@@ -136,7 +140,7 @@ void ActualOperandStack::popReg(FloatRegisters reg) {
 	mTopIndex--;
 }
 
-void ActualOperandStack::pushReg(Registers reg) {
+void OperandStack::pushReg(Registers reg) {
 	mTopIndex++;
 
 	int stackOffset = getStackOperandOffset(mTopIndex);
@@ -146,7 +150,7 @@ void ActualOperandStack::pushReg(Registers reg) {
 			Registers::BP, stackOffset, reg); //mov [rbp+<operand offset>], <reg>
 }
 
-void ActualOperandStack::pushReg(FloatRegisters reg) {
+void OperandStack::pushReg(FloatRegisters reg) {
 	mTopIndex++;
 	int stackOffset = getStackOperandOffset(mTopIndex);
 
@@ -156,8 +160,11 @@ void ActualOperandStack::pushReg(FloatRegisters reg) {
 			stackOffset, reg); //movss [rbp+<operand offset>], <float reg>
 }
 
-void ActualOperandStack::pushInt(int value) {
-	mTopIndex++;
+void OperandStack::pushInt(int value, bool increaseStack) {
+	if (increaseStack) {
+		mTopIndex++;
+	}
+
 	int stackOffset = getStackOperandOffset(mTopIndex);
 
 	//mov [rbp+<operand offset>], value
@@ -591,21 +598,22 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 					break;
 			}
 
+			//Both branches will have the same operand entry, reserve space
+			operandStack.reserveSpace();
+
 			//False branch
 			falseBranchStart = generatedCode.size();
-			operandStack.pushInt(0);
+			operandStack.pushInt(0, false);
 			jump = generatedCode.size();
 			Amd64Backend::jump(generatedCode, 0);
 
 			//True branch
 			trueBranchStart = generatedCode.size();
-			operandStack.pushInt(1);
+			operandStack.pushInt(1, false);
 
 			//Set the jump targets
 			Helpers::setInt(generatedCode, jump + 1, (int)(generatedCode.size() - trueBranchStart));
 			Helpers::setInt(generatedCode, compareJump + 2, (int)(trueBranchStart - falseBranchStart));
-
-			Amd64Backend::moveIntToReg(generatedCode, Registers::AX, 11);
 			break;
 		}
 		case OpCodes::LOAD_LOCAL: {
