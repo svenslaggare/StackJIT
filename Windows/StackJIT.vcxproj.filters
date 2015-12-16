@@ -21,22 +21,34 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\amd64.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\src\windows\callingconvention.h">
+      <Filter>Header Files\windows</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\assembly.h">
+    <ClInclude Include="..\src\objectref.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\amd64.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\binder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\bytecodegenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\callingconvention.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\callstack.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\classmetadata.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\codegenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\compilationdata.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\exceptions.h">
@@ -48,10 +60,19 @@
     <ClInclude Include="..\src\function.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\functionsignature.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\gc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\helpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\imagecontainer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\imageloader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\instructions.h">
@@ -73,9 +94,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\objectref.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\objectref.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\objects.h">
@@ -108,21 +126,6 @@
     <ClInclude Include="..\src\vmstate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\imageloader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\bytecodegenerator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\windows\callingconvention.h">
-      <Filter>Header Files\windows</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\callstack.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\functionsignature.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\windows\callingconvetion.cpp">
@@ -137,10 +140,19 @@
     <ClCompile Include="..\src\binder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\bytecodegenerator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\callstack.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\classmetadata.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\codegenerator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\compilationdata.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\exceptions.cpp">
@@ -152,10 +164,19 @@
     <ClCompile Include="..\src\function.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\functionsignature.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\gc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\helpers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\imagecontainer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\imageloader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\instructions.cpp">
@@ -201,18 +222,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\vmstate.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\callstack.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\bytecodegenerator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\imageloader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\functionsignature.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
