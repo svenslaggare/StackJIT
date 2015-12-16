@@ -13,22 +13,6 @@
 #include <iostream>
 #include <fstream>
 
-BranchTarget::BranchTarget(unsigned int target, unsigned int instructionSize)
-	: target(target), instructionSize(instructionSize) {
-
-}
-
-UnresolvedFunctionCall::UnresolvedFunctionCall(FunctionCallType type, std::size_t callOffset,
-											   const FunctionDefinition& funcToCall)
-	: type(type), callOffset(callOffset), funcToCall(funcToCall) {
-
-}
-
-FunctionCompilationData::FunctionCompilationData(ManagedFunction& function)
-	: function(function), operandStack(function) {
-
-}
-
 JITCompiler::JITCompiler(VMState& vmState)
 	: mVMState(vmState), mCodeGen(mCallingConvention, mExceptionHandling) {
 	mExceptionHandling.generateHandlers(mMemoryManager, mCallingConvention);

@@ -22,5 +22,11 @@ member <name>::.constructor(<arg type 1> <arg type 1>) Void
 ```
 A constructor works like a member function (the first argument (arg 0) is the 'this' reference).
 
-###Null ref###
+#### Access modifiers
+There are two type of access modifiers: `public` and `private`.  The default value is public.
+Member function/field marked as public can only be read by member function of the class.
+
+An access modifier is an attribute: `AccessModifier(value=private)`.
+
+### Null ref
 Dereferencing a null reference will result in a null reference error. Both array and object instructions can result in a null reference error.

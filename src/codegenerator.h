@@ -15,40 +15,6 @@ class ManagedFunction;
 class ExceptionHandling;
 class FunctionDefinition;
 
-//Manages the operand stack
-class OperandStack {
-private:
-	ManagedFunction& mFunction;
-	int mTopIndex = -1;
-
-	//Asserts that the stack is not empty
-	void assertNotEmpty();
-
-	//Calculates the offset in the stack frame for the given stack operand
-	int getStackOperandOffset(int operandIndex);
-public:
-	//Creates a new operand stack for the given function
-	OperandStack(ManagedFunction& function);
-
-	//Reserves space for an operand on the stack
-	void reserveSpace();
-
-	//Duplicates the top operand
-	void duplicate();
-
-	//Pops an operand from the operand stack to the given register
-	void popReg(Registers reg);
-	void popReg(NumberedRegisters reg);
-	void popReg(FloatRegisters reg);
-
-	//Pushes the given register to the operand stack
-	void pushReg(Registers reg);
-	void pushReg(FloatRegisters reg);
-
-	//Pushes the given value to the operand stack
-	void pushInt(int value, bool increaseStack = true);
-};
-
 //Represents context for a macro function
 struct MacroFunctionContext {
 	const VMState& vmState;

@@ -1,6 +1,6 @@
 Attributes
 ==============
-Attributes makes it possible to assign metadata to functions, classes and fields. At the moment, the attributes has not affect on the program being executed.
+Attributes makes it possible to assign metadata to functions, classes and fields.
 
 ## Syntax
 The syntax for declaring an attribute is:

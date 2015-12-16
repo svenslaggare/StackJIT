@@ -77,7 +77,3 @@ ClassMetadata& ClassMetadataProvider::getMetadata(std::string className) {
 		throw std::out_of_range("The class isn't defined.");
 	}
 }
-
-const ClassMetadata& ClassMetadataProvider::getMetadata(const ClassType* classType) const {
-	return getMetadata(classType->className());
-}

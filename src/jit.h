@@ -2,6 +2,7 @@
 #include "memory.h"
 #include "callingconvention.h"
 #include "codegenerator.h"
+#include "compilationdata.h"
 #include "exceptions.h"
 #include <unordered_map>
 #include <vector>
@@ -14,59 +15,12 @@ class Type;
 //Represents a compiled function
 typedef void (*JitFunction)();
 
-//Represents a branch target
-struct BranchTarget {
-	//The target of the branch
-	const unsigned int target;
-
-	//The size of the branch instruction
-	const unsigned int instructionSize;
-
-	BranchTarget(unsigned int target, unsigned int instructionSize);
-};
-
 //The type of a function call
-enum class FunctionCallType {
+enum class FunctionCallType : unsigned char {
 	//A direct address to the function is used
 	Absolute,
 	//An address relative callee function to the function is used
 	Relative
-};
-
-//Represents an unresolved function call
-struct UnresolvedFunctionCall {
-	const FunctionCallType type;
-
-	//The offset for the call instruction
-	const std::size_t callOffset;
-
-	//The function to call
-	const FunctionDefinition& funcToCall;
-
-	//Creates a new unresolved function call
-	UnresolvedFunctionCall(FunctionCallType type, std::size_t callOffset, const FunctionDefinition& funcToCall);
-};
-
-//Holds compilation data for a function
-struct FunctionCompilationData {
-	ManagedFunction& function;
-
-	OperandStack operandStack;
-
-	//Unresolved branches
-	std::unordered_map<std::size_t, BranchTarget> unresolvedBranches;
-
-	//Unresolved native branches
-	std::unordered_map<std::size_t, PtrValue> unresolvedNativeBranches;
-
-	//Mapping from instruction number to native instruction offset
-	std::vector<std::size_t> instructionNumMapping;
-
-	//Unresolved function calls						 
-	std::vector<UnresolvedFunctionCall> unresolvedCalls;
-
-	//Holds compilation data for the given function
-	FunctionCompilationData(ManagedFunction& function);
 };
 
 //Represents the JIT compiler

@@ -111,7 +111,7 @@ void GarbageCollector::markObject(ObjectHandle* handle) {
             handle->mark();
 
             auto classType = static_cast<const ClassType*>(handle->type());
-            auto& classMetadata = vmState.classProvider().getMetadata(classType);
+            auto& classMetadata = vmState.classProvider().getMetadata(classType->className());
 
             //Mark ref fields
             for (auto fieldEntry : classMetadata.fields()) {

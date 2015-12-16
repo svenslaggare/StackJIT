@@ -66,6 +66,10 @@ set(SOURCE_FILES
         src/bytecodegenerator.h
         src/bytecodegenerator.cpp
         src/imageloader.h
-        src/imageloader.cpp src/functionsignature.cpp src/functionsignature.h)
+        src/imageloader.cpp
+        src/functionsignature.cpp
+        src/functionsignature.h
+        src/compilationdata.cpp
+        src/compilationdata.h src/imagecontainer.cpp src/imagecontainer.h)
 
 add_executable(stackjit ${SOURCE_FILES})

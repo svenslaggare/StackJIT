@@ -72,5 +72,4 @@ public:
     //Returns the metadata for the given class
     const ClassMetadata& getMetadata(std::string className) const;
     ClassMetadata& getMetadata(std::string className);
-    const ClassMetadata& getMetadata(const ClassType* classType) const;
 };

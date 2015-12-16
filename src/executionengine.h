@@ -4,13 +4,13 @@
 #include "parser.h"
 #include "callstack.h"
 #include "imageloader.h"
+#include "imagecontainer.h"
 #include <vector>
 #include <unordered_map>
 
 class VMState;
 class Assembly;
 class ManagedFunction;
-class AssemblyImage;
 
 namespace AssemblyParser {
 	struct Assembly;
@@ -26,33 +26,6 @@ enum class AssemblyType {
 
 //Represents an entry point
 typedef int (*EntryPointFunction)();
-
-//Container for images
-class ImageContainer {
-private:
-	std::vector<AssemblyImage*> mImages;
-	std::unordered_map<std::string, AssemblyImage*> mFuncToImage;
-	std::unordered_map<std::string, AssemblyImage*> mClassToImage;
-public:
-	//Creates a new image container
-	ImageContainer();
-	~ImageContainer();
-
-	//Returns the loaded images
-	const std::vector<AssemblyImage*>& images() const;
-
-	//Adds the given image to the container
-	void addImage(AssemblyImage* image);
-
-	//Returns the given function
-	const AssemblyParser::Function* getFunction(std::string function) const;
-
-	//Loads the body given function if not already loaded
-	void loadFunctionBody(std::string function);
-
-	//Loads the body given class if not already loaded
-	void loadClassBody(std::string className);
-};
 
 //Represents the execution engine
 class ExecutionEngine {
