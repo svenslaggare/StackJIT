@@ -53,6 +53,8 @@
     <ClInclude Include="..\src\bytecodegenerator.h" />
     <ClInclude Include="..\src\callstack.h" />
     <ClInclude Include="..\src\windows\callingconvention.h" />
+    <ClInclude Include="..\src\imagecontainer.h" />
+    <ClInclude Include="..\src\compilationdata.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\amd64.cpp" />
@@ -85,6 +87,8 @@
     <ClCompile Include="..\src\bytecodegenerator.cpp" />
     <ClCompile Include="..\src\windows\callingconvetion.cpp" />
     <ClCompile Include="..\src\windows\memory.cpp" />
+    <ClInclude Include="..\src\imagecontainer.cpp" />
+    <ClInclude Include="..\src\compilationdata.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{50A3A101-235D-4AE2-9619-75C3544B42B9}</ProjectGuid>
