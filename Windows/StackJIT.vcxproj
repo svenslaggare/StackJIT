@@ -60,6 +60,8 @@
     <ClCompile Include="..\src\amd64.cpp" />
     <ClCompile Include="..\src\binder.cpp" />
     <ClCompile Include="..\src\classmetadata.cpp" />
+    <ClInclude Include="..\src\imagecontainer.cpp" />
+    <ClInclude Include="..\src\compilationdata.cpp" />
     <ClCompile Include="..\src\codegenerator.cpp" />
     <ClCompile Include="..\src\exceptions.cpp" />
     <ClCompile Include="..\src\executionengine.cpp" />
@@ -87,8 +89,6 @@
     <ClCompile Include="..\src\bytecodegenerator.cpp" />
     <ClCompile Include="..\src\windows\callingconvetion.cpp" />
     <ClCompile Include="..\src\windows\memory.cpp" />
-    <ClInclude Include="..\src\imagecontainer.cpp" />
-    <ClInclude Include="..\src\compilationdata.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{50A3A101-235D-4AE2-9619-75C3544B42B9}</ProjectGuid>
