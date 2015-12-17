@@ -1,9 +1,9 @@
 language: cpp
 compiler: clang
 before_install:
-    - sudo apt-get install python
-    - wget -q https://launchpad.net/ubuntu/+archive/primary/+files/cxxtest_4.4-1_all.deb
-    - sudo dpkg -i cxxtest_4.4-1_all.deb
+    - git clone -q --branch=master https://github.com/svenslaggare/CxxTest.git
+    - export CXXTEST=CxxTest
+    - export PATH=$PATH:CxxTest/bin
     - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
     - sudo apt-get update -qq
 install:
