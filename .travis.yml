@@ -4,12 +4,12 @@ before_install:
     - git clone -q --branch=master https://github.com/svenslaggare/CxxTest.git
     - export CXXTEST=CxxTest
     - export PATH=$PATH:CxxTest/bin
+    - sudo chmod +x CxxTest/bin/cxxtestgen
     - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
     - sudo apt-get update -qq
 install:
     - sudo apt-get install -qq g++-4.9
     - sudo apt-get install -qq valgrind
-env: CXXTEST=/usr/include
 script:
     - make test-valgrind
     - make -C assembler test
