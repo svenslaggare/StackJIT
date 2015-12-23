@@ -2,6 +2,7 @@
 #include "vmstate.h"
 #include "executionengine.h"
 #include "helpers.h"
+#include "rtlibrary.h"
 #include <iostream>
 #include <fstream>
 #include <chrono>
@@ -12,12 +13,10 @@
 #include <unistd.h>
 #endif
 
-//The global state for the VM
-VMState vmState;
-
 //Parses the options
 std::string handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
 	std::string program = "";
+	auto& vmState = Runtime::vmState;
 
 	for (int i = 1; i < argc; i++) {
 		std::string switchStr = argv[i];
@@ -177,6 +176,7 @@ std::string getExecutableDir() {
 
 int main(int argc, char* argv[]) {
 	try {
+		auto& vmState = Runtime::vmState;
 		auto start = std::chrono::high_resolution_clock::now();
 		auto& engine = vmState.engine();
 

@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <string>
 #include <iostream>
-#include <algorithm> 
-#include <functional> 
+#include <algorithm>
+#include <functional>
 #include <cctype>
 #include <locale>
 #include <cxxtest/TestSuite.h>

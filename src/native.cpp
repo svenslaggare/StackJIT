@@ -7,8 +7,6 @@
 #include <math.h>
 #include <string.h>
 
-extern VMState vmState;
-
 StringRef::StringRef(RawClassRef stringRef) {
 	auto charsField = (char**)(stringRef + sCharsFieldOffset);
 	auto chars = *charsField;

@@ -3,8 +3,6 @@
 #include "vmstate.h"
 #include "rtlibrary.h"
 
-extern VMState vmState;
-
 int fibonacci(int n) {
 	if (n <= 1) {
 		return n;
@@ -15,6 +13,8 @@ int fibonacci(int n) {
 
 void printPoint(RawClassRef objRef) {
 	if (objRef != nullptr) {
+		auto& vmState = Runtime::vmState;
+
 		//Obtain a reference to the structure
 		auto pointRef = vmState.gc().getClassRef(objRef);
 

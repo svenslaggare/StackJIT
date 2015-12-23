@@ -1,74 +1,75 @@
-CC=clang++
-CFLAGS=-c -std=c++11 -Wall
-LDFLAGS=-std=c++11 -Wall
+# Config
+CXXC=clang++
+CXXFLAGS=-std=c++11 -Wall
 
-SRCDIR=src
-OBJDIR=obj
-EXECUTABLE=stackjit
-FOLDERS = $(OBJDIR)/linux $(OBJDIR)/windows
-
-SOURCES=$(wildcard $(SRCDIR)/*.cpp)
-HEADERS=$(wildcard $(SRCDIR)/*.h)
-
-SOURCES += $(wildcard $(SRCDIR)/*/*.cpp)
-HEADERS += $(wildcard $(SRCDIR)/*/*.h)
-
-TEMPLATE_HEADERS=$(wildcard $(SRCDIR)/*.hpp)
-
-_OBJECTS=$(SOURCES:.cpp=.o)
-OBJECTS=$(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(_OBJECTS))
-
+SRC_DIR=src
+OBJ_DIR=obj
 TESTS_DIR=tests
-TEST_RUNNERS_DIR=$(TESTS_DIR)/runners
-AMD64_TEST_EXECUTABLE=amd64-test
-VM_TEST_EXECUTABLE=vm-test
-TEST_WITH_VALGRIND=0
+EXECUTABLE=stackjit
+FOLDERS=$(OBJ_DIR)/linux $(OBJ_DIR)/windows
 
 ASSEMBLER_DIR=assembler
 RTLIB=rtlib
+
+TEST_WITH_VALGRIND=0
+
+# Rules
+SOURCES=$(wildcard $(SRC_DIR)/*.cpp)
+HEADERS=$(wildcard $(SRC_DIR)/*.h)
+
+SOURCES += $(wildcard $(SRC_DIR)/*/*.cpp)
+HEADERS += $(wildcard $(SRC_DIR)/*/*.h)
+
+TEMPLATE_HEADERS=$(wildcard $(SRC_DIR)/*.hpp)
+
+_OBJECTS=$(SOURCES:.cpp=.o)
+OBJECTS=$(patsubst $(SRC_DIR)/%,$(OBJ_DIR)/%,$(_OBJECTS))
+
+TEST_RUNNERS_DIR=$(TESTS_DIR)/runners
+
+MAIN_OBJ=$(OBJ_DIR)/$(EXECUTABLE).o
+TEST_OBJECTS=$(filter-out $(MAIN_OBJ), $(OBJECTS))
+
+TESTS=$(wildcard $(TESTS_DIR)/*-test.h)
+TEST_EXECUTABLES=$(patsubst $(TESTS_DIR)/%.h,$(TEST_RUNNERS_DIR)/%, $(TESTS))
+
 RTLIB_FILES=$(wildcard $(RTLIB)/*.sbc)
 RTLIB_OUT=$(RTLIB)/rtlib.simg
 
-all: $(OBJDIR) $(SOURCES) $(EXECUTABLE) $(RTLIB_OUT)
+$(TEST_RUNNERS_DIR):
+	mkdir $(TEST_RUNNERS_DIR)
 
-$(OBJDIR):
-	mkdir -p $(OBJDIR)
+all: $(OBJ_DIR) $(SOURCES) $(EXECUTABLE) $(RTLIB_OUT)
+
+$(OBJ_DIR):
+	mkdir -p $(OBJ_DIR)
 	mkdir -p $(FOLDERS)
 
 $(EXECUTABLE): $(OBJECTS)
-	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
+	$(CXXC) $(CXXFLAGS) $(OBJECTS) -o $@
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(HEADERS) $(TEMPLATE_HEADERS)
-	$(CC) $(CFLAGS) $< -o $@
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(HEADERS) $(TEMPLATE_HEADERS)
+	$(CXXC) -c $(CXXFLAGS) $< -o $@
 
 $(RTLIB_OUT): $(RTLIB_FILES)
 	make -C $(ASSEMBLER_DIR) all
 	$(ASSEMBLER_DIR)/stackasm -o rtlib/rtlib.simg $(RTLIB_FILES)
 
-test: test-amd64 test-vm
-
 valgrind-flags:
 	$(eval TEST_WITH_VALGRIND = 1)
 
-test-valgrind: valgrind-flags test-amd64 test-vm
+test-valgrind: valgrind-flags test
 
-test-amd64: $(TESTS_DIR)/amd64-test.h $(OBJDIR) $(OBJDIR)/amd64.o
-	mkdir -p $(TEST_RUNNERS_DIR)
-	cxxtestgen --error-printer -o $(TEST_RUNNERS_DIR)/amd64test_runner.cpp $(TESTS_DIR)/amd64-test.h
-	$(CC) $(LDFLAGS) -o $(AMD64_TEST_EXECUTABLE) $(OBJDIR)/amd64.o -I $(CXXTEST) $(TEST_RUNNERS_DIR)/amd64test_runner.cpp
-	./$(AMD64_TEST_EXECUTABLE)
+test: $(TEST_RUNNERS_DIR) $(TEST_EXECUTABLES)
 
-test-vm: $(RTLIB_OUT) $(TESTS_DIR)/vm-test.h $(OBJDIR) $(EXECUTABLE)
-	mkdir -p $(TEST_RUNNERS_DIR)
-	cxxtestgen --error-printer -o $(TEST_RUNNERS_DIR)/vmtest_runner.cpp $(TESTS_DIR)/vm-test.h
-	$(CC) $(LDFLAGS) -o $(VM_TEST_EXECUTABLE) -I $(CXXTEST) $(TEST_RUNNERS_DIR)/vmtest_runner.cpp -DUSE_VALGRIND=$(TEST_WITH_VALGRIND)
-	./$(VM_TEST_EXECUTABLE)
+$(TEST_RUNNERS_DIR)/%: $(TESTS_DIR)/%.h $(OBJ_DIR) $(EXECUTABLE) $(RTLIB_OUT) $(TEST_OBJECTS)
+	cxxtestgen --error-printer -o $@-runner.cpp $<
+	$(CXXC) $(CXXFLAGS) -o $@ -I $(CXXTEST) $(TEST_OBJECTS) $@-runner.cpp
+	./$@
 
 clean:
-	rm -rf $(OBJDIR)
+	rm -rf $(OBJ_DIR)
 	rm -rf $(TEST_RUNNERS_DIR)
 	rm -f $(EXECUTABLE)
-	rm -f $(AMD64_TEST_EXECUTABLE)
-	rm -f $(VM_TEST_EXECUTABLE)
 	make -C $(ASSEMBLER_DIR) clean
 	rm -f $(RTLIB_OUT)

@@ -2,6 +2,7 @@
 #include <string>
 #include "stackjit.h"
 #include "type.h"
+#include "vmstate.h"
 
 class ManagedFunction;
 class FunctionDefinition;
@@ -11,6 +12,9 @@ class ArrayType;
 
 //The runtime library
 namespace Runtime {
+	//The global VM state
+	extern VMState vmState;
+
 	//Prints the given stack frame
 	void printStackFrame(RegisterValue* basePtr, ManagedFunction* func);
 

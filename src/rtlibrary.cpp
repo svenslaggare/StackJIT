@@ -11,7 +11,9 @@
 #include "functionsignature.h"
 #include <iostream>
 
-extern VMState vmState;
+namespace Runtime {
+	VMState vmState;
+};
 
 void Runtime::printStackFrame(RegisterValue* basePtr, ManagedFunction* func) {
 	using namespace Runtime::Internal;
