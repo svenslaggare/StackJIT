@@ -1,7 +1,7 @@
-#include "objects.h"
-#include "classmetadata.h"
-#include "type.h"
-#include "stackjit.h"
+#include "../type/objects.h"
+#include "../type/classmetadata.h"
+#include "../type/type.h"
+#include "../stackjit.h"
 
 //Field ref
 template<typename T>

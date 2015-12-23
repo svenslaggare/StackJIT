@@ -1,9 +1,9 @@
 #pragma once
-#include "binder.h"
-#include "gc.h"
+#include "type/classmetadata.h"
+#include "type/typeprovider.h"
+#include "compiler/binder.h"
+#include "runtime/gc.h"
 #include "executionengine.h"
-#include "typeprovider.h"
-#include "classmetadata.h"
 
 //Contains the state of the VM
 class VMState {

@@ -1,7 +1,7 @@
 #pragma once
 #include <functional>
 #include <deque>
-#include "stackjit.h"
+#include "../stackjit.h"
 
 class ManagedFunction;
 class Type;

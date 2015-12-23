@@ -1,6 +1,6 @@
 #pragma once
 #include "amd64.h"
-#include "stackjit.h"
+#include "../stackjit.h"
 
 struct FunctionCompilationData;
 class MemoryManager;

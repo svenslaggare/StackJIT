@@ -1,6 +1,6 @@
 #include "exceptions.h"
-#include "rtlibrary.h"
-#include "function.h"
+#include "../runtime/rtlibrary.h"
+#include "../function.h"
 #include "jit.h"
 #include "callingconvention.h"
 #include <string.h>

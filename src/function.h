@@ -1,6 +1,6 @@
 #pragma once
 #include "instructions.h"
-#include "classmetadata.h"
+#include "type/classmetadata.h"
 #include <vector>
 #include <string>
 #include <functional>

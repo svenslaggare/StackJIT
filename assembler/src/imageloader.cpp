@@ -1,2 +1,2 @@
 #include "imageloader.h"
-#include "../../src/imageloader.cpp"
+#include "../../src/loader/imageloader.cpp"

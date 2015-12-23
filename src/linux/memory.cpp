@@ -1,6 +1,6 @@
 #ifdef __unix__
 #include "../memory.h"
-#include "../jit.h"
+#include "../compiler/jit.h"
 #include "../function.h"
 #include <iostream>
 #include <sys/mman.h>

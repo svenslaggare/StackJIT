@@ -1,7 +1,7 @@
 #pragma once
-#include "objects.h"
-#include "objectref.h"
-#include "stackjit.h"
+#include "../type/objects.h"
+#include "../type/objectref.h"
+#include "../stackjit.h"
 #include <unordered_map>
 #include <vector>
 #include <chrono>

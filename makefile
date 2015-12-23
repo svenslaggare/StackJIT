@@ -6,7 +6,7 @@ SRC_DIR=src
 OBJ_DIR=obj
 TESTS_DIR=tests
 EXECUTABLE=stackjit
-FOLDERS=$(OBJ_DIR)/linux $(OBJ_DIR)/windows
+FOLDERS=$(OBJ_DIR)/linux $(OBJ_DIR)/windows $(OBJ_DIR)/compiler $(OBJ_DIR)/loader $(OBJ_DIR)/runtime $(OBJ_DIR)/test $(OBJ_DIR)/type
 
 ASSEMBLER_DIR=assembler
 RTLIB=rtlib
@@ -64,7 +64,7 @@ test: $(TEST_RUNNERS_DIR) $(TEST_EXECUTABLES)
 
 $(TEST_RUNNERS_DIR)/%: $(TESTS_DIR)/%.h $(OBJ_DIR) $(EXECUTABLE) $(RTLIB_OUT) $(TEST_OBJECTS)
 	cxxtestgen --error-printer -o $@-runner.cpp $<
-	$(CXXC) $(CXXFLAGS) -o $@ -I $(CXXTEST) $(TEST_OBJECTS) $@-runner.cpp
+	$(CXXC) $(CXXFLAGS) -o $@ -I $(CXXTEST) $(TEST_OBJECTS) $@-runner.cpp -DUSE_VALGRIND=$(TEST_WITH_VALGRIND)
 	./$@
 
 clean:

@@ -1,5 +1,4 @@
 #include "function.h"
-#include "codegenerator.h"
 
 ManagedFunction::ManagedFunction(const FunctionDefinition& definition)
 	: mDefinition(definition),

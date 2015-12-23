@@ -1,5 +1,4 @@
 #pragma once
-
 class VMState;
 
 //Exposes native functions used in tests

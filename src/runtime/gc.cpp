@@ -1,10 +1,10 @@
 #include "gc.h"
-#include "type.h"
-#include "vmstate.h"
-#include "objects.h"
-#include "amd64.h"
-#include "stackjit.h"
-#include "helpers.h"
+#include "../type/type.h"
+#include "../vmstate.h"
+#include "../type/objects.h"
+#include "../compiler/amd64.h"
+#include "../stackjit.h"
+#include "../helpers.h"
 #include <iostream>
 #include <string.h>
 

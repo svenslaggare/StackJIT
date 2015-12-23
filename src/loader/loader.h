@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "vmstate.h"
+#include "../vmstate.h"
 #include "parser.h"
 
 class Assembly;

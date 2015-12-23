@@ -1,8 +1,8 @@
-#include "loader.h"
+#include "loader/loader.h"
 #include "vmstate.h"
 #include "executionengine.h"
 #include "helpers.h"
-#include "rtlibrary.h"
+#include "runtime/rtlibrary.h"
 #include <iostream>
 #include <fstream>
 #include <chrono>

@@ -1,7 +1,7 @@
 #include <cxxtest/TestSuite.h>
 #include <vector>
 
-#include "../src/amd64.h"
+#include "../src/compiler/amd64.h"
 
 class Amd64Suite : public CxxTest::TestSuite {
 public:

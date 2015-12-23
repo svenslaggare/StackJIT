@@ -1,6 +1,6 @@
 #pragma once
 #if defined(_WIN64) || defined(__MINGW32__)
-#include "../amd64.h"
+#include "../compiler/amd64.h"
 
 //The register for function arguments
 namespace RegisterCallArguments {

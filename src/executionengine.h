@@ -1,10 +1,10 @@
 #pragma once
-#include "binder.h"
-#include "jit.h"
-#include "parser.h"
-#include "callstack.h"
-#include "imageloader.h"
-#include "imagecontainer.h"
+#include "compiler/binder.h"
+#include "compiler/jit.h"
+#include "loader/parser.h"
+#include "runtime/callstack.h"
+#include "loader/imageloader.h"
+#include "loader/imagecontainer.h"
 #include <vector>
 #include <unordered_map>
 

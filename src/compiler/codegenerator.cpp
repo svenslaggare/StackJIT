@@ -1,15 +1,14 @@
 #include "codegenerator.h"
-#include "verifier.h"
-#include "type.h"
-#include "vmstate.h"
-#include "rtlibrary.h"
-#include "function.h"
-#include "instructions.h"
+#include "../type/type.h"
+#include "../vmstate.h"
+#include "../runtime/rtlibrary.h"
+#include "../function.h"
+#include "../instructions.h"
 #include "exceptions.h"
-#include "stackjit.h"
-#include "helpers.h"
+#include "../stackjit.h"
+#include "../helpers.h"
 #include "callingconvention.h"
-#include "functionsignature.h"
+#include "../functionsignature.h"
 #include <string.h>
 #include <iostream>
 

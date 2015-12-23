@@ -1,63 +1,15 @@
 #include "executionengine.h"
 #include "vmstate.h"
-#include "binder.h"
 #include "function.h"
-#include "verifier.h"
-#include "type.h"
-#include "loader.h"
-#include "native.h"
-#include "imageloader.h"
-#include "test.h"
+#include "loader/verifier.h"
+#include "type/type.h"
+#include "loader/loader.h"
+#include "runtime/native.h"
+#include "test/test.h"
 #include "functionsignature.h"
 #include <iostream>
 #include <stdexcept>
 #include <fstream>
-
-ImageContainer::ImageContainer() {
-
-}
-
-ImageContainer::~ImageContainer() {
-	for (auto image : mImages) {
-		delete image;
-	}
-}
-
-const std::vector<AssemblyImage*>& ImageContainer::images() const {
-	return mImages;
-}
-
-void ImageContainer::addImage(AssemblyImage* image) {
-	mImages.push_back(image);
-
-	for (auto& classDef : image->classes()) {
-		mClassToImage.insert({ classDef.first, image });
-	}
-
-	for (auto& func : image->functions()) {
-		mFuncToImage.insert({ func.first, image });
-	}
-}
-
-const AssemblyParser::Function* ImageContainer::getFunction(std::string function) const {
-	if (mFuncToImage.count(function) > 0) {
-		return &mFuncToImage.at(function)->functions().at(function);
-	}
-
-	return nullptr;
-}
-
-void ImageContainer::loadFunctionBody(std::string function) {
-	if (mFuncToImage.count(function) > 0) {
-		mFuncToImage[function]->loadFunctionBody(function);
-	}
-}
-
-void ImageContainer::loadClassBody(std::string className) {
-	if (mClassToImage.count(className) > 0) {
-		mClassToImage[className]->loadClassBody(className);
-	}
-}
 
 ExecutionEngine::ExecutionEngine(VMState& vmState)
 	: mVMState(vmState), mJIT(vmState), mCallStack(2000) {

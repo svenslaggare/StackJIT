@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 #include <functional>
-#include "parser.h"
+#include "loader/parser.h"
 
 //Generates StackByteCode from the assembler parser structure
 namespace ByteCodeGenerator {

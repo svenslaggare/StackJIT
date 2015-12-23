@@ -1,5 +1,5 @@
 #pragma once
-#include "instructionset.h"
+#include "../instructionset.h"
 #include <vector>
 #include <string>
 #include <unordered_map>

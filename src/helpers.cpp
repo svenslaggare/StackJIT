@@ -1,5 +1,4 @@
 #include "helpers.h"
-#include "amd64.h"
 
 void Helpers::setInt(std::vector<unsigned char>& source, std::size_t startIndex, int value) {
 	IntToBytes converter;

@@ -1,5 +1,5 @@
 #pragma once
-#include "objectref.h"
+#include "../type/objectref.h"
 
 class VMState;
 class Type;

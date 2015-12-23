@@ -1,7 +1,8 @@
 #pragma once
 #include <stack>
 #include <string>
-#include "vmstate.h"
+#include "../vmstate.h"
+#include "../instructions.h"
 
 class ManagedFunction;
 class VMState;

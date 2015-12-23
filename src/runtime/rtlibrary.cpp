@@ -1,14 +1,14 @@
 #include "rtlibrary.h"
-#include "amd64.h"
-#include "objects.h"
-#include "vmstate.h"
-#include "function.h"
-#include "type.h"
+#include "../compiler/amd64.h"
+#include "../type/objects.h"
+#include "../vmstate.h"
+#include "../function.h"
+#include "../type/type.h"
 #include "stackframe.h"
-#include "helpers.h"
-#include "stackjit.h"
+#include "../helpers.h"
+#include "../stackjit.h"
 #include "native.h"
-#include "functionsignature.h"
+#include "../functionsignature.h"
 #include <iostream>
 
 namespace Runtime {

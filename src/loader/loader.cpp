@@ -1,10 +1,10 @@
 #include "loader.h"
 #include "parser.h"
-#include "function.h"
-#include "vmstate.h"
-#include "instructions.h"
-#include "type.h"
-#include "functionsignature.h"
+#include "../function.h"
+#include "../vmstate.h"
+#include "../instructions.h"
+#include "../type/type.h"
+#include "../functionsignature.h"
 #include <stdexcept>
 #include <iostream>
 

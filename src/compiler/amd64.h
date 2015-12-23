@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include "stackjit.h"
+#include "../stackjit.h"
 
 //Converts between primitive types and char arrays
 union ShortToBytes {

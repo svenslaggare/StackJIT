@@ -1,11 +1,10 @@
 #include "verifier.h"
-#include "vmstate.h"
-#include "function.h"
-#include "instructions.h"
-#include "type.h"
-#include "classmetadata.h"
-#include "functionsignature.h"
-
+#include "../vmstate.h"
+#include "../function.h"
+#include "../instructions.h"
+#include "../type/type.h"
+#include "../type/classmetadata.h"
+#include "../functionsignature.h"
 #include <iostream>
 #include <vector>
 
