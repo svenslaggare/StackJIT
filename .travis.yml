@@ -1,15 +1,15 @@
 language: cpp
 compiler: clang
 before_install:
-    - sudo apt-get install python-ply
-    - wget -q https://launchpad.net/ubuntu/+archive/primary/+files/cxxtest_4.4-1_all.deb
-    - sudo dpkg -i cxxtest_4.4-1_all.deb
+    - git clone -q --branch=master https://github.com/svenslaggare/CxxTest.git
+    - export CXXTEST=/home/travis/build/svenslaggare/StackJIT/CxxTest
+    - export PATH=$PATH:/home/travis/build/svenslaggare/StackJIT/CxxTest/bin
+    - sudo chmod +x CxxTest/bin/cxxtestgen
     - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
     - sudo apt-get update -qq
 install:
     - sudo apt-get install -qq g++-4.9
     - sudo apt-get install -qq valgrind
-env: CXXTEST=/usr/include
 script:
     - make test-valgrind
     - make -C assembler test

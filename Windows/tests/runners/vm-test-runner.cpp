@@ -77,61 +77,61 @@ public:
 
 static class TestDescription_suite_VMTestSuite_testException : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_VMTestSuite_testException() : CxxTest::RealTestDescription( Tests_VMTestSuite, suiteDescription_VMTestSuite, 344, "testException" ) {}
+ TestDescription_suite_VMTestSuite_testException() : CxxTest::RealTestDescription( Tests_VMTestSuite, suiteDescription_VMTestSuite, 350, "testException" ) {}
  void runTest() { suite_VMTestSuite.testException(); }
 } testDescription_suite_VMTestSuite_testException;
 
 static class TestDescription_suite_VMTestSuite_testGCExplicit : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_VMTestSuite_testGCExplicit() : CxxTest::RealTestDescription( Tests_VMTestSuite, suiteDescription_VMTestSuite, 359, "testGCExplicit" ) {}
+ TestDescription_suite_VMTestSuite_testGCExplicit() : CxxTest::RealTestDescription( Tests_VMTestSuite, suiteDescription_VMTestSuite, 365, "testGCExplicit" ) {}
  void runTest() { suite_VMTestSuite.testGCExplicit(); }
 } testDescription_suite_VMTestSuite_testGCExplicit;
 
 static class TestDescription_suite_VMTestSuite_testGCImplicit : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_VMTestSuite_testGCImplicit() : CxxTest::RealTestDescription( Tests_VMTestSuite, suiteDescription_VMTestSuite, 424, "testGCImplicit" ) {}
+ TestDescription_suite_VMTestSuite_testGCImplicit() : CxxTest::RealTestDescription( Tests_VMTestSuite, suiteDescription_VMTestSuite, 430, "testGCImplicit" ) {}
  void runTest() { suite_VMTestSuite.testGCImplicit(); }
 } testDescription_suite_VMTestSuite_testGCImplicit;
 
 static class TestDescription_suite_VMTestSuite_testFunction : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_VMTestSuite_testFunction() : CxxTest::RealTestDescription( Tests_VMTestSuite, suiteDescription_VMTestSuite, 446, "testFunction" ) {}
+ TestDescription_suite_VMTestSuite_testFunction() : CxxTest::RealTestDescription( Tests_VMTestSuite, suiteDescription_VMTestSuite, 452, "testFunction" ) {}
  void runTest() { suite_VMTestSuite.testFunction(); }
 } testDescription_suite_VMTestSuite_testFunction;
 
 static class TestDescription_suite_VMTestSuite_testInvalid : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_VMTestSuite_testInvalid() : CxxTest::RealTestDescription( Tests_VMTestSuite, suiteDescription_VMTestSuite, 457, "testInvalid" ) {}
+ TestDescription_suite_VMTestSuite_testInvalid() : CxxTest::RealTestDescription( Tests_VMTestSuite, suiteDescription_VMTestSuite, 463, "testInvalid" ) {}
  void runTest() { suite_VMTestSuite.testInvalid(); }
 } testDescription_suite_VMTestSuite_testInvalid;
 
 static class TestDescription_suite_VMTestSuite_testLibrary : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_VMTestSuite_testLibrary() : CxxTest::RealTestDescription( Tests_VMTestSuite, suiteDescription_VMTestSuite, 468, "testLibrary" ) {}
+ TestDescription_suite_VMTestSuite_testLibrary() : CxxTest::RealTestDescription( Tests_VMTestSuite, suiteDescription_VMTestSuite, 474, "testLibrary" ) {}
  void runTest() { suite_VMTestSuite.testLibrary(); }
 } testDescription_suite_VMTestSuite_testLibrary;
 
 static class TestDescription_suite_VMTestSuite_testRuntimeLibrary : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_VMTestSuite_testRuntimeLibrary() : CxxTest::RealTestDescription( Tests_VMTestSuite, suiteDescription_VMTestSuite, 510, "testRuntimeLibrary" ) {}
+ TestDescription_suite_VMTestSuite_testRuntimeLibrary() : CxxTest::RealTestDescription( Tests_VMTestSuite, suiteDescription_VMTestSuite, 516, "testRuntimeLibrary" ) {}
  void runTest() { suite_VMTestSuite.testRuntimeLibrary(); }
 } testDescription_suite_VMTestSuite_testRuntimeLibrary;
 
 static class TestDescription_suite_VMTestSuite_testNative : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_VMTestSuite_testNative() : CxxTest::RealTestDescription( Tests_VMTestSuite, suiteDescription_VMTestSuite, 522, "testNative" ) {}
+ TestDescription_suite_VMTestSuite_testNative() : CxxTest::RealTestDescription( Tests_VMTestSuite, suiteDescription_VMTestSuite, 528, "testNative" ) {}
  void runTest() { suite_VMTestSuite.testNative(); }
 } testDescription_suite_VMTestSuite_testNative;
 
 static class TestDescription_suite_VMTestSuite_testAttributes : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_VMTestSuite_testAttributes() : CxxTest::RealTestDescription( Tests_VMTestSuite, suiteDescription_VMTestSuite, 527, "testAttributes" ) {}
+ TestDescription_suite_VMTestSuite_testAttributes() : CxxTest::RealTestDescription( Tests_VMTestSuite, suiteDescription_VMTestSuite, 533, "testAttributes" ) {}
  void runTest() { suite_VMTestSuite.testAttributes(); }
 } testDescription_suite_VMTestSuite_testAttributes;
 
 static class TestDescription_suite_VMTestSuite_testLazy : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_VMTestSuite_testLazy() : CxxTest::RealTestDescription( Tests_VMTestSuite, suiteDescription_VMTestSuite, 532, "testLazy" ) {}
+ TestDescription_suite_VMTestSuite_testLazy() : CxxTest::RealTestDescription( Tests_VMTestSuite, suiteDescription_VMTestSuite, 538, "testLazy" ) {}
  void runTest() { suite_VMTestSuite.testLazy(); }
 } testDescription_suite_VMTestSuite_testLazy;
 
