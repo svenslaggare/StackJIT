@@ -3,7 +3,7 @@
 #include "../compiler/callingconvention.h"
 #include "../compiler/jit.h"
 #include "../function.h"
-#include "../type.h"
+#include "../type/type.h"
 #include <iostream>
 
 namespace {
