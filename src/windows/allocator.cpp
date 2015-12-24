@@ -11,7 +11,7 @@ void* Allocator::allocate(std::size_t size) {
 }
 
 void Allocator::deallocate(void* mem, std::size_t size) {
-	VirtualProtect(mStart, mSize, PAGE_EXECUTE_READ, nullptr);
+	VirtualProtect(mem, size, PAGE_EXECUTE_READ, nullptr);
 }
 
 bool Allocator::makeExecutable(void* mem, std::size_t size) {

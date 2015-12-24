@@ -1,5 +1,11 @@
 #pragma once
+
+#ifdef __unix__
+#include <cstring>
+#else
 #include <cstddef>
+#endif
+
 
 //Represents a memory allocator
 namespace Allocator {
