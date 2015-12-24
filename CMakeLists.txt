@@ -26,6 +26,7 @@ set(SOURCE_FILES
         src/loader/loader.cpp
         src/loader/loader.h
         src/compiler/memory.h
+        src/compiler/memory.cpp
         src/runtime/native.cpp
         src/runtime/native.h
         src/type/objects.cpp
@@ -58,10 +59,8 @@ set(SOURCE_FILES
         src/compiler/exceptions.cpp
         src/runtime/callstack.h
         src/runtime/callstack.cpp
-        src/linux/memory.cpp
         src/linux/callingconvention.h
         src/linux/callingconvetion.cpp
-        src/windows/memory.cpp
         src/windows/callingconvention.h
         src/windows/callingconvetion.cpp
         src/bytecodegenerator.h
@@ -73,7 +72,10 @@ set(SOURCE_FILES
         src/compiler/compilationdata.cpp
         src/compiler/compilationdata.h
         src/loader/imagecontainer.cpp
-        src/loader/imagecontainer.h)
+        src/loader/imagecontainer.h
+        src/compiler/allocator.h
+        src/linux/allocator.cpp
+        src/windows/allocator.cpp)
 
 # Project structure for VS
 SOURCE_GROUP(base "src/(.*)\\.((cpp)|(h))")

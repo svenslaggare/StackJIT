@@ -1,9 +1,8 @@
-#ifdef __unix__
-#include "../memory.h"
+#include "memory.h"
+#include "allocator.h"
 #include "../compiler/jit.h"
 #include "../core/function.h"
 #include <iostream>
-#include <sys/mman.h>
 
 CodePage::CodePage(void* start, std::size_t size)
 	: mStart(start), mSize(size), mUsed(0) {
@@ -11,7 +10,7 @@ CodePage::CodePage(void* start, std::size_t size)
 }
 
 CodePage::~CodePage() {
-	munmap(mStart, mSize);
+	Allocator::deallocate(mStart, mSize);
 }
 
 void* CodePage::start() const {
@@ -37,9 +36,7 @@ void* CodePage::allocateMemory(std::size_t size) {
 }
 
 void CodePage::makeExecutable() {
-	int success = mprotect(mStart, mSize, PROT_EXEC | PROT_READ);
-
-	if (success != 0) {
+	if (!Allocator::makeExecutable(mStart, mSize)) {
 		throw std::runtime_error("Unable to make memory executable.");
 	}
 }
@@ -58,15 +55,8 @@ CodePage* MemoryManager::newPage(std::size_t size) {
 	//Align to page size
 	size = ((size + PAGE_SIZE - 1) / PAGE_SIZE) * PAGE_SIZE;
 
-	void *mem = mmap(
-		nullptr,
-		size,
-		PROT_WRITE | PROT_READ | PROT_EXEC,
-		MAP_ANON | MAP_PRIVATE,
-		-1,
-		0);
-
-	if (mem == MAP_FAILED) {
+	void *mem = Allocator::allocate(size);
+	if (mem == nullptr) {
 		throw std::runtime_error("Unable to allocate memory.");
 	}
 
@@ -98,4 +88,3 @@ void MemoryManager::makeMemoryExecutable() {
 		codePage->makeExecutable();
 	}
 }
-#endif
