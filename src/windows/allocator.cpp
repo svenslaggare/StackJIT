@@ -11,10 +11,10 @@ void* Allocator::allocate(std::size_t size) {
 }
 
 void Allocator::deallocate(void* mem, std::size_t size) {
-	VirtualProtect(mem, size, PAGE_EXECUTE_READ, nullptr);
+	VirtualFree(mem, size, MEM_RELEASE);
 }
 
 bool Allocator::makeExecutable(void* mem, std::size_t size) {
-	return mprotect(mem, size, PROT_EXEC | PROT_READ) == 0;
+	return VirtualProtect(mem, size, PAGE_EXECUTE_READ, nullptr) == 0;
 }
 #endif
