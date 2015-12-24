@@ -38,8 +38,10 @@ std::string executeCmd(const char* cmd) {
 }
 
 #if defined(_WIN64) || defined(__MINGW32__)
-std::string executable = "StackJIT.exe";
-std::string baseDir = "../../../";
+//std::string executable = "stackjit.exe";
+//std::string baseDir = "../../";
+std::string executable = "Debug\\stackjit.exe";
+std::string baseDir = "../";
 std::string programsPath = baseDir + "programs";
 #else
 std::string executable = "./stackjit";
@@ -58,7 +60,6 @@ std::string invokeVM(std::string programName, std::string options = "--no-rtlib 
     std::string invokePath =
         valgrindExecutable + executable + " " + options
         + " < " + programsPath + "/" + programName + ".txt 2>&1";
-
 	return executeCmd(invokePath.data());
 }
 
@@ -139,7 +140,7 @@ std::string parseGCData(std::string data, GCTest& gcTest) {
 
 class VMTestSuite : public CxxTest::TestSuite {
 public:
-    void testBasic() {
+	void testBasic() {
         TS_ASSERT_EQUALS(invokeVM("basic/program1"), "100\n");
         TS_ASSERT_EQUALS(invokeVM("basic/program2"), "3\n");
         TS_ASSERT_EQUALS(invokeVM("basic/program3"), "15\n");

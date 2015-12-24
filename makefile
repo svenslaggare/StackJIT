@@ -13,6 +13,8 @@ RTLIB=rtlib
 
 TEST_WITH_VALGRIND=0
 
+WINDOWS_DIR=Windows2
+
 # Rules
 SOURCES=$(wildcard $(SRC_DIR)/*.cpp)
 HEADERS=$(wildcard $(SRC_DIR)/*.h)

@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.3)
 project(StackJIT)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 set(SOURCE_FILES
         src/compiler/amd64.cpp
@@ -32,7 +34,6 @@ set(SOURCE_FILES
         src/loader/parser.h
         src/runtime/rtlibrary.cpp
         src/runtime/rtlibrary.h
-        src/stackjit.cpp
         src/stackjit.h
         src/type/classmetadata.cpp
         src/type/classmetadata.h
@@ -74,7 +75,42 @@ set(SOURCE_FILES
         src/loader/imagecontainer.cpp
         src/loader/imagecontainer.h)
 
-add_executable(stackjit ${SOURCE_FILES})
+# Project structure for VS
+SOURCE_GROUP(base "src/(.*)\\.((cpp)|(h))")
+SOURCE_GROUP(compiler "src/compiler/(.*)")
+SOURCE_GROUP(loader REGULAR_EXPRESSION "src/loader/(.*)")
+SOURCE_GROUP(runtime REGULAR_EXPRESSION "src/runtime/(.*)")
+SOURCE_GROUP(type REGULAR_EXPRESSION "src/type/(.*)")
+SOURCE_GROUP(test REGULAR_EXPRESSION "src/test/(.*)")
+SOURCE_GROUP(windows REGULAR_EXPRESSION "src/windows/(.*)")
+SOURCE_GROUP(linux REGULAR_EXPRESSION "src/linux/(.*)")
+
+add_executable(stackjit ${SOURCE_FILES} src/stackjit.cpp)
+
+# StackAssembler
+set(STACK_ASSEMBLER_SOURCE_FILES
+    "assembler/src/assembler.cpp"
+    "assembler/src/assembler.h"
+    "assembler/src/bytecodegenerator.cpp"
+    "assembler/src/bytecodegenerator.h"
+    "assembler/src/imageloader.cpp"
+    "assembler/src/imageloader.h"
+    "assembler/src/parser.cpp"
+    "assembler/src/parser.h")
+
+add_executable(stackasm ${STACK_ASSEMBLER_SOURCE_FILES} assembler/src/stackasm.cpp)
+
+# Build the runtime library
+set(RUNTIME_LIBRARY_FOLDER rtlib)
+set(RUNTIME_LIBRARY Debug/${RUNTIME_LIBRARY_FOLDER}/rtlib.simg)
+file(GLOB RUNTIME_LIBRARY_FILES ${RUNTIME_LIBRARY_FOLDER}/*.sbc)
+
+add_custom_command(
+  OUTPUT ${RUNTIME_LIBRARY}
+  COMMAND stackasm ${RUNTIME_LIBRARY_FILES} -o ${RUNTIME_LIBRARY}
+  VERBATIM)
+
+add_custom_target(BuildRuntimeLibrary ALL DEPENDS ${RUNTIME_LIBRARY})
 
 # Tests
 set(TESTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
@@ -83,6 +119,9 @@ find_package(CxxTest)
 if(CXXTEST_FOUND)
     include_directories(${CXXTEST_INCLUDE_DIR})
     enable_testing()
+
     CXXTEST_ADD_TEST(tests-vm test-vm-runner.cpp ${TESTS_DIR}/vm-test.h ${SOURCE_FILES})
+    add_dependencies(tests-vm BuildRuntimeLibrary stackjit)
+
     CXXTEST_ADD_TEST(tests-amd64 test-amd64-runner.cpp ${TESTS_DIR}/amd64-test.h ${SOURCE_FILES})
 endif()
