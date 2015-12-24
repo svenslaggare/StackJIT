@@ -2,7 +2,7 @@
 #include <stack>
 #include <string>
 #include "../vmstate.h"
-#include "../instructions.h"
+#include "../core/instruction.h"
 
 class ManagedFunction;
 class VMState;

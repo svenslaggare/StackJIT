@@ -1,12 +1,12 @@
 #include "executionengine.h"
 #include "vmstate.h"
-#include "function.h"
+#include "core/function.h"
 #include "loader/verifier.h"
 #include "type/type.h"
 #include "loader/loader.h"
 #include "runtime/native.h"
 #include "test/test.h"
-#include "functionsignature.h"
+#include "core/functionsignature.h"
 #include <iostream>
 #include <stdexcept>
 #include <fstream>

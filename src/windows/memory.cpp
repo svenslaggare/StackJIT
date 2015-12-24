@@ -1,7 +1,7 @@
 #if defined(_WIN64) || defined(__MINGW32__)
 #include "../compiler/memory.h"
 #include "../compiler/jit.h"
-#include "../function.h"
+#include "../core/function.h"
 #include <iostream>
 #include <Windows.h>
 

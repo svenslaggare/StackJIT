@@ -1,5 +1,5 @@
 #include "stackframe.h"
-#include "../function.h"
+#include "../core/function.h"
 
 StackFrameEntry::StackFrameEntry(RegisterValue value, const Type* type)
 	: value(value), type(type) {

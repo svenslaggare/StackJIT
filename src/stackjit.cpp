@@ -2,7 +2,7 @@
 #include "vmstate.h"
 #include "executionengine.h"
 #include "helpers.h"
-#include "runtime/rtlibrary.h"
+#include "runtime/runtime.h"
 #include <iostream>
 #include <fstream>
 #include <chrono>

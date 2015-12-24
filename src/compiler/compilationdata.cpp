@@ -1,5 +1,5 @@
 #include "compilationdata.h"
-#include "../function.h"
+#include "../core/function.h"
 
 BranchTarget::BranchTarget(unsigned int target, unsigned int instructionSize)
 	: target(target), instructionSize(instructionSize) {

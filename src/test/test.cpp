@@ -1,7 +1,7 @@
 #include <iostream>
 #include "test.h"
 #include "../vmstate.h"
-#include "../runtime/rtlibrary.h"
+#include "../runtime/runtime.h"
 
 int fibonacci(int n) {
 	if (n <= 1) {

@@ -4,10 +4,10 @@
 #include "../type/type.h"
 #include "../vmstate.h"
 #include "binder.h"
-#include "../function.h"
+#include "../core/function.h"
 #include "../helpers.h"
 #include "memory.h"
-#include "../functionsignature.h"
+#include "../core/functionsignature.h"
 #include <string.h>
 #include <iostream>
 #include <fstream>

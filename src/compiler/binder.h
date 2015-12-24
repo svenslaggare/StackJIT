@@ -1,7 +1,7 @@
 #pragma once
 #include <unordered_map>
 #include <string>
-#include "../function.h"
+#include "../core/function.h"
 
 class Type;
 class ClassType;

@@ -1,5 +1,5 @@
 #include "parser.h"
-#include "../instructions.h"
+#include "../core/instruction.h"
 #include <cctype>
 #include <string>
 #include <iostream>

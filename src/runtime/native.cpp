@@ -1,7 +1,7 @@
 #include "native.h"
 #include "../vmstate.h"
-#include "rtlibrary.h"
-#include "../function.h"
+#include "runtime.h"
+#include "../core/function.h"
 #include <iostream>
 #include <math.h>
 #include <string.h>

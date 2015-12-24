@@ -10,7 +10,7 @@ class Type;
 class ClassType;
 class ArrayType;
 
-//The runtime library
+//Defines the runtime
 namespace Runtime {
 	//The global VM state
 	extern VMState vmState;

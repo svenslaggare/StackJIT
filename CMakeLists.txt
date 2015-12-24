@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.3)
 project(StackJIT)
 
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+endif()
 
 set(SOURCE_FILES
         src/compiler/amd64.cpp
@@ -15,12 +15,12 @@ set(SOURCE_FILES
         src/compiler/codegenerator.h
         src/executionengine.cpp
         src/executionengine.h
-        src/function.cpp
-        src/function.h
+        src/core/function.cpp
+        src/core/function.h
         src/runtime/gc.cpp
         src/runtime/gc.h
-        src/instructions.cpp
-        src/instructions.h
+        src/core/instruction.cpp
+        src/core/instruction.h
         src/compiler/jit.cpp
         src/compiler/jit.h
         src/loader/loader.cpp
@@ -32,8 +32,8 @@ set(SOURCE_FILES
         src/type/objects.h
         src/loader/parser.cpp
         src/loader/parser.h
-        src/runtime/rtlibrary.cpp
-        src/runtime/rtlibrary.h
+        src/runtime/runtime.cpp
+        src/runtime/runtime.h
         src/stackjit.h
         src/type/classmetadata.cpp
         src/type/classmetadata.h
@@ -49,7 +49,7 @@ set(SOURCE_FILES
         src/type/objectref.cpp
         src/runtime/stackframe.h
         src/runtime/stackframe.cpp
-        src/instructionset.h
+        src/core/instructionset.h
         src/helpers.h
         src/helpers.cpp
         src/test/test.h
@@ -68,8 +68,8 @@ set(SOURCE_FILES
         src/bytecodegenerator.cpp
         src/loader/imageloader.h
         src/loader/imageloader.cpp
-        src/functionsignature.cpp
-        src/functionsignature.h
+        src/core/functionsignature.cpp
+        src/core/functionsignature.h
         src/compiler/compilationdata.cpp
         src/compiler/compilationdata.h
         src/loader/imagecontainer.cpp
@@ -77,6 +77,7 @@ set(SOURCE_FILES
 
 # Project structure for VS
 SOURCE_GROUP(base "src/(.*)\\.((cpp)|(h))")
+SOURCE_GROUP(core "src/core/(.*)")
 SOURCE_GROUP(compiler "src/compiler/(.*)")
 SOURCE_GROUP(loader REGULAR_EXPRESSION "src/loader/(.*)")
 SOURCE_GROUP(runtime REGULAR_EXPRESSION "src/runtime/(.*)")

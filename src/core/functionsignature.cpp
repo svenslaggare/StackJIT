@@ -1,5 +1,5 @@
 #include "functionsignature.h"
-#include "type/type.h"
+#include "../type/type.h"
 #include "function.h"
 
 std::string FunctionSignature::str() const {

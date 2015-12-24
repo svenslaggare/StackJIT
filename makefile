@@ -6,7 +6,7 @@ SRC_DIR=src
 OBJ_DIR=obj
 TESTS_DIR=tests
 EXECUTABLE=stackjit
-FOLDERS=$(OBJ_DIR)/linux $(OBJ_DIR)/windows $(OBJ_DIR)/compiler $(OBJ_DIR)/loader $(OBJ_DIR)/runtime $(OBJ_DIR)/test $(OBJ_DIR)/type
+FOLDERS=$(OBJ_DIR)/linux $(OBJ_DIR)/windows $(OBJ_DIR)/core $(OBJ_DIR)/compiler $(OBJ_DIR)/loader $(OBJ_DIR)/runtime $(OBJ_DIR)/test $(OBJ_DIR)/type
 
 ASSEMBLER_DIR=assembler
 RTLIB=rtlib

@@ -1,6 +1,6 @@
 #pragma once
 #include "amd64.h"
-#include "../function.h"
+#include "../core/function.h"
 #include "binder.h"
 #include <string>
 #include <functional>

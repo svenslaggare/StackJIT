@@ -1,4 +1,4 @@
-#include "instructions.h"
+#include "instruction.h"
 
 Instruction::Instruction()
     : mOpCode(OpCodes::NOP), floatValue(0), intValue(0), charValue(0) {

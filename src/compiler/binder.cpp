@@ -1,6 +1,6 @@
 #include "binder.h"
 #include "../type/type.h"
-#include "../functionsignature.h"
+#include "../core/functionsignature.h"
 #include <iostream>
 
 const std::unordered_map<std::string, FunctionDefinition>& Binder::functionTable() const {
