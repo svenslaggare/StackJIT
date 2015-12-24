@@ -30,8 +30,8 @@ make test
 ```
 
 ### Windows
-Requires Visual Studio 2015.
-The tests requires, [CXXTest](http://cxxtest.com/) unpacked at `C:/CXXTest`.
+Requires Visual Studio 2015 and CMake.
+The tests requires, [CXXTest](http://cxxtest.com/).
 
 The following command installs it:
 ```
@@ -39,7 +39,12 @@ git clone -q --branch=master https://github.com/svenslaggare/CxxTest.git C:\CXXT
 set PATH=%PATH%;C:\CXXTest\bin
 ```
 
-To build the project, open the solution file in the Windows folder.
+To create the solution file run:
+```
+mkdir Windows
+cd Windows
+cmake -G "Visual Studio 14 2015 Win64" ..\
+```
 
 ## Documentation
 See the [documentation folder](https://github.com/svenslaggare/StackJIT/tree/master/documentation).
