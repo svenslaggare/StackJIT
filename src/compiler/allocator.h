@@ -1,5 +1,5 @@
 #pragma once
-#include <cstdint>
+#include <cstddef>
 
 //Represents a memory allocator
 namespace Allocator {
