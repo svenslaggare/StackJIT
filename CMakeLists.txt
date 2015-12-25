@@ -105,15 +105,27 @@ add_executable(stackasm ${STACK_ASSEMBLER_SOURCE_FILES} assembler/src/stackasm.c
 
 # Build the runtime library
 set(RUNTIME_LIBRARY_FOLDER rtlib)
-set(RUNTIME_LIBRARY Debug/${RUNTIME_LIBRARY_FOLDER}/rtlib.simg)
 file(GLOB RUNTIME_LIBRARY_FILES ${RUNTIME_LIBRARY_FOLDER}/*.sbc)
 
-add_custom_command(
-  OUTPUT ${RUNTIME_LIBRARY}
-  COMMAND stackasm ${RUNTIME_LIBRARY_FILES} -o ${RUNTIME_LIBRARY}
-  VERBATIM)
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    set(RUNTIME_LIBRARY Debug/${RUNTIME_LIBRARY_FOLDER}/rtlib.simg)
 
-add_custom_target(BuildRuntimeLibrary ALL DEPENDS ${RUNTIME_LIBRARY})
+    add_custom_command(
+        OUTPUT ${RUNTIME_LIBRARY}
+        COMMAND stackasm ${RUNTIME_LIBRARY_FILES} -o ${RUNTIME_LIBRARY}
+        VERBATIM)
+endif()
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    set(RUNTIME_LIBRARY ${RUNTIME_LIBRARY_FOLDER}/rtlib.simg)
+
+    add_custom_command(
+            OUTPUT ${RUNTIME_LIBRARY}
+            COMMAND ./stackasm ${RUNTIME_LIBRARY_FILES} -o ${RUNTIME_LIBRARY}
+            VERBATIM)
+endif()
+
+add_custom_target(BuildRuntimeLibrary ALL DEPENDS ${RUNTIME_LIBRARY} stackasm)
 
 # Tests
 set(TESTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
