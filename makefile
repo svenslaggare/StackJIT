@@ -6,7 +6,6 @@ SRC_DIR=src
 OBJ_DIR=obj
 TESTS_DIR=tests
 EXECUTABLE=stackjit
-FOLDERS=$(OBJ_DIR)/linux $(OBJ_DIR)/windows $(OBJ_DIR)/core $(OBJ_DIR)/compiler $(OBJ_DIR)/loader $(OBJ_DIR)/runtime $(OBJ_DIR)/test $(OBJ_DIR)/type
 
 ASSEMBLER_DIR=assembler
 RTLIB=rtlib
@@ -16,6 +15,9 @@ TEST_WITH_VALGRIND=0
 WINDOWS_DIR=Windows2
 
 # Rules
+_FOLDERS=$(sort $(dir $(wildcard $(SRC_DIR)/*/)))
+FOLDERS=$(patsubst $(SRC_DIR)/%,$(OBJ_DIR)/%,$(_FOLDERS))
+
 SOURCES=$(wildcard $(SRC_DIR)/*.cpp)
 HEADERS=$(wildcard $(SRC_DIR)/*.h)
 
