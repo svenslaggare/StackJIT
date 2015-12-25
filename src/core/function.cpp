@@ -65,8 +65,7 @@ FunctionDefinition::FunctionDefinition(
       mIsMemberFunction(classType != nullptr),
 	  mClassType(classType),
 	  mAccessModifier(accessModifier),
-	  mIsConstructor(isConstructor)
-	  {
+	  mIsConstructor(isConstructor)	{
 
 }
 

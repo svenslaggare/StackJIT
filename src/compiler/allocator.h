@@ -6,13 +6,12 @@
 #include <cstddef>
 #endif
 
-
 //Represents a memory allocator
 namespace Allocator {
-	//Allocates memory of the given size
+	//Allocates memory block of the given size
 	void* allocate(std::size_t size);
 
-	//Deallocate the given memory
+	//Deallocate the given memory block
 	void deallocate(void* mem, std::size_t size);
 
 	//Makes the given memory executable

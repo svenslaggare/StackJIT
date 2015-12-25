@@ -3,8 +3,8 @@
 
 #include <iostream>
 
-TypeProvider::TypeProvider(const ClassMetadataProvider& structMetadataProvide)
-	: mStructMetadataProvider(structMetadataProvide) {
+TypeProvider::TypeProvider(const ClassMetadataProvider& classMetadataProvider)
+	: mClassMetadataProvider(classMetadataProvider) {
 
 }
 
@@ -18,7 +18,7 @@ const Type* TypeProvider::makeType(std::string name) {
 	if (mTypes.count(name) > 0) {
         return mTypes[name];
     } else {
-        auto type = TypeSystem::makeTypeFromString(name, mStructMetadataProvider);
+        auto type = TypeSystem::makeTypeFromString(name, mClassMetadataProvider);
         mTypes.insert({ name, type });
         return type;
     }

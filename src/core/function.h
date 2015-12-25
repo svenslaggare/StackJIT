@@ -3,15 +3,9 @@
 #include "../type/classmetadata.h"
 #include <vector>
 #include <string>
-#include <functional>
 
 class Type;
 class ClassType;
-class MemoryManager;
-struct FunctionCompilationData;
-class VMState;
-class CallingConvention;
-class ExceptionHandling;
 
 //Represents a definition for a function
 class FunctionDefinition {
@@ -21,7 +15,6 @@ private:
 	const Type* mReturnType;
 
 	unsigned char* mEntryPoint;
-
 	bool mIsManaged;
 
 	bool mIsMemberFunction;
@@ -84,7 +77,7 @@ public:
 	unsigned char* entryPoint() const;
 };
 
-//Represents an user defined function
+//Represents a function defined in managed code
 class ManagedFunction {
 private:
 	const FunctionDefinition& mDefinition;

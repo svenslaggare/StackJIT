@@ -25,7 +25,7 @@ enum class AssemblyType {
 };
 
 //Represents an entry point
-typedef int (*EntryPointFunction)();
+using EntryPointFunction = int(*)();
 
 //Represents the execution engine
 class ExecutionEngine {

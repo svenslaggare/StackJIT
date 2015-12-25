@@ -2,7 +2,7 @@
 #include <vector>
 #include "../stackjit.h"
 
-//Converts between primitive types and char arrays
+//Converts between primitive types and unsigned char arrays
 union ShortToBytes {
     short shortValue;
     unsigned char byteValues[sizeof(short)];
@@ -55,7 +55,7 @@ enum FloatRegisters : unsigned char {
 	XMM7 = 0b111,
 };
 
-typedef std::vector<unsigned char> CodeGen;
+using CodeGen = std::vector<unsigned char>;
 
 //Backend for AMD64
 namespace Amd64Backend {

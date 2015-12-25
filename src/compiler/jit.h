@@ -13,7 +13,7 @@ class ManagedFunction;
 class Type;
 
 //Represents a compiled function
-typedef void (*JitFunction)();
+using JitFunction = void(*)();
 
 //The type of a function call
 enum class FunctionCallType : unsigned char {
