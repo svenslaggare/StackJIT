@@ -633,7 +633,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			//As the exact target in native instructions isn't known, defer to later.
 			functionData.unresolvedBranches.insert({
 				generatedCode.size() - 5,
-				BranchTarget(inst.intValue, 5)
+				BranchTarget((unsigned int)inst.intValue, 5)
 			 });
 			break;
 		}
@@ -702,7 +702,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			//As the exact target in native instructions isn't known, defer to later.
 			functionData.unresolvedBranches.insert({
 				generatedCode.size() - 6,
-				BranchTarget(inst.intValue, 6)
+				BranchTarget((unsigned int)inst.intValue, 6)
 			});
 			break;
 		}
@@ -859,7 +859,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 				Amd64Backend::addByteToReg(
 					generatedCode,
 					Registers::SP,
-					-stackAlignment);
+					-(char)stackAlignment);
 			}
 
 			//Set the constructor arguments
@@ -869,7 +869,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 				mCallingConvention.callFunctionArgument(
 					functionData,
 					i + 1,
-					inst.parameters.at(i),
+					inst.parameters.at((std::size_t)i),
 					funcToCall);
 			}
 
@@ -880,7 +880,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			//Shadow stack may be needed
 			int shadowStack = mCallingConvention.calculateShadowStackSize();
 			if (shadowStack > 0) {
-				Amd64Backend::subByteFromReg(generatedCode, Registers::SP, shadowStack);
+				Amd64Backend::subByteFromReg(generatedCode, Registers::SP, (char)shadowStack);
 			}
 
 			if (!needsToCompile) {
@@ -902,7 +902,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 				Amd64Backend::addByteToReg(
 					generatedCode,
 					Registers::SP,
-					stackAlignment + shadowStack);
+					(char)(stackAlignment + shadowStack));
 			}
 
 			//This is for clean up after a call, as the constructor returns nothing.
@@ -960,7 +960,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 					if (!is8bits) {
 						Amd64Backend::moveRegToMemoryRegWithCharOffset(
 							generatedCode,
-							Registers::AX, fieldOffset, Registers::DX, is32bits); //mov [rax+<fieldOffset>], r/edx
+							Registers::AX, (char)fieldOffset, Registers::DX, is32bits); //mov [rax+<fieldOffset>], r/edx
 					} else {
 						pushArray(
 							generatedCode,

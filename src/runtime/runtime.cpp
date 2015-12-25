@@ -92,7 +92,7 @@ void Runtime::compileFunction(ManagedFunction* callee, int callOffset, int check
 	}
 
 	//Get a pointer to the function code
-	auto codePtr = vmState.binder().getFunction(*callee).entryPoint();
+	auto codePtr = callee->def().entryPoint();
 
 	//The address of the called function
 	auto calledFuncPtr = funcToCall->entryPoint();
@@ -195,8 +195,10 @@ void Runtime::garbageCollect(RegisterValue* basePtr, ManagedFunction* func, int 
 			printAliveObjects(basePtr, func, instIndex, "\t");
 		}
 
+		//Mark the calling stack frame
 		markObjects(basePtr, func, instIndex);
 
+		//Then all other stack frames
 		auto topEntryPtr = vmState.engine().callStack().top();
 		int topFuncIndex = 0;
 		while (topEntryPtr > vmState.engine().callStack().start()) {
@@ -239,6 +241,7 @@ unsigned char* Runtime::newString(const char* string, int length) {
 	//Allocate the underlying char array
 	auto charsPtr = vmState.gc().newArray(StringRef::charArrayType(), length);
 
+	//Set the value for the char array
 	for (int i = 0; i < length; i++) {
 		charsPtr[i + StackJIT::ARRAY_LENGTH_SIZE] = (unsigned char)string[i];
 	}
