@@ -31,9 +31,9 @@ namespace {
 }
 
 void Assembler::generateAttributes(BinaryData& data, const AssemblyParser::AttributeContainer& attributes) {
-	addData(data, attributes.attributes.size());
+	addData(data, attributes.size());
 
-	for (auto& current : attributes.attributes) {
+	for (auto& current : attributes) {
 		auto& attribute = current.second;
 		addString(data, attribute.name);
 

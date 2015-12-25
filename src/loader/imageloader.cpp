@@ -202,7 +202,7 @@ AssemblyParser::AttributeContainer AssemblyImageLoader::loadAttributes(BinaryDat
 			attribute.values.emplace(key, value);
 		}
 
-		attributes.attributes.emplace(attribute.name, attribute);
+		attributes.emplace(attribute.name, attribute);
 	}
 
 	return attributes;

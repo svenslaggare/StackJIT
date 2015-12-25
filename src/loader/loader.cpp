@@ -55,8 +55,8 @@ namespace {
 	AccessModifier getAccessModifier(const AssemblyParser::AttributeContainer& attributeContainer) {
 		AccessModifier accessModifier = ClassMetadata::DEFAULT_ACCESS_MODIFIER;
 
-		if (attributeContainer.attributes.count("AccessModifier") > 0) {
-			auto& accessModifierAttribute = attributeContainer.attributes.at("AccessModifier");
+		if (attributeContainer.count("AccessModifier") > 0) {
+			auto& accessModifierAttribute = attributeContainer.at("AccessModifier");
 			if (accessModifierAttribute.values.count("value") > 0) {
 				auto modifierValue = accessModifierAttribute.values.at("value");
 				if (!fromString(modifierValue, accessModifier)) {

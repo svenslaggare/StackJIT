@@ -10,8 +10,8 @@ The VM supports the following types:
 * `Void`: Special type which can only be used as return type which indicates no return value.
 
 ### Reference types
-* Arrays: `Ref.Array[<Element type>]`.
-* Classes: `Ref.<Class name>`.
+* Arrays: `Ref.Array[<element type>]`.
+* Classes: `Ref.<class name>`.
 
 ### Strings
 A string is of type `Ref.std.String`. The syntax for declaring a string is `"string value"`.

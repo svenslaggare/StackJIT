@@ -10,7 +10,7 @@ Defines the instruction set used by the VM.
 * `LDINT <value>`: Pushes a 32-bits integer to the evaluation stack.
 * `LDFLOAT <value>`: Pushes a 32-bits floating point to the evaluation stack.
 * `CONVINTTOFLOAT`: Pops an int from the evaluation stack and converts it to a float, pushing the result to the evaluation stack.
-* `CONVFLOATTOINT`: Pops a float from the evaluation stack and converts it to a int, pushing the result to the evaluation stack.
+* `CONVFLOATTOINT`: Pops a float from the evaluation stack and converts it to an int, pushing the result to the evaluation stack.
 
 ### Arithmetic
 * `ADD`: Pops two operands, adds them and pushes the result to the evaluation stack.
@@ -21,8 +21,8 @@ Defines the instruction set used by the VM.
 ### Boolean
 * `LDTRUE`: Pushes the boolean value _true_ to the evaluation stack.
 * `LDFALSE`: Pushes the boolean value _false_ to the evaluation stack.
-* `AND`: Pops two boolean operands, ands them and pushes the result to the evaluation stack.
-* `OR`: Pops two boolean operands, ors them and pushes the result to the evaluation stack.
+* `AND`: Pops two boolean operands, AND's them and pushes the result to the evaluation stack.
+* `OR`: Pops two boolean operands, OR's them and pushes the result to the evaluation stack.
 * `NOT`: Pops one boolean operand, inverts it and pushes the result to the evaluation stack.
 
 ### Locals

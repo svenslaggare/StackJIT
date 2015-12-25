@@ -199,7 +199,7 @@ namespace {
 			throw std::runtime_error("Expected '(' after attribute name");
 		}
 
-		if (container.attributes.count(attributeName) > 0) {
+		if (container.count(attributeName) > 0) {
 			throw std::runtime_error("The attribute '" + attributeName + "' is already defined.'");
 		}
 
@@ -227,7 +227,7 @@ namespace {
 			}
 		}
 
-		container.attributes.insert({ attributeName, attribute });
+		container.insert({ attributeName, attribute });
 	}
 }
 

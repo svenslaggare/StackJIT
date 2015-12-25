@@ -8,7 +8,7 @@
 //Contains the state of the VM
 class VMState {
 private:
-    ClassMetadataProvider mStructProvider;
+    ClassMetadataProvider mClassProvider;
 	TypeProvider mTypeProvider;
     Binder mBinder;
     GarbageCollector mGC;

@@ -1,7 +1,7 @@
 # Objects
 
 ### Arrays
-The arrays are bounds checked and when an array is created, the elements are default initialized to zero for primitive types and null for reference types.
+Array instructions are bounds checked. When an array is created, the elements are default initialized to zero for primitive types and null for reference types.
 
 ### Classes
 Classes are references types may consists of both member function and fields. A field are referenced in the following way: `<class name>::<field name>`. A class are defined in the following way:
@@ -20,13 +20,13 @@ member <name>::.constructor(<arg type 1> <arg type 1>) Void
 
 }
 ```
-A constructor works like a member function (the first argument (arg 0) is the 'this' reference).
+A constructor works like a member function (the first argument is the 'this' reference).
 
 #### Access modifiers
-There are two type of access modifiers: `public` and `private`.  The default value is public.
-Member function/field marked as public can only be read by member function of the class.
+There are two type of access modifiers: `public` and `private`.  The default modifier is `public`.
+Member function/field marked as `private` can only be called/accessed by member functions of the class.
 
-An access modifier is an attribute: `AccessModifier(value=private)`.
+An access modifier is an attribute with the name `AccessModifier`: `AccessModifier(value=private)`.
 
 ### Null ref
-Dereferencing a null reference will result in a null reference error. Both array and object instructions can result in a null reference error.
+Dereferencing a null reference will result in a null reference error.

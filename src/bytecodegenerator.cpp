@@ -51,8 +51,8 @@ namespace {
 	};
 }
 
-void ByteCodeGenerator::generateAttributes(std::ostream& stream, const AssemblyParser::AttributeContainer attributes) {
-	for (auto& current : attributes.attributes) {
+void ByteCodeGenerator::generateAttributes(std::ostream& stream, const AssemblyParser::AttributeContainer& attributes) {
+	for (auto& current : attributes) {
 		auto& attribute = current.second;
 		stream << "\t@" << attribute.name << "(";
 

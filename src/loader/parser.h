@@ -72,9 +72,7 @@ namespace AssemblyParser {
 	};
 
 	//Represents an attributes container
-	struct AttributeContainer {
-		std::unordered_map<std::string, Attribute> attributes;
-	};
+	using AttributeContainer = std::unordered_map<std::string, Attribute>;
 
 	//Represents a function
 	struct Function {

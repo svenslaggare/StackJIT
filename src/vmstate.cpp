@@ -3,7 +3,7 @@
 #include "type/objects.h"
 
 VMState::VMState()
-    : mTypeProvider(mStructProvider), mGC(*this), mEngine(*this) {
+    : mTypeProvider(mClassProvider), mGC(*this), mEngine(*this) {
 
 }
 
@@ -32,11 +32,11 @@ const Binder& VMState::binder() const {
 }
 
 ClassMetadataProvider& VMState::classProvider() {
-    return mStructProvider;
+    return mClassProvider;
 }
 
 const ClassMetadataProvider& VMState::classProvider() const {
-    return mStructProvider;
+    return mClassProvider;
 }
 
 GarbageCollector& VMState::gc() {

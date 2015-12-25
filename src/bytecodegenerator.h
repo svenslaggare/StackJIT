@@ -6,7 +6,7 @@
 //Generates StackByteCode from the assembler parser structure
 namespace ByteCodeGenerator {
 	//Generates byte code for the given attributes
-	void generateAttributes(std::ostream& stream, const AssemblyParser::AttributeContainer attributes);
+	void generateAttributes(std::ostream& stream, const AssemblyParser::AttributeContainer& attributes);
 
 	//Generates byte code for the given function
 	void generateFunction(std::ostream& stream, const AssemblyParser::Function& function);
