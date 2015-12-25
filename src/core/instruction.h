@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 #include <vector>
-#include <deque>
 #include "instructionset.h"
 
 class Type;
@@ -11,7 +10,7 @@ class ClassType;
 class Instruction {
 private:
     const OpCodes mOpCode;
-    std::deque<const Type*> mOperandTypes;
+    std::vector<const Type*> mOperandTypes;
 public:
     //Primitive values
     float floatValue;
@@ -33,8 +32,8 @@ public:
     OpCodes opCode() const;
 
     //Returns the operand types
-    const std::deque<const Type*>& operandTypes() const;
+    const std::vector<const Type*>& operandTypes() const;
 
     //Sets the operand types
-    void setOperandTypes(std::deque<const Type*> operandTypes);
+    void setOperandTypes(const std::vector<const Type*>& operandTypes);
 };

@@ -14,10 +14,10 @@ OpCodes Instruction::opCode() const {
 	return mOpCode;
 }
 
-const std::deque<const Type*>& Instruction::operandTypes() const {
+const std::vector<const Type*>& Instruction::operandTypes() const {
 	return mOperandTypes;
 }
 
-void Instruction::setOperandTypes(std::deque<const Type*> operandTypes) {
+void Instruction::setOperandTypes(const std::vector<const Type*>& operandTypes) {
 	mOperandTypes = operandTypes;
 }

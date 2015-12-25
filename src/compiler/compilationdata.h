@@ -14,6 +14,7 @@ struct BranchTarget {
 	//The size of the branch instruction
 	const unsigned int instructionSize;
 
+	//Creates a new branch target
 	BranchTarget(unsigned int target, unsigned int instructionSize);
 };
 

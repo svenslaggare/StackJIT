@@ -1,6 +1,6 @@
 #pragma once
 #include <functional>
-#include <deque>
+#include <vector>
 #include "../stackjit.h"
 
 class ManagedFunction;
@@ -20,7 +20,7 @@ class StackFrame {
 private:
 	RegisterValue* mBasePtr;
 	const ManagedFunction* mFunction;
-	const std::deque<const Type*>& mOperandTypes;
+	const std::vector<const Type*>& mOperandTypes;
 public:
 	//Creates a new stack frame
 	StackFrame(RegisterValue* basePtr, const ManagedFunction* function, const int instIndex);

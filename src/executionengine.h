@@ -19,9 +19,9 @@ namespace AssemblyParser {
 //The type of the assembly
 enum class AssemblyType {
 	//The assembly is a program. This requires an entry point (main function).
-	Program,
+		Program,
 	//The assembly is a library. A library cannot be executed.
-	Library
+		Library
 };
 
 //Represents an entry point
@@ -70,7 +70,7 @@ public:
 	void setBaseDir(std::string baseDir);
 
 	//Returns the entry point
-	EntryPointFunction entryPoint() const; 
+	EntryPointFunction entryPoint() const;
 
 	//Loads the given assembly from a file
 	bool loadAssembly(std::string filePath, AssemblyType assemblyType = AssemblyType::Library);

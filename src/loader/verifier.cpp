@@ -64,12 +64,22 @@ namespace {
 		}
 	}
 
-	std::deque<const Type*> asList(InstructionTypes types) {
+	std::vector<const Type*> asVector(InstructionTypes typesStack) {
+		std::vector<const Type*> types;
+
+		while (!typesStack.empty()) {
+			types.push_back(typesStack.top());
+			typesStack.pop();
+		}
+
+		return types;
+	}
+
+	std::deque<const Type*> asList(const std::vector<const Type*>& types) {
 		std::deque<const Type*> typesList;
 
-		while (!types.empty()) {
-			typesList.push_back(types.top());
-			types.pop();
+		for (auto& type : types) {
+			typesList.push_back(type);
 		}
 
 		return typesList;
@@ -146,7 +156,7 @@ namespace {
 	void verifyBranches(ManagedFunction& function, std::vector<BranchCheck>& branches) {
 		for (auto& branch : branches) {
 			auto postSourceTypes = branch.branchTypes;
-			auto preTargetTypes = function.instructions()[branch.target].operandTypes();
+			auto preTargetTypes = asList(function.instructions()[branch.target].operandTypes());
 
 			if (postSourceTypes.size() == preTargetTypes.size()) {
 				for (std::size_t i = 0; i < postSourceTypes.size(); i++) {
@@ -847,7 +857,7 @@ void Verifier::verifyFunction(ManagedFunction& function) {
 
 	//Check instructions
 	for (auto& inst : function.instructions()) {
-		inst.setOperandTypes(asList(operandStack));
+		inst.setOperandTypes(asVector(operandStack));
 
 		//Calculate the maximum size of the stack
 		auto stackSize = inst.operandTypes().size();
