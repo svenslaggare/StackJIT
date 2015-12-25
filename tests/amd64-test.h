@@ -3,6 +3,9 @@
 
 #include "../src/compiler/amd64.h"
 
+/**
+ * Tests the Amd64 backend
+ */
 class Amd64Suite : public CxxTest::TestSuite {
 public:
     //Tests pushReg
