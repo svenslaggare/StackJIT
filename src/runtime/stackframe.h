@@ -11,6 +11,7 @@ struct StackFrameEntry {
 	RegisterValue value;
 	const Type* type;
 
+	//Creates a new stack frame entry
 	StackFrameEntry(RegisterValue value, const Type* type);
 };
 

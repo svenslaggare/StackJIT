@@ -8,11 +8,9 @@ TESTS_DIR=tests
 EXECUTABLE=stackjit
 
 ASSEMBLER_DIR=assembler
-RTLIB=rtlib
+RTLIB_DIR=rtlib
 
 TEST_WITH_VALGRIND=0
-
-WINDOWS_DIR=Windows2
 
 # Rules
 _FOLDERS=$(sort $(dir $(wildcard $(SRC_DIR)/*/)))
@@ -37,8 +35,8 @@ TEST_OBJECTS=$(filter-out $(MAIN_OBJ), $(OBJECTS))
 TESTS=$(wildcard $(TESTS_DIR)/*-test.h)
 TEST_EXECUTABLES=$(patsubst $(TESTS_DIR)/%.h,$(TEST_RUNNERS_DIR)/%, $(TESTS))
 
-RTLIB_FILES=$(wildcard $(RTLIB)/*.sbc)
-RTLIB_OUT=$(RTLIB)/rtlib.simg
+RTLIB_FILES=$(wildcard $(RTLIB_DIR)/*.sbc)
+RTLIB_OUT=$(RTLIB_DIR)/rtlib.simg
 
 $(TEST_RUNNERS_DIR):
 	mkdir $(TEST_RUNNERS_DIR)

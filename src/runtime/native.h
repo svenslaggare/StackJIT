@@ -34,7 +34,7 @@ public:
 	//Sets the value of the chars field
 	static void setCharsField(RawClassRef stringRef, char* value);
 
-	//Initialize the string reference
+	//Initialize the class
 	static void initialize(VMState& vmState);
 };
 

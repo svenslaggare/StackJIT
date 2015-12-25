@@ -19,7 +19,6 @@ namespace Helpers {
 		}
 
 		parts.push_back(str);
-
 		return parts;
 	}
 
@@ -52,13 +51,13 @@ namespace Helpers {
 	}
 
 	#if defined(_WIN64) || defined(__MINGW32__)
-	std::string executable = "Debug\\stackjit.exe";
-	std::string baseDir = "../";
-	std::string programsPath = baseDir + "programs";
+	const std::string executable = "Debug\\stackjit.exe";
+	const std::string baseDir = "../";
+	const std::string programsPath = baseDir + "programs";
 	#else
-	std::string executable = "./stackjit";
-	std::string baseDir = "";
-	std::string programsPath = "programs";
+	const std::string executable = "./stackjit";
+	const std::string baseDir = "";
+	const std::string programsPath = "programs";
 	#endif
 
 	//Invokes the VM with the given program
