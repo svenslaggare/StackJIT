@@ -92,18 +92,18 @@ void Runtime::compileFunction(ManagedFunction* callee, int callOffset, int check
 	}
 
 	//Get a pointer to the function code
-	auto funcCodePtr = vmState.binder().getFunction(*callee).entryPoint();
+	auto codePtr = vmState.binder().getFunction(*callee).entryPoint();
 
 	//The address of the called function
 	auto calledFuncPtr = funcToCall->entryPoint();
 
 	//Update the call target
-	int target = (int)(calledFuncPtr - (funcCodePtr + callOffset + 5));
-	Helpers::setInt(funcCodePtr, (std::size_t)callOffset + 1, target);
+	int target = (int)(calledFuncPtr - (codePtr + callOffset + 5));
+	Helpers::setValue(codePtr, (std::size_t)callOffset + 1, target);
 
 	//Replace this check at the call site with a branch to end of the check
-	funcCodePtr[checkStart] = 0xe9;
-	Helpers::setInt(funcCodePtr, (std::size_t)checkStart + 1, checkEnd - (checkStart + 5));
+	codePtr[checkStart] = 0xe9;
+	Helpers::setValue(codePtr, (std::size_t)checkStart + 1, checkEnd - (checkStart + 5));
 }
 
 void Runtime::Internal::printAliveObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex,

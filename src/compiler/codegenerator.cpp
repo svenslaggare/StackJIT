@@ -80,8 +80,7 @@ std::size_t CodeGenerator::generateCompileCall(CodeGen& generatedCode, ManagedFu
 	Amd64Backend::callInReg(generatedCode, Registers::AX);
 	Amd64Backend::addByteToReg(generatedCode, Registers::SP, 16 + shadowStackSize); //Used stack
 
-	Helpers::setInt(generatedCode, checkEndIndex, (int)generatedCode.size());
-
+	Helpers::setValue(generatedCode, checkEndIndex, (int)generatedCode.size());
 	return callIndex;
 #else
 	std::size_t callIndex;
@@ -90,18 +89,15 @@ std::size_t CodeGenerator::generateCompileCall(CodeGen& generatedCode, ManagedFu
 	Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (PtrValue)&function); //The current function
 	Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg1, 0); //Offset of the call
 	callIndex = generatedCode.size() - sizeof(int);
-	Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg2,
-							   (int)generatedCode.size()); //The offset for this check
+	Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg2, (int)generatedCode.size()); //The offset for this check
 	Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg3, 0); //The end of the this check
 	checkEndIndex = generatedCode.size() - sizeof(int);
-	Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg4,
-								(PtrValue)(&funcToCall)); //The function to compile
+	Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg4,	(PtrValue)(&funcToCall)); //The function to compile
 
 	Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (PtrValue)&Runtime::compileFunction);
 	Amd64Backend::callInReg(generatedCode, Registers::AX);
 
-	Helpers::setInt(generatedCode, checkEndIndex, (int)generatedCode.size());
-
+	Helpers::setValue(generatedCode, checkEndIndex, (int)generatedCode.size());
 	return callIndex;
 #endif
 }
@@ -461,8 +457,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			operandStack.pushInt(1, false);
 
 			//Set the jump targets
-			Helpers::setInt(generatedCode, jump + 1, (int)(generatedCode.size() - trueBranchStart));
-			Helpers::setInt(generatedCode, compareJump + 2, (int)(trueBranchStart - falseBranchStart));
+			Helpers::setValue(generatedCode, jump + 1, (int)(generatedCode.size() - trueBranchStart));
+			Helpers::setValue(generatedCode, compareJump + 2, (int)(trueBranchStart - falseBranchStart));
 			break;
 		}
 		case OpCodes::LOAD_LOCAL: {
@@ -551,7 +547,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 								generatedCode.size(),
 								funcToCall));
 					} else {
-						Helpers::setInt(generatedCode, callIndex, (int)generatedCode.size());
+						Helpers::setValue(generatedCode, callIndex, (int)generatedCode.size());
 					}
 
 					//Make the call
@@ -895,7 +891,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 						generatedCode.size(),
 						funcToCall));
 			} else {
-				Helpers::setInt(generatedCode, callIndex, (int)generatedCode.size());
+				Helpers::setValue(generatedCode, callIndex, (int)generatedCode.size());
 			}
 
 			//Call the constructor

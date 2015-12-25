@@ -107,7 +107,7 @@ void JITCompiler::resolveBranches(FunctionCompilationData& functionData) {
 
 		//Update the source with the native target
 		auto sourceOffset = (int)source + (int)branchTarget.instructionSize - sizeof(int);
-		Helpers::setInt(function.generatedCode(), sourceOffset, target);
+		Helpers::setValue(function.generatedCode(), sourceOffset, target);
 	}
 
 	functionData.unresolvedBranches.clear();
@@ -115,9 +115,7 @@ void JITCompiler::resolveBranches(FunctionCompilationData& functionData) {
 
 void JITCompiler::resolveNativeBranches(FunctionCompilationData& functionData) {
 	//Get a pointer to the functions native instructions
-	auto funcCodePtr = mVMState.binder()
-		.getFunction(functionData.function)
-		.entryPoint();
+	auto codePtr = functionData.function.def().entryPoint();
 
 	//Resolved native branches
 	for (auto branch : functionData.unresolvedNativeBranches) {
@@ -125,11 +123,11 @@ void JITCompiler::resolveNativeBranches(FunctionCompilationData& functionData) {
 		auto target = branch.second;
 
 		//Calculate the native jump location
-		int nativeTarget = (int)(target - (PtrValue)(funcCodePtr + source) - 6);
+		int nativeTarget = (int)(target - (PtrValue)(codePtr + source) - 6);
 
 		//Update the source with the native target
 		auto sourceOffset = source + 6 - sizeof(int);
-		Helpers::setInt(funcCodePtr, sourceOffset, nativeTarget);
+		Helpers::setValue(codePtr, sourceOffset, nativeTarget);
 	}
 
 	functionData.unresolvedNativeBranches.clear();
@@ -137,9 +135,7 @@ void JITCompiler::resolveNativeBranches(FunctionCompilationData& functionData) {
 
 void JITCompiler::resolveCallTargets(FunctionCompilationData& functionData) {
 	//Get a pointer to the functions native instructions
-	auto funcCodePtr = mVMState.binder()
-		.getFunction(functionData.function)
-		.entryPoint();
+	auto codePtr = functionData.function.def().entryPoint();
 
 	for (auto& unresolvedCall : functionData.unresolvedCalls) {
 		auto callType = unresolvedCall.type;
@@ -150,10 +146,10 @@ void JITCompiler::resolveCallTargets(FunctionCompilationData& functionData) {
 
 		//Update the call target
 		if (callType == FunctionCallType::Absolute) {
-			Helpers::setPointer(funcCodePtr, offset + 2, calledFuncPtr);
+			Helpers::setValue(codePtr, offset + 2, calledFuncPtr);
 		} else if (callType == FunctionCallType::Relative) {
-			int target = (int)(calledFuncPtr - (funcCodePtr + offset + 5));
-			Helpers::setInt(funcCodePtr, offset + 1, target);
+			int target = (int)(calledFuncPtr - (codePtr + offset + 5));
+			Helpers::setValue(codePtr, offset + 1, target);
 		}
 	}
 
