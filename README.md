@@ -21,19 +21,26 @@ Supports Linux x64 and Windows x64.
 
 ## Build
 ### Linux
+Requirments:
+* C++11 compiler.
+* [CXXTest](http://cxxtest.com/) for tests.
+
+To build:
 ```
 make all
 ```
-To run tests (requires [CXXTest](http://cxxtest.com/)):
+To run tests:
 ```
 make test
 ```
 
 ### Windows
-Requires Visual Studio 2015 and CMake.
-The tests requires [CXXTest](http://cxxtest.com/).
+Requirements:
+* Visual Studio 2015.
+* CMake.
+* [CXXTest](http://cxxtest.com/) for tests.
 
-The following command installs it:
+The following command installs CxxTest:
 ```
 git clone -q --branch=master https://github.com/svenslaggare/CxxTest.git C:\CXXTest
 set PATH=%PATH%;C:\CXXTest\bin
