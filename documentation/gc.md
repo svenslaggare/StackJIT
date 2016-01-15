@@ -20,7 +20,7 @@ From the start, this generation will use a compacting collector. In the future, 
 ### Old Generation
 Will use a compacting collector.
 
-## Intergenertional references
+### Intergenertional references
 Will use the card marking algorithm.
 
 ## Compaction
