@@ -118,7 +118,7 @@ public:
 		TS_ASSERT_EQUALS(gcTest.collections.at(2).hasDeallocated(gcTest.allocatedObjects.at(0)), true);
 	}
 
-	//Tests GC with refs at localss
+	//Tests GC with refs at locals
 	void testLocals() {
 		GCTest gcTest;
 

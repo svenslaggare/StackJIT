@@ -38,10 +38,10 @@ TEST_EXECUTABLES=$(patsubst $(TESTS_DIR)/%.h,$(TEST_RUNNERS_DIR)/%, $(TESTS))
 RTLIB_FILES=$(wildcard $(RTLIB_DIR)/*.sbc)
 RTLIB_OUT=$(RTLIB_DIR)/rtlib.simg
 
+all: $(OBJ_DIR) $(SOURCES) $(EXECUTABLE) $(RTLIB_OUT)
+
 $(TEST_RUNNERS_DIR):
 	mkdir $(TEST_RUNNERS_DIR)
-
-all: $(OBJ_DIR) $(SOURCES) $(EXECUTABLE) $(RTLIB_OUT)
 
 $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)

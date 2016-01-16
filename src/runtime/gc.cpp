@@ -14,11 +14,17 @@ GarbageCollector::GarbageCollector(VMState& vmState)
 }
 
 void GarbageCollector::initialize() {
+	mAllocatedBeforeCollection = (std::size_t)vmState.allocationsBeforeGC;
+}
 
+void GarbageCollector::printObject(ObjectRef objRef) {
+	std::cout
+	<< "0x" << std::hex << (PtrValue)objRef.objectPtr() << std::dec << ": " << objRef.objectSize()
+	<< " bytes (" << objRef.type()->name() << ")" << std::endl;
 }
 
 unsigned char* GarbageCollector::allocateObject(ManagedHeap& heap, const Type* type, std::size_t size) {
-	auto fullObjSize = sizeof(PtrValue) + 1 + size;
+	auto fullObjSize = StackJIT::OBJECT_HEADER_SIZE + size;
 	auto objPtr = heap.allocate(fullObjSize);
 
 	if (objPtr == nullptr) {
@@ -32,23 +38,18 @@ unsigned char* GarbageCollector::allocateObject(ManagedHeap& heap, const Type* t
 	Helpers::setValue(objPtr, sizeof(PtrValue), 0); //GC info
 
 	//The returned ptr is to the data
-	return objPtr + sizeof(PtrValue) + 1;
+	return objPtr + StackJIT::OBJECT_HEADER_SIZE;
 }
 
 unsigned char* GarbageCollector::newArray(const ArrayType* arrayType, int length) {
     auto elementType = arrayType->elementType();
     auto elemSize = TypeSystem::sizeOfType(elementType);
 
-    std::size_t memSize = sizeof(int) + (length * elemSize);
+    std::size_t memSize = StackJIT::ARRAY_LENGTH_SIZE + (length * elemSize);
     auto arrayPtr = allocateObject(mYoungGeneration, arrayType, memSize);
 
-    //Set the size of the array
-    IntToBytes converter;
-    converter.intValue = length;
-    arrayPtr[0] = converter.byteValues[0];
-    arrayPtr[1] = converter.byteValues[1];
-    arrayPtr[2] = converter.byteValues[2];
-    arrayPtr[3] = converter.byteValues[3];
+    //Set the length of the array
+	Helpers::setValue(arrayPtr, 0, length);
 
     if (vmState.enableDebug && vmState.printAllocation) {
         std::cout
@@ -63,7 +64,7 @@ unsigned char* GarbageCollector::newArray(const ArrayType* arrayType, int length
 }
 
 unsigned char* GarbageCollector::newClass(const ClassType* classType) {
-    std::size_t memSize = vmState.classProvider().getMetadata(classType->className()).size();
+    std::size_t memSize = classType->classMetadata()->size();
     auto classPtr = allocateObject(mYoungGeneration, classType, memSize);
 
     if (vmState.enableDebug && vmState.printAllocation) {
@@ -74,6 +75,100 @@ unsigned char* GarbageCollector::newClass(const ClassType* classType) {
     }
 
     return classPtr;
+}
+
+void GarbageCollector::markObject(ObjectRef objRef) {
+	if (!objRef.isMarked()) {
+		if (TypeSystem::isArray(objRef.type())) {
+			objRef.mark();
+
+			auto arrayType = static_cast<const ArrayType*>(objRef.type());
+
+			//Mark ref elements
+			if (TypeSystem::isReferenceType(arrayType->elementType())) {
+				ArrayRef<PtrValue> arrayRef(objRef.objectPtr());
+				for (int i = 0; i < arrayRef.length(); i++) {
+					markValue(arrayRef.getElement(i), arrayType->elementType());
+				}
+			}
+		} else if (TypeSystem::isClass(objRef.type())) {
+			objRef.mark();
+
+			auto classType = static_cast<const ClassType*>(objRef.type());
+			auto& classMetadata = vmState.classProvider().getMetadata(classType->className());
+
+			//Mark ref fields
+			for (auto fieldEntry : classMetadata.fields()) {
+				auto field = fieldEntry.second;
+
+				if (TypeSystem::isReferenceType(field.type())) {
+					RegisterValue fieldValue = *(PtrValue*)(objRef.objectPtr() + field.offset());
+					markValue(fieldValue, field.type());
+				}
+			}
+		}
+	}
+}
+
+void GarbageCollector::markValue(RegisterValue value, const Type* type) {
+	if (TypeSystem::isReferenceType(type)) {
+		auto objPtr = (unsigned char*)value;
+
+		//Don't mark nulls
+		if (objPtr == nullptr) {
+			return;
+		}
+
+		markObject(ObjectRef((RawObjectRef)value));
+	}
+}
+
+void GarbageCollector::sweepObjects() {
+	int numDeallocatedObjects = 0;
+
+	mYoungGeneration.visitObjects([&](ObjectRef objRef) {
+		if (!objRef.isMarked()) {
+			numDeallocatedObjects++;
+
+			if (vmState.enableDebug && vmState.printDeallocation) {
+				//TODO: Actually delete the object :)
+				std::cout << "Deleted object: ";
+				printObject(objRef);
+			}
+		} else {
+			objRef.unmark();
+		}
+	});
+
+	if (vmState.enableDebug && vmState.printGCStats) {
+		std::cout << "Deallocated: " << numDeallocatedObjects << " objects." << std::endl;
+		std::cout << "GC time: " << Helpers::getDuration(mGCStart) << " ms." << std::endl;
+	}
+}
+
+bool GarbageCollector::beginGC(bool forceGC) {
+	if (mNumAllocated >= mAllocatedBeforeCollection || forceGC) {
+		if (vmState.enableDebug && vmState.printAliveObjects) {
+			std::cout << "Alive objects: " << std::endl;
+
+			mYoungGeneration.visitObjects([this](ObjectRef objRef) {
+				printObject(objRef);
+			});
+		}
+
+		if (vmState.enableDebug && vmState.printGCStats) {
+			mGCStart = std::chrono::high_resolution_clock::now();
+		}
+
+		return true;
+	} else {
+		return false;
+	}
+}
+
+void GarbageCollector::endGC() {
+	sweepObjects();
+	mNumAllocated = 0;
 }
 
 ClassRef GarbageCollector::getClassRef(RawClassRef classRef) {

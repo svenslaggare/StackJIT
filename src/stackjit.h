@@ -12,4 +12,7 @@ using RegisterValue = std::int64_t;
 namespace StackJIT {
 	//The size of the length of an array
 	const int ARRAY_LENGTH_SIZE = 4;
+
+	//The size of the object header
+	const int OBJECT_HEADER_SIZE = 9;
 }

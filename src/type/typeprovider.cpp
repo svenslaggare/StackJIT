@@ -24,12 +24,6 @@ const Type* TypeProvider::makeType(std::string name) {
     }
 }
 
-void TypeProvider::addType(const Type* type) {
-	if (mTypes.count(type->name()) == 0) {
-		mTypes.insert({ type->name(), type });
-	}
-}
-
 const Type* TypeProvider::getType(std::string name) const {
 	if (mTypes.count(name) > 0) {
         return mTypes.at(name);

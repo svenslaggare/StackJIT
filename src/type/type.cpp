@@ -51,13 +51,17 @@ ArrayType::~ArrayType() {
 	delete mElementType;
 }
 
-ClassType::ClassType(std::string name)
-	: ReferenceType(name), mClassName(name) {
+ClassType::ClassType(std::string name, const ClassMetadata* classMetadata)
+	: ReferenceType(name), mClassName(name), mClassMetadata(classMetadata) {
 
 }
 
 std::string ClassType::className() const {
 	return mClassName;
+}
+
+const ClassMetadata* ClassType::classMetadata() const {
+	return mClassMetadata;
 }
 
 bool TypeSystem::fromString(std::string typeName, PrimitiveTypes& primitiveType) {
@@ -199,7 +203,7 @@ Type* TypeSystem::makeTypeFromString(std::string typeName, const ClassMetadataPr
 				}
 
 				if (classProvider.isDefined(className)) {
-					return new ClassType(className);
+					return new ClassType(className, &classProvider.getMetadata(className));
 				} else {
 					return nullptr;
 				}

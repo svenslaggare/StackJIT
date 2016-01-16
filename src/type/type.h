@@ -1,6 +1,9 @@
 #pragma once
 #include <string>
 #include <functional>
+#include "classmetadata.h"
+
+class ClassMetadata;
 
 //Represents a type
 class Type {
@@ -52,12 +55,16 @@ public:
 class ClassType : public ReferenceType {
 private:
 	const std::string mClassName;
+	const ClassMetadata* mClassMetadata;
 public:
 	//Creates a new class type
-	ClassType(std::string name);
+	ClassType(std::string name, const ClassMetadata* classMetadata);
 
 	//Returns the name of the class
 	std::string className() const;
+
+	//Returns the metadata for the class
+	const ClassMetadata* classMetadata() const;
 };
 
 //The primitive types

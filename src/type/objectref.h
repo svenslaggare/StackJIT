@@ -21,6 +21,7 @@ class ObjectRef {
 private:
 	unsigned char* mPtr;
 	const Type* mType;
+	std::size_t mObjectSize;
 
 	//Sets the mark status
 	void setMarked(bool isMarked);
@@ -32,8 +33,14 @@ public:
 	//Returns the type of the object
 	const Type* type() const;
 
-	//Returns a pointer to the object.
-	unsigned char* objectPtr();
+	//Returns a pointer to the object
+	unsigned char* objectPtr() const;
+
+	//Returns the size of the object
+	std::size_t objectSize() const;
+
+	//Returns the size of the object + header
+	std::size_t fullObjectSize() const;
 
 	//Indicates if the object is marked
 	bool isMarked() const;

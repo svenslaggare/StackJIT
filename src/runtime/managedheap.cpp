@@ -1,22 +1,35 @@
 #include "managedheap.h"
 
 ManagedHeap::ManagedHeap(std::size_t size)
-	: mHeap(new unsigned char[size]), mSize(size), mNextAllocation(mHeap) {
+	: mData(new unsigned char[size]), mSize(size), mNextAllocation(mData) {
 
 }
 
 ManagedHeap::~ManagedHeap() {
-	delete[] mHeap;
+	delete[] mData;
+}
+
+unsigned char* ManagedHeap::data() const {
+	return mData;
 }
 
 unsigned char* ManagedHeap::allocate(std::size_t size) {
 	auto nextAllocation = mNextAllocation + size;
 
-	if (nextAllocation < mHeap + mSize) {
+	if (nextAllocation < mData + mSize) {
 		auto allocation = mNextAllocation;
 		mNextAllocation = nextAllocation;
 		return allocation;
 	} else {
 		return nullptr;
+	}
+}
+
+void ManagedHeap::visitObjects(std::function<void (ObjectRef)> fn) {
+	auto current = mData;
+	while (current < mNextAllocation) {
+		ObjectRef objRef(current + StackJIT::OBJECT_HEADER_SIZE);
+		fn(objRef);
+		current += objRef.fullObjectSize();
 	}
 }

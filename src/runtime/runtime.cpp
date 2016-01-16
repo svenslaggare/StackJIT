@@ -152,81 +152,81 @@ void Runtime::Internal::printAliveObjects(RegisterValue* basePtr, ManagedFunctio
 }
 
 void Runtime::Internal::markObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex) {
-//	auto& gc = vmState.gc();
-//
-//	StackFrame stackFrame(basePtr, func, instIndex);
-//	auto numArgs = func->def().numParams();
-//	auto numLocals = func->numLocals();
-//	auto stackSize = stackFrame.operandStackSize();
-//
-//	for (std::size_t i = 0; i < numArgs; i++) {
-//		auto arg = stackFrame.getArgument(i);
-//		gc.markValue(arg.value, arg.type);
-//	}
-//
-//	for (std::size_t i = 0; i < numLocals; i++) {
-//		auto local = stackFrame.getLocal(i);
-//		gc.markValue(local.value, local.type);
-//	}
-//
-//	for (std::size_t i = 0; i < stackSize; i++) {
-//		auto operand = stackFrame.getStackOperand(i);
-//		gc.markValue(operand.value, operand.type);
-//	}
+	auto& gc = vmState.gc();
+
+	StackFrame stackFrame(basePtr, func, instIndex);
+	auto numArgs = func->def().numParams();
+	auto numLocals = func->numLocals();
+	auto stackSize = stackFrame.operandStackSize();
+
+	for (std::size_t i = 0; i < numArgs; i++) {
+		auto arg = stackFrame.getArgument(i);
+		gc.markValue(arg.value, arg.type);
+	}
+
+	for (std::size_t i = 0; i < numLocals; i++) {
+		auto local = stackFrame.getLocal(i);
+		gc.markValue(local.value, local.type);
+	}
+
+	for (std::size_t i = 0; i < stackSize; i++) {
+		auto operand = stackFrame.getStackOperand(i);
+		gc.markValue(operand.value, operand.type);
+	}
 }
 
 void Runtime::garbageCollect(RegisterValue* basePtr, ManagedFunction* func, int instIndex) {
-//	using namespace Runtime::Internal;
-//	auto& gc = vmState.gc();
-//
-//	if (gc.beginGC()) {
-//		std::size_t startStrLength = 0;
-//
-//		if (vmState.enableDebug && vmState.printGCPeriod) {
-//			auto startStr = "---------------Start GC in func " + func->def().name() + " (" + std::to_string(instIndex) +
-//							")---------------";
-//			std::cout << startStr << std::endl;
-//			startStrLength = startStr.length();
-//		}
-//
-//		if (vmState.enableDebug && vmState.printGCStackTrace) {
-//			std::cout << "Stack trace: " << std::endl;
-//			std::cout << func->def().name() << " (" << instIndex << ")" << std::endl;
-//			printAliveObjects(basePtr, func, instIndex, "\t");
-//		}
-//
-//		//Mark the calling stack frame
-//		markObjects(basePtr, func, instIndex);
-//
-//		//Then all other stack frames
-//		auto topEntryPtr = vmState.engine().callStack().top();
-//		int topFuncIndex = 0;
-//		while (topEntryPtr > vmState.engine().callStack().start()) {
-//			auto callEntry = *topEntryPtr;
-//			auto topFunc = callEntry.function;
-//			auto callPoint = callEntry.callPoint;
-//			auto callBasePtr = findBasePtr(basePtr, 0, topFuncIndex);
-//
-//			if (vmState.enableDebug && vmState.printGCStackTrace) {
-//				std::cout << topFunc->def().name() << " (" << callPoint << ")" << std::endl;
-//				printAliveObjects(callBasePtr, topFunc, callPoint, "\t");
-//			}
-//
-//			markObjects(callBasePtr, topFunc, callPoint);
-//
-//			topEntryPtr--;
-//			topFuncIndex++;
-//		}
-//
-//		gc.endGC();
-//
-//		if (vmState.enableDebug && vmState.printGCPeriod) {
-//			printTimes('-', (int)startStrLength / 2 - 3);
-//			std::cout << "End GC";
-//			printTimes('-', ((int)startStrLength + 1) / 2 - 3);
-//			std::cout << std::endl;
-//		}
-//	}
+	using namespace Runtime::Internal;
+	auto& gc = vmState.gc();
+
+	if (gc.beginGC()) {
+		std::size_t startStrLength = 0;
+
+		if (vmState.enableDebug && vmState.printGCPeriod) {
+			auto startStr = "---------------Start GC in func " + func->def().name() + " (" + std::to_string(instIndex) +
+							")---------------";
+			std::cout << startStr << std::endl;
+			startStrLength = startStr.length();
+		}
+
+		if (vmState.enableDebug && vmState.printGCStackTrace) {
+			std::cout << "Stack trace: " << std::endl;
+			std::cout << func->def().name() << " (" << instIndex << ")" << std::endl;
+			printAliveObjects(basePtr, func, instIndex, "\t");
+		}
+
+		//Mark the calling stack frame
+		markObjects(basePtr, func, instIndex);
+
+		//Then all other stack frames
+		auto topEntryPtr = vmState.engine().callStack().top();
+		int topFuncIndex = 0;
+		while (topEntryPtr > vmState.engine().callStack().start()) {
+			auto callEntry = *topEntryPtr;
+			auto topFunc = callEntry.function;
+			auto callPoint = callEntry.callPoint;
+			auto callBasePtr = findBasePtr(basePtr, 0, topFuncIndex);
+
+			if (vmState.enableDebug && vmState.printGCStackTrace) {
+				std::cout << topFunc->def().name() << " (" << callPoint << ")" << std::endl;
+				printAliveObjects(callBasePtr, topFunc, callPoint, "\t");
+			}
+
+			markObjects(callBasePtr, topFunc, callPoint);
+
+			topEntryPtr--;
+			topFuncIndex++;
+		}
+
+		gc.endGC();
+
+		if (vmState.enableDebug && vmState.printGCPeriod) {
+			printTimes('-', (int)startStrLength / 2 - 3);
+			std::cout << "End GC";
+			printTimes('-', ((int)startStrLength + 1) / 2 - 3);
+			std::cout << std::endl;
+		}
+	}
 }
 
 unsigned char* Runtime::newArray(const ArrayType* arrayType, int length) {

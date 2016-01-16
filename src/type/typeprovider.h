@@ -21,9 +21,6 @@ public:
 	//Tries to construct the given type. If the type could not be constructed, nullptr is returned.
 	const Type* makeType(std::string name);
 
-	//Adds the given type
-	void addType(const Type* type);
-
     //Returns the given type. Nullptr if not found.
     const Type* getType(std::string name) const;
 };
