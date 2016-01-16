@@ -7,11 +7,43 @@ class ClassHandle;
 class ClassMetadata;
 class Type;
 
+//Represents a raw object reference
+using RawObjectRef = unsigned char*;
+
 //Represents a raw class reference
 using RawClassRef = unsigned char*;
 
 //Represents a raw array reference
 using RawArrayRef = unsigned char*;
+
+//Represents an object reference
+class ObjectRef {
+private:
+	unsigned char* mPtr;
+	const Type* mType;
+
+	//Sets the mark status
+	void setMarked(bool isMarked);
+public:
+	//Creates a new reference to the given object.
+	//Note the reference should be to the data, not the header.
+	ObjectRef(RawObjectRef objRef);
+
+	//Returns the type of the object
+	const Type* type() const;
+
+	//Returns a pointer to the object.
+	unsigned char* objectPtr();
+
+	//Indicates if the object is marked
+	bool isMarked() const;
+
+	//Marks the current object
+	void mark();
+
+	//Unmarks the current object
+	void unmark();
+};
 
 //Represents a field reference
 template<typename T>
@@ -30,11 +62,11 @@ public:
 //Represents a class reference
 class ClassRef {
 private:
-	ClassHandle* mHandle;
+	ObjectRef mObjRef;
 	const ClassMetadata& mMetadata;
 public:
-	//Creates a new reference to the given structure
-	ClassRef(ClassHandle* handle, const ClassMetadata& metadata);
+	//Creates a new reference to the given class
+	ClassRef(ObjectRef objRef, const ClassMetadata& metadata);
 
 	//Returns a reference to a field of the given type
 	template<typename T>

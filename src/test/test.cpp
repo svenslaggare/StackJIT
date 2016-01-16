@@ -15,7 +15,7 @@ void printPoint(RawClassRef objRef) {
 	if (objRef != nullptr) {
 		auto& vmState = Runtime::vmState;
 
-		//Obtain a reference to the structure
+		//Obtain a reference to the class
 		auto pointRef = vmState.gc().getClassRef(objRef);
 
 		auto intType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Integer));

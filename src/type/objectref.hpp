@@ -15,7 +15,7 @@ T* FieldRef<T>::value() {
 	return mFieldPtr;
 }
 
-//Struct ref
+//Class ref
 template<typename T>
 FieldRef<T> ClassRef::getField(std::string name, const Type* type) {
 	if (mMetadata.fields().count(name) > 0) {
@@ -26,10 +26,10 @@ FieldRef<T> ClassRef::getField(std::string name, const Type* type) {
 				"Expected field to be of type '" + type->name() + "' but got type '" + fieldRef.type()->name() + "'.");
 		}
 
-		return FieldRef<T>((unsigned char*)mHandle->handle() + (std::size_t)fieldRef.offset());
+		return FieldRef<T>(mObjRef.objectPtr() + (std::size_t)fieldRef.offset());
 	} else {
 		throw std::runtime_error(
-			"There exists no field called '" + name + "' in the class '" + mHandle->type()->name() + "'.");
+			"There exists no field called '" + name + "' in the class '" + mObjRef.type()->name() + "'.");
 	}
 }
 

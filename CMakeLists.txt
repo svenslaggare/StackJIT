@@ -75,7 +75,9 @@ set(SOURCE_FILES
         src/loader/imagecontainer.h
         src/compiler/allocator.h
         src/linux/allocator.cpp
-        src/windows/allocator.cpp)
+        src/windows/allocator.cpp
+        src/runtime/managedheap.cpp
+        src/runtime/managedheap.h)
 
 # Project structure for VS
 SOURCE_GROUP(base REGULAR_EXPRESSION "src/(.*)\\.((cpp)|(h))")
