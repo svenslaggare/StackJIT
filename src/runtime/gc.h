@@ -26,6 +26,9 @@ private:
 	//Allocate an object of given type and size in the given heap
 	unsigned char* allocateObject(ManagedHeap& heap, const Type* type, std::size_t size);
 
+	//Deletes the given object
+	void deleteObject(ManagedHeap& heap, ObjectRef objRef);
+
 	//Prints the given object
 	void printObject(ObjectRef objRef);
 
