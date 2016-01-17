@@ -67,6 +67,17 @@ private:
 	//Deletes unreachable objects.
 	void sweepObjects();
 
+	using ForwardingTable = std::unordered_map<unsigned char*, unsigned char*>;
+
+	//Computes the new locations of the objects
+	unsigned char* computeLocations(ForwardingTable& forwardingAddress);
+
+	//Updates the references
+	void updateReferences(GCRuntimeInformation& runtimeInformation, ForwardingTable& forwardingAddress);
+
+	//Moves the objects
+	int moveObjects(ForwardingTable& forwardingAddress);
+
 	//Compacts the objects
 	void compactObjects(GCRuntimeInformation& runtimeInformation);
 

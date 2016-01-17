@@ -248,19 +248,18 @@ void GarbageCollector::sweepObjects() {
 	}
 }
 
-void GarbageCollector::compactObjects(GCRuntimeInformation& runtimeInformation) {
-	int numDeallocatedObjects = 0;
-
-	//Compute the new locations of the objects
+unsigned char* GarbageCollector::computeLocations(ForwardingTable& forwardingAddress) {
 	auto free = mHeap.data();
-	std::unordered_map<unsigned char*, unsigned char*> forwardingAddress;
 	mHeap.visitObjects([&](ObjectRef objRef) {
 		if (objRef.isMarked()) {
 			forwardingAddress.insert({ objRef.fullPtr(), free });
 			free += objRef.fullSize();
 		}
 	});
+	return free;
+}
 
+void GarbageCollector::updateReferences(GCRuntimeInformation& runtimeInformation, ForwardingTable& forwardingAddress) {
 	//Updates the given reference
 	auto updateRef = [&](PtrValue* ref) {
 		if (*ref != 0) {
@@ -304,8 +303,10 @@ void GarbageCollector::compactObjects(GCRuntimeInformation& runtimeInformation) 
 			}
 		}
 	});
+}
 
-	//Move the objects
+int GarbageCollector::moveObjects(ForwardingTable& forwardingAddress) {
+	int numDeallocatedObjects = 0;
 	mHeap.visitObjects([&](ObjectRef objRef) {
 		if (objRef.isMarked()) {
 			auto dest = forwardingAddress[objRef.fullPtr()];
@@ -321,6 +322,20 @@ void GarbageCollector::compactObjects(GCRuntimeInformation& runtimeInformation) 
 		}
 	});
 
+	return numDeallocatedObjects;
+}
+
+void GarbageCollector::compactObjects(GCRuntimeInformation& runtimeInformation) {
+	ForwardingTable forwardingAddress;
+
+	//Compute the new locations of the objects
+	auto free = computeLocations(forwardingAddress);
+
+	//Update the references
+	updateReferences(runtimeInformation, forwardingAddress);
+
+	//Move the objects
+	int numDeallocatedObjects = moveObjects(forwardingAddress);
 	mHeap.setNextAllocation(free);
 
 	if (vmState.enableDebug && vmState.printGCStats) {
