@@ -170,7 +170,7 @@ public:
 	}
 
 	//Tests that the GC compacts
-	void testCompact() {
+	void testCompact1() {
 		GCTest gcTest;
 
 		TS_ASSERT_EQUALS(
@@ -183,6 +183,19 @@ public:
 
 		TS_ASSERT_EQUALS(gcTest.collections.at(0).hasDeallocated(gcTest.allocatedObjects.at(1)), true);
 		TS_ASSERT_EQUALS(gcTest.allocatedObjects[1], gcTest.allocatedObjects[2]);
+	}
+
+	//Tests that the GC compacts
+	void testCompact2() {
+		GCTest gcTest;
+
+		TS_ASSERT_EQUALS(
+			parseGCData(invokeVM("gc/compact2", options), gcTest),
+			"1337\n");
+
+		TS_ASSERT_EQUALS(gcTest.allocatedObjects.size(), 2);
+		TS_ASSERT_EQUALS(gcTest.collections.size(), 1);
+		TS_ASSERT_EQUALS(gcTest.collections.at(0).deallocatedObjects.size(), 1);
 	}
 
 	//Tests when the GC is run implicit
