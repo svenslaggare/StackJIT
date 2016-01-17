@@ -23,7 +23,7 @@ GCRuntimeInformation::GCRuntimeInformation(RegisterValue* basePtr, ManagedFuncti
 }
 
 GarbageCollector::GarbageCollector(VMState& vmState)
-	: vmState(vmState), mYoungGeneration(2 * 1024 * 1024), mOldGeneration(8 * 1024 * 1024) {
+	: vmState(vmState), mHeap(10 * 1024 * 1024) {
 
 }
 
@@ -39,14 +39,14 @@ void GarbageCollector::printObject(ObjectRef objRef) {
 }
 
 unsigned char* GarbageCollector::allocateObject(ManagedHeap& heap, const Type* type, std::size_t size) {
-	auto fullObjSize = StackJIT::OBJECT_HEADER_SIZE + size;
-	auto objPtr = heap.allocate(fullObjSize);
+	auto fullSize = StackJIT::OBJECT_HEADER_SIZE + size;
+	auto objPtr = heap.allocate(fullSize);
 
 	if (objPtr == nullptr) {
 		throw std::runtime_error("Could not allocate object.");
 	}
 
-	memset(objPtr, 0, fullObjSize);
+	memset(objPtr, 0, fullSize);
 
 	//Set the header
 	Helpers::setValue(objPtr, 0, (PtrValue)type);
@@ -70,7 +70,7 @@ unsigned char* GarbageCollector::newArray(const ArrayType* arrayType, int length
     auto elemSize = TypeSystem::sizeOfType(elementType);
 
     std::size_t memSize = StackJIT::ARRAY_LENGTH_SIZE + (length * elemSize);
-    auto arrayPtr = allocateObject(mYoungGeneration, arrayType, memSize);
+    auto arrayPtr = allocateObject(mHeap, arrayType, memSize);
 
     //Set the length of the array
 	Helpers::setValue(arrayPtr, 0, length);
@@ -89,7 +89,7 @@ unsigned char* GarbageCollector::newArray(const ArrayType* arrayType, int length
 
 unsigned char* GarbageCollector::newClass(const ClassType* classType) {
     std::size_t memSize = classType->classMetadata()->size();
-    auto classPtr = allocateObject(mYoungGeneration, classType, memSize);
+    auto classPtr = allocateObject(mHeap, classType, memSize);
 
     if (vmState.enableDebug && vmState.printAllocation) {
         std::cout
@@ -99,6 +99,62 @@ unsigned char* GarbageCollector::newClass(const ClassType* classType) {
     }
 
     return classPtr;
+}
+
+void GarbageCollector::visitFrameReference(StackFrameEntry frameEntry, VisitReferenceFn fn) {
+	if (TypeSystem::isReferenceType(frameEntry.type())) {
+		auto objPtr = (unsigned char*)frameEntry.value();
+
+		//Don't visit nulls
+		if (objPtr == nullptr) {
+			return;
+		}
+
+		fn(frameEntry);
+	}
+}
+
+void GarbageCollector::visitFrameReferences(RegisterValue* basePtr, ManagedFunction* func, int instIndex, VisitReferenceFn fn) {
+	StackFrame stackFrame(basePtr, func, instIndex);
+	auto numArgs = func->def().numParams();
+	auto numLocals = func->numLocals();
+	auto stackSize = stackFrame.operandStackSize();
+
+	for (std::size_t i = 0; i < numArgs; i++) {
+		auto arg = stackFrame.getArgument(i);
+		visitFrameReference(arg, fn);
+	}
+
+	for (std::size_t i = 0; i < numLocals; i++) {
+		auto local = stackFrame.getLocal(i);
+		visitFrameReference(local, fn);
+	}
+
+	for (std::size_t i = 0; i < stackSize; i++) {
+		auto operand = stackFrame.getStackOperand(i);
+		visitFrameReference(operand, fn);
+	}
+}
+
+void GarbageCollector::visitAllFrameReferences(RegisterValue* basePtr, ManagedFunction* func, int instIndex,
+											   VisitReferenceFn fn) {
+	//Visit the calling stack frame
+	visitFrameReferences(basePtr, func, instIndex, fn);
+
+	//Then all other stack frames
+	auto topEntryPtr = vmState.engine().callStack().top();
+	int topFuncIndex = 0;
+	while (topEntryPtr > vmState.engine().callStack().start()) {
+		auto callEntry = *topEntryPtr;
+		auto topFunc = callEntry.function;
+		auto callPoint = callEntry.callPoint;
+		auto callBasePtr = Runtime::Internal::findBasePtr(basePtr, 0, topFuncIndex);
+
+		visitFrameReferences(callBasePtr, topFunc, callPoint, fn);
+
+		topEntryPtr--;
+		topFuncIndex++;
+	}
 }
 
 void GarbageCollector::markObject(ObjectRef objRef) {
@@ -147,57 +203,16 @@ void GarbageCollector::markValue(RegisterValue value, const Type* type) {
 	}
 }
 
-void GarbageCollector::makeFrameObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex) {
-	StackFrame stackFrame(basePtr, func, instIndex);
-	auto numArgs = func->def().numParams();
-	auto numLocals = func->numLocals();
-	auto stackSize = stackFrame.operandStackSize();
-
-	for (std::size_t i = 0; i < numArgs; i++) {
-		auto arg = stackFrame.getArgument(i);
-		markValue(arg.value(), arg.type());
-	}
-
-	for (std::size_t i = 0; i < numLocals; i++) {
-		auto local = stackFrame.getLocal(i);
-		markValue(local.value(), local.type());
-	}
-
-	for (std::size_t i = 0; i < stackSize; i++) {
-		auto operand = stackFrame.getStackOperand(i);
-		markValue(operand.value(), operand.type());
-	}
-}
-
 void GarbageCollector::markAllObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex) {
-	//Mark the calling stack frame
-	makeFrameObjects(basePtr, func, instIndex);
-
-	//Then all other stack frames
-	auto topEntryPtr = vmState.engine().callStack().top();
-	int topFuncIndex = 0;
-	while (topEntryPtr > vmState.engine().callStack().start()) {
-		auto callEntry = *topEntryPtr;
-		auto topFunc = callEntry.function;
-		auto callPoint = callEntry.callPoint;
-		auto callBasePtr = Runtime::Internal::findBasePtr(basePtr, 0, topFuncIndex);
-
-		if (vmState.enableDebug && vmState.printGCStackTrace) {
-			std::cout << topFunc->def().name() << " (" << callPoint << ")" << std::endl;
-			Runtime::Internal::printAliveObjects(callBasePtr, topFunc, callPoint, "\t");
-		}
-
-		makeFrameObjects(callBasePtr, topFunc, callPoint);
-
-		topEntryPtr--;
-		topFuncIndex++;
-	}
+	visitAllFrameReferences(basePtr, func, instIndex, [this](StackFrameEntry frameEntry) {
+		markObject(ObjectRef((RawObjectRef)frameEntry.value()));
+	});
 }
 
 void GarbageCollector::sweepObjects() {
 	int numDeallocatedObjects = 0;
 
-	mYoungGeneration.visitObjects([&](ObjectRef objRef) {
+	mHeap.visitObjects([&](ObjectRef objRef) {
 		if (!objRef.isMarked()) {
 			numDeallocatedObjects++;
 
@@ -206,7 +221,7 @@ void GarbageCollector::sweepObjects() {
 				printObject(objRef);
 			}
 
-			deleteObject(mYoungGeneration, objRef);
+			deleteObject(mHeap, objRef);
 		} else {
 			objRef.unmark();
 		}
@@ -223,7 +238,7 @@ bool GarbageCollector::beginGC(bool forceGC) {
 		if (vmState.enableDebug && vmState.printAliveObjects) {
 			std::cout << "Alive objects: " << std::endl;
 
-			mYoungGeneration.visitObjects([this](ObjectRef objRef) {
+			mHeap.visitObjects([this](ObjectRef objRef) {
 				printObject(objRef);
 			});
 		}

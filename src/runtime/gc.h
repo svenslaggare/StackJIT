@@ -2,6 +2,7 @@
 #include "../type/objectref.h"
 #include "../stackjit.h"
 #include "managedheap.h"
+#include "stackframe.h"
 #include <unordered_map>
 #include <vector>
 #include <chrono>
@@ -23,11 +24,12 @@ struct GCRuntimeInformation {
 
 //Represents the garbage collector
 class GarbageCollector {
+public:
+	using VisitReferenceFn = std::function<void (StackFrameEntry)>;
 private:
 	VMState& vmState;
 
-	ManagedHeap mYoungGeneration;
-	ManagedHeap mOldGeneration;
+	ManagedHeap mHeap;
 
 	std::size_t mNumAllocated = 0;
 	std::size_t mAllocatedBeforeCollection = 0;
@@ -42,14 +44,20 @@ private:
 	//Prints the given object
 	void printObject(ObjectRef objRef);
 
+	//Visits the given frame entry if reference
+	void visitFrameReference(StackFrameEntry frameEntry, VisitReferenceFn fn);
+
+	//Visits all the references in the given stack frame
+	void visitFrameReferences(RegisterValue* basePtr, ManagedFunction* func, int instIndex, VisitReferenceFn fn);
+
+	//Visits all the references in all stack frames, starting at the given frame
+	void visitAllFrameReferences(RegisterValue* basePtr, ManagedFunction* func, int instIndex, VisitReferenceFn fn);
+
 	//Marks the given object
 	void markObject(ObjectRef objRef);
 
 	//Marks the value of the given type
 	void markValue(RegisterValue value, const Type* type);
-
-	//Marks all the object in the given stack frame
-	void makeFrameObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex);
 
 	//Marks the objects in all stack frames, starting at the given frame
 	void markAllObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex);
