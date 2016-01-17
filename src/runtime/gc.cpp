@@ -182,11 +182,9 @@ void GarbageCollector::markObject(ObjectRef objRef) {
 		} else if (TypeSystem::isClass(objRef.type())) {
 			objRef.mark();
 
-			auto classType = static_cast<const ClassType*>(objRef.type());
-			auto& classMetadata = vmState.classProvider().getMetadata(classType->className());
-
 			//Mark ref fields
-			for (auto fieldEntry : classMetadata.fields()) {
+			auto classType = static_cast<const ClassType*>(objRef.type());
+			for (auto fieldEntry : classType->classMetadata()->fields()) {
 				auto field = fieldEntry.second;
 
 				if (TypeSystem::isReferenceType(field.type())) {
@@ -250,6 +248,87 @@ void GarbageCollector::sweepObjects() {
 	}
 }
 
+void GarbageCollector::compactObjects(GCRuntimeInformation& runtimeInformation) {
+	int numDeallocatedObjects = 0;
+
+	//Compute the new locations of the objects
+	auto free = mHeap.data();
+	std::unordered_map<unsigned char*, unsigned char*> forwardingAddress;
+	mHeap.visitObjects([&](ObjectRef objRef) {
+		if (objRef.isMarked()) {
+			forwardingAddress.insert({ objRef.fullPtr(), free });
+			free += objRef.fullSize();
+		}
+	});
+
+	//Updates the given reference
+	auto updateRef = [&](PtrValue* ref) {
+		if (*ref != 0) {
+			auto newLocation = forwardingAddress[((unsigned char*)*ref) - StackJIT::OBJECT_HEADER_SIZE];
+			*ref = (PtrValue)(newLocation + StackJIT::OBJECT_HEADER_SIZE);
+		}
+	};
+
+	//Update the root references
+	visitAllFrameReferences(
+		runtimeInformation.basePtr,
+		runtimeInformation.function,
+		runtimeInformation.instIndex,
+		[&](StackFrameEntry frameEntry) {
+			updateRef((PtrValue*)frameEntry.valuePtr());
+		});
+
+	//Update the field/element references
+	mHeap.visitObjects([&](ObjectRef objRef) {
+		if (objRef.isMarked()) {
+			if (TypeSystem::isArray(objRef.type())) {
+				auto arrayType = static_cast<const ArrayType*>(objRef.type());
+
+				//Update ref elements
+				if (TypeSystem::isReferenceType(arrayType->elementType())) {
+					ArrayRef<PtrValue> arrayRef(objRef.dataPtr());
+					for (int i = 0; i < arrayRef.length(); i++) {
+						updateRef(arrayRef.elementsPtr() + i);
+					}
+				}
+			} else if (TypeSystem::isClass(objRef.type())) {
+				//Update ref fields
+				auto classType = static_cast<const ClassType*>(objRef.type());
+				for (auto fieldEntry : classType->classMetadata()->fields()) {
+					auto field = fieldEntry.second;
+
+					if (TypeSystem::isReferenceType(field.type())) {
+						updateRef((PtrValue*)(objRef.dataPtr() + field.offset()));
+					}
+				}
+			}
+		}
+	});
+
+	//Move the objects
+	mHeap.visitObjects([&](ObjectRef objRef) {
+		if (objRef.isMarked()) {
+			auto dest = forwardingAddress[objRef.fullPtr()];
+			memmove(dest, objRef.fullPtr(), objRef.fullSize());
+			objRef.unmark();
+		} else {
+			numDeallocatedObjects++;
+
+			if (vmState.enableDebug && vmState.printDeallocation) {
+				std::cout << "Deleted object: ";
+				printObject(objRef);
+			}
+		}
+	});
+
+	mHeap.setNextAllocation(free);
+
+	if (vmState.enableDebug && vmState.printGCStats) {
+		std::cout << "Deallocated: " << numDeallocatedObjects << " objects." << std::endl;
+		std::cout << "GC time: " << Helpers::getDuration(mGCStart) << " ms." << std::endl;
+	}
+}
+
 bool GarbageCollector::beginGC(bool forceGC) {
 	if (mNumAllocated >= mAllocatedBeforeCollection || forceGC) {
 		if (vmState.enableDebug && vmState.printAliveObjects) {
@@ -288,8 +367,12 @@ void GarbageCollector::collect(GCRuntimeInformation& runtimeInformation) {
 		//Mark all objects
 		markAllObjects(basePtr, func, instIndex);
 
-		//Sweep objects
-		sweepObjects();
+//		//Sweep objects
+//		sweepObjects();
+//		mNumAllocated = 0;
+
+		//Compact objects
+		compactObjects(runtimeInformation);
 		mNumAllocated = 0;
 
 		if (vmState.enableDebug && vmState.printGCPeriod) {

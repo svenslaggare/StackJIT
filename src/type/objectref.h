@@ -31,6 +31,9 @@ public:
 	//Returns the type of the object
 	const Type* type() const;
 
+	//Returns a pointer to the header
+	unsigned char* fullPtr() const;
+
 	//Returns a pointer to the data
 	unsigned char* dataPtr() const;
 

@@ -25,6 +25,14 @@ unsigned char* ManagedHeap::allocate(std::size_t size) {
 	}
 }
 
+void ManagedHeap::setNextAllocation(unsigned char* nextAllocation) {
+	if (nextAllocation >= mData && nextAllocation < mData + mSize) {
+		mNextAllocation = nextAllocation;
+	} else {
+		throw std::runtime_error("The pointer is outside the heap.");
+	}
+}
+
 void ManagedHeap::visitObjects(std::function<void (ObjectRef)> fn) {
 	auto current = mData;
 	while (current < mNextAllocation) {

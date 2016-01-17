@@ -18,6 +18,10 @@ const Type* ObjectRef::type() const {
 	return mType;
 }
 
+unsigned char* ObjectRef::fullPtr() const {
+	return mPtr;
+}
+
 unsigned char* ObjectRef::dataPtr() const {
 	return mPtr + sizeof(PtrValue) + 1;
 }

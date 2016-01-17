@@ -67,6 +67,9 @@ private:
 	//Deletes unreachable objects.
 	void sweepObjects();
 
+	//Compacts the objects
+	void compactObjects(GCRuntimeInformation& runtimeInformation);
+
 	//Begins the garbage collection. Return true if started.
 	bool beginGC(bool forceGC = false);
 public:
