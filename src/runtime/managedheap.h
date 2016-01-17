@@ -20,6 +20,6 @@ public:
 	//Allocates a memory block of the given size. Returns nullptr if not allocated
 	unsigned char* allocate(std::size_t size);
 
-	//Visits all the objects in the
+	//Visits all the alive objects in the heap.
 	void visitObjects(std::function<void (ObjectRef)> fn);
 };

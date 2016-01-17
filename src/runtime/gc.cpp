@@ -46,8 +46,8 @@ unsigned char* GarbageCollector::allocateObject(ManagedHeap& heap, const Type* t
 void GarbageCollector::deleteObject(ManagedHeap& heap, ObjectRef objRef) {
 	//TODO: We just do some temp deleting, so that the object is avoided when visiting the objects.
 	auto fullPtr = objRef.objectPtr() - StackJIT::OBJECT_HEADER_SIZE;
-	Helpers::setValue<std::int32_t>(fullPtr, 0, -1); //Indicator for dead object
-	Helpers::setValue<std::int32_t>(fullPtr, 4, (std::int32_t)objRef.fullObjectSize()); //The amount of data to skip from the start.
+	Helpers::setValue<std::size_t>(fullPtr, 0, objRef.fullObjectSize()); //The amount of data to skip from the start.
+	Helpers::setValue<unsigned char>(fullPtr, sizeof(std::size_t), 0xFF); //Indicator for dead object
 }
 
 unsigned char* GarbageCollector::newArray(const ArrayType* arrayType, int length) {

@@ -28,13 +28,13 @@ unsigned char* ManagedHeap::allocate(std::size_t size) {
 void ManagedHeap::visitObjects(std::function<void (ObjectRef)> fn) {
 	auto current = mData;
 	while (current < mNextAllocation) {
-		if (((*(std::int32_t*)current) & -1) != -1) {
+		if (*(current + sizeof(std::size_t)) != 0xFF) {
 			ObjectRef objRef(current + StackJIT::OBJECT_HEADER_SIZE);
 			fn(objRef);
 			current += objRef.fullObjectSize();
 		} else {
 			//Dead object
-			current += *(std::int32_t*)(current + sizeof(std::int32_t));
+			current += *(std::size_t*)(current);
 		}
 	}
 }
