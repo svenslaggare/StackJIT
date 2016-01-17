@@ -1,6 +1,4 @@
 #include "vmstate.h"
-#include "type/type.h"
-#include "type/objects.h"
 
 VMState::VMState()
     : mTypeProvider(mClassProvider), mGC(*this), mEngine(*this) {

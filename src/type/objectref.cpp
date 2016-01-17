@@ -7,7 +7,7 @@ ObjectRef::ObjectRef(RawObjectRef objRef)
 		auto arrayType = static_cast<const ArrayType*>(type());
 		auto elementType = arrayType->elementType();
 		auto elemSize = TypeSystem::sizeOfType(elementType);
-		auto length = *(int*)objectPtr();
+		auto length = *(int*)dataPtr();
 		mObjectSize = StackJIT::ARRAY_LENGTH_SIZE + (length * elemSize);
 	} else {
 		mObjectSize = static_cast<const ClassType*>(type())->classMetadata()->size();
@@ -18,16 +18,16 @@ const Type* ObjectRef::type() const {
 	return mType;
 }
 
-unsigned char* ObjectRef::objectPtr() const {
+unsigned char* ObjectRef::dataPtr() const {
 	return mPtr + sizeof(PtrValue) + 1;
 }
 
-std::size_t ObjectRef::objectSize() const {
+std::size_t ObjectRef::size() const {
 	return mObjectSize;
 }
 
-std::size_t ObjectRef::fullObjectSize() const {
-	return objectSize() + StackJIT::OBJECT_HEADER_SIZE;
+std::size_t ObjectRef::fullSize() const {
+	return size() + StackJIT::OBJECT_HEADER_SIZE;
 }
 
 void ObjectRef::setMarked(bool isMarked) {

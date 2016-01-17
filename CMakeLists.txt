@@ -29,8 +29,6 @@ set(SOURCE_FILES
         src/compiler/memory.cpp
         src/runtime/native.cpp
         src/runtime/native.h
-        src/type/objects.cpp
-        src/type/objects.h
         src/loader/parser.cpp
         src/loader/parser.h
         src/runtime/runtime.cpp
@@ -48,6 +46,7 @@ set(SOURCE_FILES
         src/vmstate.h
         src/type/objectref.h
         src/type/objectref.cpp
+        src/type/objectref.hpp
         src/runtime/stackframe.h
         src/runtime/stackframe.cpp
         src/core/instructionset.h

@@ -1,9 +1,7 @@
 #pragma once
 #include <string>
 #include <stdexcept>
-#include "objects.h"
 
-class ClassHandle;
 class ClassMetadata;
 class Type;
 
@@ -33,14 +31,14 @@ public:
 	//Returns the type of the object
 	const Type* type() const;
 
-	//Returns a pointer to the object
-	unsigned char* objectPtr() const;
+	//Returns a pointer to the data
+	unsigned char* dataPtr() const;
 
 	//Returns the size of the object
-	std::size_t objectSize() const;
+	std::size_t size() const;
 
 	//Returns the size of the object + header
-	std::size_t fullObjectSize() const;
+	std::size_t fullSize() const;
 
 	//Indicates if the object is marked
 	bool isMarked() const;

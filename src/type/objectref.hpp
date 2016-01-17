@@ -1,4 +1,3 @@
-#include "../type/objects.h"
 #include "../type/classmetadata.h"
 #include "../type/type.h"
 #include "../stackjit.h"
@@ -26,7 +25,7 @@ FieldRef<T> ClassRef::getField(std::string name, const Type* type) {
 				"Expected field to be of type '" + type->name() + "' but got type '" + fieldRef.type()->name() + "'.");
 		}
 
-		return FieldRef<T>(mObjRef.objectPtr() + (std::size_t)fieldRef.offset());
+		return FieldRef<T>(mObjRef.dataPtr() + (std::size_t)fieldRef.offset());
 	} else {
 		throw std::runtime_error(
 			"There exists no field called '" + name + "' in the class '" + mObjRef.type()->name() + "'.");

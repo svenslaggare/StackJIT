@@ -1,6 +1,5 @@
 #include "runtime.h"
 #include "../compiler/amd64.h"
-#include "../type/objects.h"
 #include "../vmstate.h"
 #include "../core/function.h"
 #include "../type/type.h"
@@ -42,7 +41,7 @@ namespace {
 			} else {
 				std::cout << "0x" << std::hex << value << std::dec;
 			}
-		} else if (type->name() == "Float") {
+		} else if (type->name() == TypeSystem::toString(PrimitiveTypes::Float)) {
 			int floatPattern = (int)value;
 			float floatValue = *(reinterpret_cast<float*>(&floatPattern));
 			std::cout << floatValue;

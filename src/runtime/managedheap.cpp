@@ -31,7 +31,7 @@ void ManagedHeap::visitObjects(std::function<void (ObjectRef)> fn) {
 		if (*(current + sizeof(std::size_t)) != 0xFF) {
 			ObjectRef objRef(current + StackJIT::OBJECT_HEADER_SIZE);
 			fn(objRef);
-			current += objRef.fullObjectSize();
+			current += objRef.fullSize();
 		} else {
 			//Dead object
 			current += *(std::size_t*)(current);

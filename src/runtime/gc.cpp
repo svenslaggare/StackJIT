@@ -1,7 +1,6 @@
 #include "gc.h"
 #include "../type/type.h"
 #include "../vmstate.h"
-#include "../type/objects.h"
 #include "../compiler/amd64.h"
 #include "../stackjit.h"
 #include "../helpers.h"
@@ -34,9 +33,9 @@ void GarbageCollector::initialize() {
 
 void GarbageCollector::printObject(ObjectRef objRef) {
 	std::cout
-		<< "0x" << std::hex << (PtrValue)objRef.objectPtr() << std::dec << ": " << objRef.objectSize()
-		<< " bytes (" << objRef.type()->name() << ")"
-		<< std::endl;
+	<< "0x" << std::hex << (PtrValue)objRef.dataPtr() << std::dec << ": " << objRef.size()
+	<< " bytes (" << objRef.type()->name() << ")"
+	<< std::endl;
 }
 
 unsigned char* GarbageCollector::allocateObject(ManagedHeap& heap, const Type* type, std::size_t size) {
@@ -61,8 +60,8 @@ unsigned char* GarbageCollector::allocateObject(ManagedHeap& heap, const Type* t
 
 void GarbageCollector::deleteObject(ManagedHeap& heap, ObjectRef objRef) {
 	//TODO: We just do some temp deleting, so that the object is avoided when visiting the objects.
-	auto fullPtr = objRef.objectPtr() - StackJIT::OBJECT_HEADER_SIZE;
-	Helpers::setValue<std::size_t>(fullPtr, 0, objRef.fullObjectSize());  //The amount of data to skip from the start.
+	auto fullPtr = objRef.dataPtr() - StackJIT::OBJECT_HEADER_SIZE;
+	Helpers::setValue<std::size_t>(fullPtr, 0, objRef.fullSize());  //The amount of data to skip from the start.
 	Helpers::setValue<unsigned char>(fullPtr, sizeof(std::size_t), 0xFF); //Indicator for dead object
 }
 
@@ -111,7 +110,7 @@ void GarbageCollector::markObject(ObjectRef objRef) {
 
 			//Mark ref elements
 			if (TypeSystem::isReferenceType(arrayType->elementType())) {
-				ArrayRef<PtrValue> arrayRef(objRef.objectPtr());
+				ArrayRef<PtrValue> arrayRef(objRef.dataPtr());
 				for (int i = 0; i < arrayRef.length(); i++) {
 					markValue(arrayRef.getElement(i), arrayType->elementType());
 				}
@@ -127,7 +126,7 @@ void GarbageCollector::markObject(ObjectRef objRef) {
 				auto field = fieldEntry.second;
 
 				if (TypeSystem::isReferenceType(field.type())) {
-					RegisterValue fieldValue = *(PtrValue*)(objRef.objectPtr() + field.offset());
+					RegisterValue fieldValue = *(PtrValue*)(objRef.dataPtr() + field.offset());
 					markValue(fieldValue, field.type());
 				}
 			}
