@@ -185,15 +185,41 @@ public:
 		TS_ASSERT_EQUALS(gcTest.allocatedObjects[1], gcTest.allocatedObjects[2]);
 	}
 
-	//Tests that the GC compacts
-	void testCompact2() {
+	//Tests that the root references are updated when the GC compacts
+	void testRootRef() {
 		GCTest gcTest;
 
 		TS_ASSERT_EQUALS(
-			parseGCData(invokeVM("gc/compact2", options), gcTest),
+			parseGCData(invokeVM("gc/compact_update_root_ref", options), gcTest),
 			"1337\n");
 
 		TS_ASSERT_EQUALS(gcTest.allocatedObjects.size(), 2);
+		TS_ASSERT_EQUALS(gcTest.collections.size(), 1);
+		TS_ASSERT_EQUALS(gcTest.collections.at(0).deallocatedObjects.size(), 1);
+	}
+
+	//Tests that the array references are updated when the GC compacts
+	void testArraytRef() {
+		GCTest gcTest;
+
+		TS_ASSERT_EQUALS(
+			parseGCData(invokeVM("gc/compact_update_array_ref", options), gcTest),
+			"1337\n");
+
+		TS_ASSERT_EQUALS(gcTest.allocatedObjects.size(), 3);
+		TS_ASSERT_EQUALS(gcTest.collections.size(), 1);
+		TS_ASSERT_EQUALS(gcTest.collections.at(0).deallocatedObjects.size(), 1);
+	}
+
+	//Tests that the class references are updated when the GC compacts
+	void testClassRef() {
+		GCTest gcTest;
+
+		TS_ASSERT_EQUALS(
+			parseGCData(invokeVM("gc/compact_update_class_ref", options), gcTest),
+			"1337\n");
+
+		TS_ASSERT_EQUALS(gcTest.allocatedObjects.size(), 3);
 		TS_ASSERT_EQUALS(gcTest.collections.size(), 1);
 		TS_ASSERT_EQUALS(gcTest.collections.at(0).deallocatedObjects.size(), 1);
 	}

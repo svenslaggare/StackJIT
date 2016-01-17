@@ -261,10 +261,10 @@ unsigned char* GarbageCollector::computeLocations(ForwardingTable& forwardingAdd
 
 void GarbageCollector::updateReferences(GCRuntimeInformation& runtimeInformation, ForwardingTable& forwardingAddress) {
 	//Updates the given reference
-	auto updateRef = [&](PtrValue* ref) {
-		if (*ref != 0) {
-			auto newLocation = forwardingAddress[((unsigned char*)*ref) - StackJIT::OBJECT_HEADER_SIZE];
-			*ref = (PtrValue)(newLocation + StackJIT::OBJECT_HEADER_SIZE);
+	auto updateRef = [&](PtrValue* objRef) {
+		if (*objRef != 0) {
+			auto newLocation = forwardingAddress[((unsigned char*)*objRef) - StackJIT::OBJECT_HEADER_SIZE];
+			*objRef = (PtrValue)(newLocation + StackJIT::OBJECT_HEADER_SIZE);
 		}
 	};
 
