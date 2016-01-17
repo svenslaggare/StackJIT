@@ -82,7 +82,7 @@ private:
 	void compactObjects(GCRuntimeInformation& runtimeInformation);
 
 	//Begins the garbage collection. Return true if started.
-	bool beginGC(bool forceGC = false);
+	bool beginGC(bool forceGC);
 public:
 	//Creates a new GC
 	GarbageCollector(VMState& vmState);
@@ -101,7 +101,7 @@ public:
 	unsigned char* newClass(const ClassType* classType);
 
 	//Begins a collection using the given runtime information
-	void collect(GCRuntimeInformation& runtimeInformation);
+	void collect(GCRuntimeInformation& runtimeInformation, bool forceGC = false);
 
 	//Returns a reference to the given class
 	ClassRef getClassRef(RawClassRef classRef);

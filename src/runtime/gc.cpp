@@ -364,12 +364,12 @@ bool GarbageCollector::beginGC(bool forceGC) {
 	}
 }
 
-void GarbageCollector::collect(GCRuntimeInformation& runtimeInformation) {
+void GarbageCollector::collect(GCRuntimeInformation& runtimeInformation, bool forceGC) {
 	auto basePtr = runtimeInformation.basePtr;
 	auto func = runtimeInformation.function;
 	auto instIndex = runtimeInformation.instIndex;
 
-	if (beginGC()) {
+	if (beginGC(forceGC)) {
 		std::size_t startStrLength = 0;
 
 		if (vmState.enableDebug && vmState.printGCPeriod) {
