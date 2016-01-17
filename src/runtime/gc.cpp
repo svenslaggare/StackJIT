@@ -137,7 +137,11 @@ void GarbageCollector::visitFrameReferences(RegisterValue* basePtr, ManagedFunct
 }
 
 void GarbageCollector::visitAllFrameReferences(RegisterValue* basePtr, ManagedFunction* func, int instIndex,
-											   VisitReferenceFn fn) {
+											   VisitReferenceFn fn, VisitFrameFn frameFn) {
+	if (frameFn) {
+		frameFn(basePtr, func, instIndex);
+	}
+
 	//Visit the calling stack frame
 	visitFrameReferences(basePtr, func, instIndex, fn);
 
@@ -149,6 +153,10 @@ void GarbageCollector::visitAllFrameReferences(RegisterValue* basePtr, ManagedFu
 		auto topFunc = callEntry.function;
 		auto callPoint = callEntry.callPoint;
 		auto callBasePtr = Runtime::Internal::findBasePtr(basePtr, 0, topFuncIndex);
+
+		if (frameFn) {
+			frameFn(callBasePtr, topFunc, callPoint);
+		}
 
 		visitFrameReferences(callBasePtr, topFunc, callPoint, fn);
 
@@ -204,8 +212,17 @@ void GarbageCollector::markValue(RegisterValue value, const Type* type) {
 }
 
 void GarbageCollector::markAllObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex) {
+	if (vmState.enableDebug && vmState.printGCStackTrace) {
+		std::cout << "Stack trace: " << std::endl;
+	}
+
 	visitAllFrameReferences(basePtr, func, instIndex, [this](StackFrameEntry frameEntry) {
 		markObject(ObjectRef((RawObjectRef)frameEntry.value()));
+	}, [this](RegisterValue* frameBasePtr, ManagedFunction* frameFunc, int frameCallPoint) {
+		if (vmState.enableDebug && vmState.printGCStackTrace) {
+			std::cout << frameFunc->def().name() << " (" << frameCallPoint << ")" << std::endl;
+			Runtime::Internal::printAliveObjects(frameBasePtr, frameFunc, frameCallPoint, "\t");
+		}
 	});
 }
 
@@ -266,12 +283,6 @@ void GarbageCollector::collect(GCRuntimeInformation& runtimeInformation) {
 							")---------------";
 			std::cout << startStr << std::endl;
 			startStrLength = startStr.length();
-		}
-
-		if (vmState.enableDebug && vmState.printGCStackTrace) {
-			std::cout << "Stack trace: " << std::endl;
-			std::cout << func->def().name() << " (" << instIndex << ")" << std::endl;
-			Runtime::Internal::printAliveObjects(basePtr, func, instIndex, "\t");
 		}
 
 		//Mark all objects

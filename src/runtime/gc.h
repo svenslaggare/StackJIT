@@ -26,6 +26,7 @@ struct GCRuntimeInformation {
 class GarbageCollector {
 public:
 	using VisitReferenceFn = std::function<void (StackFrameEntry)>;
+	using VisitFrameFn = std::function<void (RegisterValue* basePtr, ManagedFunction* func, int instIndex)>;
 private:
 	VMState& vmState;
 
@@ -51,7 +52,8 @@ private:
 	void visitFrameReferences(RegisterValue* basePtr, ManagedFunction* func, int instIndex, VisitReferenceFn fn);
 
 	//Visits all the references in all stack frames, starting at the given frame
-	void visitAllFrameReferences(RegisterValue* basePtr, ManagedFunction* func, int instIndex, VisitReferenceFn fn);
+	void visitAllFrameReferences(RegisterValue* basePtr, ManagedFunction* func, int instIndex,
+								 VisitReferenceFn fn, VisitFrameFn frameFn = {});
 
 	//Marks the given object
 	void markObject(ObjectRef objRef);
