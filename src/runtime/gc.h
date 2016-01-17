@@ -10,6 +10,16 @@ class Type;
 class ClassType;
 class ArrayType;
 class VMState;
+class ManagedFunction;
+
+//Holds information needed to perform the collection provided by the runtime
+struct GCRuntimeInformation {
+	RegisterValue* basePtr;
+	ManagedFunction* function;
+	int instIndex;
+
+	GCRuntimeInformation(RegisterValue* basePtr, ManagedFunction* function, int instIndex);
+};
 
 //Represents the garbage collector
 class GarbageCollector {
@@ -32,11 +42,23 @@ private:
 	//Prints the given object
 	void printObject(ObjectRef objRef);
 
-	//Marks the given object.
+	//Marks the given object
 	void markObject(ObjectRef objRef);
+
+	//Marks the value of the given type
+	void markValue(RegisterValue value, const Type* type);
+
+	//Marks all the object in the given stack frame
+	void makeFrameObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex);
+
+	//Marks the objects in all stack frames, starting at the given frame
+	void markAllObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex);
 
 	//Deletes unreachable objects.
 	void sweepObjects();
+
+	//Begins the garbage collection. Return true if started.
+	bool beginGC(bool forceGC = false);
 public:
 	//Creates a new GC
 	GarbageCollector(VMState& vmState);
@@ -54,14 +76,8 @@ public:
 	//Allocates a new class of the given type.
 	unsigned char* newClass(const ClassType* classType);
 
-	//Marks the value of the given type
-	void markValue(RegisterValue value, const Type* type);
-
-	//Begins the garbage collection. Return true if started.
-	bool beginGC(bool forceGC = false);
-
-	//Ends the garbage collection.
-	void endGC();
+	//Begins a collection using the given runtime information
+	void collect(GCRuntimeInformation& runtimeInformation);
 
 	//Returns a reference to the given class
 	ClassRef getClassRef(RawClassRef classRef);

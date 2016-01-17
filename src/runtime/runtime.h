@@ -18,13 +18,13 @@ namespace Runtime {
 	//Prints the given stack frame
 	void printStackFrame(RegisterValue* basePtr, ManagedFunction* func);
 
-	//Internal functions
+	//Functions not intended to be called from outside the runtime.
 	namespace Internal {
 		//Prints the alive objects
 		void printAliveObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex, std::string indentation = "");
 
-		//Marks all the objects
-		void markObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex);
+		//Finds the base ptr for the function at the given index
+		RegisterValue* findBasePtr(RegisterValue* currentBasePtr, int currentIndex, int targetIndex);
 	};
 
 	//Compiles the given function
