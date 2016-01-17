@@ -9,4 +9,4 @@ This folder contains documentation about the VM.
 * [Attributes](attributes.md)
 * [Runtime library](rtlib.md)
 * [Garbage Collector](gc.md)
-* [Objecy Layout](objectlayout.md)
+* [Object Layout](objectlayout.md)
