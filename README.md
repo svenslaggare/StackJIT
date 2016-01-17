@@ -1,7 +1,7 @@
 [![Linux Build Status](https://travis-ci.org/svenslaggare/StackJIT.svg?branch=master)](https://travis-ci.org/svenslaggare/StackJIT) [![Windows Build Status](https://ci.appveyor.com/api/projects/status/nqt3cks6w2kqfny8?svg=true)](https://ci.appveyor.com/project/svenslaggare/stackjit)
 StackJIT
 ========
-Simple multiplatform virtual machine for a stack-based assembler language, featuring a JIT compiler, GC and object system.
+Simple multi-platform virtual machine for a stack-based assembler language, featuring a JIT compiler, GC and object system.
 
 ## Running
 To run the VM, supply a program via stdin:
