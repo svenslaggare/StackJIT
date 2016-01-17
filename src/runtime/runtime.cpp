@@ -119,7 +119,7 @@ void Runtime::Internal::printAliveObjects(RegisterValue* basePtr, ManagedFunctio
 		for (std::size_t i = 0; i < numArgs; i++) {
 			std::cout << indentation << i << ": ";
 			auto arg = stackFrame.getArgument(i);
-			printValue(arg.value, arg.type);
+			printValue(arg.value(), arg.type());
 			std::cout << std::endl;
 		}
 
@@ -132,7 +132,7 @@ void Runtime::Internal::printAliveObjects(RegisterValue* basePtr, ManagedFunctio
 		for (std::size_t i = 0; i < numLocals; i++) {
 			std::cout << indentation << i << ": ";
 			auto local = stackFrame.getLocal(i);
-			printValue(local.value, local.type);
+			printValue(local.value(), local.type());
 			std::cout << std::endl;
 		}
 
@@ -145,7 +145,7 @@ void Runtime::Internal::printAliveObjects(RegisterValue* basePtr, ManagedFunctio
 		for (std::size_t i = 0; i < stackSize; i++) {
 			std::cout << indentation << i << ": ";
 			auto operand = stackFrame.getStackOperand(i);
-			printValue(operand.value, operand.type);
+			printValue(operand.value(), operand.type());
 			std::cout << std::endl;
 		}
 	}
@@ -161,17 +161,17 @@ void Runtime::Internal::markObjects(RegisterValue* basePtr, ManagedFunction* fun
 
 	for (std::size_t i = 0; i < numArgs; i++) {
 		auto arg = stackFrame.getArgument(i);
-		gc.markValue(arg.value, arg.type);
+		gc.markValue(arg.value(), arg.type());
 	}
 
 	for (std::size_t i = 0; i < numLocals; i++) {
 		auto local = stackFrame.getLocal(i);
-		gc.markValue(local.value, local.type);
+		gc.markValue(local.value(), local.type());
 	}
 
 	for (std::size_t i = 0; i < stackSize; i++) {
 		auto operand = stackFrame.getStackOperand(i);
-		gc.markValue(operand.value, operand.type);
+		gc.markValue(operand.value(), operand.type());
 	}
 }
 

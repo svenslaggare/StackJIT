@@ -1,9 +1,22 @@
 #include "stackframe.h"
 #include "../core/function.h"
 
-StackFrameEntry::StackFrameEntry(RegisterValue value, const Type* type)
-	: value(value), type(type) {
+//Stack frame entry
+StackFrameEntry::StackFrameEntry(RegisterValue* value, const Type* type)
+	: mValue(value), mType(type) {
 
+}
+
+RegisterValue StackFrameEntry::value() const {
+	return *mValue;
+}
+
+RegisterValue* StackFrameEntry::valuePtr() const {
+	return mValue;
+}
+
+const Type* StackFrameEntry::type() const {
+	return mType;
 }
 
 //Stack frame
@@ -15,17 +28,17 @@ StackFrame::StackFrame(RegisterValue* basePtr, const ManagedFunction* function, 
 
 StackFrameEntry StackFrame::getArgument(std::int64_t index) {
 	RegisterValue* argsStart = mBasePtr - 1;
-	return StackFrameEntry(argsStart[-index], mFunction->def().parameters()[index]);
+	return StackFrameEntry(argsStart - index, mFunction->def().parameters()[index]);
 }
 
 StackFrameEntry StackFrame::getLocal(std::int64_t index) {
 	RegisterValue* localsStart = mBasePtr - 1 - mFunction->def().numParams();
-	return StackFrameEntry(localsStart[-index], mFunction->getLocal(index));
+	return StackFrameEntry(localsStart - index, mFunction->getLocal(index));
 }
 
 StackFrameEntry StackFrame::getStackOperand(std::int64_t index) {
 	RegisterValue* stackStart = mBasePtr - 1 - mFunction->def().numParams() - mFunction->numLocals();
-	return StackFrameEntry(stackStart[-index], mOperandTypes[mOperandTypes.size() - 1 - index]);
+	return StackFrameEntry(stackStart - index, mOperandTypes[mOperandTypes.size() - 1 - index]);
 }
 
 std::size_t StackFrame::operandStackSize() const {

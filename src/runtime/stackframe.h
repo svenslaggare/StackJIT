@@ -7,12 +7,23 @@ class ManagedFunction;
 class Type;
 
 //Represents a stack frame entry (argument, local, operand)
-struct StackFrameEntry {
-	RegisterValue value;
-	const Type* type;
+class StackFrameEntry {
+private:
+	RegisterValue* mValue;
+	const Type* mType;
 
+public:
 	//Creates a new stack frame entry
-	StackFrameEntry(RegisterValue value, const Type* type);
+	StackFrameEntry(RegisterValue* value, const Type* type);
+
+	//Returns the value of the entry
+	RegisterValue value() const;
+
+	//Returns a pointer to the value
+	RegisterValue* valuePtr() const;
+
+	//Returns the type of the entry
+	const Type* type() const;
 };
 
 //Represents a stack frame
