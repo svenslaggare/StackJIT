@@ -6,7 +6,7 @@ The current GC uses a mark-and-compact collector using the Lisp 2 algorithm.
 A collection happens when 1000 objects (or supplied via a command line argument) has been allocated. This needs to be changed so that collections when the GC needs more free space.
 
 ## Allocator
-The allocator is implemented using the "bump the pointer" technique. This works when a new object needs to be allocated, the current next pointer is returned as the location of the new object, and is incremented after.
+The allocator is implemented using the "bump the pointer" technique. This works by when a new object needs to be allocated, the current next pointer is returned as the location of the new object, and is incremented after.
 
 ## Heap
 The heap is of fixed size (10 MB), and will not grow if the heap runs out of space.
