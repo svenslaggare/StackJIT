@@ -39,11 +39,11 @@ public:
         TS_ASSERT_EQUALS(generatedCode[0], 0x59);
         generatedCode.clear();
 
-        Amd64Backend::popReg(generatedCode, NumberedRegisters::R8);
+        Amd64Backend::popReg(generatedCode, ExtendedRegisters::R8);
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x41, 0x58 }));
         generatedCode.clear();
 
-        Amd64Backend::popReg(generatedCode, NumberedRegisters::R9);
+        Amd64Backend::popReg(generatedCode, ExtendedRegisters::R9);
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x41, 0x59 }));
         generatedCode.clear();
     }
@@ -71,35 +71,35 @@ public:
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x48, 0x89, 0xC4 }));
         generatedCode.clear();
 
-        Amd64Backend::moveRegToReg(generatedCode, Registers::AX, NumberedRegisters::R8);
+        Amd64Backend::moveRegToReg(generatedCode, Registers::AX, ExtendedRegisters::R8);
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x4C, 0x89, 0xC0 }));
         generatedCode.clear();
 
-        Amd64Backend::moveRegToReg(generatedCode, Registers::AX, NumberedRegisters::R10);
+        Amd64Backend::moveRegToReg(generatedCode, Registers::AX, ExtendedRegisters::R10);
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x4C, 0x89, 0xD0 }));
         generatedCode.clear();
 
-        Amd64Backend::moveRegToReg(generatedCode, Registers::CX, NumberedRegisters::R8);
+        Amd64Backend::moveRegToReg(generatedCode, Registers::CX, ExtendedRegisters::R8);
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x4C, 0x89, 0xC1 }));
         generatedCode.clear();
 
-        Amd64Backend::moveRegToReg(generatedCode, Registers::CX, NumberedRegisters::R9);
+        Amd64Backend::moveRegToReg(generatedCode, Registers::CX, ExtendedRegisters::R9);
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x4C, 0x89, 0xC9 }));
         generatedCode.clear();
 
-        Amd64Backend::moveRegToReg(generatedCode, NumberedRegisters::R8, Registers::AX);
+        Amd64Backend::moveRegToReg(generatedCode, ExtendedRegisters::R8, Registers::AX);
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x49, 0x89, 0xC0 }));
         generatedCode.clear();
 
-        Amd64Backend::moveRegToReg(generatedCode, NumberedRegisters::R8, Registers::CX);
+        Amd64Backend::moveRegToReg(generatedCode, ExtendedRegisters::R8, Registers::CX);
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x49, 0x89, 0xC8 }));
         generatedCode.clear();
 
-        Amd64Backend::moveRegToReg(generatedCode, NumberedRegisters::R9, Registers::CX);
+        Amd64Backend::moveRegToReg(generatedCode, ExtendedRegisters::R9, Registers::CX);
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x49, 0x89, 0xC9 }));
         generatedCode.clear();
 
-        Amd64Backend::moveRegToReg(generatedCode, NumberedRegisters::R10, Registers::AX);
+        Amd64Backend::moveRegToReg(generatedCode, ExtendedRegisters::R10, Registers::AX);
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x49, 0x89, 0xC2 }));
         generatedCode.clear();
     }
@@ -196,11 +196,11 @@ public:
 		generatedCode.clear();
 
         //Numbered registers
-        Amd64Backend::moveRegToMemoryRegWithCharOffset(generatedCode, Registers::BP, -16, NumberedRegisters::R8);
+        Amd64Backend::moveRegToMemoryRegWithCharOffset(generatedCode, Registers::BP, -16, ExtendedRegisters::R8);
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x4C, 0x89, 0x45, 0xF0 }));
         generatedCode.clear();
 
-        Amd64Backend::moveRegToMemoryRegWithCharOffset(generatedCode, Registers::AX, -16, NumberedRegisters::R9);
+        Amd64Backend::moveRegToMemoryRegWithCharOffset(generatedCode, Registers::AX, -16, ExtendedRegisters::R9);
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x4C, 0x89, 0x48, 0xF0 }));
         generatedCode.clear();
     }
@@ -228,19 +228,19 @@ public:
     //Tests moveRegToMemoryRegWithIntOffset
     void testMoveNumeredRegToMemoryRegWithIntOffset() {
         CodeGen generatedCode;
-        Amd64Backend::moveRegToMemoryRegWithIntOffset(generatedCode, Registers::AX, 1337, NumberedRegisters::R8);
+        Amd64Backend::moveRegToMemoryRegWithIntOffset(generatedCode, Registers::AX, 1337, ExtendedRegisters::R8);
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x4C, 0x89, 0x80, 0x39, 0x05, 0x00, 0x00 }));
         generatedCode.clear();
 
-        Amd64Backend::moveRegToMemoryRegWithIntOffset(generatedCode, Registers::AX, 1337, NumberedRegisters::R9);
+        Amd64Backend::moveRegToMemoryRegWithIntOffset(generatedCode, Registers::AX, 1337, ExtendedRegisters::R9);
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x4C, 0x89, 0x88, 0x39, 0x05, 0x00, 0x00 }));
         generatedCode.clear();
 
-        Amd64Backend::moveRegToMemoryRegWithIntOffset(generatedCode, Registers::CX, 1337, NumberedRegisters::R9);
+        Amd64Backend::moveRegToMemoryRegWithIntOffset(generatedCode, Registers::CX, 1337, ExtendedRegisters::R9);
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x4C, 0x89, 0x89, 0x39, 0x05, 0x00, 0x00 }));
         generatedCode.clear();
 
-        Amd64Backend::moveRegToMemoryRegWithIntOffset(generatedCode, Registers::SP, 1337, NumberedRegisters::R9);
+        Amd64Backend::moveRegToMemoryRegWithIntOffset(generatedCode, Registers::SP, 1337, ExtendedRegisters::R9);
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x4C, 0x89, 0x8C, 0x24, 0x39, 0x05, 0x00, 0x00 }));
         generatedCode.clear();
     }
@@ -324,11 +324,11 @@ public:
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x48, 0xB9, 0x5A, 0xCC, 0xD2, 0x18, 0x01, 0x00, 0x00, 0x00 }));
         generatedCode.clear();
 
-        Amd64Backend::moveLongToReg(generatedCode, NumberedRegisters::R8, 0x118d2cc5a);
+        Amd64Backend::moveLongToReg(generatedCode, ExtendedRegisters::R8, 0x118d2cc5a);
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x49, 0xB8, 0x5A, 0xCC, 0xD2, 0x18, 0x01, 0x00, 0x00, 0x00 }));
         generatedCode.clear();
 
-        Amd64Backend::moveLongToReg(generatedCode, NumberedRegisters::R9, 0x118d2cc5a);
+        Amd64Backend::moveLongToReg(generatedCode, ExtendedRegisters::R9, 0x118d2cc5a);
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x49, 0xB9, 0x5A, 0xCC, 0xD2, 0x18, 0x01, 0x00, 0x00, 0x00 } ));
         generatedCode.clear();
     }
@@ -699,6 +699,14 @@ public:
         TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x0F, 0xAF, 0xDB }));
         generatedCode.clear();
     }
+
+	//Tests the multConstantToReg generatpr
+    void testMultConstantToReg() {
+		CodeGen generatedCode;
+		Amd64Backend::multConstantToReg(generatedCode, ExtendedRegisters::R10, 14);
+		TS_ASSERT_EQUALS(generatedCode, CodeGen({ 0x4D, 0x6B, 0xD2, 0x0E }));
+		generatedCode.clear();
+	}
 
     //Tests the divRegFromReg generator
     void testDivRegFromReg() {

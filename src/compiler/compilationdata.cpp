@@ -58,11 +58,15 @@ void OperandStack::duplicate() {
 
 	Amd64Backend::moveMemoryRegWithOffsetToReg(
 		mFunction.generatedCode(),
-		Registers::AX, Registers::BP, stackOffset1); //mov rax, [rbp+<operand1 offset>]
+		Registers::AX,
+		Registers::BP,
+		stackOffset1); //mov rax, [rbp+<operand1 offset>]
 
 	Amd64Backend::moveRegToMemoryRegWithOffset(
 		mFunction.generatedCode(),
-		Registers::BP, stackOffset2, Registers::AX); //mov [rbp+<operand2 offset>], rax
+		Registers::BP,
+		stackOffset2,
+		Registers::AX); //mov [rbp+<operand2 offset>], rax
 
 	mTopIndex++;
 }
@@ -78,19 +82,19 @@ void OperandStack::popReg(Registers reg) {
 	mTopIndex--;
 }
 
-void OperandStack::popReg(NumberedRegisters reg) {
+void OperandStack::popReg(ExtendedRegisters reg) {
 	assertNotEmpty();
 	int stackOffset = getStackOperandOffset(mTopIndex);
 
 	if (validCharValue(stackOffset)) {
 		pushArray(
 			mFunction.generatedCode(),
-			{0x4C, 0x8B, (unsigned char)(0x45 | (reg << 3)),
+			{0x4C, 0x8B, (unsigned char)(0x45 | ((unsigned char)reg << 3)),
 			 (unsigned char)stackOffset}); //mov <reg>, [rbp+<operand offset>]
 	} else {
 		pushArray(
 			mFunction.generatedCode(),
-			{0x4C, 0x8B, (unsigned char)(0x85 | (reg << 3))});
+			{0x4C, 0x8B, (unsigned char)(0x85 | ((unsigned char)reg << 3))});
 
 		IntToBytes converter;
 		converter.intValue = stackOffset;
@@ -110,12 +114,12 @@ void OperandStack::popReg(FloatRegisters reg) {
 	if (validCharValue(stackOffset)) {
 		pushArray(
 			mFunction.generatedCode(),
-			{0xF3, 0x0F, 0x10, (unsigned char)(0x45 | (reg << 3)),
+			{0xF3, 0x0F, 0x10, (unsigned char)(0x45 | ((unsigned char)reg << 3)),
 			 (unsigned char)stackOffset}); //movss <reg>, [rbp+<operand offset>]
 	} else {
 		pushArray(
 			mFunction.generatedCode(),
-			{0xF3, 0x0F, 0x10, (unsigned char)(0x85 | (reg << 3))});
+			{0xF3, 0x0F, 0x10, (unsigned char)(0x85 | ((unsigned char)reg << 3))});
 
 		IntToBytes converter;
 		converter.intValue = stackOffset;

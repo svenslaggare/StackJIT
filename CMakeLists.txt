@@ -76,7 +76,9 @@ set(SOURCE_FILES
         src/linux/allocator.cpp
         src/windows/allocator.cpp
         src/runtime/managedheap.cpp
-        src/runtime/managedheap.h)
+        src/runtime/managedheap.h
+        src/compiler/amd64assembler.cpp
+        src/compiler/amd64assembler.h)
 
 # Project structure for VS
 SOURCE_GROUP(base REGULAR_EXPRESSION "src/(.*)\\.((cpp)|(h))")

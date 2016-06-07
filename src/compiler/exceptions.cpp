@@ -14,8 +14,8 @@ std::size_t ExceptionHandling::createHandlerCall(std::vector<unsigned char>& han
 		Amd64Backend::subByteFromReg(handlerCode, Registers::SP, shadowSpace);
 	}
 
-	Amd64Backend::moveLongToReg(handlerCode, NumberedRegisters::R11, handlerPtr); //mov r11, <addr of func>
-	Amd64Backend::callInReg(handlerCode, NumberedRegisters::R11); //call r11
+	Amd64Backend::moveLongToReg(handlerCode, ExtendedRegisters::R11, handlerPtr); //mov r11, <addr of func>
+	Amd64Backend::callInReg(handlerCode, ExtendedRegisters::R11); //call r11
 
 	if (shadowSpace > 0) {
 		Amd64Backend::addByteToReg(handlerCode, Registers::SP, shadowSpace);
@@ -44,7 +44,7 @@ void ExceptionHandling::generateHandlers(MemoryManager& memoryManger, CallingCon
 	mStackOverflowCheckHandler = (unsigned char*)handlerMemory + stackOverflowHandler;
 }
 
-void ExceptionHandling::addNullCheck(FunctionCompilationData& function, Registers refReg, NumberedRegisters cmpReg) const {
+void ExceptionHandling::addNullCheck(FunctionCompilationData& function, Registers refReg, ExtendedRegisters cmpReg) const {
 	auto& codeGen = function.function.generatedCode();
 
 	//Compare the reference with null
@@ -63,7 +63,7 @@ void ExceptionHandling::addArrayBoundsCheck(FunctionCompilationData& function) c
 	Amd64Backend::moveMemoryByRegToReg(codeGen, Registers::CX, Registers::AX, true); //mov ecx, [rax]
 
 	//Compare the index and size
-	Amd64Backend::compareRegToReg(codeGen, NumberedRegisters::R10, Registers::CX); //cmp r11, rcx
+	Amd64Backend::compareRegToReg(codeGen, ExtendedRegisters::R10, Registers::CX); //cmp r11, rcx
 
 	//Jump to handler if out of bounds. By using an unsigned comparison, we only need one check.
 	Amd64Backend::jumpGreaterThanOrEqualUnsigned(codeGen, 0); //jae <array bounds handler>.
@@ -73,8 +73,8 @@ void ExceptionHandling::addArrayBoundsCheck(FunctionCompilationData& function) c
 void ExceptionHandling::addArrayCreationCheck(FunctionCompilationData& function) const {
 	auto& codeGen = function.function.generatedCode();
 
-	Amd64Backend::xorRegToReg(codeGen, NumberedRegisters::R11, NumberedRegisters::R11); //Zero the register
-	Amd64Backend::compareRegToReg(codeGen, NumberedRegisters::R11, RegisterCallArguments::Arg1); //cmp rcx, <arg 1>
+	Amd64Backend::xorRegToReg(codeGen, ExtendedRegisters::R11, ExtendedRegisters::R11); //Zero the register
+	Amd64Backend::compareRegToReg(codeGen, ExtendedRegisters::R11, RegisterCallArguments::Arg1); //cmp rcx, <arg 1>
 
 	//Jump to handler if invalid
 	Amd64Backend::jumpGreaterThan(codeGen, 0); //jg <array creation handler>

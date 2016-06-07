@@ -8,8 +8,8 @@ namespace RegisterCallArguments {
 	const Registers Arg1 = Registers::SI;
 	const Registers Arg2 = Registers::DX;
 	const Registers Arg3 = Registers::CX;
-	const NumberedRegisters Arg4 = NumberedRegisters::R8;
-	const NumberedRegisters Arg5 = NumberedRegisters::R9;
+	const ExtendedRegisters Arg4 = ExtendedRegisters::R8;
+	const ExtendedRegisters Arg5 = ExtendedRegisters::R9;
 }
 
 namespace FloatRegisterCallArguments {

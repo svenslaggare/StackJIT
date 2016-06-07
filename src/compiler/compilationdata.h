@@ -57,7 +57,7 @@ public:
 
 	//Pops an operand from the operand stack to the given register
 	void popReg(Registers reg);
-	void popReg(NumberedRegisters reg);
+	void popReg(ExtendedRegisters reg);
 	void popReg(FloatRegisters reg);
 
 	//Pushes the given register to the operand stack

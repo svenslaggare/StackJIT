@@ -68,7 +68,7 @@ public:
 	void defineMacro( const FunctionDefinition& function, MacroFunction macroFunction);
 
 	//Generates a call to the given function
-	void generateCall(CodeGen& codeGen, unsigned char* funcPtr, Registers addrReg = Registers::AX, bool shadowSpaceNeeded = true);
+	void generateCall(CodeGen& generatedCode, unsigned char* funcPtr, Registers addrReg = Registers::AX, bool shadowSpaceNeeded = true);
 
 	//Generates a call to the garbage collect runtime function
 	void generateGCCall(CodeGen& generatedCode, ManagedFunction& function, int instIndex);
