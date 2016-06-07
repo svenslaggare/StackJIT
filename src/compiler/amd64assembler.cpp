@@ -297,9 +297,9 @@ void Amd64Assembler::moveLong(IntRegister destination, std::int64_t value) {
 //		destination,
 //		source,
 //		[&](CodeGen& codeGen, Registers dest, Registers src, int offset) { Amd64Backend::moveMemoryRegWithOffsetToReg(codeGen, dest, src, offset); },
-//		[&](CodeGen& codeGen, NumberedRegisters dest, NumberedRegisters src, int offset) { Amd64Backend::moveMemoryRegWithOffsetToReg(codeGen, dest, src, offset); },
-//		[&](CodeGen& codeGen, Registers dest, NumberedRegisters src, int offset) { Amd64Backend::moveMemoryRegWithOffsetToReg(codeGen, dest, src, offset); },
-//		[&](CodeGen& codeGen, NumberedRegisters dest, Registers src, int offset) { Amd64Backend::moveMemoryRegWithOffsetToReg(codeGen, dest, src, offset); });
+//		[&](CodeGen& codeGen, ExtendedRegisters dest, ExtendedRegisters src, int offset) { Amd64Backend::moveMemoryRegWithOffsetToReg(codeGen, dest, src, offset); },
+//		[&](CodeGen& codeGen, Registers dest, ExtendedRegisters src, int offset) { Amd64Backend::moveMemoryRegWithOffsetToReg(codeGen, dest, src, offset); },
+//		[&](CodeGen& codeGen, ExtendedRegisters dest, Registers src, int offset) { Amd64Backend::moveMemoryRegWithOffsetToReg(codeGen, dest, src, offset); });
 //}
 
 void Amd64Assembler::push(IntRegister intRegister) {

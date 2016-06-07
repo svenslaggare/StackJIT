@@ -75,8 +75,8 @@ std::size_t CodeGenerator::generateCompileCall(CodeGen& generatedCode,
 
 	//The function to compile
 	Amd64Backend::subByteFromReg(generatedCode, Registers::SP, 8); //Alignment
-	Amd64Backend::moveLongToReg(generatedCode, NumberedRegisters::R10, (PtrValue)(&funcToCall));
-	Amd64Backend::pushReg(generatedCode, NumberedRegisters::R10);
+	Amd64Backend::moveLongToReg(generatedCode, ExtendedRegisters::R10, (PtrValue)(&funcToCall));
+	Amd64Backend::pushReg(generatedCode, ExtendedRegisters::R10);
 	Amd64Backend::subByteFromReg(generatedCode, Registers::SP, shadowStackSize); //Shadow space
 
 	Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (PtrValue)&Runtime::compileFunction);

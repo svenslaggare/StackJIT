@@ -173,6 +173,10 @@ public:
 	//Moves the second register to the first
 	void move(IntRegister destination, IntRegister source);
 
+	//Moves the given constant to the given register
+//	template<typename T>
+//	void moveConstant(IntRegister destination, T value);
+
 	//Moves the given 32-bits integer to the given register
 	void moveInt(IntRegister destination, std::int32_t value);
 
@@ -210,3 +214,21 @@ void Amd64Assembler::generateOneRegisterWithValueInstruction(
 		inst2(mData, op.extendedRegister(), value);
 	}
 }
+
+//template<>
+//void Amd64Assembler::moveConstant<std::int32_t>(IntRegister destination, std::int32_t value) {
+//	generateOneRegisterWithValueInstruction<std::int32_t>(
+//		destination,
+//		value,
+//		[&](CodeGen& codeGen, Registers x, std::int32_t y) { Amd64Backend::moveIntToReg(codeGen, x, y); },
+//		[&](CodeGen& codeGen, ExtendedRegisters x, std::int32_t y) { Amd64Backend::moveIntToReg(codeGen, x, y); });
+//}
+//
+//template<>
+//void Amd64Assembler::moveConstant<std::int64_t>(IntRegister destination, std::int64_t value) {
+//	generateOneRegisterWithValueInstruction<std::int64_t >(
+//		destination,
+//		value,
+//		[&](CodeGen& codeGen, Registers x, std::int64_t  y) { Amd64Backend::moveLongToReg(codeGen, x, y); },
+//		[&](CodeGen& codeGen, ExtendedRegisters x, std::int64_t  y) { Amd64Backend::moveLongToReg(codeGen, x, y); });
+//}
