@@ -215,6 +215,9 @@ public:
 	//Applies bitwise AND between the given registers
 	void bitwiseAnd(IntRegister destination, IntRegister source, bool is32Bits = DEFAULT_IS_32_BITS);
 
+	//Applies bitwise AND between the given register and constant
+	void bitwiseAnd(IntRegister destination, int value, bool is32Bits = DEFAULT_IS_32_BITS);
+
 	//Applies bitwise OR between the given registers
 	void bitwiseOr(IntRegister destination, IntRegister source, bool is32Bits = DEFAULT_IS_32_BITS);
 

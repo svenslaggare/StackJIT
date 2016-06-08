@@ -4,12 +4,32 @@
 #include "../compiler/jit.h"
 #include "../core/function.h"
 #include "../type/type.h"
+#include "../compiler/amd64assembler.h"
 #include <iostream>
 
 namespace {
 	//The maximum number of register for argument passing
 	const int NUM_NONE_FLOAT_ARGUMENT_REGISTERS = 6;
 	const int NUM_FLOAT_ARGUMENT_REGISTERS = 8;
+	const std::vector<IntRegister> INT_CALL_ARGUMENTS = {
+		RegisterCallArguments::Arg0,
+		RegisterCallArguments::Arg1,
+		RegisterCallArguments::Arg2,
+		RegisterCallArguments::Arg3,
+		RegisterCallArguments::Arg4,
+		RegisterCallArguments::Arg5,
+	};
+
+	const std::vector<FloatRegisters> FLOAT_CALL_ARGUMENTS = {
+		FloatRegisterCallArguments::Arg0,
+		FloatRegisterCallArguments::Arg1,
+		FloatRegisterCallArguments::Arg2,
+		FloatRegisterCallArguments::Arg3,
+		FloatRegisterCallArguments::Arg4,
+		FloatRegisterCallArguments::Arg5,
+		FloatRegisterCallArguments::Arg6,
+		FloatRegisterCallArguments::Arg7,
+	};
 
 	//Returns the float argument index for the given argument index
 	int getFloatArgIndex(const std::vector<const Type*>& parameters, int argIndex) {
@@ -103,124 +123,32 @@ namespace {
 	//Moves a relative none float argument to the stack. The argument is relative to the type of the register.
 	void moveNoneFloatArgToStack(FunctionCompilationData& functionData, int argIndex, int relativeArgIndex) {
 		auto& function = functionData.function;
+		Amd64Assembler assembler(function.generatedCode());
 
 		int argStackOffset = -(1 + argIndex) * Amd64Backend::REG_SIZE;
 
 		if (relativeArgIndex >= 6) {
 			int stackArgIndex = getStackArgumentIndex(functionData, argIndex);
-			Amd64Backend::moveMemoryRegWithOffsetToReg(
-				function.generatedCode(),
-				Registers::AX,
-				Registers::BP,
-				Amd64Backend::REG_SIZE * (stackArgIndex + 2)); //mov rax, [rbp+REG_SIZE*<arg offset>]
-
-			Amd64Backend::moveRegToMemoryRegWithOffset(
-				function.generatedCode(),
-				Registers::BP, argStackOffset, Registers::AX); //mov [rbp+<arg offset>], rax
-		}
-
-		if (relativeArgIndex == 5) {
-			Amd64Backend::moveRegToMemoryRegWithOffset(
-				function.generatedCode(),
-				Registers::BP, argStackOffset, RegisterCallArguments::Arg5); //mov [rbp+<arg offset>], r9
-		}
-
-		if (relativeArgIndex == 4) {
-			Amd64Backend::moveRegToMemoryRegWithOffset(
-				function.generatedCode(),
-				Registers::BP, argStackOffset, RegisterCallArguments::Arg4); //mov [rbp+<arg offset>], r8
-		}
-
-		if (relativeArgIndex == 3) {
-			Amd64Backend::moveRegToMemoryRegWithOffset(
-				function.generatedCode(),
-				Registers::BP, argStackOffset, RegisterCallArguments::Arg3); //mov [rbp+<arg offset>], rcx
-		}
-
-		if (relativeArgIndex == 2) {
-			Amd64Backend::moveRegToMemoryRegWithOffset(
-				function.generatedCode(),
-				Registers::BP, argStackOffset, RegisterCallArguments::Arg2); //mov [rbp+<arg offset>], rdx
-		}
-
-		if (relativeArgIndex == 1) {
-			Amd64Backend::moveRegToMemoryRegWithOffset(
-				function.generatedCode(),
-				Registers::BP, argStackOffset, RegisterCallArguments::Arg1); //mov [rbp+<arg offset>], rsi
-		}
-
-		if (relativeArgIndex == 0) {
-			Amd64Backend::moveRegToMemoryRegWithOffset(
-				function.generatedCode(),
-				Registers::BP, argStackOffset, RegisterCallArguments::Arg0); //mov [rbp+<arg offset>], rdi
+			assembler.move(Registers::AX, { Registers::BP, Amd64Backend::REG_SIZE * (stackArgIndex + 2) });
+			assembler.move({ Registers::BP, argStackOffset }, Registers::AX);
+		} else {
+			assembler.move({ Registers::BP, argStackOffset }, INT_CALL_ARGUMENTS[relativeArgIndex]);
 		}
 	}
 
 	//Moves a relative float argument to the stack. The argument is relative to the type of the register.
 	void moveFloatArgToStack(FunctionCompilationData& functionData, int argIndex, int relativeArgIndex) {
 		auto& function = functionData.function;
+		Amd64Assembler assembler(function.generatedCode());
 
 		int argStackOffset = -(1 + argIndex) * Amd64Backend::REG_SIZE;
 
 		if (relativeArgIndex >= 8) {
 			int stackArgIndex = getStackArgumentIndex(functionData, argIndex);
-			Amd64Backend::moveMemoryRegWithOffsetToReg(
-				function.generatedCode(),
-				Registers::AX,
-				Registers::BP,
-				Amd64Backend::REG_SIZE * (stackArgIndex + 2)); //mov rax, [rbp+REG_SIZE*<arg offset>]
-
-			Amd64Backend::moveRegToMemoryRegWithOffset(
-				function.generatedCode(),
-				Registers::BP, argStackOffset, Registers::AX); //mov [rbp+<arg offset>], rax
-		}
-
-		if (relativeArgIndex == 7) {
-			Amd64Backend::moveRegToMemoryRegWithOffset(
-				function.generatedCode(),
-				Registers::BP, argStackOffset, FloatRegisterCallArguments::Arg7); //movss [rbp+<arg offset>], xmm7
-		}
-
-		if (relativeArgIndex == 6) {
-			Amd64Backend::moveRegToMemoryRegWithOffset(
-				function.generatedCode(),
-				Registers::BP, argStackOffset, FloatRegisterCallArguments::Arg6); //movss [rbp+<arg offset>], xmm6
-		}
-
-		if (relativeArgIndex == 5) {
-			Amd64Backend::moveRegToMemoryRegWithOffset(
-				function.generatedCode(),
-				Registers::BP, argStackOffset, FloatRegisterCallArguments::Arg5); //movss [rbp+<arg offset>], xmm5
-		}
-
-		if (relativeArgIndex == 4) {
-			Amd64Backend::moveRegToMemoryRegWithOffset(
-				function.generatedCode(),
-				Registers::BP, argStackOffset, FloatRegisterCallArguments::Arg4); //movss [rbp+<arg offset>], xmm4
-		}
-
-		if (relativeArgIndex == 3) {
-			Amd64Backend::moveRegToMemoryRegWithOffset(
-				function.generatedCode(),
-				Registers::BP, argStackOffset, FloatRegisterCallArguments::Arg3); //movss [rbp+<arg offset>], xmm3
-		}
-
-		if (relativeArgIndex == 2) {
-			Amd64Backend::moveRegToMemoryRegWithOffset(
-				function.generatedCode(),
-				Registers::BP, argStackOffset, FloatRegisterCallArguments::Arg2); //movss [rbp+<arg offset>], xmm2
-		}
-
-		if (relativeArgIndex == 1) {
-			Amd64Backend::moveRegToMemoryRegWithOffset(
-				function.generatedCode(),
-				Registers::BP, argStackOffset, FloatRegisterCallArguments::Arg1); //movss [rbp+<arg offset>], xmm1
-		}
-
-		if (relativeArgIndex == 0) {
-			Amd64Backend::moveRegToMemoryRegWithOffset(
-				function.generatedCode(),
-				Registers::BP, argStackOffset, FloatRegisterCallArguments::Arg0); //movss [rbp+<arg offset>], xmm0
+			assembler.move(Registers::AX, { Registers::BP, Amd64Backend::REG_SIZE * (stackArgIndex + 2) });
+			assembler.move({ Registers::BP, argStackOffset }, Registers::AX);
+		} else {
+			assembler.move({ Registers::BP, argStackOffset }, FLOAT_CALL_ARGUMENTS[relativeArgIndex]);
 		}
 	}
 }
@@ -244,6 +172,7 @@ void CallingConvention::callFunctionArgument(FunctionCompilationData& functionDa
 											 const FunctionDefinition& funcToCall) const {
 	auto& generatedCode = functionData.function.generatedCode();
 	auto& operandStack = functionData.operandStack;
+	Amd64Assembler assembler(generatedCode);
 
 	if (TypeSystem::isPrimitiveType(argType, PrimitiveTypes::Float)) {
 		//Arguments of index >= 8 are passed via the stack.
@@ -252,39 +181,9 @@ void CallingConvention::callFunctionArgument(FunctionCompilationData& functionDa
 		if (relativeIndex >= 8) {
 			//Move from the operand stack to the normal stack
 			operandStack.popReg(Registers::AX);
-			Amd64Backend::pushReg(generatedCode, Registers::AX);
-		}
-
-		if (relativeIndex == 7) {
-			operandStack.popReg(FloatRegisterCallArguments::Arg7);
-		}
-
-		if (relativeIndex == 6) {
-			operandStack.popReg(FloatRegisterCallArguments::Arg6);
-		}
-
-		if (relativeIndex == 5) {
-			operandStack.popReg(FloatRegisterCallArguments::Arg5);
-		}
-
-		if (relativeIndex == 4) {
-			operandStack.popReg(FloatRegisterCallArguments::Arg4);
-		}
-
-		if (relativeIndex == 3) {
-			operandStack.popReg(FloatRegisterCallArguments::Arg3);
-		}
-
-		if (relativeIndex == 2) {
-			operandStack.popReg(FloatRegisterCallArguments::Arg2);
-		}
-
-		if (relativeIndex == 1) {
-			operandStack.popReg(FloatRegisterCallArguments::Arg1);
-		}
-
-		if (relativeIndex == 0) {
-			operandStack.popReg(FloatRegisterCallArguments::Arg0);
+			assembler.push(Registers::AX);
+		} else {
+			operandStack.popReg(FLOAT_CALL_ARGUMENTS[relativeIndex]);
 		}
 	} else {
 		//Arguments of index >= 6 are passed via the stack
@@ -293,31 +192,9 @@ void CallingConvention::callFunctionArgument(FunctionCompilationData& functionDa
 		if (relativeIndex >= 6) {
 			//Move from the operand stack to the normal stack
 			operandStack.popReg(Registers::AX);
-			Amd64Backend::pushReg(generatedCode, Registers::AX);
-		}
-
-		if (relativeIndex == 5) {
-			operandStack.popReg(RegisterCallArguments::Arg5);
-		}
-
-		if (relativeIndex == 4) {
-			operandStack.popReg(RegisterCallArguments::Arg4);
-		}
-
-		if (relativeIndex == 3) {
-			operandStack.popReg(RegisterCallArguments::Arg3);
-		}
-
-		if (relativeIndex == 2) {
-			operandStack.popReg(RegisterCallArguments::Arg2);
-		}
-
-		if (relativeIndex == 1) {
-			operandStack.popReg(RegisterCallArguments::Arg1);
-		}
-
-		if (relativeIndex == 0) {
-			operandStack.popReg(RegisterCallArguments::Arg0);
+			assembler.push(Registers::AX);
+		} else {
+			operandStack.popReg(INT_CALL_ARGUMENTS[relativeIndex]);
 		}
 	}
 }
@@ -327,7 +204,7 @@ void CallingConvention::callFunctionArguments(FunctionCompilationData& functionD
 
 	//Set the function arguments
 	for (int arg = numArgs - 1; arg >= 0; arg--) {
-		callFunctionArgument(functionData, arg, funcToCall.parameters().at(arg), funcToCall);
+		callFunctionArgument(functionData, arg, funcToCall.parameters().at((std::size_t)arg), funcToCall);
 	}
 }
 
@@ -358,12 +235,13 @@ void CallingConvention::handleReturnValue(FunctionCompilationData& functionData,
 											   const FunctionDefinition& funcToCall) const {
 	auto& generatedCode = functionData.function.generatedCode();
 	auto& operandStack = functionData.operandStack;
+	Amd64Assembler assembler(generatedCode);
 
 	//If we have passed arguments via the stack, adjust the stack pointer.
 	int numStackArgs = numStackArguments(funcToCall.parameters());
 
 	if (numStackArgs > 0) {
-		Amd64Backend::addConstantToReg(generatedCode, Registers::SP, numStackArgs * Amd64Backend::REG_SIZE);
+		assembler.add(Registers::SP, numStackArgs * Amd64Backend::REG_SIZE);
 	}
 
 	if (!TypeSystem::isPrimitiveType(funcToCall.returnType(), PrimitiveTypes::Void)) {

@@ -294,6 +294,14 @@ void Amd64Assembler::bitwiseAnd(IntRegister destination, IntRegister source, boo
 		[&](CodeGen& codeGen, ExtendedRegisters x, Registers y) { Amd64Backend::andRegToReg(codeGen, x, y); });
 }
 
+void Amd64Assembler::bitwiseAnd(IntRegister destination, int value, bool is32Bits) {
+	generateOneRegisterWithValueInstruction<std::int32_t>(
+		destination,
+		value,
+		[&](CodeGen& codeGen, Registers x, std::int32_t y) { Amd64Backend::andIntToReg(codeGen, x, y, is32Bits); },
+		[&](CodeGen& codeGen, ExtendedRegisters x, std::int32_t y) { Amd64Backend::andIntToReg(codeGen, x, y); });
+}
+
 void Amd64Assembler::bitwiseOr(IntRegister destination, IntRegister source, bool is32Bits) {
 	generateTwoRegistersInstruction(
 		destination,
@@ -511,6 +519,7 @@ void Amd64Assembler::signExtend(IntRegister intRegister, DataSize dataSize) {
 }
 
 void Amd64Assembler::convert(IntRegister destination, FloatRegisters source) {
+	//cvttss2si rax, xmm0
 	if (destination.isBase()) {
 		Amd64Backend::convertFloatToInt(mData, destination.baseRegister(), source);
 	} else {
@@ -519,6 +528,7 @@ void Amd64Assembler::convert(IntRegister destination, FloatRegisters source) {
 }
 
 void Amd64Assembler::convert(FloatRegisters destination, IntRegister source) {
+	//cvtsi2ss xmm0, rax
 	if (source.isBase()) {
 		Amd64Backend::convertIntToFloat(mData, destination, source.baseRegister());
 	} else {
@@ -537,6 +547,7 @@ void Amd64Assembler::compare(IntRegister destination, IntRegister source) {
 }
 
 void Amd64Assembler::compare(FloatRegisters destination, FloatRegisters source) {
+	//ucomiss xmm0, xmm1
 	Amd64Backend::compareRegToReg(mData, destination, source);
 }
 

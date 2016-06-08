@@ -281,7 +281,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			if (intOp) {
 				operandStack.pushReg(Registers::AX);
 			} else if (floatOp) {
-				operandStack.pushReg( FloatRegisters::XMM0);
+				operandStack.pushReg(FloatRegisters::XMM0);
 			}
 			break;
 		}
@@ -317,17 +317,17 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 		case OpCodes::NOT:
 			operandStack.popReg(Registers::AX);
 			assembler.bitwiseNor(Registers::AX);
-			Helpers::pushArray(generatedCode, { 0x48, 0x83, 0xE0, 0x01 }); //Skip all the other bits.
+			assembler.bitwiseAnd(Registers::AX, 1); //Skip all the other bits.
 			operandStack.pushReg(Registers::AX);
 			break;
 		case OpCodes::CONVERT_INT_TO_FLOAT:
 			operandStack.popReg(Registers::AX);
-			assembler.convert(FloatRegisters::XMM0, Registers::AX); //cvtsi2ss xmm0, rax
+			assembler.convert(FloatRegisters::XMM0, Registers::AX);
 			operandStack.pushReg(FloatRegisters::XMM0);
 			break;
 		case OpCodes::CONVERT_FLOAT_TO_INT:
 			operandStack.popReg(FloatRegisters::XMM0);
-			assembler.convert(Registers::AX, FloatRegisters::XMM0); //cvttss2si rax, xmm0
+			assembler.convert(Registers::AX, FloatRegisters::XMM0);
 			operandStack.pushReg(Registers::AX);
 			break;
 		case OpCodes::COMPARE_EQUAL:
@@ -345,11 +345,11 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			if (intBasedType) {
 				operandStack.popReg(Registers::CX);
 				operandStack.popReg(Registers::AX);
-				assembler.compare(Registers::AX, Registers::CX); //cmp rax, rcx
+				assembler.compare(Registers::AX, Registers::CX);
 			} else if (floatOp) {
 				operandStack.popReg(FloatRegisters::XMM1);
 				operandStack.popReg(FloatRegisters::XMM0);
-				assembler.compare(FloatRegisters::XMM0, FloatRegisters::XMM1); //ucomiss xmm0, xmm1
+				assembler.compare(FloatRegisters::XMM0, FloatRegisters::XMM1);
 				unsignedComparison = true;
 			}
 

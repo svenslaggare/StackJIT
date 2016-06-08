@@ -983,6 +983,39 @@ void Amd64Backend::andRegToReg(CodeGen& codeGen, ExtendedRegisters dest, Registe
 	codeGen.push_back(0xc0 | (Byte)dest | ((Byte)src << 3));
 }
 
+void Amd64Backend::andIntToReg(CodeGen& codeGen, Registers dest, int value, bool is32bits) {
+	if (!is32bits) {
+		codeGen.push_back(0x48);
+	}
+
+	if (dest == Registers::AX) {
+		codeGen.push_back(0x25);
+	} else {
+		codeGen.push_back(0x81);
+		codeGen.push_back(0xe0 | (Byte)dest);
+	}
+
+	IntToBytes converter;
+	converter.intValue = value;
+
+	for (std::size_t i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.byteValues[i]);
+	}
+}
+
+void Amd64Backend::andIntToReg(CodeGen& codeGen, ExtendedRegisters dest, int value) {
+	codeGen.push_back(0x49);
+	codeGen.push_back(0x81);
+	codeGen.push_back(0xe0 | (Byte)dest);
+
+	IntToBytes converter;
+	converter.intValue = value;
+
+	for (std::size_t i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.byteValues[i]);
+	}
+}
+
 void Amd64Backend::orRegToReg(CodeGen& codeGen, Registers dest, Registers src, bool is32bits) {
 	if (!is32bits) {
         codeGen.push_back(0x48);

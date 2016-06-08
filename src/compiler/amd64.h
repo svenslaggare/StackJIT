@@ -234,6 +234,10 @@ namespace Amd64Backend {
 	void andRegToReg(CodeGen&, Registers, ExtendedRegisters);
 	void andRegToReg(CodeGen&, ExtendedRegisters, Registers);
 
+	//AND's the given 32-bit int constant to the first register
+	void andIntToReg(CodeGen&, Registers, int, bool is32bits = false);
+	void andIntToReg(CodeGen&, ExtendedRegisters, int);
+
 	//OR's the second register to the first
 	void orRegToReg(CodeGen&, Registers, Registers, bool is32bits = false);
 	void orRegToReg(CodeGen&, ExtendedRegisters, ExtendedRegisters);
