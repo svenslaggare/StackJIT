@@ -28,19 +28,6 @@ MacroFunctionContext::MacroFunctionContext(
 
 }
 
-namespace {
-	void pushArray(std::vector<unsigned char>& dest, const std::vector<unsigned char>& values) {
-		for (auto current : values) {
-			dest.push_back(current);
-		}
-	}
-
-	//Indicates if the given value fits in a char
-	bool validCharValue(int value) {
-		return value >= -128 && value < 128;
-	}
-}
-
 CodeGenerator::CodeGenerator(const CallingConvention& callingConvention, const ExceptionHandling& exceptionHandling)
 	: mCallingConvention(callingConvention), mExceptionHandling(exceptionHandling) {
 
@@ -75,7 +62,7 @@ std::size_t CodeGenerator::generateCompileCall(CodeGen& generatedCode,
 	checkEndIndex = generatedCode.size() - sizeof(int);
 
 	//The function to compile
-	Amd64Backend::subByteFromReg(generatedCode, Registers::SP, 8); //Alignment
+	assembler.sub(Registers::SP, 8); //Alignment
 	assembler.moveLong(ExtendedRegisters::R10, (PtrValue)(&funcToCall));
 	assembler.push(ExtendedRegisters::R10);
 	assembler.sub(Registers::SP, shadowStackSize); //Shadow space
@@ -157,10 +144,8 @@ void CodeGenerator::zeroLocals(FunctionCompilationData& functionData) {
 
 	//Zero the locals
 	if (function.numLocals() > 0) {
-		//Zero eax
-		Amd64Backend::xorRegToReg(
-			function.generatedCode(),
-			Registers::AX, Registers::AX); //xor rax, rax
+		//Zero rax
+		assembler.bitwiseXor(Registers::AX, Registers::AX); //xor rax, rax
 
 		for (int i = 0; i < function.numLocals(); i++) {
 			int localOffset = (int)((i + function.def().numParams() + 1) * -Amd64Backend::REG_SIZE);
@@ -693,7 +678,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 					Registers::AX, StackJIT::ARRAY_LENGTH_SIZE, Registers::DX,
 					is32bits); //mov [rax+<element offset>], r/edx
 			} else {
-				pushArray(generatedCode,
+				Helpers::pushArray(generatedCode,
 						  { 0x88, 0x50, (unsigned char)StackJIT::ARRAY_LENGTH_SIZE }); //mov [rax+<element offset>], dl
 			}
 
@@ -727,7 +712,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 					Registers::AX,
 					is32bits); //mov r/ecx, [rax]
 			} else {
-				pushArray(generatedCode, {0x8A, 0x08}); //mov cl, [rax]
+				Helpers::pushArray(generatedCode, {0x8A, 0x08}); //mov cl, [rax]
 			}
 
 			operandStack.pushReg(Registers::CX);
@@ -871,7 +856,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 						Registers::AX,
 						is32bits); //mov r/ecx, [rax]
 				} else {
-					pushArray(generatedCode, { 0x8A, 0x08 }); //mov cl, [rax]
+					Helpers::pushArray(generatedCode, { 0x8A, 0x08 }); //mov cl, [rax]
 				}
 
 				operandStack.pushReg(Registers::CX);
@@ -884,13 +869,13 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 				mExceptionHandling.addNullCheck(functionData);
 
 				//Store the field
-				if (validCharValue(fieldOffset)) {
+				if (Helpers::validCharValue(fieldOffset)) {
 					if (!is8bits) {
 						Amd64Backend::moveRegToMemoryRegWithCharOffset(
 							generatedCode,
 							Registers::AX, (char)fieldOffset, Registers::DX, is32bits); //mov [rax+<fieldOffset>], r/edx
 					} else {
-						pushArray(
+						Helpers::pushArray(
 							generatedCode,
 							{0x88, 0x50, (unsigned char)fieldOffset}); //mov [rax+<fieldOffset>], dl
 					}
@@ -903,7 +888,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 							generatedCode,
 							Registers::AX, 0, Registers::DX, is32bits); //mov [rax], r/edx
 					} else {
-						pushArray(generatedCode, {0x88, 0x50, 0}); //mov [rax], dl
+						Helpers::pushArray(generatedCode, {0x88, 0x50, 0}); //mov [rax], dl
 					}
 				}
 			}

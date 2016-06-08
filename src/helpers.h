@@ -15,6 +15,12 @@ namespace Helpers {
 
 	//Returns the duration since the given time point
 	std::int64_t getDuration(std::chrono::time_point<std::chrono::high_resolution_clock> timePoint);
+
+	//Pushes the given array
+	void pushArray(std::vector<unsigned char>& dest, const std::vector<unsigned char>& values);
+
+	//Indicates if the given value fits in a char
+	bool validCharValue(int value);
 }
 
 template<typename T>

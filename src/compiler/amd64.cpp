@@ -1,13 +1,9 @@
 #include "amd64.h"
+#include "../helpers.h"
 #include <vector>
 #include <assert.h>
 
 namespace {
-	//Indicates if the given value fits in a char
-	bool validCharValue(int value) {
-		return value >= -128 && value < 128;
-	}
-
 	using Byte = unsigned char;
 
 	void pushExtendedRegister(CodeGen& codeGen, ExtendedRegisters reg) {
@@ -68,6 +64,8 @@ namespace {
 		}
 	}
 }
+
+using Helpers::validCharValue;
 
 void Amd64Backend::pushReg(CodeGen& codeGen, Registers reg) {
 	codeGen.push_back(0x50 | (Byte)reg);

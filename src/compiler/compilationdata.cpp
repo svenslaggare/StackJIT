@@ -1,5 +1,6 @@
 #include "compilationdata.h"
 #include "../core/function.h"
+#include "../helpers.h"
 
 BranchTarget::BranchTarget(unsigned int target, unsigned int instructionSize)
 	: target(target), instructionSize(instructionSize) {
@@ -15,19 +16,6 @@ UnresolvedFunctionCall::UnresolvedFunctionCall(FunctionCallType type, std::size_
 FunctionCompilationData::FunctionCompilationData(ManagedFunction& function)
 	: function(function), operandStack(function) {
 
-}
-
-namespace {
-	void pushArray(std::vector<unsigned char>& dest, const std::vector<unsigned char>& values) {
-		for (auto current : values) {
-			dest.push_back(current);
-		}
-	}
-
-	//Indicates if the given value fits in a char
-	bool validCharValue(int value) {
-		return value >= -128 && value < 128;
-	}
 }
 
 OperandStack::OperandStack(ManagedFunction& function)
@@ -86,13 +74,13 @@ void OperandStack::popReg(ExtendedRegisters reg) {
 	assertNotEmpty();
 	int stackOffset = getStackOperandOffset(mTopIndex);
 
-	if (validCharValue(stackOffset)) {
-		pushArray(
+	if (Helpers::validCharValue(stackOffset)) {
+		Helpers::pushArray(
 			mFunction.generatedCode(),
 			{0x4C, 0x8B, (unsigned char)(0x45 | ((unsigned char)reg << 3)),
 			 (unsigned char)stackOffset}); //mov <reg>, [rbp+<operand offset>]
 	} else {
-		pushArray(
+		Helpers::pushArray(
 			mFunction.generatedCode(),
 			{0x4C, 0x8B, (unsigned char)(0x85 | ((unsigned char)reg << 3))});
 
@@ -111,13 +99,13 @@ void OperandStack::popReg(FloatRegisters reg) {
 	assertNotEmpty();
 	int stackOffset = getStackOperandOffset(mTopIndex);
 
-	if (validCharValue(stackOffset)) {
-		pushArray(
+	if (Helpers::validCharValue(stackOffset)) {
+		Helpers::pushArray(
 			mFunction.generatedCode(),
 			{0xF3, 0x0F, 0x10, (unsigned char)(0x45 | ((unsigned char)reg << 3)),
 			 (unsigned char)stackOffset}); //movss <reg>, [rbp+<operand offset>]
 	} else {
-		pushArray(
+		Helpers::pushArray(
 			mFunction.generatedCode(),
 			{0xF3, 0x0F, 0x10, (unsigned char)(0x85 | ((unsigned char)reg << 3))});
 
@@ -160,12 +148,12 @@ void OperandStack::pushInt(int value, bool increaseStack) {
 	int stackOffset = getStackOperandOffset(mTopIndex);
 
 	//mov [rbp+<operand offset>], value
-	if (validCharValue(stackOffset)) {
-		pushArray(
+	if (Helpers::validCharValue(stackOffset)) {
+		Helpers::pushArray(
 			mFunction.generatedCode(),
 			{0x48, 0xC7, 0x45, (unsigned char)stackOffset});
 	} else {
-		pushArray(
+		Helpers::pushArray(
 			mFunction.generatedCode(),
 			{0x48, 0xC7, 0x85});
 
