@@ -387,6 +387,14 @@ void Amd64Assembler::move(IntRegister destination, MemoryOperand source, DataSiz
 	}
 }
 
+void Amd64Assembler::move(FloatRegisters destination, MemoryOperand source) {
+	if (source.memoryRegister().isBase()) {
+		Amd64Backend::moveMemoryRegWithIntOffsetToReg(mData, destination, source.memoryRegister().baseRegister(), source.offset());
+	} else {
+		Amd64Backend::moveMemoryRegWithIntOffsetToReg(mData, destination, source.memoryRegister().extendedRegister(), source.offset());
+	}
+}
+
 void Amd64Assembler::move(IntRegister destination, unsigned char* source) {
 	if (!destination.isBase()) {
 		throw std::runtime_error("Extended registers not supported");
@@ -426,6 +434,22 @@ void Amd64Assembler::move(MemoryOperand destination, IntRegister source, DataSiz
 				});
 			break;
 	}
+}
+
+void Amd64Assembler::move(MemoryOperand destination, FloatRegisters source) {
+	if (destination.memoryRegister().isBase()) {
+		Amd64Backend::moveRegToMemoryRegWithIntOffset(mData, destination.memoryRegister().baseRegister(), destination.offset(), source);
+	} else {
+		Amd64Backend::moveRegToMemoryRegWithIntOffset(mData, destination.memoryRegister().extendedRegister(), destination.offset(), source);
+	}
+}
+
+void Amd64Assembler::move(MemoryOperand destination, std::int32_t value) {
+	generateOneMemoryOperandWithValueInstruction<std::int32_t>(
+		destination,
+		value,
+		[&](CodeGen& codeGen, Registers dest, int offset, std::int32_t x) { Amd64Backend::moveIntToMemoryRegWithIntOffset(codeGen, dest, offset, x); },
+		[&](CodeGen& codeGen, ExtendedRegisters dest, int offset, std::int32_t x) { Amd64Backend::moveIntToMemoryRegWithIntOffset(codeGen, dest, offset, x); });
 }
 
 void Amd64Assembler::move(unsigned char* destination, IntRegister source) {

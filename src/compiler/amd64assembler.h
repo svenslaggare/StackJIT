@@ -156,6 +156,14 @@ private:
 		std::function<void (CodeGen&, Registers, T)> inst1,
 		std::function<void (CodeGen&, ExtendedRegisters, T)> inst2);
 
+	//Generates an instruction with one memory operand and int constant
+	template<typename T>
+	void generateOneMemoryOperandWithValueInstruction(
+		MemoryOperand op,
+		T value,
+		std::function<void (CodeGen&, Registers, int, T)> inst1,
+		std::function<void (CodeGen&, ExtendedRegisters, int, T)> inst2);
+
 	//Generates an instruction with a register destination and memory source
 	void generateSourceMemoryInstruction(
 		IntRegister op1,
@@ -227,12 +235,17 @@ public:
 
 	//Moves the memory operand to the register
 	void move(IntRegister destination, MemoryOperand source, DataSize dataSize = DEFAULT_MEMORY_DATA_SIZE);
+	void move(FloatRegisters destination, MemoryOperand source);
 
 	//Moves the memory at the given address to the register. Only the RAX register is supported.
 	void move(IntRegister destination, unsigned char* source);
 
 	//Moves the register to the memory operand
 	void move(MemoryOperand destination, IntRegister source, DataSize dataSize = DEFAULT_MEMORY_DATA_SIZE);
+	void move(MemoryOperand destination, FloatRegisters source);
+
+	//Moves the given into the memory operand
+	void move(MemoryOperand destination, std::int32_t value);
 
 	//Moves the given register to the given address. Only the RAX register is supported.
 	void move(unsigned char* destination, IntRegister source);
@@ -258,7 +271,7 @@ public:
 	//Converts the source to an int
 	void convert(IntRegister destination, FloatRegisters source);
 
-	//Convets the source to a float
+	//Converts the source to a float
 	void convert(FloatRegisters destination, IntRegister source);
 
 	//Compares two registers
@@ -279,5 +292,18 @@ void Amd64Assembler::generateOneRegisterWithValueInstruction(
 		inst1(mData, op.baseRegister(), value);
 	} else {
 		inst2(mData, op.extendedRegister(), value);
+	}
+}
+
+template<typename T>
+void Amd64Assembler::generateOneMemoryOperandWithValueInstruction(
+	MemoryOperand op,
+	T value,
+	std::function<void (CodeGen&, Registers, int, T)> inst1,
+	std::function<void (CodeGen&, ExtendedRegisters, int, T)> inst2) {
+	if (op.memoryRegister().isBase()) {
+		inst1(mData, op.memoryRegister().baseRegister(), op.offset(), value);
+	} else {
+		inst2(mData, op.memoryRegister().extendedRegister(), op.offset(), value);
 	}
 }

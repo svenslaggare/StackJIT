@@ -2,6 +2,7 @@
 #include <string>
 #include <unordered_map>
 #include "amd64.h"
+#include "amd64assembler.h"
 
 class FunctionDefinition;
 class ManagedFunction;
@@ -56,12 +57,11 @@ public:
 	void duplicate();
 
 	//Pops an operand from the operand stack to the given register
-	void popReg(Registers reg);
-	void popReg(ExtendedRegisters reg);
+	void popReg(IntRegister reg);
 	void popReg(FloatRegisters reg);
 
 	//Pushes the given register to the operand stack
-	void pushReg(Registers reg);
+	void pushReg(IntRegister reg);
 	void pushReg(FloatRegisters reg);
 
 	//Pushes the given value to the operand stack

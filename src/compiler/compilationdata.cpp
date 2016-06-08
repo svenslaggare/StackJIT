@@ -41,103 +41,46 @@ void OperandStack::reserveSpace() {
 void OperandStack::duplicate() {
 	assertNotEmpty();
 
+	Amd64Assembler assembler(mFunction.generatedCode());
 	int stackOffset1 = getStackOperandOffset(mTopIndex);
 	int stackOffset2 = getStackOperandOffset(mTopIndex + 1);
-
-	Amd64Backend::moveMemoryRegWithOffsetToReg(
-		mFunction.generatedCode(),
-		Registers::AX,
-		Registers::BP,
-		stackOffset1); //mov rax, [rbp+<operand1 offset>]
-
-	Amd64Backend::moveRegToMemoryRegWithOffset(
-		mFunction.generatedCode(),
-		Registers::BP,
-		stackOffset2,
-		Registers::AX); //mov [rbp+<operand2 offset>], rax
-
+	assembler.move(Registers::AX, { Registers::BP, stackOffset1 }); //mov rax, [rbp+<operand1 offset>]
+	assembler.move({ Registers::BP, stackOffset2 }, Registers::AX); //mov [rbp+<operand2 offset>], rax
 	mTopIndex++;
 }
 
-void OperandStack::popReg(Registers reg) {
+void OperandStack::popReg(IntRegister reg) {
 	assertNotEmpty();
+
+	Amd64Assembler assembler(mFunction.generatedCode());
 	int stackOffset = getStackOperandOffset(mTopIndex);
-
-	Amd64Backend::moveMemoryRegWithOffsetToReg(
-		mFunction.generatedCode(),
-		reg, Registers::BP, stackOffset); //mov <reg>, [rbp+<operand offset>]
-
-	mTopIndex--;
-}
-
-void OperandStack::popReg(ExtendedRegisters reg) {
-	assertNotEmpty();
-	int stackOffset = getStackOperandOffset(mTopIndex);
-
-	if (Helpers::validCharValue(stackOffset)) {
-		Helpers::pushArray(
-			mFunction.generatedCode(),
-			{0x4C, 0x8B, (unsigned char)(0x45 | ((unsigned char)reg << 3)),
-			 (unsigned char)stackOffset}); //mov <reg>, [rbp+<operand offset>]
-	} else {
-		Helpers::pushArray(
-			mFunction.generatedCode(),
-			{0x4C, 0x8B, (unsigned char)(0x85 | ((unsigned char)reg << 3))});
-
-		IntToBytes converter;
-		converter.intValue = stackOffset;
-
-		for (std::size_t i = 0; i < sizeof(int); i++) {
-			mFunction.generatedCode().push_back(converter.byteValues[i]);
-		}
-	}
-
+	assembler.move(reg, { Registers::BP, stackOffset });
 	mTopIndex--;
 }
 
 void OperandStack::popReg(FloatRegisters reg) {
 	assertNotEmpty();
+
+	Amd64Assembler assembler(mFunction.generatedCode());
 	int stackOffset = getStackOperandOffset(mTopIndex);
-
-	if (Helpers::validCharValue(stackOffset)) {
-		Helpers::pushArray(
-			mFunction.generatedCode(),
-			{0xF3, 0x0F, 0x10, (unsigned char)(0x45 | ((unsigned char)reg << 3)),
-			 (unsigned char)stackOffset}); //movss <reg>, [rbp+<operand offset>]
-	} else {
-		Helpers::pushArray(
-			mFunction.generatedCode(),
-			{0xF3, 0x0F, 0x10, (unsigned char)(0x85 | ((unsigned char)reg << 3))});
-
-		IntToBytes converter;
-		converter.intValue = stackOffset;
-
-		for (std::size_t i = 0; i < sizeof(int); i++) {
-			mFunction.generatedCode().push_back(converter.byteValues[i]);
-		}
-	}
-
+	assembler.move(reg, { Registers::BP, stackOffset });
 	mTopIndex--;
 }
 
-void OperandStack::pushReg(Registers reg) {
+void OperandStack::pushReg(IntRegister reg) {
 	mTopIndex++;
 
+	Amd64Assembler assembler(mFunction.generatedCode());
 	int stackOffset = getStackOperandOffset(mTopIndex);
-
-	Amd64Backend::moveRegToMemoryRegWithOffset(
-		mFunction.generatedCode(),
-		Registers::BP, stackOffset, reg); //mov [rbp+<operand offset>], <reg>
+	assembler.move({ Registers::BP, stackOffset }, reg); //mov [rbp+<operand offset>], <reg>
 }
 
 void OperandStack::pushReg(FloatRegisters reg) {
 	mTopIndex++;
-	int stackOffset = getStackOperandOffset(mTopIndex);
 
-	Amd64Backend::moveRegToMemoryRegWithOffset(
-		mFunction.generatedCode(),
-		Registers::BP,
-		stackOffset, reg); //movss [rbp+<operand offset>], <float reg>
+	Amd64Assembler assembler(mFunction.generatedCode());
+	int stackOffset = getStackOperandOffset(mTopIndex);
+	assembler.move({ Registers::BP, stackOffset }, reg); //movss [rbp+<operand offset>], <float reg>
 }
 
 void OperandStack::pushInt(int value, bool increaseStack) {
@@ -145,28 +88,7 @@ void OperandStack::pushInt(int value, bool increaseStack) {
 		mTopIndex++;
 	}
 
+	Amd64Assembler assembler(mFunction.generatedCode());
 	int stackOffset = getStackOperandOffset(mTopIndex);
-
-	//mov [rbp+<operand offset>], value
-	if (Helpers::validCharValue(stackOffset)) {
-		Helpers::pushArray(
-			mFunction.generatedCode(),
-			{0x48, 0xC7, 0x45, (unsigned char)stackOffset});
-	} else {
-		Helpers::pushArray(
-			mFunction.generatedCode(),
-			{0x48, 0xC7, 0x85});
-
-		IntToBytes intToBytes;
-		intToBytes.intValue = stackOffset;
-		for (std::size_t i = 0; i < sizeof(int); i++) {
-			mFunction.generatedCode().push_back(intToBytes.byteValues[i]);
-		}
-	}
-
-	IntToBytes intToBytes;
-	intToBytes.intValue = value;
-	for (std::size_t i = 0; i < sizeof(int); i++) {
-		mFunction.generatedCode().push_back(intToBytes.byteValues[i]);
-	}
+	assembler.move({ Registers::BP, stackOffset }, value); 	//mov [rbp+<operand offset>], value
 }
