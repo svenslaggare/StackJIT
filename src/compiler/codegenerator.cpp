@@ -145,11 +145,11 @@ void CodeGenerator::zeroLocals(FunctionCompilationData& functionData) {
 	//Zero the locals
 	if (function.numLocals() > 0) {
 		//Zero rax
-		assembler.bitwiseXor(Registers::AX, Registers::AX); //xor rax, rax
+		assembler.bitwiseXor(Registers::AX, Registers::AX);
 
 		for (int i = 0; i < function.numLocals(); i++) {
 			int localOffset = (int)((i + function.def().numParams() + 1) * -Amd64Backend::REG_SIZE);
-			assembler.move({ Registers::BP, localOffset }, Registers::AX); //mov [rbp-local], rax
+			assembler.move({ Registers::BP, localOffset }, Registers::AX);
 		}
 	}
 }
@@ -161,8 +161,8 @@ void CodeGenerator::pushFunc(const VMState& vmState, FunctionCompilationData& fu
 
 	//Get the top pointer
 	auto topPtr = (unsigned char*)vmState.engine().callStack().topPtr();
-	assembler.move(Registers::AX, topPtr); //mov rax, [<address of top>]
-	assembler.add(Registers::AX, sizeof(CallStackEntry)); //add rax, <sizeof(CallStackEntry)>
+	assembler.move(Registers::AX, topPtr);
+	assembler.add(Registers::AX, sizeof(CallStackEntry));
 
 	//Check if overflow
 	mExceptionHandling.addStackOverflowCheck(
@@ -170,13 +170,13 @@ void CodeGenerator::pushFunc(const VMState& vmState, FunctionCompilationData& fu
 		(PtrValue)(vmState.engine().callStack().start() + vmState.engine().callStack().size()));
 
 	//Store the entry
-	assembler.moveLong(Registers::CX, (PtrValue)&function); //mov rcx, <address of func>
-	assembler.move({ Registers::AX, 0 }, Registers::CX); //mov [rax], rcx
+	assembler.moveLong(Registers::CX, (PtrValue)&function);
+	assembler.move({ Registers::AX, 0 }, Registers::CX);
 	assembler.moveInt(Registers::CX, instIndex); //mov rcx, <call point>
-	assembler.move({ Registers::AX, sizeof(ManagedFunction*) }, Registers::CX); //mov [rax+<offset>], rcx
+	assembler.move({ Registers::AX, sizeof(ManagedFunction*) }, Registers::CX);
 
 	//Update the top pointer
-	assembler.move(topPtr, Registers::AX); //mov [<address of top>], rax
+	assembler.move(topPtr, Registers::AX);
 }
 
 void CodeGenerator::popFunc(const VMState& vmState, CodeGen& generatedCode) {
@@ -184,15 +184,17 @@ void CodeGenerator::popFunc(const VMState& vmState, CodeGen& generatedCode) {
 
 	//Get the top pointer
 	auto topPtr = (unsigned char*)vmState.engine().callStack().topPtr();
-	assembler.move(Registers::AX, topPtr); //mov rax, [<address of top>]
-	assembler.add(Registers::AX, -(int)sizeof(CallStackEntry)); //add rax, -<sizeof(CallStackEntry)>
+	assembler.move(Registers::AX, topPtr);
+	assembler.add(Registers::AX, -(int)sizeof(CallStackEntry));
 
 	//Update the top pointer
-	assembler.move(topPtr, Registers::AX); //mov [<address of top>], rax
+	assembler.move(topPtr, Registers::AX);
 }
 
-void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, const VMState& vmState,
-										const Instruction& inst, int instIndex) {
+void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
+										const VMState& vmState,
+										const Instruction& inst,
+										int instIndex) {
 	auto& function = functionData.function;
 	auto& operandStack = functionData.operandStack;
 	auto& generatedCode = function.generatedCode();
@@ -217,7 +219,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			break;
 		case OpCodes::LOAD_FLOAT: {
 			//Extract the byte pattern for the float
-			const int* floatData = reinterpret_cast<const int*>(&inst.floatValue);
+			auto floatData = reinterpret_cast<const int*>(&inst.floatValue);
 			operandStack.pushInt(*floatData);
 			break;
 		}
@@ -246,23 +248,23 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			switch (inst.opCode()) {
 				case OpCodes::ADD:
 					if (intOp) {
-						assembler.add(Registers::AX, Registers::CX, is32bits); //add eax, ecx
+						assembler.add(Registers::AX, Registers::CX, is32bits);
 					} else if (floatOp) {
-						assembler.add(FloatRegisters::XMM0, FloatRegisters::XMM1); //addss xmm0, xmm1
+						assembler.add(FloatRegisters::XMM0, FloatRegisters::XMM1);
 					}
 					break;
 				case OpCodes::SUB:
 					if (intOp) {
-						assembler.sub(Registers::AX, Registers::CX, is32bits); //sub eax, ecx
+						assembler.sub(Registers::AX, Registers::CX, is32bits);
 					} else if (floatOp) {
-						assembler.sub(FloatRegisters::XMM0, FloatRegisters::XMM1); //subss xmm0, xmm1
+						assembler.sub(FloatRegisters::XMM0, FloatRegisters::XMM1);
 					}
 					break;
 				case OpCodes::MUL:
 					if (intOp) {
-						assembler.mult(Registers::AX, Registers::CX, is32bits); //imul eax, ecx
+						assembler.mult(Registers::AX, Registers::CX, is32bits);
 					} else if (floatOp) {
-						assembler.mult(FloatRegisters::XMM0, FloatRegisters::XMM1); //mulss xmm0, xmm1
+						assembler.mult(FloatRegisters::XMM0, FloatRegisters::XMM1);
 					}
 					break;
 				case OpCodes::DIV:
@@ -270,7 +272,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 						assembler.signExtend(Registers::AX, DataSize::Size32); //cdq
 						assembler.div(Registers::CX, is32bits); //idiv eax, ecx
 					} else if (floatOp) {
-						assembler.div(FloatRegisters::XMM0, FloatRegisters::XMM1); //divss xmm0, xmm1
+						assembler.div(FloatRegisters::XMM0, FloatRegisters::XMM1);
 					}
 					break;
 				default:
@@ -301,10 +303,10 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			//Apply the operator
 			switch (inst.opCode()) {
 				case OpCodes::AND:
-					assembler.bitwiseAnd(Registers::AX, Registers::CX, is32bits); //and rax, rcx
+					assembler.bitwiseAnd(Registers::AX, Registers::CX, is32bits);
 					break;
 				case OpCodes::OR:
-					assembler.bitwiseOr(Registers::AX, Registers::CX, is32bits); //or rax, rcx
+					assembler.bitwiseOr(Registers::AX, Registers::CX, is32bits);
 					break;
 				default:
 					break;
@@ -657,8 +659,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			mExceptionHandling.addArrayBoundsCheck(functionData);
 
 			//Compute the address of the element
-			assembler.mult(ExtendedRegisters::R10, (int)TypeSystem::sizeOfType(elemType)); //imul r10, <size of type>
-			assembler.add(Registers::AX, ExtendedRegisters::R10); //add rax, r10
+			assembler.mult(ExtendedRegisters::R10, (int)TypeSystem::sizeOfType(elemType));
+			assembler.add(Registers::AX, ExtendedRegisters::R10);
 
 			//Store the element
 			auto elemSize = TypeSystem::sizeOfType(elemType);
@@ -683,7 +685,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 
 			//Pop the operands
 			operandStack.popReg(ExtendedRegisters::R10); //The index of the element
-			operandStack.popReg(Registers::AX); //The address of the ar
+			operandStack.popReg(Registers::AX); //The address of the array
 
 			//Error checks
 			mExceptionHandling.addNullCheck(functionData);
@@ -875,7 +877,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 					}
 				} else {
 					//Compute the address of the field
-					assembler.add(Registers::AX, fieldOffset); //add rax, <field offset>
+					assembler.add(Registers::AX, fieldOffset);
 
 					if (!is8bits) {
 						Amd64Backend::moveRegToMemoryRegWithCharOffset(
