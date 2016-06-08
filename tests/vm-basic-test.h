@@ -44,4 +44,12 @@ public:
         TS_ASSERT_EQUALS(invokeVM("lazy/callchainwithoutpatching", "--no-rtlib -lc 1"), "25\n");
         TS_ASSERT_EQUALS(invokeVM("lazy/loop", "--no-rtlib -lc 1"), "0\n");
     }
+
+	void testBool() {
+		TS_ASSERT_EQUALS(invokeVM("bool/and1"), "false\n0\n");
+		TS_ASSERT_EQUALS(invokeVM("bool/and2"), "true\n0\n");
+		TS_ASSERT_EQUALS(invokeVM("bool/or1"), "true\n0\n");
+		TS_ASSERT_EQUALS(invokeVM("bool/or2"), "false\n0\n");
+		TS_ASSERT_EQUALS(invokeVM("bool/not"), "false\n0\n");
+	}
 };

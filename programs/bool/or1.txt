@@ -1,0 +1,10 @@
+func main() Int
+{
+	LDTRUE
+	LDFALSE
+	OR
+	CALL std.println(Bool)
+
+	LDINT 0
+	RET
+}

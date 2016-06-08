@@ -168,6 +168,29 @@ void Amd64Backend::moveMemoryByRegToReg(CodeGen& codeGen, Registers dest, Regist
 	codeGen.push_back((Byte)srcMemReg | ((Byte)dest << 3));
 }
 
+void Amd64Backend::moveMemoryByRegToReg(CodeGen& codeGen, ExtendedRegisters dest, ExtendedRegisters srcMemReg) {
+	codeGen.push_back(0x4d);
+	codeGen.push_back(0x8b);
+	codeGen.push_back((Byte)srcMemReg | ((Byte)dest << 3));
+}
+
+void Amd64Backend::moveMemoryByRegToReg(CodeGen& codeGen, Registers dest, ExtendedRegisters srcMemReg, bool is32bits) {
+	if (!is32bits) {
+		codeGen.push_back(0x49);
+	} else {
+		codeGen.push_back(0x41);
+	}
+
+	codeGen.push_back(0x8b);
+	codeGen.push_back((Byte)srcMemReg | ((Byte)dest << 3));
+}
+
+void Amd64Backend::moveMemoryByRegToReg(CodeGen& codeGen, ExtendedRegisters dest, Registers srcMemReg) {
+	codeGen.push_back(0x4c);
+	codeGen.push_back(0x8b);
+	codeGen.push_back((Byte)srcMemReg | ((Byte)dest << 3));
+}
+
 void Amd64Backend::moveRegToMemoryRegWithOffset(CodeGen& codeGen, Registers destMemReg, int offset, Registers src, bool is32bits) {
 	if (validCharValue(offset)) {
 		moveRegToMemoryRegWithCharOffset(codeGen, destMemReg, (char)offset, src, is32bits);
@@ -240,6 +263,19 @@ void Amd64Backend::moveRegToMemoryRegWithIntOffset(CodeGen& codeGen, Registers d
 	}
 }
 
+void Amd64Backend::moveRegToMemoryRegWithIntOffset(CodeGen& codeGen, ExtendedRegisters destMemReg, int offset, ExtendedRegisters src) {
+	codeGen.push_back(0x4d);
+	codeGen.push_back(0x89);
+	codeGen.push_back(0x80 | (Byte)destMemReg | ((Byte)src << 3));
+
+	IntToBytes converter;
+	converter.intValue = offset;
+
+	for (std::size_t i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.byteValues[i]);
+	}
+}
+
 void Amd64Backend::moveRegToMemoryRegWithIntOffset(CodeGen& codeGen, Registers destMemReg, int offset, ExtendedRegisters src) {
 	if (destMemReg != Registers::SP) {
 		codeGen.push_back(0x4c);
@@ -251,6 +287,19 @@ void Amd64Backend::moveRegToMemoryRegWithIntOffset(CodeGen& codeGen, Registers d
 		codeGen.push_back(0x84 | ((Byte)src << 3));
 		codeGen.push_back(0x24);
 	}
+
+	IntToBytes converter;
+	converter.intValue = offset;
+
+	for (std::size_t i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.byteValues[i]);
+	}
+}
+
+void Amd64Backend::moveRegToMemoryRegWithIntOffset(CodeGen& codeGen, ExtendedRegisters destMemReg, int offset, Registers src) {
+	codeGen.push_back(0x49);
+	codeGen.push_back(0x89);
+	codeGen.push_back(0x80 | (Byte)destMemReg | ((Byte)src << 3));
 
 	IntToBytes converter;
 	converter.intValue = offset;
@@ -290,6 +339,52 @@ void Amd64Backend::moveMemoryRegWithIntOffsetToReg(CodeGen& codeGen, Registers d
 		codeGen.push_back(0x80 | (Byte)srcMemReg | ((Byte)dest << 3));
 	} else {
 		codeGen.push_back(0x48);
+		codeGen.push_back(0x8b);
+		codeGen.push_back(0x84 | ((Byte)dest << 3));
+		codeGen.push_back(0x24);
+	}
+
+	IntToBytes converter;
+	converter.intValue = offset;
+
+	for (std::size_t i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.byteValues[i]);
+	}
+}
+
+void Amd64Backend::moveMemoryRegWithIntOffsetToReg(CodeGen& codeGen, ExtendedRegisters dest, ExtendedRegisters srcMemReg, int offset) {
+	codeGen.push_back(0x4d);
+	codeGen.push_back(0x8b);
+	codeGen.push_back(0x80 | (Byte)srcMemReg | ((Byte)dest << 3));
+
+	IntToBytes converter;
+	converter.intValue = offset;
+
+	for (std::size_t i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.byteValues[i]);
+	}
+}
+
+void Amd64Backend::moveMemoryRegWithIntOffsetToReg(CodeGen& codeGen, Registers dest, ExtendedRegisters srcMemReg, int offset) {
+	codeGen.push_back(0x49);
+	codeGen.push_back(0x8b);
+	codeGen.push_back(0x80 | (Byte)srcMemReg | ((Byte)dest << 3));
+
+	IntToBytes converter;
+	converter.intValue = offset;
+
+	for (std::size_t i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.byteValues[i]);
+	}
+}
+
+void Amd64Backend::moveMemoryRegWithIntOffsetToReg(CodeGen& codeGen, ExtendedRegisters dest, Registers srcMemReg, int offset) {
+	if (srcMemReg != Registers::SP) {
+		codeGen.push_back(0x4c);
+		codeGen.push_back(0x8b);
+		codeGen.push_back(0x80 | (Byte)srcMemReg | ((Byte)dest << 3));
+	} else {
+		codeGen.push_back(0x4c);
 		codeGen.push_back(0x8b);
 		codeGen.push_back(0x84 | ((Byte)dest << 3));
 		codeGen.push_back(0x24);
@@ -777,6 +872,24 @@ void Amd64Backend::andRegToReg(CodeGen& codeGen, Registers dest, Registers src, 
     codeGen.push_back(0xc0 | (Byte)dest | ((Byte)src << 3));
 }
 
+void Amd64Backend::andRegToReg(CodeGen& codeGen, ExtendedRegisters dest, ExtendedRegisters src) {
+	codeGen.push_back(0x4d);
+	codeGen.push_back(0x21);
+	codeGen.push_back(0xc0 | (Byte)dest | ((Byte)src << 3));
+}
+
+void Amd64Backend::andRegToReg(CodeGen& codeGen, Registers dest, ExtendedRegisters src) {
+	codeGen.push_back(0x49);
+	codeGen.push_back(0x21);
+	codeGen.push_back(0xc0 | (Byte)dest | ((Byte)src << 3));
+}
+
+void Amd64Backend::andRegToReg(CodeGen& codeGen, ExtendedRegisters dest, Registers src) {
+	codeGen.push_back(0x4c);
+	codeGen.push_back(0x21);
+	codeGen.push_back(0xc0 | (Byte)dest | ((Byte)src << 3));
+}
+
 void Amd64Backend::orRegToReg(CodeGen& codeGen, Registers dest, Registers src, bool is32bits) {
 	if (!is32bits) {
         codeGen.push_back(0x48);
@@ -784,6 +897,24 @@ void Amd64Backend::orRegToReg(CodeGen& codeGen, Registers dest, Registers src, b
 
     codeGen.push_back(0x09);
     codeGen.push_back(0xc0 | (Byte)dest | ((Byte)src << 3));
+}
+
+void Amd64Backend::orRegToReg(CodeGen& codeGen, ExtendedRegisters dest, ExtendedRegisters src) {
+	codeGen.push_back(0x4d);
+	codeGen.push_back(0x09);
+	codeGen.push_back(0xc0 | (Byte)dest | ((Byte)src << 3));
+}
+
+void Amd64Backend::orRegToReg(CodeGen& codeGen, Registers dest, ExtendedRegisters src) {
+	codeGen.push_back(0x49);
+	codeGen.push_back(0x09);
+	codeGen.push_back(0xc0 | (Byte)dest | ((Byte)src << 3));
+}
+
+void Amd64Backend::orRegToReg(CodeGen& codeGen, ExtendedRegisters dest, Registers src) {
+	codeGen.push_back(0x4c);
+	codeGen.push_back(0x09);
+	codeGen.push_back(0xc0 | (Byte)dest | ((Byte)src << 3));
 }
 
 void Amd64Backend::xorRegToReg(CodeGen& codeGen, Registers dest, Registers src, bool is32bits) {
@@ -796,7 +927,19 @@ void Amd64Backend::xorRegToReg(CodeGen& codeGen, Registers dest, Registers src, 
 }
 
 void Amd64Backend::xorRegToReg(CodeGen& codeGen, ExtendedRegisters dest, ExtendedRegisters src) {
-	codeGen.push_back(0x4D);
+	codeGen.push_back(0x4d);
+	codeGen.push_back(0x31);
+	codeGen.push_back(0xc0 | (Byte)dest | ((Byte)src << 3));
+}
+
+void Amd64Backend::xorRegToReg(CodeGen& codeGen, Registers dest, ExtendedRegisters src) {
+	codeGen.push_back(0x4c);
+	codeGen.push_back(0x31);
+	codeGen.push_back(0xc0 | (Byte)dest | ((Byte)src << 3));
+}
+
+void Amd64Backend::xorRegToReg(CodeGen& codeGen, ExtendedRegisters dest, Registers src) {
+	codeGen.push_back(0x49);
 	codeGen.push_back(0x31);
 	codeGen.push_back(0xc0 | (Byte)dest | ((Byte)src << 3));
 }
@@ -810,8 +953,20 @@ void Amd64Backend::notReg(CodeGen& codeGen, Registers reg, bool is32bits) {
     codeGen.push_back(0xd0 | (Byte)reg);
 }
 
+void Amd64Backend::notReg(CodeGen& codeGen, ExtendedRegisters reg) {
+	codeGen.push_back(0x49);
+	codeGen.push_back(0xf7);
+	codeGen.push_back(0xd0 | (Byte)reg);
+}
+
 void Amd64Backend::compareRegToReg(CodeGen& codeGen, Registers reg1, Registers reg2) {
 	codeGen.push_back(0x48);
+	codeGen.push_back(0x39);
+	codeGen.push_back(0xc0 | (Byte)reg1 | ((Byte)reg2 << 3));
+}
+
+void Amd64Backend::compareRegToReg(CodeGen& codeGen, ExtendedRegisters reg1, ExtendedRegisters reg2) {
+	codeGen.push_back(0x4d);
 	codeGen.push_back(0x39);
 	codeGen.push_back(0xc0 | (Byte)reg1 | ((Byte)reg2 << 3));
 }
@@ -828,7 +983,12 @@ void Amd64Backend::compareRegToReg(CodeGen& codeGen, ExtendedRegisters reg1, Reg
 	codeGen.push_back(0xc0 | (Byte)reg1 | ((Byte)reg2 << 3));
 }
 
-//Jumps to the target
+void Amd64Backend::compareRegToReg(CodeGen& codeGen, FloatRegisters reg1, FloatRegisters reg2) {
+	codeGen.push_back(0x0f);
+	codeGen.push_back(0x2e);
+	codeGen.push_back(0xc0 | (Byte)reg2 | ((Byte)reg1 << 3));
+}
+
 void Amd64Backend::jump(CodeGen& codeGen, int target) {
 	IntToBytes converter;
 	converter.intValue = target;
@@ -840,7 +1000,6 @@ void Amd64Backend::jump(CodeGen& codeGen, int target) {
 	}
 }
 
-//Jumps if equal to the target
 void Amd64Backend::jumpEqual(CodeGen& codeGen, int target) {
 	IntToBytes converter;
 	converter.intValue = target;
@@ -853,7 +1012,6 @@ void Amd64Backend::jumpEqual(CodeGen& codeGen, int target) {
 	}
 }
 
-//Jumps if not equal to the target
 void Amd64Backend::jumpNotEqual(CodeGen& codeGen, int target) {
 	IntToBytes converter;
 	converter.intValue = target;
@@ -866,7 +1024,6 @@ void Amd64Backend::jumpNotEqual(CodeGen& codeGen, int target) {
 	}
 }
 
-//Jumps if > to the target
 void Amd64Backend::jumpGreaterThan(CodeGen& codeGen, int target) {
 	IntToBytes converter;
 	converter.intValue = target;
@@ -879,7 +1036,6 @@ void Amd64Backend::jumpGreaterThan(CodeGen& codeGen, int target) {
 	}
 }
 
-//Jumps if > to the target (unsigned)
 void Amd64Backend::jumpGreaterThanUnsigned(CodeGen& codeGen, int target) {
 	IntToBytes converter;
 	converter.intValue = target;
@@ -892,7 +1048,6 @@ void Amd64Backend::jumpGreaterThanUnsigned(CodeGen& codeGen, int target) {
 	}
 }
 
-//Jumps if >= to the target
 void Amd64Backend::jumpGreaterThanOrEqual(CodeGen& codeGen, int target) {
 	IntToBytes converter;
 	converter.intValue = target;
@@ -905,7 +1060,6 @@ void Amd64Backend::jumpGreaterThanOrEqual(CodeGen& codeGen, int target) {
 	}
 }
 
-//Jumps if >= to the target (unsigned)
 void Amd64Backend::jumpGreaterThanOrEqualUnsigned(CodeGen& codeGen, int target) {
 	IntToBytes converter;
 	converter.intValue = target;
@@ -918,7 +1072,6 @@ void Amd64Backend::jumpGreaterThanOrEqualUnsigned(CodeGen& codeGen, int target) 
 	}
 }
 
-//Jumps if < to the target
 void Amd64Backend::jumpLessThan(CodeGen& codeGen, int target) {
 	IntToBytes converter;
 	converter.intValue = target;
@@ -931,7 +1084,6 @@ void Amd64Backend::jumpLessThan(CodeGen& codeGen, int target) {
 	}
 }
 
-//Jumps if < to the target (unsigned)
 void Amd64Backend::jumpLessThanUnsigned(CodeGen& codeGen, int target) {
 	IntToBytes converter;
 	converter.intValue = target;
@@ -944,7 +1096,6 @@ void Amd64Backend::jumpLessThanUnsigned(CodeGen& codeGen, int target) {
 	}
 }
 
-//Jumps if <= to the target
 void Amd64Backend::jumpLessThanOrEqual(CodeGen& codeGen, int target) {
 	IntToBytes converter;
 	converter.intValue = target;
@@ -957,7 +1108,6 @@ void Amd64Backend::jumpLessThanOrEqual(CodeGen& codeGen, int target) {
 	}
 }
 
-//Jumps if <= to the target (unsigned)
 void Amd64Backend::jumpLessThanOrEqualUnsigned(CodeGen& codeGen, int target) {
 	IntToBytes converter;
 	converter.intValue = target;
@@ -968,4 +1118,50 @@ void Amd64Backend::jumpLessThanOrEqualUnsigned(CodeGen& codeGen, int target) {
 	for (std::size_t i = 0; i < sizeof(int); i++) {
 		codeGen.push_back(converter.byteValues[i]);
 	}
+}
+
+void Amd64Backend::signExtend64(CodeGen& codeGen) {
+	codeGen.push_back(0x48);
+	codeGen.push_back(0x99);
+}
+
+void Amd64Backend::signExtend32(CodeGen& codeGen) {
+	codeGen.push_back(0x99);
+}
+
+void Amd64Backend::signExtend16(CodeGen& codeGen) {
+	codeGen.push_back(0x66);
+	codeGen.push_back(0x99);
+}
+
+void Amd64Backend::convertIntToFloat(CodeGen& codeGen, FloatRegisters destination, Registers source) {
+	codeGen.push_back(0xf3);
+	codeGen.push_back(0x48);
+	codeGen.push_back(0x0f);
+	codeGen.push_back(0x2a);
+	codeGen.push_back((0xc0 | (Byte)source | (Byte)destination << 3));
+}
+
+void Amd64Backend::convertIntToFloat(CodeGen& codeGen, FloatRegisters destination, ExtendedRegisters source) {
+	codeGen.push_back(0xf3);
+	codeGen.push_back(0x49);
+	codeGen.push_back(0x0f);
+	codeGen.push_back(0x2a);
+	codeGen.push_back((0xc0 | (Byte)source | (Byte)destination << 3));
+}
+
+void Amd64Backend::convertFloatToInt(CodeGen& codeGen, Registers destination, FloatRegisters source) {
+	codeGen.push_back(0xf3);
+	codeGen.push_back(0x48);
+	codeGen.push_back(0x0f);
+	codeGen.push_back(0x2c);
+	codeGen.push_back((0xc0 | (Byte)source | (Byte)destination << 3));
+}
+
+void Amd64Backend::convertFloatToInt(CodeGen& codeGen, ExtendedRegisters destination, FloatRegisters source) {
+	codeGen.push_back(0xf3);
+	codeGen.push_back(0x4c);
+	codeGen.push_back(0x0f);
+	codeGen.push_back(0x2c);
+	codeGen.push_back((0xc0 | (Byte)source | (Byte)destination << 3));
 }

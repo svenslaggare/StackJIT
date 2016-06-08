@@ -99,6 +99,9 @@ namespace Amd64Backend {
 
 	//Moves the content from memory where the address is in the second register to the first register
 	void moveMemoryByRegToReg(CodeGen&, Registers, Registers, bool is32bits = false);
+	void moveMemoryByRegToReg(CodeGen&, ExtendedRegisters, ExtendedRegisters);
+	void moveMemoryByRegToReg(CodeGen&, Registers, ExtendedRegisters, bool is32bits = false);
+	void moveMemoryByRegToReg(CodeGen&, ExtendedRegisters, Registers);
 
 	//Moves the content from a register to memory where the address is in a register + offset
 	void moveRegToMemoryRegWithOffset(CodeGen&, Registers, int, Registers, bool is32bits = false);
@@ -110,7 +113,9 @@ namespace Amd64Backend {
 
 	//Moves the content from a register to memory where the address is in a register + int offset
 	void moveRegToMemoryRegWithIntOffset(CodeGen&, Registers, int, Registers, bool is32bits = false);
+	void moveRegToMemoryRegWithIntOffset(CodeGen&, ExtendedRegisters, int, ExtendedRegisters);
 	void moveRegToMemoryRegWithIntOffset(CodeGen&, Registers, int, ExtendedRegisters);
+	void moveRegToMemoryRegWithIntOffset(CodeGen&, ExtendedRegisters, int, Registers);
 
 	//Moves the content from a memory where the address is a register + offset to a register
 	void moveMemoryRegWithOffsetToReg(CodeGen&, Registers, Registers, int);
@@ -120,6 +125,9 @@ namespace Amd64Backend {
 
 	//Moves the content from a memory where the address is a register + int offset to a register
 	void moveMemoryRegWithIntOffsetToReg(CodeGen&, Registers, Registers, int);
+	void moveMemoryRegWithIntOffsetToReg(CodeGen&, ExtendedRegisters, ExtendedRegisters, int);
+	void moveMemoryRegWithIntOffsetToReg(CodeGen&, Registers, ExtendedRegisters, int);
+	void moveMemoryRegWithIntOffsetToReg(CodeGen&, ExtendedRegisters, Registers, int);
 
 	//Moves the given integer (32-bits) to the given register
 	void moveIntToReg(CodeGen&, Registers, int);
@@ -215,21 +223,32 @@ namespace Amd64Backend {
 
 	//AND's the second register to the first
 	void andRegToReg(CodeGen&, Registers, Registers, bool is32bits = false);
+	void andRegToReg(CodeGen&, ExtendedRegisters, ExtendedRegisters);
+	void andRegToReg(CodeGen&, Registers, ExtendedRegisters);
+	void andRegToReg(CodeGen&, ExtendedRegisters, Registers);
 
 	//OR's the second register to the first
 	void orRegToReg(CodeGen&, Registers, Registers, bool is32bits = false);
+	void orRegToReg(CodeGen&, ExtendedRegisters, ExtendedRegisters);
+	void orRegToReg(CodeGen&, Registers, ExtendedRegisters);
+	void orRegToReg(CodeGen&, ExtendedRegisters, Registers);
 
 	//XOR's the second register to the first
 	void xorRegToReg(CodeGen&, Registers, Registers, bool is32bits = false);
 	void xorRegToReg(CodeGen&, ExtendedRegisters, ExtendedRegisters);
+	void xorRegToReg(CodeGen&, Registers, ExtendedRegisters);
+	void xorRegToReg(CodeGen&, ExtendedRegisters, Registers);
 
 	//NOT's the register
 	void notReg(CodeGen&, Registers, bool is32bits = false);
+	void notReg(CodeGen&, ExtendedRegisters);
 
 	//Compares the two registers
 	void compareRegToReg(CodeGen&, Registers, Registers);
+	void compareRegToReg(CodeGen&, ExtendedRegisters, ExtendedRegisters);
 	void compareRegToReg(CodeGen&, Registers, ExtendedRegisters);
 	void compareRegToReg(CodeGen&, ExtendedRegisters, Registers);
+	void compareRegToReg(CodeGen&, FloatRegisters, FloatRegisters);
 
 	//Jumps to the target relative the current instruction
 	void jump(CodeGen&, int);
@@ -263,4 +282,21 @@ namespace Amd64Backend {
 
 	//Jumps if <= to the target relative the current instruction. Uses unsigned comparison.
 	void jumpLessThanOrEqualUnsigned(CodeGen&, int);
+
+	//Sign extends the RAX register
+	void signExtend64(CodeGen&);
+
+	//Sign extends the EAX register
+	void signExtend32(CodeGen&);
+
+	//Sign extends the AX register
+	void signExtend16(CodeGen&);
+
+	//Converts the second register to a float
+	void convertIntToFloat(CodeGen&, FloatRegisters, Registers);
+	void convertIntToFloat(CodeGen&, FloatRegisters, ExtendedRegisters);
+
+	//Converts the second register to an int
+	void convertFloatToInt(CodeGen&, Registers, FloatRegisters);
+	void convertFloatToInt(CodeGen&, ExtendedRegisters, FloatRegisters);
 }

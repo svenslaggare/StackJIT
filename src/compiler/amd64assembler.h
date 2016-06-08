@@ -100,6 +100,28 @@ public:
 	int offset() const;
 };
 
+/**
+ * The data sizes for the memory instructions
+ */
+enum class DataSize {
+	Size8,
+	Size16,
+	Size32,
+	Size64,
+};
+
+/**
+ * The jump condition
+ */
+enum class JumpCondition{
+	Always,
+	Equal,
+	NotEqual,
+	LessThan,
+	LessThanOrEqual,
+	GreaterThan,
+	GreaterThanOrEqual
+};
 
 /**
  * Represents an assembler for Amd64
@@ -107,6 +129,7 @@ public:
 class Amd64Assembler {
 private:
 	const static bool DEFAULT_IS_32_BITS = false;
+	const static DataSize DEFAULT_MEMORY_DATA_SIZE = DataSize::Size64;
 
 	std::vector<unsigned char>& mData;
 
@@ -141,6 +164,15 @@ private:
 		std::function<void (CodeGen&, ExtendedRegisters, ExtendedRegisters, int)> inst2,
 		std::function<void (CodeGen&, Registers, ExtendedRegisters, int)> inst3,
 		std::function<void (CodeGen&, ExtendedRegisters, Registers, int)> inst4);
+
+	//Generates an instruction with a memory destination and register source
+	void generateDestinationMemoryInstruction(
+		MemoryOperand op1,
+		IntRegister op2,
+		std::function<void (CodeGen&, Registers, int, Registers)> inst1,
+		std::function<void (CodeGen&, ExtendedRegisters, int, ExtendedRegisters)> inst2,
+		std::function<void (CodeGen&, Registers, int, ExtendedRegisters)> inst3,
+		std::function<void (CodeGen&, ExtendedRegisters, int, Registers)> inst4);
 public:
 	//Creates a new assembler using the underlying vector
 	Amd64Assembler(std::vector<unsigned char>& data);
@@ -166,16 +198,26 @@ public:
 	//Multiplies the given register by the given the given constant
 	void mult(IntRegister destination, int value, bool is32Bits = DEFAULT_IS_32_BITS);
 
-	//Multiplies the AX register by the first. This instruction also modifies the rdx register.
+	//Divides the AX register by the first. This instruction also modifies the rdx register.
 	void div(IntRegister source, bool is32Bits = DEFAULT_IS_32_BITS);
+
+	//Divides the first register by the second
 	void div(FloatRegisters destination, FloatRegisters source);
+
+	//Applies bitwise AND between the given registers
+	void bitwiseAnd(IntRegister destination, IntRegister source, bool is32Bits = DEFAULT_IS_32_BITS);
+
+	//Applies bitwise OR between the given registers
+	void bitwiseOr(IntRegister destination, IntRegister source, bool is32Bits = DEFAULT_IS_32_BITS);
+
+	//Applies bitwise XOR between the given registers
+	void bitwiseXor(IntRegister destination, IntRegister source, bool is32Bits = DEFAULT_IS_32_BITS);
+
+	//Applies bitwise NOR to the given register
+	void bitwiseNor(IntRegister intRegister, bool is32Bits = DEFAULT_IS_32_BITS);
 
 	//Moves the second register to the first
 	void move(IntRegister destination, IntRegister source);
-
-	//Moves the given constant to the given register
-//	template<typename T>
-//	void moveConstant(IntRegister destination, T value);
 
 	//Moves the given 32-bits integer to the given register
 	void moveInt(IntRegister destination, std::int32_t value);
@@ -184,7 +226,16 @@ public:
 	void moveLong(IntRegister destination, std::int64_t value);
 
 	//Moves the memory operand to the register
-//	void move(IntRegister destination, MemoryOperand source);
+	void move(IntRegister destination, MemoryOperand source, DataSize dataSize = DEFAULT_MEMORY_DATA_SIZE);
+
+	//Moves the memory at the given address to the register. Only the RAX register is supported.
+	void move(IntRegister destination, unsigned char* source);
+
+	//Moves the register to the memory operand
+	void move(MemoryOperand destination, IntRegister source, DataSize dataSize = DEFAULT_MEMORY_DATA_SIZE);
+
+	//Moves the given register to the given address. Only the RAX register is supported.
+	void move(unsigned char* destination, IntRegister source);
 
 	//Pushes the given int register
 	void push(IntRegister intRegister);
@@ -200,6 +251,22 @@ public:
 
 	//Pops the top operand
 	void pop();
+
+	//Sign extends the given register of the given size. Only RAX register supported.
+	void signExtend(IntRegister intRegister, DataSize dataSize);
+
+	//Converts the source to an int
+	void convert(IntRegister destination, FloatRegisters source);
+
+	//Convets the source to a float
+	void convert(FloatRegisters destination, IntRegister source);
+
+	//Compares two registers
+	void compare(IntRegister destination, IntRegister source);
+	void compare(FloatRegisters destination, FloatRegisters source);
+
+	//Jumps to the given target
+	void jump(JumpCondition condition, int target, bool unsignedComparison = false);
 };
 
 template<typename T>
@@ -214,21 +281,3 @@ void Amd64Assembler::generateOneRegisterWithValueInstruction(
 		inst2(mData, op.extendedRegister(), value);
 	}
 }
-
-//template<>
-//void Amd64Assembler::moveConstant<std::int32_t>(IntRegister destination, std::int32_t value) {
-//	generateOneRegisterWithValueInstruction<std::int32_t>(
-//		destination,
-//		value,
-//		[&](CodeGen& codeGen, Registers x, std::int32_t y) { Amd64Backend::moveIntToReg(codeGen, x, y); },
-//		[&](CodeGen& codeGen, ExtendedRegisters x, std::int32_t y) { Amd64Backend::moveIntToReg(codeGen, x, y); });
-//}
-//
-//template<>
-//void Amd64Assembler::moveConstant<std::int64_t>(IntRegister destination, std::int64_t value) {
-//	generateOneRegisterWithValueInstruction<std::int64_t >(
-//		destination,
-//		value,
-//		[&](CodeGen& codeGen, Registers x, std::int64_t  y) { Amd64Backend::moveLongToReg(codeGen, x, y); },
-//		[&](CodeGen& codeGen, ExtendedRegisters x, std::int64_t  y) { Amd64Backend::moveLongToReg(codeGen, x, y); });
-//}

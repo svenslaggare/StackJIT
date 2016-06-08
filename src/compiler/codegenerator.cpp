@@ -61,27 +61,28 @@ bool CodeGenerator::compileAtRuntime(const VMState& vmState,
 std::size_t CodeGenerator::generateCompileCall(CodeGen& generatedCode,
 											   ManagedFunction& function,
 											   const FunctionDefinition& funcToCall) {
+	Amd64Assembler assembler(generatedCode);
 #if defined(_WIN64) || defined(__MINGW32__)
 	char shadowStackSize = (char)mCallingConvention.calculateShadowStackSize();
 	std::size_t callIndex;
 	std::size_t checkEndIndex;
 
-	Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (PtrValue)&function); //The current function
-	Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg1, 0); //Offset of the call
+	assembler.moveLong(RegisterCallArguments::Arg0, (PtrValue)&function); //The current function
+	assembler.moveInt(RegisterCallArguments::Arg1, 0); //Offset of the call
 	callIndex = generatedCode.size() - sizeof(int);
-	Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg2, (int)generatedCode.size()); //The offset for this check
-	Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg3, 0); //The end of the this check
+	assembler.moveInt(RegisterCallArguments::Arg2, (int)generatedCode.size()); //The offset for this check
+	assembler.moveInt(RegisterCallArguments::Arg3, 0); //The end of the this check
 	checkEndIndex = generatedCode.size() - sizeof(int);
 
 	//The function to compile
 	Amd64Backend::subByteFromReg(generatedCode, Registers::SP, 8); //Alignment
-	Amd64Backend::moveLongToReg(generatedCode, ExtendedRegisters::R10, (PtrValue)(&funcToCall));
-	Amd64Backend::pushReg(generatedCode, ExtendedRegisters::R10);
-	Amd64Backend::subByteFromReg(generatedCode, Registers::SP, shadowStackSize); //Shadow space
+	assembler.moveLong(ExtendedRegisters::R10, (PtrValue)(&funcToCall));
+	assembler.push(ExtendedRegisters::R10);
+	assembler.sub(Registers::SP, shadowStackSize); //Shadow space
 
-	Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (PtrValue)&Runtime::compileFunction);
+	assembler.moveLong(Registers::AX, (PtrValue)&Runtime::compileFunction);
 	Amd64Backend::callInReg(generatedCode, Registers::AX);
-	Amd64Backend::addByteToReg(generatedCode, Registers::SP, 16 + shadowStackSize); //Used stack
+	assembler.add(Registers::SP, 16 + shadowStackSize); //Used stack
 
 	Helpers::setValue(generatedCode, checkEndIndex, (int)generatedCode.size());
 	return callIndex;
@@ -89,15 +90,15 @@ std::size_t CodeGenerator::generateCompileCall(CodeGen& generatedCode,
 	std::size_t callIndex;
 	std::size_t checkEndIndex;
 
-	Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg0, (PtrValue)&function); //The current function
-	Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg1, 0); //Offset of the call
+	assembler.moveLong(RegisterCallArguments::Arg0, (PtrValue)&function);  //The current function
+	assembler.moveInt(RegisterCallArguments::Arg1, 0); //Offset of the call
 	callIndex = generatedCode.size() - sizeof(int);
-	Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg2, (int)generatedCode.size()); //The offset for this check
-	Amd64Backend::moveIntToReg(generatedCode, RegisterCallArguments::Arg3, 0); //The end of the this check
+	assembler.moveInt(RegisterCallArguments::Arg2, (int)generatedCode.size()); //The offset for this check
+	assembler.moveInt(RegisterCallArguments::Arg3, 0); //The end of the this check
 	checkEndIndex = generatedCode.size() - sizeof(int);
-	Amd64Backend::moveLongToReg(generatedCode, RegisterCallArguments::Arg4,	(PtrValue)(&funcToCall)); //The function to compile
+	assembler.moveLong(RegisterCallArguments::Arg4,	(PtrValue)(&funcToCall)); //The function to compile
 
-	Amd64Backend::moveLongToReg(generatedCode, Registers::AX, (PtrValue)&Runtime::compileFunction);
+	assembler.moveLong(Registers::AX, (PtrValue)&Runtime::compileFunction);
 	Amd64Backend::callInReg(generatedCode, Registers::AX);
 
 	Helpers::setValue(generatedCode, checkEndIndex, (int)generatedCode.size());
@@ -124,7 +125,7 @@ void CodeGenerator::generateGCCall(CodeGen& generatedCode, ManagedFunction& func
 	Amd64Assembler assembler(generatedCode);
 	assembler.move(RegisterCallArguments::Arg0, Registers::BP); //BP as the first argument
 	assembler.moveLong(RegisterCallArguments::Arg1,	(PtrValue)&function); //Address of the function as second argument
-	assembler.moveInt(RegisterCallArguments::Arg2,	instIndex); //Current inst index as third argument
+	assembler.moveInt(RegisterCallArguments::Arg2, instIndex); //Current inst index as third argument
 	generateCall(generatedCode, (unsigned char*)&Runtime::garbageCollect);
 }
 
@@ -152,6 +153,7 @@ void CodeGenerator::initializeFunction(FunctionCompilationData& functionData) {
 
 void CodeGenerator::zeroLocals(FunctionCompilationData& functionData) {
 	auto& function = functionData.function;
+	Amd64Assembler assembler(functionData.function.generatedCode());
 
 	//Zero the locals
 	if (function.numLocals() > 0) {
@@ -162,11 +164,7 @@ void CodeGenerator::zeroLocals(FunctionCompilationData& functionData) {
 
 		for (int i = 0; i < function.numLocals(); i++) {
 			int localOffset = (int)((i + function.def().numParams() + 1) * -Amd64Backend::REG_SIZE);
-			Amd64Backend::moveRegToMemoryRegWithOffset(
-				function.generatedCode(),
-				Registers::BP,
-				localOffset,
-				Registers::AX); //mov [rbp-local], rax
+			assembler.move({ Registers::BP, localOffset }, Registers::AX); //mov [rbp-local], rax
 		}
 	}
 }
@@ -178,11 +176,7 @@ void CodeGenerator::pushFunc(const VMState& vmState, FunctionCompilationData& fu
 
 	//Get the top pointer
 	auto topPtr = (unsigned char*)vmState.engine().callStack().topPtr();
-	Amd64Backend::moveMemoryToReg(
-		generatedCode,
-		Registers::AX,
-		topPtr); //mov rax, [<address of top>]
-
+	assembler.move(Registers::AX, topPtr); //mov rax, [<address of top>]
 	assembler.add(Registers::AX, sizeof(CallStackEntry)); //add rax, <sizeof(CallStackEntry)>
 
 	//Check if overflow
@@ -192,18 +186,12 @@ void CodeGenerator::pushFunc(const VMState& vmState, FunctionCompilationData& fu
 
 	//Store the entry
 	assembler.moveLong(Registers::CX, (PtrValue)&function); //mov rcx, <address of func>
-	Amd64Backend::moveRegToMemoryRegWithOffset(generatedCode, Registers::AX, 0, Registers::CX); //mov [rax], rcx
+	assembler.move({ Registers::AX, 0 }, Registers::CX); //mov [rax], rcx
 	assembler.moveInt(Registers::CX, instIndex); //mov rcx, <call point>
-	Amd64Backend::moveRegToMemoryRegWithOffset(
-		generatedCode,
-		Registers::AX,
-		sizeof(ManagedFunction*), Registers::CX); //mov [rax+<offset>], rcx
+	assembler.move({ Registers::AX, sizeof(ManagedFunction*) }, Registers::CX); //mov [rax+<offset>], rcx
 
 	//Update the top pointer
-	Amd64Backend::moveRegToMemory(
-		generatedCode,
-		topPtr,
-		Registers::AX); //mov [<address of top>], rax
+	assembler.move(topPtr, Registers::AX); //mov [<address of top>], rax
 }
 
 void CodeGenerator::popFunc(const VMState& vmState, CodeGen& generatedCode) {
@@ -211,18 +199,11 @@ void CodeGenerator::popFunc(const VMState& vmState, CodeGen& generatedCode) {
 
 	//Get the top pointer
 	auto topPtr = (unsigned char*)vmState.engine().callStack().topPtr();
-	Amd64Backend::moveMemoryToReg(
-		generatedCode,
-		Registers::AX,
-		topPtr); //mov rax, [<address of top>]
-
+	assembler.move(Registers::AX, topPtr); //mov rax, [<address of top>]
 	assembler.add(Registers::AX, -(int)sizeof(CallStackEntry)); //add rax, -<sizeof(CallStackEntry)>
 
 	//Update the top pointer
-	Amd64Backend::moveRegToMemory(
-		generatedCode,
-		topPtr,
-		Registers::AX); //mov [<address of top>], rax
+	assembler.move(topPtr, Registers::AX); //mov [<address of top>], rax
 }
 
 void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, const VMState& vmState,
@@ -301,7 +282,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 					break;
 				case OpCodes::DIV:
 					if (intOp) {
-						pushArray(generatedCode, { 0x99 }); //cdq
+						assembler.signExtend(Registers::AX, DataSize::Size32); //cdq
 						assembler.div(Registers::CX, is32bits); //idiv eax, ecx
 					} else if (floatOp) {
 						assembler.div(FloatRegisters::XMM0, FloatRegisters::XMM1); //divss xmm0, xmm1
@@ -335,10 +316,10 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			//Apply the operator
 			switch (inst.opCode()) {
 				case OpCodes::AND:
-					Amd64Backend::andRegToReg(generatedCode, Registers::AX, Registers::CX, is32bits); //and eax, ecx
+					assembler.bitwiseAnd(Registers::AX, Registers::CX, is32bits); //and rax, rcx
 					break;
 				case OpCodes::OR:
-					Amd64Backend::orRegToReg(generatedCode, Registers::AX, Registers::CX, is32bits); //or eax, ecx
+					assembler.bitwiseOr(Registers::AX, Registers::CX, is32bits); //or rax, rcx
 					break;
 				default:
 					break;
@@ -350,17 +331,17 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 		}
 		case OpCodes::NOT:
 			operandStack.popReg(Registers::AX);
-			Amd64Backend::notReg(generatedCode, Registers::AX); //not rax
+			assembler.bitwiseNor(Registers::AX);
 			operandStack.pushReg(Registers::AX);
 			break;
 		case OpCodes::CONVERT_INT_TO_FLOAT:
 			operandStack.popReg(Registers::AX);
-			pushArray(generatedCode, {0xF3, 0x48, 0x0F, 0x2A, 0xC0}); //cvtsi2ss xmm0, rax
+			assembler.convert(FloatRegisters::XMM0, Registers::AX); //cvtsi2ss xmm0, rax
 			operandStack.pushReg(FloatRegisters::XMM0);
 			break;
 		case OpCodes::CONVERT_FLOAT_TO_INT:
 			operandStack.popReg(FloatRegisters::XMM0);
-			pushArray(generatedCode, {0xF3, 0x48, 0x0F, 0x2C, 0xC0}); //cvttss2si rax, xmm0
+			assembler.convert(Registers::AX, FloatRegisters::XMM0); //cvttss2si rax, xmm0
 			operandStack.pushReg(Registers::AX);
 			break;
 		case OpCodes::COMPARE_EQUAL:
@@ -378,11 +359,11 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			if (intBasedType) {
 				operandStack.popReg(Registers::CX);
 				operandStack.popReg(Registers::AX);
-				Amd64Backend::compareRegToReg(generatedCode, Registers::AX, Registers::CX); //cmp rax, rcx
+				assembler.compare(Registers::AX, Registers::CX); //cmp rax, rcx
 			} else if (floatOp) {
 				operandStack.popReg(FloatRegisters::XMM1);
 				operandStack.popReg(FloatRegisters::XMM0);
-				pushArray(generatedCode, { 0x0F, 0x2E, 0xC1 }); //ucomiss xmm0, xmm1
+				assembler.compare(FloatRegisters::XMM0, FloatRegisters::XMM1); //ucomiss xmm0, xmm1
 				unsignedComparison = true;
 			}
 
@@ -393,45 +374,31 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			std::size_t falseBranchStart = 0;
 
 			int target = 0;
-
+			JumpCondition condition = JumpCondition::Always;
 			switch (inst.opCode()) {
 				case OpCodes::COMPARE_EQUAL:
-					Amd64Backend::jumpEqual(generatedCode, target);
+					condition = JumpCondition::Equal;
 					break;
 				case OpCodes::COMPARE_NOT_EQUAL:
-					Amd64Backend::jumpNotEqual(generatedCode, target);
+					condition = JumpCondition::NotEqual;
 					break;
 				case OpCodes::COMPARE_GREATER_THAN:
-					if (unsignedComparison) {
-						Amd64Backend::jumpGreaterThanUnsigned(generatedCode, target);
-					} else {
-						Amd64Backend::jumpGreaterThan(generatedCode, target);
-					}
+					condition = JumpCondition::GreaterThan;
 					break;
 				case OpCodes::COMPARE_GREATER_THAN_OR_EQUAL:
-					if (unsignedComparison) {
-						Amd64Backend::jumpGreaterThanOrEqualUnsigned(generatedCode, target);
-					} else {
-						Amd64Backend::jumpGreaterThanOrEqual(generatedCode, target);
-					}
+					condition = JumpCondition::GreaterThanOrEqual;
 					break;
 				case OpCodes::COMPARE_LESS_THAN:
-					if (unsignedComparison) {
-						Amd64Backend::jumpLessThanUnsigned(generatedCode, target);
-					} else {
-						Amd64Backend::jumpLessThan(generatedCode, target);
-					}
+					condition = JumpCondition::LessThan;
 					break;
 				case OpCodes::COMPARE_LESS_THAN_OR_EQUAL:
-					if (unsignedComparison) {
-						Amd64Backend::jumpLessThanOrEqualUnsigned(generatedCode, target);
-					} else {
-						Amd64Backend::jumpLessThanOrEqual(generatedCode, target);
-					}
+					condition = JumpCondition::LessThanOrEqual;
 					break;
 				default:
 					break;
 			}
+
+			assembler.jump(condition, target, unsignedComparison);
 
 			//Both branches will have the same operand entry, reserve space
 			operandStack.reserveSpace();
@@ -456,11 +423,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			int localOffset = (stackOffset + inst.intValue + (int)function.def().numParams())
 							  * -Amd64Backend::REG_SIZE;
 
-			Amd64Backend::moveMemoryRegWithOffsetToReg(
-				generatedCode,
-				Registers::AX,
-				Registers::BP,
-				localOffset);
+			assembler.move(Registers::AX, { Registers::BP, localOffset }); //mov rax, [rbp+<local offset>],
 
 			//Push the loaded value
 			operandStack.pushReg(Registers::AX);
@@ -473,9 +436,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 							  * -Amd64Backend::REG_SIZE;
 
 			//Store the operand at the given local
-			Amd64Backend::moveRegToMemoryRegWithOffset(
-				generatedCode,
-				Registers::BP, localOffset, Registers::AX); //mov [rbp+<local offset>], rax
+			assembler.move({ Registers::BP, localOffset }, Registers::AX); //mov [rbp+<local offset>], rax
 			break;
 		}
 		case OpCodes::CALL:
@@ -506,7 +467,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 				pushFunc(vmState, functionData, instIndex);
 
 				//Get the address of the function to call
-				unsigned char* funcAddr = nullptr;
+				unsigned char* funcAddress = nullptr;
 
 				//Align the stack
 				int stackAlignment = mCallingConvention.calculateStackAlignment(functionData, funcToCall);
@@ -546,7 +507,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 					//Unmanaged functions are located beyond one int, direct addressing must be used.
 					//Check if the function entry point is defined yet
 					if (funcToCall.entryPoint() != 0) {
-						funcAddr = funcToCall.entryPoint();
+						funcAddress = funcToCall.entryPoint();
 					} else {
 						//Mark that the function call needs to be patched with the entry point later
 						functionData.unresolvedCalls.push_back(
@@ -557,7 +518,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 					}
 
 					//Make the call
-					generateCall(generatedCode, funcAddr, Registers::AX, false);
+					generateCall(generatedCode, funcAddress, Registers::AX, false);
 				}
 
 				//Unalign the stack
@@ -605,10 +566,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 		case OpCodes::LOAD_ARG: {
 			//Load rax with the argument
 			int argOffset = (inst.intValue + stackOffset) * -Amd64Backend::REG_SIZE;
-
-			Amd64Backend::moveMemoryRegWithOffsetToReg(
-				generatedCode,
-				Registers::AX, Registers::BP, argOffset); //mov rax [rbp+<arg offset>]
+			assembler.move(Registers::AX, { Registers::BP, argOffset }); //mov rax [rbp+<arg offset>]
 
 			//Push the loaded value
 			operandStack.pushReg(Registers::AX);
@@ -639,52 +597,39 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			if (intBasedType) {
 				operandStack.popReg(Registers::CX);
 				operandStack.popReg(Registers::AX);
-				Amd64Backend::compareRegToReg(generatedCode, Registers::AX, Registers::CX); //cmp rax, rcx
+				assembler.compare(Registers::AX, Registers::CX); //cmp rax, rcx
 			} else if (floatOp) {
 				operandStack.popReg(FloatRegisters::XMM1);
 				operandStack.popReg(FloatRegisters::XMM0);
-				pushArray(generatedCode, {0x0F, 0x2E, 0xC1}); //ucomiss xmm0, xmm1
+				assembler.compare(FloatRegisters::XMM0, FloatRegisters::XMM1); //ucomiss xmm0, xmm1
 				unsignedComparison = true;
 			}
 
+			JumpCondition condition = JumpCondition::Always;
 			switch (inst.opCode()) {
 				case OpCodes::BRANCH_EQUAL:
-					Amd64Backend::jumpEqual(generatedCode, 0); //je <target>
+					condition = JumpCondition::Equal;
 					break;
 				case OpCodes::BRANCH_NOT_EQUAL:
-					Amd64Backend::jumpNotEqual(generatedCode, 0); //jne <target>
+					condition = JumpCondition::NotEqual;
 					break;
 				case OpCodes::BRANCH_GREATER_THAN:
-					if (unsignedComparison) {
-						Amd64Backend::jumpGreaterThanUnsigned(generatedCode, 0); //jg <target>
-					} else {
-						Amd64Backend::jumpGreaterThan(generatedCode, 0); //jg <target>
-					}
+					condition = JumpCondition::GreaterThan;
 					break;
 				case OpCodes::BRANCH_GREATER_THAN_OR_EQUAL:
-					if (unsignedComparison) {
-						Amd64Backend::jumpGreaterThanOrEqualUnsigned(generatedCode, 0); //jge <target>
-					} else {
-						Amd64Backend::jumpGreaterThanOrEqual(generatedCode, 0); //jge <target>
-					}
+					condition = JumpCondition::GreaterThanOrEqual;
 					break;
 				case OpCodes::BRANCH_LESS_THAN:
-					if (unsignedComparison) {
-						Amd64Backend::jumpLessThanUnsigned(generatedCode, 0); //jl <target>
-					} else {
-						Amd64Backend::jumpLessThan(generatedCode, 0); //jl <target>
-					}
+					condition = JumpCondition::LessThan;
 					break;
 				case OpCodes::BRANCH_LESS_THAN_OR_EQUAL:
-					if (unsignedComparison) {
-						Amd64Backend::jumpLessThanOrEqualUnsigned(generatedCode, 0); //jle <target>
-					} else {
-						Amd64Backend::jumpLessThanOrEqual(generatedCode, 0); //jle <target>
-					}
+					condition = JumpCondition::LessThanOrEqual;
 					break;
 				default:
 					break;
 			}
+
+			assembler.jump(condition, 0, unsignedComparison);
 
 			//As the exact target in native instructions isn't known, defer to later.
 			functionData.unresolvedBranches.insert({

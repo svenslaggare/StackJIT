@@ -1,0 +1,9 @@
+func main() Int
+{
+	LDTRUE
+	NOT
+	CALL std.println(Bool)
+
+	LDINT 0
+	RET
+}

@@ -239,7 +239,9 @@ void CallingConvention::moveArgsToStack(FunctionCompilationData& functionData) c
 }
 
 void CallingConvention::callFunctionArgument(FunctionCompilationData& functionData,
-												  int argIndex, const Type* argType, const FunctionDefinition& funcToCall) const {
+											 int argIndex,
+											 const Type* argType,
+											 const FunctionDefinition& funcToCall) const {
 	auto& generatedCode = functionData.function.generatedCode();
 	auto& operandStack = functionData.operandStack;
 
