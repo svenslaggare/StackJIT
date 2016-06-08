@@ -319,7 +319,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 		case OpCodes::NOT:
 			operandStack.popReg(Registers::AX);
 			assembler.bitwiseNor(Registers::AX);
-			assembler.bitwiseAnd(Registers::AX, 1); //Clear the other bits, so that the value is 0 or 1.
+			assembler.bitwiseAnd(Registers::AX, 1); //Clear the other bits, so that the value is either 0 or 1.
 			operandStack.pushReg(Registers::AX);
 			break;
 		case OpCodes::CONVERT_INT_TO_FLOAT:

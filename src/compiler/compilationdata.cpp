@@ -7,7 +7,8 @@ BranchTarget::BranchTarget(unsigned int target, unsigned int instructionSize)
 
 }
 
-UnresolvedFunctionCall::UnresolvedFunctionCall(FunctionCallType type, std::size_t callOffset,
+UnresolvedFunctionCall::UnresolvedFunctionCall(FunctionCallType type,
+											   std::size_t callOffset,
 											   const FunctionDefinition& funcToCall)
 	: type(type), callOffset(callOffset), funcToCall(funcToCall) {
 
@@ -44,8 +45,8 @@ void OperandStack::duplicate() {
 	Amd64Assembler assembler(mFunction.generatedCode());
 	int stackOffset1 = getStackOperandOffset(mTopIndex);
 	int stackOffset2 = getStackOperandOffset(mTopIndex + 1);
-	assembler.move(Registers::AX, { Registers::BP, stackOffset1 }); //mov rax, [rbp+<operand1 offset>]
-	assembler.move({ Registers::BP, stackOffset2 }, Registers::AX); //mov [rbp+<operand2 offset>], rax
+	assembler.move(Registers::AX, { Registers::BP, stackOffset1 });
+	assembler.move({ Registers::BP, stackOffset2 }, Registers::AX);
 	mTopIndex++;
 }
 
@@ -72,7 +73,7 @@ void OperandStack::pushReg(IntRegister reg) {
 
 	Amd64Assembler assembler(mFunction.generatedCode());
 	int stackOffset = getStackOperandOffset(mTopIndex);
-	assembler.move({ Registers::BP, stackOffset }, reg); //mov [rbp+<operand offset>], <reg>
+	assembler.move({ Registers::BP, stackOffset }, reg);
 }
 
 void OperandStack::pushReg(FloatRegisters reg) {
@@ -80,7 +81,7 @@ void OperandStack::pushReg(FloatRegisters reg) {
 
 	Amd64Assembler assembler(mFunction.generatedCode());
 	int stackOffset = getStackOperandOffset(mTopIndex);
-	assembler.move({ Registers::BP, stackOffset }, reg); //movss [rbp+<operand offset>], <float reg>
+	assembler.move({ Registers::BP, stackOffset }, reg);
 }
 
 void OperandStack::pushInt(int value, bool increaseStack) {
@@ -90,5 +91,5 @@ void OperandStack::pushInt(int value, bool increaseStack) {
 
 	Amd64Assembler assembler(mFunction.generatedCode());
 	int stackOffset = getStackOperandOffset(mTopIndex);
-	assembler.move({ Registers::BP, stackOffset }, value); 	//mov [rbp+<operand offset>], value
+	assembler.move({ Registers::BP, stackOffset }, value);
 }
