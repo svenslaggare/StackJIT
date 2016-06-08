@@ -317,6 +317,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 		case OpCodes::NOT:
 			operandStack.popReg(Registers::AX);
 			assembler.bitwiseNor(Registers::AX);
+			Helpers::pushArray(generatedCode, { 0x48, 0x83, 0xE0, 0x01 }); //Skip all the other bits.
 			operandStack.pushReg(Registers::AX);
 			break;
 		case OpCodes::CONVERT_INT_TO_FLOAT:
