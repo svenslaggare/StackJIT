@@ -1,5 +1,4 @@
 #include "jit.h"
-#include "amd64.h"
 #include "codegenerator.h"
 #include "../type/type.h"
 #include "../vmstate.h"

@@ -6,19 +6,21 @@
 #include <string.h>
 
 std::size_t ExceptionHandling::createHandlerCall(std::vector<unsigned char>& handlerCode, CallingConvention& callingConvention, PtrValue handlerPtr) {
+	Amd64Assembler assembler(handlerCode);
+
 	int shadowSpace = callingConvention.calculateShadowStackSize();
 
 	auto handlerOffset = handlerCode.size();
 
 	if (shadowSpace > 0) {
-		Amd64Backend::subByteFromReg(handlerCode, Registers::SP, shadowSpace);
+		assembler.sub(Registers::SP, shadowSpace);
 	}
 
-	Amd64Backend::moveLongToReg(handlerCode, ExtendedRegisters::R11, handlerPtr); //mov r11, <addr of func>
-	Amd64Backend::callInReg(handlerCode, ExtendedRegisters::R11); //call r11
+	assembler.moveLong(ExtendedRegisters::R11, handlerPtr);
+	Amd64Backend::callInReg(handlerCode, ExtendedRegisters::R11);
 
 	if (shadowSpace > 0) {
-		Amd64Backend::addByteToReg(handlerCode, Registers::SP, shadowSpace);
+		assembler.add(Registers::SP, shadowSpace);
 	}
 
 	return handlerOffset;
@@ -46,51 +48,55 @@ void ExceptionHandling::generateHandlers(MemoryManager& memoryManger, CallingCon
 
 void ExceptionHandling::addNullCheck(FunctionCompilationData& function, Registers refReg, ExtendedRegisters cmpReg) const {
 	auto& codeGen = function.function.generatedCode();
+	Amd64Assembler assembler(codeGen);
 
 	//Compare the reference with null
-	Amd64Backend::xorRegToReg(codeGen, cmpReg, cmpReg); //Zero the register
-	Amd64Backend::compareRegToReg(codeGen, refReg, cmpReg); //cmp <ref>, <cmp>
+	assembler.bitwiseXor(cmpReg, cmpReg); //Zero the register
+	assembler.compare(refReg, cmpReg);
 
 	//Jump to handler if null
-	Amd64Backend::jumpEqual(codeGen, 0); //je <null handler>
+	assembler.jump(JumpCondition::Equal, 0);
 	function.unresolvedNativeBranches.insert({ codeGen.size() - 6, (PtrValue)mNullCheckHandler });
 }
 
 void ExceptionHandling::addArrayBoundsCheck(FunctionCompilationData& function) const {
 	auto& codeGen = function.function.generatedCode();
+	Amd64Assembler assembler(codeGen);
 
 	//Get the size of the array (an int)
 	Amd64Backend::moveMemoryByRegToReg(codeGen, Registers::CX, Registers::AX, true); //mov ecx, [rax]
 
 	//Compare the index and size
-	Amd64Backend::compareRegToReg(codeGen, ExtendedRegisters::R10, Registers::CX); //cmp r11, rcx
+	assembler.compare(ExtendedRegisters::R10, Registers::CX);
 
 	//Jump to handler if out of bounds. By using an unsigned comparison, we only need one check.
-	Amd64Backend::jumpGreaterThanOrEqualUnsigned(codeGen, 0); //jae <array bounds handler>.
+	assembler.jump(JumpCondition::GreaterThanOrEqual, 0, true);
 	function.unresolvedNativeBranches.insert({ codeGen.size() - 6, (PtrValue)mArrayBoundsCheckHandler });
 }
 
 void ExceptionHandling::addArrayCreationCheck(FunctionCompilationData& function) const {
 	auto& codeGen = function.function.generatedCode();
+	Amd64Assembler assembler(codeGen);
 
-	Amd64Backend::xorRegToReg(codeGen, ExtendedRegisters::R11, ExtendedRegisters::R11); //Zero the register
-	Amd64Backend::compareRegToReg(codeGen, ExtendedRegisters::R11, RegisterCallArguments::Arg1); //cmp rcx, <arg 1>
+	assembler.bitwiseXor(ExtendedRegisters::R11, ExtendedRegisters::R11); //Zero the register
+	assembler.compare(ExtendedRegisters::R11, RegisterCallArguments::Arg1);
 
 	//Jump to handler if invalid
-	Amd64Backend::jumpGreaterThan(codeGen, 0); //jg <array creation handler>
+	assembler.jump(JumpCondition::GreaterThan, 0);
 	function.unresolvedNativeBranches.insert({ codeGen.size() - 6, (PtrValue)mArrayCreationCheckHandler });
 }
 
 void ExceptionHandling::addStackOverflowCheck(FunctionCompilationData& function, PtrValue callStackEnd) const {
 	auto& codeGen = function.function.generatedCode();
+	Amd64Assembler assembler(codeGen);
 
 	//Move the end of the call stack to register
-	Amd64Backend::moveLongToReg(codeGen, Registers::CX, callStackEnd); //mov rcx, <call stack end>
+	assembler.moveLong(Registers::CX, callStackEnd);
 
 	//Compare the top and the end of the stack
-	Amd64Backend::compareRegToReg(codeGen, Registers::AX, Registers::CX); //cmp rax, rcx
+	assembler.compare(Registers::AX, Registers::CX);
 
 	//Jump to handler if overflow
-	Amd64Backend::jumpGreaterThanOrEqual(codeGen, 0); //jge <stack overflow handler>.
+	assembler.jump(JumpCondition::GreaterThanOrEqual, 0);
 	function.unresolvedNativeBranches.insert({ codeGen.size() - 6, (PtrValue)mStackOverflowCheckHandler });
 }

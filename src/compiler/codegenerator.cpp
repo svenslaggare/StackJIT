@@ -317,7 +317,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 		case OpCodes::NOT:
 			operandStack.popReg(Registers::AX);
 			assembler.bitwiseNor(Registers::AX);
-			assembler.bitwiseAnd(Registers::AX, 1); //Skip all the other bits.
+			assembler.bitwiseAnd(Registers::AX, 1); //Clear the other bits, so that the value is 0 or 1.
 			operandStack.pushReg(Registers::AX);
 			break;
 		case OpCodes::CONVERT_INT_TO_FLOAT:
@@ -404,25 +404,17 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			Helpers::setValue(generatedCode, compareJump + 2, (int)(trueBranchStart - falseBranchStart));
 			break;
 		}
-		case OpCodes::LOAD_LOCAL: {
-			//Load rax with the local
-			int localOffset = (stackOffset + inst.intValue + (int)function.def().numParams())
-							  * -Amd64Backend::REG_SIZE;
-
-			assembler.move(Registers::AX, { Registers::BP, localOffset }); //mov rax, [rbp+<local offset>],
-
-			//Push the loaded value
-			operandStack.pushReg(Registers::AX);
-			break;
-		}
+		case OpCodes::LOAD_LOCAL:
 		case OpCodes::STORE_LOCAL: {
-			operandStack.popReg(Registers::AX);
-
 			int localOffset = (stackOffset + inst.intValue + (int)function.def().numParams())
 							  * -Amd64Backend::REG_SIZE;
-
-			//Store the operand at the given local
-			assembler.move({ Registers::BP, localOffset }, Registers::AX); //mov [rbp+<local offset>], rax
+			if (inst.opCode() == OpCodes::LOAD_LOCAL) {
+				assembler.move(Registers::AX, { Registers::BP, localOffset });
+				operandStack.pushReg(Registers::AX);
+			} else {
+				operandStack.popReg(Registers::AX);
+				assembler.move({ Registers::BP, localOffset }, Registers::AX);
+			}
 			break;
 		}
 		case OpCodes::CALL:
@@ -542,8 +534,8 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			mCallingConvention.makeReturnValue(functionData);
 
 			//Restore the base pointer
-			assembler.move(Registers::SP, Registers::BP); //mov rsp, rbp
-			assembler.pop(Registers::BP); //pop rbp
+			assembler.move(Registers::SP, Registers::BP);
+			assembler.pop(Registers::BP);
 
 			//Make the return
 			Amd64Backend::ret(generatedCode);
@@ -552,14 +544,14 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 		case OpCodes::LOAD_ARG: {
 			//Load rax with the argument
 			int argOffset = (inst.intValue + stackOffset) * -Amd64Backend::REG_SIZE;
-			assembler.move(Registers::AX, { Registers::BP, argOffset }); //mov rax [rbp+<arg offset>]
+			assembler.move(Registers::AX, { Registers::BP, argOffset });
 
 			//Push the loaded value
 			operandStack.pushReg(Registers::AX);
 			break;
 		}
 		case OpCodes::BRANCH: {
-			Amd64Backend::jump(generatedCode, 0); //jmp <target>
+			Amd64Backend::jump(generatedCode, 0);
 
 			//As the exact target in native instructions isn't known, defer to later.
 			functionData.unresolvedBranches.insert({
@@ -583,11 +575,11 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			if (intBasedType) {
 				operandStack.popReg(Registers::CX);
 				operandStack.popReg(Registers::AX);
-				assembler.compare(Registers::AX, Registers::CX); //cmp rax, rcx
+				assembler.compare(Registers::AX, Registers::CX);
 			} else if (floatOp) {
 				operandStack.popReg(FloatRegisters::XMM1);
 				operandStack.popReg(FloatRegisters::XMM0);
-				assembler.compare(FloatRegisters::XMM0, FloatRegisters::XMM1); //ucomiss xmm0, xmm1
+				assembler.compare(FloatRegisters::XMM0, FloatRegisters::XMM1);
 				unsignedComparison = true;
 			}
 
@@ -679,8 +671,9 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 					Registers::AX, StackJIT::ARRAY_LENGTH_SIZE, Registers::DX,
 					is32bits); //mov [rax+<element offset>], r/edx
 			} else {
-				Helpers::pushArray(generatedCode,
-						  { 0x88, 0x50, (unsigned char)StackJIT::ARRAY_LENGTH_SIZE }); //mov [rax+<element offset>], dl
+				Helpers::pushArray(
+					generatedCode,
+					{ 0x88, 0x50, (unsigned char)StackJIT::ARRAY_LENGTH_SIZE }); //mov [rax+<element offset>], dl
 			}
 
 			break;
@@ -697,9 +690,9 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			mExceptionHandling.addArrayBoundsCheck(functionData);
 
 			//Compute the address of the element
-			assembler.mult(ExtendedRegisters::R10, (int)TypeSystem::sizeOfType(elemType)); //imul r10, <size of type>
-			assembler.add(Registers::AX, ExtendedRegisters::R10); //add rax, r10
-			assembler.add(Registers::AX, StackJIT::ARRAY_LENGTH_SIZE); //add rax, <element offset>
+			assembler.mult(ExtendedRegisters::R10, (int)TypeSystem::sizeOfType(elemType));
+			assembler.add(Registers::AX, ExtendedRegisters::R10);
+			assembler.add(Registers::AX, StackJIT::ARRAY_LENGTH_SIZE);
 
 			//Load the element
 			auto elemSize = TypeSystem::sizeOfType(elemType);
@@ -901,10 +894,10 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData, c
 			}
 
 			//The pointer to the string as the first arg
-			assembler.moveLong(RegisterCallArguments::Arg0, (PtrValue)inst.strValue.data()); //mov <arg 0>, <addr of string>
+			assembler.moveLong(RegisterCallArguments::Arg0, (PtrValue)inst.strValue.data());
 
 			//The length of the string as the second arg
-			assembler.moveInt(RegisterCallArguments::Arg1, (int)inst.strValue.length()); //mov <arg 1>, <string length>>
+			assembler.moveInt(RegisterCallArguments::Arg1, (int)inst.strValue.length());
 
 			//Call the newString runtime function
 			generateCall(generatedCode, (unsigned char*)&Runtime::newString);
