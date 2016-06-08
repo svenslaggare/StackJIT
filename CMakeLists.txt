@@ -177,5 +177,5 @@ if(CXXTEST_FOUND)
     CXXTEST_ADD_TEST(tests-vm-gc test-vm-gc-runner.cpp ${TESTS_DIR}/vm-gc-test.h)
     add_dependencies(tests-vm-gc BuildRuntimeLibrary stackjit)
 
-    CXXTEST_ADD_TEST(tests-amd64 test-amd64-runner.cpp ${TESTS_DIR}/amd64-test.h src/compiler/amd64.cpp src/compiler/amd64.h)
+    CXXTEST_ADD_TEST(tests-amd64 test-amd64-runner.cpp ${TESTS_DIR}/amd64-test.h src/compiler/amd64.cpp src/compiler/amd64.h src/helpers.h src/helpers.cpp)
 endif()
