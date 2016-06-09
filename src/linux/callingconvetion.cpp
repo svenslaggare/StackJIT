@@ -125,11 +125,11 @@ namespace {
 		auto& function = functionData.function;
 		Amd64Assembler assembler(function.generatedCode());
 
-		int argStackOffset = -(1 + argIndex) * Amd64Backend::REG_SIZE;
+		int argStackOffset = -(1 + argIndex) * Amd64Backend::REGISTER_SIZE;
 
 		if (relativeArgIndex >= 6) {
 			int stackArgIndex = getStackArgumentIndex(functionData, argIndex);
-			assembler.move(Registers::AX, { Registers::BP, Amd64Backend::REG_SIZE * (stackArgIndex + 2) });
+			assembler.move(Registers::AX, { Registers::BP, Amd64Backend::REGISTER_SIZE * (stackArgIndex + 2) });
 			assembler.move({ Registers::BP, argStackOffset }, Registers::AX);
 		} else {
 			assembler.move({ Registers::BP, argStackOffset }, INT_CALL_ARGUMENTS[relativeArgIndex]);
@@ -141,11 +141,11 @@ namespace {
 		auto& function = functionData.function;
 		Amd64Assembler assembler(function.generatedCode());
 
-		int argStackOffset = -(1 + argIndex) * Amd64Backend::REG_SIZE;
+		int argStackOffset = -(1 + argIndex) * Amd64Backend::REGISTER_SIZE;
 
 		if (relativeArgIndex >= 8) {
 			int stackArgIndex = getStackArgumentIndex(functionData, argIndex);
-			assembler.move(Registers::AX, { Registers::BP, Amd64Backend::REG_SIZE * (stackArgIndex + 2) });
+			assembler.move(Registers::AX, { Registers::BP, Amd64Backend::REGISTER_SIZE * (stackArgIndex + 2) });
 			assembler.move({ Registers::BP, argStackOffset }, Registers::AX);
 		} else {
 			assembler.move({ Registers::BP, argStackOffset }, FLOAT_CALL_ARGUMENTS[relativeArgIndex]);
@@ -210,7 +210,7 @@ void CallingConvention::callFunctionArguments(FunctionCompilationData& functionD
 
 int CallingConvention::calculateStackAlignment(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall) const {
 	int numStackArgs = numStackArguments(funcToCall.parameters());
-	return (numStackArgs % 2) * Amd64Backend::REG_SIZE;
+	return (numStackArgs % 2) * Amd64Backend::REGISTER_SIZE;
 }
 
 int CallingConvention::calculateShadowStackSize() const {
@@ -241,7 +241,7 @@ void CallingConvention::handleReturnValue(FunctionCompilationData& functionData,
 	int numStackArgs = numStackArguments(funcToCall.parameters());
 
 	if (numStackArgs > 0) {
-		assembler.add(Registers::SP, numStackArgs * Amd64Backend::REG_SIZE);
+		assembler.add(Registers::SP, numStackArgs * Amd64Backend::REGISTER_SIZE);
 	}
 
 	if (!TypeSystem::isPrimitiveType(funcToCall.returnType(), PrimitiveTypes::Void)) {

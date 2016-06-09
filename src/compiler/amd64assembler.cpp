@@ -139,8 +139,6 @@ Amd64Assembler::Amd64Assembler(std::vector<unsigned char>& data)
 
 }
 
-#include <iostream>
-
 void Amd64Assembler::generateTwoRegistersInstruction(
 	IntRegister op1,
 	IntRegister op2,
@@ -359,10 +357,8 @@ void Amd64Assembler::move(IntRegister destination, MemoryOperand source, DataSiz
 	switch (dataSize) {
 		case DataSize::Size8:
 			throw std::runtime_error("Not supported");
-			break;
 		case DataSize::Size16:
 			throw std::runtime_error("Not implemented");
-			break;
 		case DataSize::Size32:
 			if (source.hasOffset()) {
 				generateSourceMemoryInstruction(
@@ -463,10 +459,8 @@ void Amd64Assembler::move(MemoryOperand destination, IntRegister source, DataSiz
 	switch (dataSize) {
 		case DataSize::Size8:
 			throw std::runtime_error("Not supported");
-			break;
 		case DataSize::Size16:
 			throw std::runtime_error("Not implemented");
-			break;
 		case DataSize::Size32:
 			generateDestinationMemoryInstruction(
 				destination,
@@ -570,7 +564,7 @@ void Amd64Assembler::pop(FloatRegisters floatRegister) {
 }
 
 void Amd64Assembler::pop() {
-	Amd64Backend::addByteToReg(mData, Registers::SP, Amd64Backend::REG_SIZE);
+	Amd64Backend::addByteToReg(mData, Registers::SP, Amd64Backend::REGISTER_SIZE);
 }
 
 void Amd64Assembler::signExtend(IntRegister intRegister, DataSize dataSize) {
@@ -581,7 +575,6 @@ void Amd64Assembler::signExtend(IntRegister intRegister, DataSize dataSize) {
 	switch (dataSize) {
 		case DataSize::Size8:
 			throw std::runtime_error("Not supported");
-			break;
 		case DataSize::Size16:
 			Amd64Backend::signExtend16(mData);
 			break;

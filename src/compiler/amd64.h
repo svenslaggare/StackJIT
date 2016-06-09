@@ -82,7 +82,7 @@ using CodeGen = std::vector<unsigned char>;
 //Backend for AMD64
 namespace Amd64Backend {
 	//The size of a register
-	const int REG_SIZE = 8;
+	const int REGISTER_SIZE = 8;
 
 	//Pushes the given register to the stack
 	void pushReg(CodeGen&, Registers);

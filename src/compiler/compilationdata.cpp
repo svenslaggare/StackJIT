@@ -31,7 +31,7 @@ void OperandStack::assertNotEmpty() {
 }
 
 int OperandStack::getStackOperandOffset(int operandIndex) {
-	return -(int)(Amd64Backend::REG_SIZE *
+	return -(int)(Amd64Backend::REGISTER_SIZE *
 				  (1 + mFunction.def().numParams() + mFunction.numLocals() + operandIndex));
 }
 

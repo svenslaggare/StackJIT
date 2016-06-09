@@ -38,8 +38,8 @@ namespace {
 	//Calculates the number of arguments that are passed via the stack
 	int numStackArguments(const std::vector<const Type*>& parameters) {
 		int stackArgs = 0;
-
 		int argIndex = 0;
+		
 		for (auto param : parameters) {
 			if (TypeSystem::isPrimitiveType(param, PrimitiveTypes::Float)) {
 				if (getFloatArgIndex(parameters, argIndex) >= NUM_FLOAT_ARGUMENT_REGISTERS) {
@@ -89,14 +89,14 @@ namespace {
 		auto& function = functionData.function;
 		Amd64Assembler assembler(function.generatedCode());
 
-		int argStackOffset = -(1 + argIndex) * Amd64Backend::REG_SIZE;
+		int argStackOffset = -(1 + argIndex) * Amd64Backend::REGISTER_SIZE;
 
 		if (relativeArgIndex >= NUM_NONE_FLOAT_ARGUMENT_REGISTERS) {
 			int stackArgIndex = getStackArgumentIndex(functionData, argIndex);
-			assembler.move(Registers::AX, { Registers::BP, Amd64Backend::REG_SIZE * (stackArgIndex + 6) }); //mov rax, [rbp+REG_SIZE*<arg offset>]
-			assembler.move({ Registers::BP, argStackOffset }, Registers::AX); //mov [rbp+<arg offset>], rax
+			assembler.move(Registers::AX, { Registers::BP, Amd64Backend::REGISTER_SIZE * (stackArgIndex + 6) });
+			assembler.move({ Registers::BP, argStackOffset }, Registers::AX);
 		} else {
-			assembler.move({ Registers::BP, argStackOffset }, INT_CALL_REGISTERS[relativeArgIndex]); //mov [rbp+<arg offset>], <call reg>
+			assembler.move({ Registers::BP, argStackOffset }, INT_CALL_REGISTERS[relativeArgIndex]);
 		}
 	}
 
@@ -105,14 +105,14 @@ namespace {
 		auto& function = functionData.function;
 		Amd64Assembler assembler(function.generatedCode());
 
-		int argStackOffset = -(1 + argIndex) * Amd64Backend::REG_SIZE;
+		int argStackOffset = -(1 + argIndex) * Amd64Backend::REGISTER_SIZE;
 
 		if (relativeArgIndex >= NUM_FLOAT_ARGUMENT_REGISTERS) {
 			int stackArgIndex = getStackArgumentIndex(functionData, argIndex);
-			assembler.move(Registers::AX, { Registers::BP, Amd64Backend::REG_SIZE * (stackArgIndex + 6) }); //mov rax, [rbp+REG_SIZE*<arg offset>]
-			assembler.move({ Registers::BP, argStackOffset }, Registers::AX); //mov [rbp+<arg offset>], rax
+			assembler.move(Registers::AX, { Registers::BP, Amd64Backend::REGISTER_SIZE * (stackArgIndex + 6) });
+			assembler.move({ Registers::BP, argStackOffset }, Registers::AX);
 		} else {
-			assembler.move({ Registers::BP, argStackOffset }, FLOAT_CALL_REGISTERS[relativeArgIndex]); //mov [rbp+<arg offset>], <call reg>
+			assembler.move({ Registers::BP, argStackOffset }, FLOAT_CALL_REGISTERS[relativeArgIndex]);
 		}
 	}
 }
@@ -172,11 +172,11 @@ void CallingConvention::callFunctionArguments(FunctionCompilationData& functionD
 
 int CallingConvention::calculateStackAlignment(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall) const {
 	int numStackArgs = numStackArguments(funcToCall.parameters());
-	return (numStackArgs % 2) * Amd64Backend::REG_SIZE;
+	return (numStackArgs % 2) * Amd64Backend::REGISTER_SIZE;
 }
 
 int CallingConvention::calculateShadowStackSize() const {
-	return 4 * Amd64Backend::REG_SIZE;
+	return 4 * Amd64Backend::REGISTER_SIZE;
 }
 
 void CallingConvention::makeReturnValue(FunctionCompilationData& functionData) const {
@@ -203,7 +203,7 @@ void CallingConvention::handleReturnValue(FunctionCompilationData& functionData,
 	int numStackArgs = numStackArguments(funcToCall.parameters());
 
 	if (numStackArgs > 0) {
-		assembler.add(Registers::SP, numStackArgs * Amd64Backend::REG_SIZE);
+		assembler.add(Registers::SP, numStackArgs * Amd64Backend::REGISTER_SIZE);
 	}
 
 	if (!TypeSystem::isPrimitiveType(funcToCall.returnType(), PrimitiveTypes::Void)) {

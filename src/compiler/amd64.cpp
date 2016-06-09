@@ -5,65 +5,9 @@
 
 namespace {
 	using Byte = unsigned char;
-
-	void pushExtendedRegister(CodeGen& codeGen, ExtendedRegisters reg) {
-		switch (reg) {
-			case ExtendedRegisters::R8:
-				codeGen.push_back(0xc0);
-				break;
-			case ExtendedRegisters::R9:
-				codeGen.push_back(0xc9);
-				break;
-			case ExtendedRegisters::R10:
-				codeGen.push_back(0xd2);
-				break;
-			case ExtendedRegisters::R11:
-				codeGen.push_back(0xdb);
-				break;
-			case ExtendedRegisters::R12:
-				codeGen.push_back(0xe4);
-				break;
-			case ExtendedRegisters::R13:
-				codeGen.push_back(0xed);
-				break;
-			case ExtendedRegisters::R14:
-				codeGen.push_back(0xf6);
-				break;
-			case ExtendedRegisters::R15:
-				codeGen.push_back(0xff);
-				break;
-		}
-	}
-
-	void pushExtendedRegister(CodeGen& codeGen, Registers reg) {
-		switch (reg) {
-			case Registers::AX:
-				codeGen.push_back(0xc0);
-				break;
-			case Registers::CX:
-				codeGen.push_back(0xc9);
-				break;
-			case Registers::DX:
-				codeGen.push_back(0xd2);
-				break;
-			case Registers::BX:
-				codeGen.push_back(0xdb);
-				break;
-			case Registers::SP:
-				codeGen.push_back(0xe4);
-				break;
-			case Registers::BP:
-				codeGen.push_back(0xed);
-				break;
-			case Registers::SI:
-				codeGen.push_back(0xf6);
-				break;
-			case Registers::DI:
-				codeGen.push_back(0xff);
-				break;
-		}
-	}
 }
+
+using Helpers::validCharValue;
 
 std::ostream& operator<<(std::ostream& os, const Registers& reg) {
 	switch (reg) {
@@ -189,8 +133,6 @@ std::ostream& operator<<(std::ostream& os, const FloatRegisters& reg) {
 	return os;
 }
 
-using Helpers::validCharValue;
-
 void Amd64Backend::pushReg(CodeGen& codeGen, Registers reg) {
 	codeGen.push_back(0x50 | (Byte)reg);
 }
@@ -201,7 +143,7 @@ void Amd64Backend::pushReg(CodeGen& codeGen, ExtendedRegisters reg) {
 }
 
 void Amd64Backend::pushReg(CodeGen& codeGen, FloatRegisters reg) {
-	Amd64Backend::subByteFromReg(codeGen, Registers::SP, Amd64Backend::REG_SIZE);   //sub rsp, <reg size>
+	Amd64Backend::subByteFromReg(codeGen, Registers::SP, Amd64Backend::REGISTER_SIZE);   //sub rsp, <reg size>
 	Amd64Backend::moveRegToMemoryRegWithCharOffset(codeGen, Registers::SP, 0, reg);     //movss [rsp+0], <float reg>
 }
 
@@ -227,7 +169,7 @@ void Amd64Backend::popReg(CodeGen& codeGen, ExtendedRegisters reg) {
 
 void Amd64Backend::popReg(CodeGen& codeGen, FloatRegisters reg) {
     Amd64Backend::moveMemoryByRegToReg(codeGen, reg, Registers::SP); 			   //movss <reg>, [rsp]
-	Amd64Backend::addByteToReg(codeGen, Registers::SP, Amd64Backend::REG_SIZE);    //add rsp, <reg size>
+	Amd64Backend::addByteToReg(codeGen, Registers::SP, Amd64Backend::REGISTER_SIZE);    //add rsp, <reg size>
 }
 
 void Amd64Backend::moveRegToReg(CodeGen& codeGen, Registers dest, Registers src) {
@@ -1086,14 +1028,14 @@ void Amd64Backend::multByteToReg(CodeGen& codeGen, Registers destReg, char srcVa
 	}
 
 	codeGen.push_back(0x6b);
-	pushExtendedRegister(codeGen, destReg);
+	codeGen.push_back(0xc0 | (Byte)destReg | ((Byte)destReg << 3));
 	codeGen.push_back(srcValue);
 }
 
 void Amd64Backend::multByteToReg(CodeGen& codeGen, ExtendedRegisters destReg, char srcValue) {
 	codeGen.push_back(0x4d);
 	codeGen.push_back(0x6b);
-	pushExtendedRegister(codeGen, destReg);
+	codeGen.push_back(0xc0 | (Byte)destReg | ((Byte)destReg << 3));
 	codeGen.push_back(srcValue);
 }
 
@@ -1103,7 +1045,7 @@ void Amd64Backend::multIntToReg(CodeGen& codeGen, Registers destReg, int srcValu
 	}
 
 	codeGen.push_back(0x69);
-	pushExtendedRegister(codeGen, destReg);;
+	codeGen.push_back(0xc0 | (Byte)destReg | ((Byte)destReg << 3));
 
 	IntToBytes converter;
 	converter.intValue = srcValue;
@@ -1116,7 +1058,7 @@ void Amd64Backend::multIntToReg(CodeGen& codeGen, Registers destReg, int srcValu
 void Amd64Backend::multIntToReg(CodeGen& codeGen, ExtendedRegisters destReg, int srcValue) {
 	codeGen.push_back(0x4d);
 	codeGen.push_back(0x69);
-	pushExtendedRegister(codeGen, destReg);
+	codeGen.push_back(0xc0 | (Byte)destReg | ((Byte)destReg << 3));
 
 	IntToBytes converter;
 	converter.intValue = srcValue;

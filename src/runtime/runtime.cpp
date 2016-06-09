@@ -14,24 +14,6 @@ namespace Runtime {
 	VMState vmState;
 };
 
-void Runtime::printStackFrame(RegisterValue* basePtr, ManagedFunction* func) {
-	using namespace Runtime::Internal;
-
-	auto numArgs = func->def().numParams();
-	auto numLocals = func->numLocals();
-
-	std::cout << "----Start StackFrame----" << std::endl;
-	std::cout << "Func: " << func->def().name() << std::endl;
-	std::cout << "Num args: " << numArgs << std::endl;
-	std::cout << "Num locals: " << numLocals << std::endl;
-
-	std::cout << std::endl;
-	std::cout << "Values:" << std::endl;
-	printAliveObjects(basePtr, func, (int)func->instructions().size() - 1, "\t");
-
-	std::cout << "----End StackFrame----" << std::endl;
-}
-
 namespace {
 	//Prints the given value
 	void printValue(RegisterValue value, const Type* type) {
@@ -51,6 +33,24 @@ namespace {
 
 		std::cout << " (" + type->name() + ")";
 	}
+}
+
+void Runtime::printStackFrame(RegisterValue* basePtr, ManagedFunction* func) {
+	using namespace Runtime::Internal;
+
+	auto numArgs = func->def().numParams();
+	auto numLocals = func->numLocals();
+
+	std::cout << "----Start StackFrame----" << std::endl;
+	std::cout << "Func: " << func->def().name() << std::endl;
+	std::cout << "Num args: " << numArgs << std::endl;
+	std::cout << "Num locals: " << numLocals << std::endl;
+
+	std::cout << std::endl;
+	std::cout << "Values:" << std::endl;
+	printAliveObjects(basePtr, func, (int)func->instructions().size() - 1, "\t");
+
+	std::cout << "----End StackFrame----" << std::endl;
 }
 
 void Runtime::compileFunction(ManagedFunction* callee, int callOffset, int checkStart, int checkEnd,

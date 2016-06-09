@@ -122,7 +122,7 @@ void CodeGenerator::initializeFunction(FunctionCompilationData& functionData) {
 
 	//Calculate the size of the stack aligned to 16 bytes
 	std::size_t neededStackSize = (function.def().numParams() + function.numLocals() + function.operandStackSize())
-								  * Amd64Backend::REG_SIZE;
+								  * Amd64Backend::REGISTER_SIZE;
 	std::size_t stackSize = ((neededStackSize + 15) / 16) * 16;
 
 	//Save the base pointer
@@ -148,7 +148,7 @@ void CodeGenerator::zeroLocals(FunctionCompilationData& functionData) {
 		assembler.bitwiseXor(Registers::AX, Registers::AX);
 
 		for (int i = 0; i < function.numLocals(); i++) {
-			int localOffset = (int)((i + function.def().numParams() + 1) * -Amd64Backend::REG_SIZE);
+			int localOffset = (int)((i + function.def().numParams() + 1) * -Amd64Backend::REGISTER_SIZE);
 			assembler.move({ Registers::BP, localOffset }, Registers::AX);
 		}
 	}
@@ -409,7 +409,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 		case OpCodes::LOAD_LOCAL:
 		case OpCodes::STORE_LOCAL: {
 			int localOffset = (stackOffset + inst.intValue + (int)function.def().numParams())
-							  * -Amd64Backend::REG_SIZE;
+							  * -Amd64Backend::REGISTER_SIZE;
 			if (inst.opCode() == OpCodes::LOAD_LOCAL) {
 				assembler.move(Registers::AX, { Registers::BP, localOffset });
 				operandStack.pushReg(Registers::AX);
@@ -545,7 +545,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 		}
 		case OpCodes::LOAD_ARG: {
 			//Load rax with the argument
-			int argOffset = (inst.intValue + stackOffset) * -Amd64Backend::REG_SIZE;
+			int argOffset = (inst.intValue + stackOffset) * -Amd64Backend::REGISTER_SIZE;
 			assembler.move(Registers::AX, { Registers::BP, argOffset });
 
 			//Push the loaded value
