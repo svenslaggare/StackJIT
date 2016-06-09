@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <ostream>
 #include "../stackjit.h"
 
 //Converts between primitive types and unsigned char arrays
@@ -47,6 +48,18 @@ enum class ExtendedRegisters : unsigned char {
 	R15 = 0b111,
 };
 
+//The 8-bit registers
+enum class Register8Bits : unsigned char {
+	AL = 0b000,
+	CL = 0b001,
+	DL = 0b010,
+	BL = 0b011,
+	AH = 0b100,
+	CH = 0b101,
+	DH = 0b110,
+	BH = 0b111
+};
+
 //The floating point registers
 enum class FloatRegisters : unsigned char {
 	XMM0 = 0b000,
@@ -58,6 +71,11 @@ enum class FloatRegisters : unsigned char {
 	XMM6 = 0b110,
 	XMM7 = 0b111,
 };
+
+std::ostream& operator<<(std::ostream& os, const Registers& reg);
+std::ostream& operator<<(std::ostream& os, const ExtendedRegisters& reg);
+std::ostream& operator<<(std::ostream& os, const Register8Bits& reg);
+std::ostream& operator<<(std::ostream& os, const FloatRegisters& reg);
 
 using CodeGen = std::vector<unsigned char>;
 
@@ -115,8 +133,11 @@ namespace Amd64Backend {
 	void moveRegToMemoryRegWithIntOffset(CodeGen&, Registers, int, Registers, bool is32bits = false);
 	void moveRegToMemoryRegWithIntOffset(CodeGen&, ExtendedRegisters, int, ExtendedRegisters);
 	void moveRegToMemoryRegWithIntOffset(CodeGen&, Registers, int, ExtendedRegisters);
-	void moveRegToMemoryRegWithIntOffset(CodeGen&, ExtendedRegisters, int, Registers);
+	void moveRegToMemoryRegWithIntOffset(CodeGen&, ExtendedRegisters, int, Registers, bool is32bits = false);
 	void moveRegToMemoryRegWithIntOffset(CodeGen&, ExtendedRegisters, int, FloatRegisters);
+
+	void moveRegToMemoryRegWithIntOffset(CodeGen&, Registers, int, Register8Bits);
+	void moveRegToMemoryRegWithIntOffset(CodeGen&, ExtendedRegisters, int, Register8Bits);
 
 	//Moves a 32-bits integer to the memory where the address is in a register + int offset
 	void moveIntToMemoryRegWithIntOffset(CodeGen&, Registers, int, int);
@@ -129,12 +150,15 @@ namespace Amd64Backend {
 	void moveMemoryRegWithCharOffsetToReg(CodeGen&, Registers, Registers, char);
 
 	//Moves the content from a memory where the address is a register + int offset to a register
-	void moveMemoryRegWithIntOffsetToReg(CodeGen&, Registers, Registers, int);
+	void moveMemoryRegWithIntOffsetToReg(CodeGen&, Registers, Registers, int, bool is32bits = false);
 	void moveMemoryRegWithIntOffsetToReg(CodeGen&, ExtendedRegisters, ExtendedRegisters, int);
-	void moveMemoryRegWithIntOffsetToReg(CodeGen&, Registers, ExtendedRegisters, int);
+	void moveMemoryRegWithIntOffsetToReg(CodeGen&, Registers, ExtendedRegisters, int, bool is32bits = false);
 	void moveMemoryRegWithIntOffsetToReg(CodeGen&, ExtendedRegisters, Registers, int);
 	void moveMemoryRegWithIntOffsetToReg(CodeGen&, FloatRegisters, Registers, int);
 	void moveMemoryRegWithIntOffsetToReg(CodeGen&, FloatRegisters, ExtendedRegisters, int);
+
+	void moveMemoryRegWithIntOffsetToReg(CodeGen&, Register8Bits, Registers, int);
+	void moveMemoryRegWithIntOffsetToReg(CodeGen&, Register8Bits, ExtendedRegisters, int);
 
 	//Moves the given integer (32-bits) to the given register
 	void moveIntToReg(CodeGen&, Registers, int);

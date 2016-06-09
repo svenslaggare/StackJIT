@@ -173,6 +173,13 @@ private:
 		std::function<void (CodeGen&, Registers, ExtendedRegisters, int)> inst3,
 		std::function<void (CodeGen&, ExtendedRegisters, Registers, int)> inst4);
 
+	template<typename T>
+	void generateSourceMemoryInstruction(
+		T op1,
+		MemoryOperand op2,
+		std::function<void (CodeGen&, T, Registers, int)> inst1,
+		std::function<void (CodeGen&, T, ExtendedRegisters, int)> inst2);
+
 	//Generates an instruction with a memory destination and register source
 	void generateDestinationMemoryInstruction(
 		MemoryOperand op1,
@@ -181,6 +188,13 @@ private:
 		std::function<void (CodeGen&, ExtendedRegisters, int, ExtendedRegisters)> inst2,
 		std::function<void (CodeGen&, Registers, int, ExtendedRegisters)> inst3,
 		std::function<void (CodeGen&, ExtendedRegisters, int, Registers)> inst4);
+
+	template<typename T>
+	void generateDestinationMemoryInstruction(
+		MemoryOperand op1,
+		T op2,
+		std::function<void (CodeGen&, Registers, int, T)> inst1,
+		std::function<void (CodeGen&, ExtendedRegisters, int, T)> inst2);
 public:
 	//Creates a new assembler using the underlying vector
 	Amd64Assembler(std::vector<unsigned char>& data);
@@ -238,6 +252,7 @@ public:
 
 	//Moves the memory operand to the register
 	void move(IntRegister destination, MemoryOperand source, DataSize dataSize = DEFAULT_MEMORY_DATA_SIZE);
+	void move(Register8Bits destination, MemoryOperand source);
 	void move(FloatRegisters destination, MemoryOperand source);
 
 	//Moves the memory at the given address to the register. Only the RAX register is supported.
@@ -245,6 +260,7 @@ public:
 
 	//Moves the register to the memory operand
 	void move(MemoryOperand destination, IntRegister source, DataSize dataSize = DEFAULT_MEMORY_DATA_SIZE);
+	void move(MemoryOperand destination, Register8Bits source);
 	void move(MemoryOperand destination, FloatRegisters source);
 
 	//Moves the given into the memory operand
@@ -283,6 +299,15 @@ public:
 
 	//Jumps to the given target
 	void jump(JumpCondition condition, int target, bool unsignedComparison = false);
+
+	//Calls the function in the given register
+	void call(IntRegister intRegister);
+
+	//Calls the given function, relative to the current instruction
+	void call(int relativeAddress);
+
+	//Makes a return from the current function
+	void ret();
 };
 
 template<typename T>
@@ -308,5 +333,31 @@ void Amd64Assembler::generateOneMemoryOperandWithValueInstruction(
 		inst1(mData, op.memoryRegister().baseRegister(), op.offset(), value);
 	} else {
 		inst2(mData, op.memoryRegister().extendedRegister(), op.offset(), value);
+	}
+}
+
+template<typename T>
+void Amd64Assembler::generateSourceMemoryInstruction(
+	T op1,
+	MemoryOperand op2,
+	std::function<void (CodeGen&, T, Registers, int)> inst1,
+	std::function<void (CodeGen&, T, ExtendedRegisters, int)> inst2) {
+	if (op2.memoryRegister().isBase()) {
+		inst1(mData, op1, op2.memoryRegister().baseRegister(), op2.offset());
+	} else {
+		inst2(mData, op1, op2.memoryRegister().extendedRegister(), op2.offset());
+	}
+}
+
+template<typename T>
+void Amd64Assembler::generateDestinationMemoryInstruction(
+	MemoryOperand op1,
+	T op2,
+	std::function<void (CodeGen&, Registers, int, T)> inst1,
+	std::function<void (CodeGen&, ExtendedRegisters, int, T)> inst2) {
+	if (op1.memoryRegister().isBase()) {
+		inst1(mData, op1.memoryRegister().baseRegister(), op1.offset(), op2);
+	} else {
+		inst2(mData, op1.memoryRegister().extendedRegister(), op1.offset(), op2);
 	}
 }

@@ -358,12 +358,41 @@ void Amd64Assembler::moveLong(IntRegister destination, std::int64_t value) {
 void Amd64Assembler::move(IntRegister destination, MemoryOperand source, DataSize dataSize) {
 	switch (dataSize) {
 		case DataSize::Size8:
-			throw std::runtime_error("Not implemented");
+			throw std::runtime_error("Not supported");
 			break;
 		case DataSize::Size16:
+			throw std::runtime_error("Not implemented");
 			break;
 		case DataSize::Size32:
-			throw std::runtime_error("Not implemented");
+			if (source.hasOffset()) {
+				generateSourceMemoryInstruction(
+					destination,
+					source,
+					[&](CodeGen& codeGen, Registers dest, Registers src, int offset) {
+						Amd64Backend::moveMemoryRegWithIntOffsetToReg(codeGen, dest, src, offset, true);
+					},
+					[&](CodeGen& codeGen, ExtendedRegisters dest, ExtendedRegisters src, int offset) {
+						throw std::runtime_error("Not supported");
+					},
+					[&](CodeGen& codeGen, Registers dest, ExtendedRegisters src, int offset) {
+						Amd64Backend::moveMemoryRegWithIntOffsetToReg(codeGen, dest, src, offset, true);
+					},
+					[&](CodeGen& codeGen, ExtendedRegisters dest, Registers src, int offset) {
+						throw std::runtime_error("Not supported");
+					});
+			} else {
+				generateTwoRegistersInstruction(
+					destination,
+					source.memoryRegister(),
+					[&](CodeGen& codeGen, Registers x, Registers y) { Amd64Backend::moveMemoryByRegToReg(codeGen, x, y, true); },
+					[&](CodeGen& codeGen, ExtendedRegisters x, ExtendedRegisters y) {
+						throw std::runtime_error("Not supported");
+					},
+					[&](CodeGen& codeGen, Registers x, ExtendedRegisters y) { Amd64Backend::moveMemoryByRegToReg(codeGen, x, y, true); },
+					[&](CodeGen& codeGen, ExtendedRegisters x, Registers y) {
+						throw std::runtime_error("Not supported");
+					});
+			}
 			break;
 		case DataSize::Size64:
 			if (source.hasOffset()) {
@@ -395,12 +424,28 @@ void Amd64Assembler::move(IntRegister destination, MemoryOperand source, DataSiz
 	}
 }
 
+void Amd64Assembler::move(Register8Bits destination, MemoryOperand source) {
+	generateSourceMemoryInstruction<Register8Bits>(
+		destination,
+		source,
+		[&](CodeGen& codeGen, Register8Bits dest, Registers src, int offset) {
+			Amd64Backend::moveMemoryRegWithIntOffsetToReg(mData, dest, src, offset);
+		},
+		[&](CodeGen& codeGen, Register8Bits dest, ExtendedRegisters src, int offset) {
+			Amd64Backend::moveMemoryRegWithIntOffsetToReg(mData, dest, src, offset);
+		});
+}
+
 void Amd64Assembler::move(FloatRegisters destination, MemoryOperand source) {
-	if (source.memoryRegister().isBase()) {
-		Amd64Backend::moveMemoryRegWithIntOffsetToReg(mData, destination, source.memoryRegister().baseRegister(), source.offset());
-	} else {
-		Amd64Backend::moveMemoryRegWithIntOffsetToReg(mData, destination, source.memoryRegister().extendedRegister(), source.offset());
-	}
+	generateSourceMemoryInstruction<FloatRegisters>(
+		destination,
+		source,
+		[&](CodeGen& codeGen, FloatRegisters dest, Registers src, int offset) {
+			Amd64Backend::moveMemoryRegWithIntOffsetToReg(mData, dest, src, offset);
+		},
+		[&](CodeGen& codeGen, FloatRegisters dest, ExtendedRegisters src, int offset) {
+			Amd64Backend::moveMemoryRegWithIntOffsetToReg(mData, dest, src, offset);
+		});
 }
 
 void Amd64Assembler::move(IntRegister destination, unsigned char* source) {
@@ -417,12 +462,27 @@ void Amd64Assembler::move(IntRegister destination, unsigned char* source) {
 void Amd64Assembler::move(MemoryOperand destination, IntRegister source, DataSize dataSize) {
 	switch (dataSize) {
 		case DataSize::Size8:
-			throw std::runtime_error("Not implemented");
+			throw std::runtime_error("Not supported");
 			break;
 		case DataSize::Size16:
+			throw std::runtime_error("Not implemented");
 			break;
 		case DataSize::Size32:
-			throw std::runtime_error("Not implemented");
+			generateDestinationMemoryInstruction(
+				destination,
+				source,
+				[&](CodeGen& codeGen, Registers dest, int offset, Registers src) {
+					Amd64Backend::moveRegToMemoryRegWithOffset(codeGen, dest, offset, src, true);
+				},
+				[&](CodeGen& codeGen, ExtendedRegisters dest, int offset, ExtendedRegisters src) {
+					throw std::runtime_error("Not supported");
+				},
+				[&](CodeGen& codeGen, Registers dest, int offset, ExtendedRegisters src) {
+					throw std::runtime_error("Not supported");
+				},
+				[&](CodeGen& codeGen, ExtendedRegisters dest, int offset, Registers src) {
+					Amd64Backend::moveRegToMemoryRegWithIntOffset(codeGen, dest, offset, src, true);
+				});
 			break;
 		case DataSize::Size64:
 			generateDestinationMemoryInstruction(
@@ -444,12 +504,28 @@ void Amd64Assembler::move(MemoryOperand destination, IntRegister source, DataSiz
 	}
 }
 
+void Amd64Assembler::move(MemoryOperand destination, Register8Bits source) {
+	generateDestinationMemoryInstruction<Register8Bits>(
+		destination,
+		source,
+		[&](CodeGen& codeGen, Registers dest, int offset, Register8Bits src) {
+			Amd64Backend::moveRegToMemoryRegWithIntOffset(codeGen, dest, offset, src);
+		},
+		[&](CodeGen& codeGen, ExtendedRegisters dest, int offset, Register8Bits src) {
+			Amd64Backend::moveRegToMemoryRegWithIntOffset(codeGen, dest, offset, src);
+		});
+}
+
 void Amd64Assembler::move(MemoryOperand destination, FloatRegisters source) {
-	if (destination.memoryRegister().isBase()) {
-		Amd64Backend::moveRegToMemoryRegWithIntOffset(mData, destination.memoryRegister().baseRegister(), destination.offset(), source);
-	} else {
-		Amd64Backend::moveRegToMemoryRegWithIntOffset(mData, destination.memoryRegister().extendedRegister(), destination.offset(), source);
-	}
+	generateDestinationMemoryInstruction<FloatRegisters>(
+		destination,
+		source,
+		[&](CodeGen& codeGen, Registers dest, int offset, FloatRegisters src) {
+			Amd64Backend::moveRegToMemoryRegWithIntOffset(codeGen, dest, offset, src);
+		},
+		[&](CodeGen& codeGen, ExtendedRegisters dest, int offset, FloatRegisters src) {
+			Amd64Backend::moveRegToMemoryRegWithIntOffset(codeGen, dest, offset, src);
+		});
 }
 
 void Amd64Assembler::move(MemoryOperand destination, std::int32_t value) {
@@ -592,4 +668,19 @@ void Amd64Assembler::jump(JumpCondition condition, int target, bool unsignedComp
 			}
 			break;
 	}
+}
+
+void Amd64Assembler::call(IntRegister intRegister) {
+	generateOneRegisterInstruction(
+		intRegister,
+		[&](CodeGen& codeGen, Registers reg) { Amd64Backend::callInReg(mData, reg);	},
+		[&](CodeGen& codeGen, ExtendedRegisters reg) { Amd64Backend::callInReg(mData, reg);	});
+}
+
+void Amd64Assembler::call(int relativeAddress) {
+	Amd64Backend::call(mData, relativeAddress);
+}
+
+void Amd64Assembler::ret() {
+	Amd64Backend::ret(mData);
 }

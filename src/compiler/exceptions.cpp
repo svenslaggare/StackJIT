@@ -7,17 +7,15 @@
 
 std::size_t ExceptionHandling::createHandlerCall(std::vector<unsigned char>& handlerCode, CallingConvention& callingConvention, PtrValue handlerPtr) {
 	Amd64Assembler assembler(handlerCode);
-
-	int shadowSpace = callingConvention.calculateShadowStackSize();
-
 	auto handlerOffset = handlerCode.size();
 
+	int shadowSpace = callingConvention.calculateShadowStackSize();
 	if (shadowSpace > 0) {
 		assembler.sub(Registers::SP, shadowSpace);
 	}
 
 	assembler.moveLong(ExtendedRegisters::R11, handlerPtr);
-	Amd64Backend::callInReg(handlerCode, ExtendedRegisters::R11);
+	assembler.call(ExtendedRegisters::R11);
 
 	if (shadowSpace > 0) {
 		assembler.add(Registers::SP, shadowSpace);
@@ -64,7 +62,7 @@ void ExceptionHandling::addArrayBoundsCheck(FunctionCompilationData& function) c
 	Amd64Assembler assembler(codeGen);
 
 	//Get the size of the array (an int)
-	Amd64Backend::moveMemoryByRegToReg(codeGen, Registers::CX, Registers::AX, true); //mov ecx, [rax]
+	assembler.move(Registers::CX, MemoryOperand(Registers::AX), DataSize::Size32);
 
 	//Compare the index and size
 	assembler.compare(ExtendedRegisters::R10, Registers::CX);

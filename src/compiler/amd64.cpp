@@ -65,6 +65,130 @@ namespace {
 	}
 }
 
+std::ostream& operator<<(std::ostream& os, const Registers& reg) {
+	switch (reg) {
+		case Registers::AX:
+			os << "ax";
+			break;
+		case Registers::CX:
+			os << "cx";
+			break;
+		case Registers::DX:
+			os << "dx";
+			break;
+		case Registers::BX:
+			os << "bx";
+			break;
+		case Registers::SP:
+			os << "sp";
+			break;
+		case Registers::BP:
+			os << "bp";
+			break;
+		case Registers::SI:
+			os << "si";
+			break;
+		case Registers::DI:
+			os << "di";
+			break;
+	}
+
+	return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const ExtendedRegisters& reg) {
+	switch (reg) {
+		case ExtendedRegisters::R8:
+			os << "r8";
+			break;
+		case ExtendedRegisters::R9:
+			os << "r9";
+			break;
+		case ExtendedRegisters::R10:
+			os << "r10";
+			break;
+		case ExtendedRegisters::R11:
+			os << "r11";
+			break;
+		case ExtendedRegisters::R12:
+			os << "r12";
+			break;
+		case ExtendedRegisters::R13:
+			os << "r13";
+			break;
+		case ExtendedRegisters::R14:
+			os << "r14";
+			break;
+		case ExtendedRegisters::R15:
+			os << "r15";
+			break;
+	}
+
+	return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const Register8Bits& reg) {
+	switch (reg) {
+		case Register8Bits::AL:
+			os << "al";
+			break;
+		case Register8Bits::CL:
+			os << "cl";
+			break;
+		case Register8Bits::DL:
+			os << "dl";
+			break;
+		case Register8Bits::BL:
+			os << "bl";
+			break;
+		case Register8Bits::AH:
+			os << "ah";
+			break;
+		case Register8Bits::CH:
+			os << "ch";
+			break;
+		case Register8Bits::DH:
+			os << "dh";
+			break;
+		case Register8Bits::BH:
+			os << "bh";
+			break;
+	}
+
+	return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const FloatRegisters& reg) {
+	switch (reg) {
+		case FloatRegisters::XMM0:
+			os << "xmm0";
+			break;
+		case FloatRegisters::XMM1:
+			os << "xmm1";
+			break;
+		case FloatRegisters::XMM2:
+			os << "xmm2";
+			break;
+		case FloatRegisters::XMM3:
+			os << "xmm3";
+			break;
+		case FloatRegisters::XMM4:
+			os << "xmm4";
+			break;
+		case FloatRegisters::XMM5:
+			os << "xmm5";
+			break;
+		case FloatRegisters::XMM6:
+			os << "xmm6";
+			break;
+		case FloatRegisters::XMM7:
+			os << "xmm7";
+			break;
+	}
+
+	return os;
+}
+
 using Helpers::validCharValue;
 
 void Amd64Backend::pushReg(CodeGen& codeGen, Registers reg) {
@@ -205,8 +329,7 @@ void Amd64Backend::moveRegToMemoryRegWithOffset(CodeGen& codeGen, Registers dest
 	}
 }
 
-void Amd64Backend::moveRegToMemoryRegWithCharOffset(CodeGen& codeGen, Registers destMemReg, char offset, Registers src,
-													bool is32bits) {
+void Amd64Backend::moveRegToMemoryRegWithCharOffset(CodeGen& codeGen, Registers destMemReg, char offset, Registers src,	bool is32bits) {
 	if (destMemReg != Registers::SP) {
 		if (!is32bits) {
 			codeGen.push_back(0x48);
@@ -227,8 +350,7 @@ void Amd64Backend::moveRegToMemoryRegWithCharOffset(CodeGen& codeGen, Registers 
 	}
 }
 
-void Amd64Backend::moveRegToMemoryRegWithCharOffset(CodeGen& codeGen, Registers destMemReg, char offset,
-													ExtendedRegisters src) {
+void Amd64Backend::moveRegToMemoryRegWithCharOffset(CodeGen& codeGen, Registers destMemReg, char offset, ExtendedRegisters src) {
 	codeGen.push_back(0x4c);
 	codeGen.push_back(0x89);
 	codeGen.push_back(0x40 | (Byte)destMemReg | ((Byte)src << 3));
@@ -294,8 +416,13 @@ void Amd64Backend::moveRegToMemoryRegWithIntOffset(CodeGen& codeGen, Registers d
 	}
 }
 
-void Amd64Backend::moveRegToMemoryRegWithIntOffset(CodeGen& codeGen, ExtendedRegisters destMemReg, int offset, Registers src) {
-	codeGen.push_back(0x49);
+void Amd64Backend::moveRegToMemoryRegWithIntOffset(CodeGen& codeGen, ExtendedRegisters destMemReg, int offset, Registers src, bool is32bits) {
+	if (!is32bits) {
+		codeGen.push_back(0x49);
+	} else {
+		codeGen.push_back(0x41);
+	}
+
 	codeGen.push_back(0x89);
 	codeGen.push_back(0x80 | (Byte)destMemReg | ((Byte)src << 3));
 
@@ -312,6 +439,37 @@ void Amd64Backend::moveRegToMemoryRegWithIntOffset(CodeGen& codeGen, ExtendedReg
 	codeGen.push_back(0x41);
 	codeGen.push_back(0x0f);
 	codeGen.push_back(0x11);
+	codeGen.push_back(0x80 | (Byte)destMemReg | ((Byte)src << 3));
+
+	IntToBytes converter;
+	converter.intValue = offset;
+
+	for (std::size_t i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.byteValues[i]);
+	}
+}
+
+void Amd64Backend::moveRegToMemoryRegWithIntOffset(CodeGen& codeGen, Registers destMemReg, int offset, Register8Bits src) {
+	codeGen.push_back(0x88);
+
+	if (destMemReg != Registers::SP) {
+		codeGen.push_back(0x80 | (Byte)destMemReg | ((Byte)src << 3));
+	} else {
+		codeGen.push_back(0x84 | (Byte)destMemReg | ((Byte)src << 3));
+		codeGen.push_back(0x24);
+	}
+
+	IntToBytes converter;
+	converter.intValue = offset;
+
+	for (std::size_t i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.byteValues[i]);
+	}
+}
+
+void Amd64Backend::moveRegToMemoryRegWithIntOffset(CodeGen& codeGen, ExtendedRegisters destMemReg, int offset, Register8Bits src) {
+	codeGen.push_back(0x41);
+	codeGen.push_back(0x88);
 	codeGen.push_back(0x80 | (Byte)destMemReg | ((Byte)src << 3));
 
 	IntToBytes converter;
@@ -388,13 +546,15 @@ void Amd64Backend::moveMemoryRegWithCharOffsetToReg(CodeGen& codeGen, Registers 
 	}
 }
 
-void Amd64Backend::moveMemoryRegWithIntOffsetToReg(CodeGen& codeGen, Registers dest, Registers srcMemReg, int offset) {
-	if (srcMemReg != Registers::SP) {
+void Amd64Backend::moveMemoryRegWithIntOffsetToReg(CodeGen& codeGen, Registers dest, Registers srcMemReg, int offset, bool is32bits) {
+	if (!is32bits) {
 		codeGen.push_back(0x48);
+	}
+
+	if (srcMemReg != Registers::SP) {
 		codeGen.push_back(0x8b);
 		codeGen.push_back(0x80 | (Byte)srcMemReg | ((Byte)dest << 3));
 	} else {
-		codeGen.push_back(0x48);
 		codeGen.push_back(0x8b);
 		codeGen.push_back(0x84 | ((Byte)dest << 3));
 		codeGen.push_back(0x24);
@@ -421,8 +581,13 @@ void Amd64Backend::moveMemoryRegWithIntOffsetToReg(CodeGen& codeGen, ExtendedReg
 	}
 }
 
-void Amd64Backend::moveMemoryRegWithIntOffsetToReg(CodeGen& codeGen, Registers dest, ExtendedRegisters srcMemReg, int offset) {
-	codeGen.push_back(0x49);
+void Amd64Backend::moveMemoryRegWithIntOffsetToReg(CodeGen& codeGen, Registers dest, ExtendedRegisters srcMemReg, int offset, bool is32bits) {
+	if (!is32bits) {
+		codeGen.push_back(0x49);
+	} else {
+		codeGen.push_back(0x41);
+	}
+
 	codeGen.push_back(0x8b);
 	codeGen.push_back(0x80 | (Byte)srcMemReg | ((Byte)dest << 3));
 
@@ -481,6 +646,37 @@ void Amd64Backend::moveMemoryRegWithIntOffsetToReg(CodeGen& codeGen, FloatRegist
 	codeGen.push_back(0x41);
 	codeGen.push_back(0x0f);
 	codeGen.push_back(0x10);
+	codeGen.push_back(0x80 | (Byte)srcMemReg | ((Byte)dest << 3));
+
+	IntToBytes converter;
+	converter.intValue = offset;
+
+	for (std::size_t i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.byteValues[i]);
+	}
+}
+
+void Amd64Backend::moveMemoryRegWithIntOffsetToReg(CodeGen& codeGen, Register8Bits dest, Registers srcMemReg, int offset) {
+	codeGen.push_back(0x8a);
+
+	if (srcMemReg != Registers::SP) {
+		codeGen.push_back(0x80 | (Byte)srcMemReg | ((Byte)dest << 3));
+	} else {
+		codeGen.push_back(0x84 | ((Byte)dest << 3));
+		codeGen.push_back(0x24);
+	}
+
+	IntToBytes converter;
+	converter.intValue = offset;
+
+	for (std::size_t i = 0; i < sizeof(int); i++) {
+		codeGen.push_back(converter.byteValues[i]);
+	}
+}
+
+void Amd64Backend::moveMemoryRegWithIntOffsetToReg(CodeGen& codeGen, Register8Bits dest, ExtendedRegisters srcMemReg, int offset) {
+	codeGen.push_back(0x41);
+	codeGen.push_back(0x8a);
 	codeGen.push_back(0x80 | (Byte)srcMemReg | ((Byte)dest << 3));
 
 	IntToBytes converter;

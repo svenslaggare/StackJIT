@@ -68,7 +68,7 @@ std::size_t CodeGenerator::generateCompileCall(CodeGen& generatedCode,
 	assembler.sub(Registers::SP, shadowStackSize); //Shadow space
 
 	assembler.moveLong(Registers::AX, (PtrValue)&Runtime::compileFunction);
-	Amd64Backend::callInReg(generatedCode, Registers::AX);
+	assembler.call(Registers::AX);
 	assembler.add(Registers::SP, 16 + shadowStackSize); //Used stack
 
 	Helpers::setValue(generatedCode, checkEndIndex, (int)generatedCode.size());
@@ -86,7 +86,7 @@ std::size_t CodeGenerator::generateCompileCall(CodeGen& generatedCode,
 	assembler.moveLong(RegisterCallArguments::Arg4,	(PtrValue)(&funcToCall)); //The function to compile
 
 	assembler.moveLong(Registers::AX, (PtrValue)&Runtime::compileFunction);
-	Amd64Backend::callInReg(generatedCode, Registers::AX);
+	assembler.call(Registers::AX);
 
 	Helpers::setValue(generatedCode, checkEndIndex, (int)generatedCode.size());
 	return callIndex;
@@ -101,7 +101,7 @@ void CodeGenerator::generateCall(CodeGen& generatedCode, unsigned char* funcPtr,
 	}
 
 	assembler.moveLong(addrReg, (PtrValue)funcPtr);
-	Amd64Backend::callInReg(generatedCode, addrReg);
+	assembler.call(addrReg);
 
 	if (shadowSpaceNeeded) {
 		assembler.add(Registers::SP, mCallingConvention.calculateShadowStackSize());
@@ -395,7 +395,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 			falseBranchStart = generatedCode.size();
 			operandStack.pushInt(0, false);
 			jump = generatedCode.size();
-			Amd64Backend::jump(generatedCode, 0);
+			assembler.jump(JumpCondition::Always, 0);
 
 			//True branch
 			trueBranchStart = generatedCode.size();
@@ -482,7 +482,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 					}
 
 					//Make the call
-					Amd64Backend::call(generatedCode, 0);
+					assembler.call(0);
 				} else {
 					//Unmanaged functions are located beyond one int, direct addressing must be used.
 					//Check if the function entry point is defined yet
@@ -540,7 +540,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 			assembler.pop(Registers::BP);
 
 			//Make the return
-			Amd64Backend::ret(generatedCode);
+			assembler.ret();
 			break;
 		}
 		case OpCodes::LOAD_ARG: {
@@ -553,7 +553,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 			break;
 		}
 		case OpCodes::BRANCH: {
-			Amd64Backend::jump(generatedCode, 0);
+			assembler.jump(JumpCondition::Always, 0);
 
 			//As the exact target in native instructions isn't known, defer to later.
 			functionData.unresolvedBranches.insert({
@@ -664,18 +664,19 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 
 			//Store the element
 			auto elemSize = TypeSystem::sizeOfType(elemType);
-			bool is32bits = elemSize == 4;
-			bool is8bits = elemSize == 1;
+			DataSize dataSize = DataSize::Size64;
+			if (elemSize == 4) {
+				dataSize = DataSize::Size32;
+			} else if (elemSize == 1) {
+				dataSize = DataSize::Size8;
+			}
 
-			if (!is8bits) {
-				Amd64Backend::moveRegToMemoryRegWithCharOffset(
-					generatedCode,
-					Registers::AX, StackJIT::ARRAY_LENGTH_SIZE, Registers::DX,
-					is32bits); //mov [rax+<element offset>], r/edx
+			MemoryOperand elementOffset(Registers::AX, StackJIT::ARRAY_LENGTH_SIZE);
+
+			if (dataSize != DataSize::Size8) {
+				assembler.move(elementOffset, Registers::DX, dataSize);
 			} else {
-				Helpers::pushArray(
-					generatedCode,
-					{ 0x88, 0x50, (unsigned char)StackJIT::ARRAY_LENGTH_SIZE }); //mov [rax+<element offset>], dl
+				assembler.move(elementOffset, Register8Bits::DL);
 			}
 
 			break;
@@ -698,17 +699,18 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 
 			//Load the element
 			auto elemSize = TypeSystem::sizeOfType(elemType);
-			bool is32bits = elemSize == 4;
-			bool is8bits = elemSize == 1;
+			DataSize dataSize = DataSize::Size64;
+			if (elemSize == 4) {
+				dataSize = DataSize::Size32;
+			} else if (elemSize == 1) {
+				dataSize = DataSize::Size8;
+			}
 
-			if (!is8bits) {
-				Amd64Backend::moveMemoryByRegToReg(
-					generatedCode,
-					Registers::CX,
-					Registers::AX,
-					is32bits); //mov r/ecx, [rax]
+			MemoryOperand elementOffset(Registers::AX);
+			if (dataSize != DataSize::Size8) {
+				assembler.move(Registers::CX, elementOffset, dataSize);
 			} else {
-				Helpers::pushArray(generatedCode, {0x8A, 0x08}); //mov cl, [rax]
+				assembler.move(Register8Bits::CL, elementOffset);
 			}
 
 			operandStack.pushReg(Registers::CX);
@@ -716,13 +718,13 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 		}
 		case OpCodes::LOAD_ARRAY_LENGTH:
 			//Pop the array ref
-			operandStack.popReg( Registers::AX);
+			operandStack.popReg(Registers::AX);
 
 			//Null check
 			mExceptionHandling.addNullCheck(functionData);
 
 			//Get the size of the array (an int)
-			Amd64Backend::moveMemoryByRegToReg(generatedCode, Registers::AX, Registers::AX, true); //mov eax, [rax]
+			assembler.move(Registers::AX, MemoryOperand(Registers::AX), DataSize::Size32);
 
 			//Push the size
 			operandStack.pushReg(Registers::AX);
@@ -804,7 +806,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 			}
 
 			//Call the constructor
-			Amd64Backend::call(generatedCode, 0);
+			assembler.call(0);
 
 			//Unalign the stack
 			if (stackAlignment + shadowStack > 0) {
@@ -831,8 +833,12 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 
 			//Get the size of the field
 			auto elemSize = TypeSystem::sizeOfType(field.type());
-			bool is32bits = elemSize == 4;
-			bool is8bits = elemSize == 1;
+			DataSize dataSize = DataSize::Size64;
+			if (elemSize == 4) {
+				dataSize = DataSize::Size32;
+			} else if (elemSize == 1) {
+				dataSize = DataSize::Size8;
+			}
 
 			if (inst.opCode() == OpCodes::LOAD_FIELD) {
 				//Pop the operand
@@ -842,17 +848,14 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 				mExceptionHandling.addNullCheck(functionData);
 
 				//Compute the address of the field
-				assembler.add(Registers::AX, fieldOffset); //add rax, <field offset>
+				assembler.add(Registers::AX, fieldOffset);
 
 				//Load the field
-				if (!is8bits) {
-					Amd64Backend::moveMemoryByRegToReg(
-						generatedCode,
-						Registers::CX,
-						Registers::AX,
-						is32bits); //mov r/ecx, [rax]
+				MemoryOperand fieldMemoryOperand(Registers::AX);
+				if (dataSize != DataSize::Size8) {
+					assembler.move(Registers::CX, fieldMemoryOperand, dataSize);
 				} else {
-					Helpers::pushArray(generatedCode, { 0x8A, 0x08 }); //mov cl, [rax]
+					assembler.move(Register8Bits::CL, fieldMemoryOperand);
 				}
 
 				operandStack.pushReg(Registers::CX);
@@ -865,27 +868,11 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 				mExceptionHandling.addNullCheck(functionData);
 
 				//Store the field
-				if (Helpers::validCharValue(fieldOffset)) {
-					if (!is8bits) {
-						Amd64Backend::moveRegToMemoryRegWithCharOffset(
-							generatedCode,
-							Registers::AX, (char)fieldOffset, Registers::DX, is32bits); //mov [rax+<fieldOffset>], r/edx
-					} else {
-						Helpers::pushArray(
-							generatedCode,
-							{0x88, 0x50, (unsigned char)fieldOffset}); //mov [rax+<fieldOffset>], dl
-					}
+				MemoryOperand fieldMemoryOperand(Registers::AX, fieldOffset);
+				if (dataSize != DataSize::Size8) {
+					assembler.move(fieldMemoryOperand, Registers::DX, dataSize);
 				} else {
-					//Compute the address of the field
-					assembler.add(Registers::AX, fieldOffset);
-
-					if (!is8bits) {
-						Amd64Backend::moveRegToMemoryRegWithCharOffset(
-							generatedCode,
-							Registers::AX, 0, Registers::DX, is32bits); //mov [rax], r/edx
-					} else {
-						Helpers::pushArray(generatedCode, {0x88, 0x50, 0}); //mov [rax], dl
-					}
+					assembler.move(fieldMemoryOperand, Register8Bits::DL);
 				}
 			}
 			break;
