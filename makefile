@@ -16,11 +16,17 @@ TEST_WITH_VALGRIND=0
 _FOLDERS=$(sort $(dir $(wildcard $(SRC_DIR)/*/)))
 FOLDERS=$(patsubst $(SRC_DIR)/%,$(OBJ_DIR)/%,$(_FOLDERS))
 
+_FOLDERS=$(sort $(dir $(wildcard $(SRC_DIR)/*/*/)))
+FOLDERS += $(patsubst $(SRC_DIR)/%,$(OBJ_DIR)/%,$(_FOLDERS))
+
 SOURCES=$(wildcard $(SRC_DIR)/*.cpp)
 HEADERS=$(wildcard $(SRC_DIR)/*.h)
 
 SOURCES += $(wildcard $(SRC_DIR)/*/*.cpp)
 HEADERS += $(wildcard $(SRC_DIR)/*/*.h)
+
+SOURCES += $(wildcard $(SRC_DIR)/*/*/*.cpp)
+HEADERS += $(wildcard $(SRC_DIR)/*/*/*.h)
 
 TEMPLATE_HEADERS=$(wildcard $(SRC_DIR)/*.hpp)
 

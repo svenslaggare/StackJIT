@@ -7,6 +7,7 @@
 #include "../helpers.h"
 #include "../stackjit.h"
 #include "native.h"
+#include "native/stringref.h"
 #include "../core/functionsignature.h"
 #include <iostream>
 
@@ -53,8 +54,7 @@ void Runtime::printStackFrame(RegisterValue* basePtr, ManagedFunction* func) {
 	std::cout << "----End StackFrame----" << std::endl;
 }
 
-void Runtime::compileFunction(ManagedFunction* callee, int callOffset, int checkStart, int checkEnd,
-							  FunctionDefinition* funcToCall) {
+void Runtime::compileFunction(ManagedFunction* callee, int callOffset, int checkStart, int checkEnd, FunctionDefinition* funcToCall) {
 	auto toCallSignature = FunctionSignature::from(*funcToCall).str();
 
 	//Compile the function (if needed)
@@ -86,8 +86,7 @@ void Runtime::compileFunction(ManagedFunction* callee, int callOffset, int check
 	Helpers::setValue(codePtr, (std::size_t)checkStart + 1, checkEnd - (checkStart + 5));
 }
 
-void Runtime::Internal::printAliveObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex,
-										  std::string indentation) {
+void Runtime::Internal::printAliveObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex,	std::string indentation) {
 	StackFrame stackFrame(basePtr, func, instIndex);
 	auto numArgs = func->def().numParams();
 	auto numLocals = func->numLocals();

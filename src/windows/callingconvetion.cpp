@@ -39,7 +39,7 @@ namespace {
 	int numStackArguments(const std::vector<const Type*>& parameters) {
 		int stackArgs = 0;
 		int argIndex = 0;
-		
+
 		for (auto param : parameters) {
 			if (TypeSystem::isPrimitiveType(param, PrimitiveTypes::Float)) {
 				if (getFloatArgIndex(parameters, argIndex) >= NUM_FLOAT_ARGUMENT_REGISTERS) {
