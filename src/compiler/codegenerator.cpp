@@ -144,8 +144,7 @@ void CodeGenerator::zeroLocals(FunctionCompilationData& functionData) {
 
 	//Zero the locals
 	if (function.numLocals() > 0) {
-		//Zero rax
-		assembler.bitwiseXor(Registers::AX, Registers::AX);
+		assembler.bitwiseXor(Registers::AX, Registers::AX);	//Zero rax
 
 		for (int i = 0; i < function.numLocals(); i++) {
 			int localOffset = (int)((i + function.def().numParams() + 1) * -Amd64Backend::REGISTER_SIZE);
@@ -172,7 +171,7 @@ void CodeGenerator::pushFunc(const VMState& vmState, FunctionCompilationData& fu
 	//Store the entry
 	assembler.moveLong(Registers::CX, (PtrValue)&function);
 	assembler.move({ Registers::AX, 0 }, Registers::CX);
-	assembler.moveInt(Registers::CX, instIndex); //mov rcx, <call point>
+	assembler.moveInt(Registers::CX, instIndex);
 	assembler.move({ Registers::AX, sizeof(ManagedFunction*) }, Registers::CX);
 
 	//Update the top pointer
@@ -451,7 +450,6 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 
 				//Align the stack
 				int stackAlignment = mCallingConvention.calculateStackAlignment(functionData, funcToCall);
-
 				if (stackAlignment > 0) {
 					assembler.add(Registers::SP, -stackAlignment);
 				}
@@ -522,7 +520,6 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 					instIndex
 				});
 			}
-
 			break;
 		}
 		case OpCodes::RET: {
@@ -652,7 +649,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 			//Pop the operands
 			operandStack.popReg(Registers::DX); //The value to store
 			operandStack.popReg(ExtendedRegisters::R10); //The index of the element
-			operandStack.popReg( Registers::AX); //The address of the array
+			operandStack.popReg(Registers::AX); //The address of the array
 
 			//Error checks
 			mExceptionHandling.addNullCheck(functionData);
@@ -678,7 +675,6 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 			} else {
 				assembler.move(elementOffset, Register8Bits::DL);
 			}
-
 			break;
 		}
 		case OpCodes::LOAD_ELEMENT: {

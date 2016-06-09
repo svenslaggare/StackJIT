@@ -17,6 +17,7 @@
 std::string handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
 	std::string program = "";
 	auto& vmState = Runtime::vmState;
+	bool isFile = false;
 
 	for (int i = 1; i < argc; i++) {
 		std::string switchStr = argv[i];
@@ -60,7 +61,13 @@ std::string handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
 		}
 
 		if (switchStr == "-im" || switchStr == "--image-mode") {
-			vmState.imageMode = true;
+			vmState.programLoadMode = ProgramLoadMode::Image;
+			continue;
+		}
+
+		if (switchStr == "-fm" || switchStr == "--file-mode") {
+			vmState.programLoadMode = ProgramLoadMode::File;
+			isFile = true;
 			continue;
 		}
 
@@ -140,6 +147,12 @@ std::string handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
 			continue;
 		}
 
+		if (isFile) {
+			program = switchStr;
+			isFile = false;
+			continue;
+		}
+
 		std::cout << "Unhandled option: " << switchStr << std::endl;
 	}
 
@@ -187,12 +200,27 @@ int main(int argc, char* argv[]) {
 		vmState.gc().initialize();
 
 		//Load the program
-		if (vmState.imageMode) {
-			engine.loadAssembly(programPath, AssemblyType::Program);
-		} else {
-			AssemblyParser::Assembly program;
-			Loader::load(std::cin, vmState, program);
-			engine.loadAssembly(program, AssemblyType::Program);
+		switch (vmState.programLoadMode) {
+			case ProgramLoadMode::Stdin: {
+				AssemblyParser::Assembly program;
+				Loader::load(std::cin, vmState, program);
+				engine.loadAssembly(program, AssemblyType::Program);
+				break;
+			}
+			case ProgramLoadMode::Image:
+				engine.loadAssembly(programPath, AssemblyType::Program);
+				break;
+			case ProgramLoadMode::File: {
+				std::ifstream file(programPath);
+				if (file.is_open()) {
+					AssemblyParser::Assembly program;
+					Loader::load(file, vmState, program);
+					engine.loadAssembly(program, AssemblyType::Program);
+				} else {
+					throw std::runtime_error("Could not load program.");
+				}
+				break;
+			}
 		}
 
 		if (!vmState.lazyJIT) {

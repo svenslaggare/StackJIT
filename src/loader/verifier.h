@@ -1,7 +1,6 @@
 #pragma once
 #include <stack>
 #include <string>
-#include "../vmstate.h"
 #include "../core/instruction.h"
 
 class ManagedFunction;
@@ -39,6 +38,7 @@ private:
 	void verifyInstruction(ManagedFunction& function, Instruction inst, std::size_t index,
 						   InstructionTypes& operandStack, std::vector<BranchCheck>& branches);
 public:
+	//Creates a new verifier using the given VM state
 	Verifier(VMState& vmState);
 
 	//Verifies the given function

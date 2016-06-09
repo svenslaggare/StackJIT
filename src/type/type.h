@@ -85,7 +85,7 @@ namespace TypeSystem {
 	//The type type name
 	const std::string nullTypeName = "Ref.Null";
 
-	//Converts the given string into a primitive type. True if correct type.
+	//Converts the given string into a primitive type. Returns true if valid type.
 	bool fromString(std::string typeName, PrimitiveTypes& primitiveType);
 
 	//Returns the given primitive type as a string

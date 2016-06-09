@@ -5,6 +5,13 @@
 #include "runtime/gc.h"
 #include "executionengine.h"
 
+//The program load mode
+enum class ProgramLoadMode {
+	Stdin,
+	Image,
+	File
+};
+
 //Contains the state of the VM
 class VMState {
 private:
@@ -20,8 +27,8 @@ public:
 	//Indicates if testing mode is enabled
 	bool testMode = false;
 
-	//Indicates if the input program is an image or from stdin
-	bool imageMode = false;
+	//How the input program is loaded
+	ProgramLoadMode programLoadMode = ProgramLoadMode::Stdin;
 
 	//Indicates if the generated code is outputted as a file
 	bool outputGeneratedCode = false;

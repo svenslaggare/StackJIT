@@ -1,7 +1,6 @@
 #include "executionengine.h"
 #include "vmstate.h"
 #include "core/function.h"
-#include "loader/verifier.h"
 #include "type/type.h"
 #include "loader/loader.h"
 #include "runtime/native.h"

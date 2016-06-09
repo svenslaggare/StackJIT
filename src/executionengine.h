@@ -2,6 +2,7 @@
 #include "compiler/binder.h"
 #include "compiler/jit.h"
 #include "loader/parser.h"
+#include "loader/verifier.h"
 #include "runtime/callstack.h"
 #include "loader/imageloader.h"
 #include "loader/imagecontainer.h"
@@ -18,10 +19,8 @@ namespace AssemblyParser {
 
 //The type of the assembly
 enum class AssemblyType {
-	//The assembly is a program. This requires an entry point (main function).
-		Program,
-	//The assembly is a library. A library cannot be executed.
-		Library
+	Program, //The assembly is a program. This requires an entry point (main function).
+	Library	//The assembly is a library. A library cannot be executed.
 };
 
 //Represents an entry point

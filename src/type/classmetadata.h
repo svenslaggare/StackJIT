@@ -6,7 +6,7 @@
 class Type;
 
 //The access modifiers
-enum class AccessModifier : char {
+enum class AccessModifier : unsigned char {
 	Private,
 	Public
 };

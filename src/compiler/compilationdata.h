@@ -6,6 +6,7 @@
 
 class FunctionDefinition;
 class ManagedFunction;
+enum class FunctionCallType : unsigned char;
 
 //Represents a branch target
 struct BranchTarget {
@@ -18,8 +19,6 @@ struct BranchTarget {
 	//Creates a new branch target
 	BranchTarget(unsigned int target, unsigned int instructionSize);
 };
-
-enum class FunctionCallType : unsigned char;
 
 //Represents an unresolved function call
 struct UnresolvedFunctionCall {
