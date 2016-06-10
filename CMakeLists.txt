@@ -155,11 +155,14 @@ if(CXXTEST_FOUND)
     CXXTEST_ADD_TEST(tests-vm-calling test-vm-calling-runner.cpp ${TESTS_DIR}/vm-calling-test.h)
     add_dependencies(tests-vm-calling BuildRuntimeLibrary stackjit)
 
+    CXXTEST_ADD_TEST(tests-vm-comparison test-vm-comparison-runner.cpp ${TESTS_DIR}/vm-comparison-test.h)
+    add_dependencies(tests-vm-comparison BuildRuntimeLibrary stackjit)
+
     CXXTEST_ADD_TEST(tests-vm-class test-vm-class-runner.cpp ${TESTS_DIR}/vm-class-test.h)
     add_dependencies(tests-vm-class BuildRuntimeLibrary stackjit)
 
-    CXXTEST_ADD_TEST(tests-vm-comparison test-vm-comparison-runner.cpp ${TESTS_DIR}/vm-comparison-test.h)
-    add_dependencies(tests-vm-comparison BuildRuntimeLibrary stackjit)
+    CXXTEST_ADD_TEST(tests-vm-virtual test-vm-virtual-runner.cpp ${TESTS_DIR}/vm-virtual-test.h)
+    add_dependencies(tests-vm-virtual BuildRuntimeLibrary stackjit)
 
     CXXTEST_ADD_TEST(tests-vm-exception test-vm-exception-runner.cpp ${TESTS_DIR}/vm-exception-test.h)
     add_dependencies(tests-vm-exception BuildRuntimeLibrary stackjit)

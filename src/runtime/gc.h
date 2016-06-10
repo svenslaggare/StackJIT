@@ -37,7 +37,7 @@ private:
 	std::chrono::time_point<std::chrono::high_resolution_clock> mGCStart;
 
 	//Allocate an object of given type and size in the given heap
-	unsigned char* allocateObject(ManagedHeap& heap, const Type* type, std::size_t size);
+	RawObjectRef allocateObject(ManagedHeap& heap, const Type* type, std::size_t size);
 
 	//Deletes the given object
 	void deleteObject(ManagedHeap& heap, ObjectRef objRef);
@@ -95,10 +95,10 @@ public:
 	void initialize();
 
 	//Allocates a new array of the given type and length.
-	unsigned char* newArray(const ArrayType* arrayType, int length);
+	RawArrayRef newArray(const ArrayType* arrayType, int length);
 
 	//Allocates a new class of the given type.
-	unsigned char* newClass(const ClassType* classType);
+	RawClassRef newClass(const ClassType* classType);
 
 	//Begins a collection using the given runtime information
 	void collect(GCRuntimeInformation& runtimeInformation, bool forceGC = false);

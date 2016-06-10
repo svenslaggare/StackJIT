@@ -51,8 +51,8 @@ ArrayType::~ArrayType() {
 	delete mElementType;
 }
 
-ClassType::ClassType(std::string name, const ClassMetadata* classMetadata)
-	: ReferenceType(name), mClassName(name), mClassMetadata(classMetadata) {
+ClassType::ClassType(std::string name, ClassMetadata* metadata)
+	: ReferenceType(name), mClassName(name), mMetadata(metadata) {
 
 }
 
@@ -60,8 +60,8 @@ std::string ClassType::className() const {
 	return mClassName;
 }
 
-const ClassMetadata* ClassType::classMetadata() const {
-	return mClassMetadata;
+ClassMetadata* ClassType::metadata() const {
+	return mMetadata;
 }
 
 bool TypeSystem::fromString(std::string typeName, PrimitiveTypes& primitiveType) {
@@ -174,7 +174,7 @@ namespace {
 	}
 }
 
-Type* TypeSystem::makeTypeFromString(std::string typeName, const ClassMetadataProvider& classProvider) {
+Type* TypeSystem::makeTypeFromString(std::string typeName, ClassMetadataProvider& classProvider) {
 	//Split the type name
 	std::vector<std::string> typeParts = splitTypeName(typeName);
 	PrimitiveTypes primitiveType;

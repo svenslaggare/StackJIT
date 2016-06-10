@@ -165,7 +165,7 @@ void Loader::loadClasses(VMState& vmState, ImageContainer& imageContainer) {
 	//First, create the classes
 	for (auto& image : imageContainer.images()) {
 		for (auto& classDef : image->classes()) {
-			vmState.classProvider().add(classDef.second.name, ClassMetadata());
+			vmState.classProvider().add(classDef.second.name, std::move(ClassMetadata(classDef.second.name)));
 		}
 	}
 

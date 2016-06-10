@@ -86,6 +86,27 @@ void Runtime::compileFunction(ManagedFunction* callee, int callOffset, int check
 	Helpers::setValue(codePtr, (std::size_t)checkStart + 1, checkEnd - (checkStart + 5));
 }
 
+unsigned char* Runtime::getVirtualFunctionAddress(RawClassRef rawClassRef, int index) {
+	ClassRef classRef = vmState.gc().getClassRef(rawClassRef);
+	auto classType = static_cast<const ClassType*>(classRef.objRef().type());
+
+	auto funcPtr = classType->metadata()->virtualFunctionTable()[index];
+	if (funcPtr != nullptr) {
+		return funcPtr;
+	} else {
+		//Compile
+		auto signature = classType->metadata()->getVirtualFunctionSignature(index);
+		try {
+			vmState.engine().compileFunction(signature);
+		} catch (std::runtime_error& e) {
+			std::cout << e.what() << std::endl;
+			exit(0);
+		}
+
+		return vmState.binder().getFunction(signature).entryPoint();
+	}
+}
+
 void Runtime::Internal::printAliveObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex,	std::string indentation) {
 	StackFrame stackFrame(basePtr, func, instIndex);
 	auto numArgs = func->def().numParams();
@@ -147,15 +168,15 @@ void Runtime::garbageCollect(RegisterValue* basePtr, ManagedFunction* func, int 
 	vmState.gc().collect(runtimeInformation);
 }
 
-unsigned char* Runtime::newArray(const ArrayType* arrayType, int length) {
+RawArrayRef Runtime::newArray(const ArrayType* arrayType, int length) {
 	return vmState.gc().newArray(arrayType, length);
 }
 
-unsigned char* Runtime::newObject(const ClassType* classType) {
+RawClassRef Runtime::newClass(const ClassType* classType) {
 	return vmState.gc().newClass(classType);
 }
 
-unsigned char* Runtime::newString(const char* string, int length) {
+RawClassRef Runtime::newString(const char* string, int length) {
 	//Allocate the underlying char array
 	auto charsPtr = vmState.gc().newArray(StringRef::charArrayType(), length);
 

@@ -1,0 +1,15 @@
+#include <cxxtest/TestSuite.h>
+#include "helpers.h"
+
+using namespace Helpers;
+
+/**
+ * Tests classes
+ */
+class VMClassTestSuite : public CxxTest::TestSuite {
+public:
+	void testSimple() {
+		TS_ASSERT_EQUALS(invokeVM("virtual/simple1"), "36\n");
+		TS_ASSERT_EQUALS(invokeVM("virtual/simple2"), "288\n");
+	}
+};

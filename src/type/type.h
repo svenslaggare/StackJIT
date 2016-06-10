@@ -55,16 +55,16 @@ public:
 class ClassType : public ReferenceType {
 private:
 	const std::string mClassName;
-	const ClassMetadata* mClassMetadata;
+	ClassMetadata* mMetadata;
 public:
 	//Creates a new class type
-	ClassType(std::string name, const ClassMetadata* classMetadata);
+	ClassType(std::string name, ClassMetadata* metadata);
 
 	//Returns the name of the class
 	std::string className() const;
 
 	//Returns the metadata for the class
-	const ClassMetadata* classMetadata() const;
+	ClassMetadata* metadata() const;
 };
 
 //The primitive types
@@ -92,7 +92,7 @@ namespace TypeSystem {
 	std::string toString(PrimitiveTypes primitiveType);
 
 	//Creates a new type from the given string
-	Type* makeTypeFromString(std::string typeName, const ClassMetadataProvider& classProvider);
+	Type* makeTypeFromString(std::string typeName, ClassMetadataProvider& classProvider);
 
 	//Indicates if the given type is of the given primitive type
 	bool isPrimitiveType(const Type* type, PrimitiveTypes primitiveType);

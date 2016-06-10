@@ -186,9 +186,9 @@ void CallingConvention::makeReturnValue(FunctionCompilationData& functionData) c
 	if (!TypeSystem::isPrimitiveType(function.def().returnType(), PrimitiveTypes::Void)) {
 		//Pop the return value
 		if (TypeSystem::isPrimitiveType(function.def().returnType(), PrimitiveTypes::Float)) {
-			operandStack.popReg(FloatRegisters::XMM0);
+			operandStack.popReg(FloatRegisterCallArguments::ReturnValue);
 		} else {
-			operandStack.popReg(Registers::AX);
+			operandStack.popReg(RegisterCallArguments::ReturnValue);
 		}
 	}
 }
@@ -208,9 +208,9 @@ void CallingConvention::handleReturnValue(FunctionCompilationData& functionData,
 
 	if (!TypeSystem::isPrimitiveType(funcToCall.returnType(), PrimitiveTypes::Void)) {
 		if (TypeSystem::isPrimitiveType(funcToCall.returnType(), PrimitiveTypes::Float)) {
-			operandStack.pushReg(FloatRegisters::XMM0);
+			operandStack.pushReg(FloatRegisterCallArguments::ReturnValue);
 		} else {
-			operandStack.pushReg(Registers::AX);
+			operandStack.pushReg(RegisterCallArguments::ReturnValue);
 		}
 	}
 }

@@ -51,6 +51,6 @@ func main() Int
 	STFIELD Point::y
 
 	LDLOC 0
-	CALLVIRT Point::sum()
+	CALLVIRT Point::prod()
 	RET
 }

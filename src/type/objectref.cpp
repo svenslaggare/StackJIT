@@ -10,7 +10,7 @@ ObjectRef::ObjectRef(RawObjectRef objRef)
 		auto length = *(int*)dataPtr();
 		mObjectSize = StackJIT::ARRAY_LENGTH_SIZE + (length * elemSize);
 	} else {
-		mObjectSize = static_cast<const ClassType*>(type())->classMetadata()->size();
+		mObjectSize = static_cast<const ClassType*>(type())->metadata()->size();
 	}
 }
 

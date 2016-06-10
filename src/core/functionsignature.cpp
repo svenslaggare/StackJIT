@@ -43,6 +43,6 @@ FunctionSignature FunctionSignature::memberFunction(const ClassType* classType, 
 }
 
 FunctionSignature FunctionSignature::from(const FunctionDefinition& function) {
-	//TODO: Add case when member function
+//	//TODO: Add case when member function
 	return FunctionSignature::function(function.name(), function.parameters());
 }

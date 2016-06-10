@@ -163,8 +163,16 @@ void ExecutionEngine::load(bool loadBody) {
 			}
 
 			binder.define(funcDef);
+
+			//Add virtual functions to the class
+			if (funcDef.isVirtual()) {
+				funcDef.classType()->metadata()->addVirtualFunction(binder.getFunction(current.first));
+			}
 		}
 	}
+
+	//Create virtual function tables
+	mVMState.classProvider().createVirtualFunctionTables();
 }
 
 void ExecutionEngine::compileFunction(ManagedFunction* function, bool resolveSymbols) {
@@ -189,6 +197,13 @@ void ExecutionEngine::compileFunction(ManagedFunction* function, bool resolveSym
 	//Fix unresolved symbols
 	if (resolveSymbols) {
 		mJIT.resolveSymbols(signature);
+	}
+
+	//If virtual, bind to virtual func table.
+	if (function->def().isVirtual()) {
+		function->def().classType()->metadata()->bindVirtualFunction(
+			function->def(),
+			(unsigned char*)funcPtr);
 	}
 }
 

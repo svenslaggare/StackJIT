@@ -43,11 +43,15 @@ private:
 	//Asserts that the stack is not empty
 	void assertNotEmpty();
 
-	//Calculates the offset in the stack frame for the given stack operand
-	int getStackOperandOffset(int operandIndex);
 public:
 	//Creates a new operand stack for the given function
 	OperandStack(ManagedFunction& function);
+
+	//Returns the index of the top
+	int topIndex() const;
+
+	//Calculates the offset in the stack frame for the given stack operand
+	int getStackOperandOffset(int operandIndex);
 
 	//Reserves space for an operand on the stack
 	void reserveSpace();

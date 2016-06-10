@@ -9,10 +9,10 @@ class ClassMetadataProvider;
 class TypeProvider {
 private:
 	std::unordered_map<std::string, const Type*> mTypes;
-	const ClassMetadataProvider& mClassMetadataProvider;
+	ClassMetadataProvider& mClassMetadataProvider;
 public:
 	//Creates a new type provider
-	TypeProvider(const ClassMetadataProvider& classMetadataProvider);
+	TypeProvider(ClassMetadataProvider& classMetadataProvider);
 	~TypeProvider();
 
 	TypeProvider(const TypeProvider&) = delete;

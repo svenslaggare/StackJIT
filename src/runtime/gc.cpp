@@ -38,7 +38,7 @@ void GarbageCollector::printObject(ObjectRef objRef) {
 	<< std::endl;
 }
 
-unsigned char* GarbageCollector::allocateObject(ManagedHeap& heap, const Type* type, std::size_t size) {
+RawObjectRef GarbageCollector::allocateObject(ManagedHeap& heap, const Type* type, std::size_t size) {
 	auto fullSize = StackJIT::OBJECT_HEADER_SIZE + size;
 	auto objPtr = heap.allocate(fullSize);
 
@@ -65,7 +65,7 @@ void GarbageCollector::deleteObject(ManagedHeap& heap, ObjectRef objRef) {
 	Helpers::setValue<unsigned char>(fullPtr, sizeof(std::size_t), 0xFF); //Indicator for dead object
 }
 
-unsigned char* GarbageCollector::newArray(const ArrayType* arrayType, int length) {
+RawArrayRef GarbageCollector::newArray(const ArrayType* arrayType, int length) {
     auto elementType = arrayType->elementType();
     auto elemSize = TypeSystem::sizeOfType(elementType);
 
@@ -87,8 +87,8 @@ unsigned char* GarbageCollector::newArray(const ArrayType* arrayType, int length
     return arrayPtr;
 }
 
-unsigned char* GarbageCollector::newClass(const ClassType* classType) {
-    std::size_t memSize = classType->classMetadata()->size();
+RawClassRef GarbageCollector::newClass(const ClassType* classType) {
+    std::size_t memSize = classType->metadata()->size();
     auto classPtr = allocateObject(mHeap, classType, memSize);
 
     if (vmState.enableDebug && vmState.printAllocation) {
@@ -184,7 +184,7 @@ void GarbageCollector::markObject(ObjectRef objRef) {
 
 			//Mark ref fields
 			auto classType = static_cast<const ClassType*>(objRef.type());
-			for (auto fieldEntry : classType->classMetadata()->fields()) {
+			for (auto fieldEntry : classType->metadata()->fields()) {
 				auto field = fieldEntry.second;
 
 				if (TypeSystem::isReferenceType(field.type())) {
@@ -293,7 +293,7 @@ void GarbageCollector::updateReferences(GCRuntimeInformation& runtimeInformation
 			} else if (TypeSystem::isClass(objRef.type())) {
 				//Update ref fields
 				auto classType = static_cast<const ClassType*>(objRef.type());
-				for (auto fieldEntry : classType->classMetadata()->fields()) {
+				for (auto fieldEntry : classType->metadata()->fields()) {
 					auto field = fieldEntry.second;
 
 					if (TypeSystem::isReferenceType(field.type())) {
@@ -402,6 +402,5 @@ void GarbageCollector::collect(GCRuntimeInformation& runtimeInformation, bool fo
 ClassRef GarbageCollector::getClassRef(RawClassRef classRef) {
 	ObjectRef objRef(classRef);
 	auto classType = static_cast<const ClassType*>(objRef.type());
-	auto& classMetadata = vmState.classProvider().getMetadata(classType->className());
-	return ClassRef(objRef, classMetadata);
+	return ClassRef(objRef, *classType->metadata());
 }

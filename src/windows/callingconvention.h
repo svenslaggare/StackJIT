@@ -8,6 +8,8 @@ namespace RegisterCallArguments {
 	const Registers Arg1 = Registers::DX;
 	const ExtendedRegisters Arg2 = ExtendedRegisters::R8;
 	const ExtendedRegisters Arg3 = ExtendedRegisters::R9;
+
+	const Registers ReturnValue = Registers::AX;
 }
 
 namespace FloatRegisterCallArguments {
@@ -15,5 +17,7 @@ namespace FloatRegisterCallArguments {
 	const FloatRegisters Arg1 = FloatRegisters::XMM1;
 	const FloatRegisters Arg2 = FloatRegisters::XMM2;
 	const FloatRegisters Arg3 = FloatRegisters::XMM3;
+
+	const FloatRegisters ReturnValue = FloatRegisters::XMM0;
 }
 #endif

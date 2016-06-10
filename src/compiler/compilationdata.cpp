@@ -24,6 +24,10 @@ OperandStack::OperandStack(ManagedFunction& function)
 
 }
 
+int OperandStack::topIndex() const {
+	return mTopIndex;
+}
+
 void OperandStack::assertNotEmpty() {
 	if (mTopIndex <= -1) {
 		throw std::runtime_error("The operand stack is empty");

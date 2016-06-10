@@ -30,17 +30,20 @@ namespace Runtime {
 	//Compiles the given function
 	void compileFunction(ManagedFunction* callee, int callOffset, int checkStart, int checkEnd, FunctionDefinition* funcToCall);
 
+	//Returns the exact address of the given virtual function
+	unsigned char* getVirtualFunctionAddress(RawClassRef rawClassRef, int index);
+
 	//Tries to collect garbage
 	void garbageCollect(RegisterValue* basePtr, ManagedFunction* func, int instIndex);
 
 	//Creates a new array of the given type and length
-	unsigned char* newArray(const ArrayType* arrayType, int length);
+	RawArrayRef newArray(const ArrayType* arrayType, int length);
 
 	//Creates a new class of the given type
-	unsigned char* newObject(const ClassType* classType);
+	RawClassRef newClass(const ClassType* classType);
 
 	//Creates a new string of the given length
-	unsigned char* newString(const char* string, int length);
+	RawClassRef newString(const char* string, int length);
 
 	//Stops the execution
 	void runtimeError(std::string errorMessage);

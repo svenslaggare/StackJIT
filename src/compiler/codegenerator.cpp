@@ -93,7 +93,7 @@ std::size_t CodeGenerator::generateCompileCall(CodeGen& generatedCode,
 #endif
 }
 
-void CodeGenerator::generateCall(CodeGen& generatedCode, unsigned char* funcPtr, Registers addrReg, bool shadowSpaceNeeded) {
+void CodeGenerator::generateCall(CodeGen& generatedCode, unsigned char* funcPtr, IntRegister addrReg, bool shadowSpaceNeeded) {
 	Amd64Assembler assembler(generatedCode);
 
 	if (shadowSpaceNeeded) {
@@ -439,15 +439,33 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 				std::size_t callIndex = 0;
 
 				//Check if the called function needs to be compiled
-				if (needsToCompile) {
+				if (needsToCompile && !funcToCall.isVirtual()) {
 					callIndex = generateCompileCall(generatedCode, function, funcToCall);
 				}
 
 				//Push the call
 				pushFunc(vmState, functionData, instIndex);
 
+				MemoryOperand firstArgOffset(
+					Registers::BP,
+					operandStack.getStackOperandOffset(operandStack.topIndex() - (int)funcToCall.numParams() + 1));
+
+				//Add null check
+				if (inst.isCallInstance()) {
+					assembler.move(Registers::AX, firstArgOffset);
+					mExceptionHandling.addNullCheck(functionData, Registers::AX);
+				}
+
 				//Get the address of the function to call
 				unsigned char* funcAddress = nullptr;
+
+				//Handle virtual calls
+				if (funcToCall.isManaged() && funcToCall.isVirtual()) {
+					assembler.move(RegisterCallArguments::Arg0, firstArgOffset);
+					assembler.moveInt(RegisterCallArguments::Arg1, funcToCall.classType()->metadata()->getVirtualFunctionIndex(funcToCall));
+					generateCall(generatedCode, (unsigned char*)&Runtime::getVirtualFunctionAddress);
+					assembler.move(ExtendedRegisters::R12, RegisterCallArguments::ReturnValue);
+				}
 
 				//Align the stack
 				int stackAlignment = mCallingConvention.calculateStackAlignment(functionData, funcToCall);
@@ -464,11 +482,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 					assembler.sub(Registers::SP, shadowStack);
 				}
 
-				if (inst.opCode() == OpCodes::CALL_INSTANCE) {
-					mExceptionHandling.addNullCheck(functionData, RegisterCallArguments::Arg0);
-				}
-
-				if (funcToCall.isManaged()) {
+				if (funcToCall.isManaged() && !funcToCall.isVirtual()) {
 					if (!needsToCompile) {
 						//Mark that the function call needs to be patched with the entry point later
 						functionData.unresolvedCalls.push_back(
@@ -482,6 +496,9 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 
 					//Make the call
 					assembler.call(0);
+				} else if (funcToCall.isManaged() && funcToCall.isVirtual()) {
+					//Make the virtual call
+					assembler.call(ExtendedRegisters::R12);
 				} else {
 					//Unmanaged functions are located beyond one int, direct addressing must be used.
 					//Check if the function entry point is defined yet
@@ -756,7 +773,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 
 			//Call the newObject runtime function
 			assembler.moveLong(RegisterCallArguments::Arg0, (PtrValue)classType); //The pointer to the type
-			generateCall(generatedCode, (unsigned char*)&Runtime::newObject);
+			generateCall(generatedCode, (unsigned char*)&Runtime::newClass);
 
 			//Save the reference
 			assembler.move(ExtendedRegisters::R10, Registers::AX);
@@ -824,7 +841,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 			std::string fieldName;
 			TypeSystem::getClassAndFieldName(inst.strValue, className, fieldName);
 
-			auto classMetadata = vmState.classProvider().getMetadata(className);
+			auto& classMetadata = vmState.classProvider().getMetadata(className);
 			auto& field = classMetadata.fields().at(fieldName);
 			int fieldOffset = (int)field.offset();
 

@@ -76,6 +76,11 @@ public:
 	//Creates a new reference to the given class
 	ClassRef(ObjectRef objRef, const ClassMetadata& metadata);
 
+	//Returns the underlying object reference
+	inline ObjectRef objRef() const {
+		return mObjRef;
+	}
+
 	//Returns a reference to a field of the given type
 	template<typename T>
 	FieldRef<T> getField(std::string name, const Type* type);
