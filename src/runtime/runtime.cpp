@@ -96,14 +96,15 @@ unsigned char* Runtime::getVirtualFunctionAddress(RawClassRef rawClassRef, int i
 	} else {
 		//Compile
 		auto signature = classType->metadata()->getVirtualFunctionSignature(index);
+		JitFunction entryPoint;
 		try {
-			vmState.engine().compileFunction(signature);
+			vmState.engine().compileFunction(signature, entryPoint);
 		} catch (std::runtime_error& e) {
 			std::cout << e.what() << std::endl;
 			exit(0);
 		}
 
-		return vmState.binder().getFunction(signature).entryPoint();
+		return (unsigned char*)entryPoint;
 	}
 }
 

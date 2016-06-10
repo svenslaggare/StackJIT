@@ -51,7 +51,7 @@ private:
 	void loadImage(std::ifstream& stream, AssemblyType assemblyType);
 
 	//Compiles the given function
-	void compileFunction(ManagedFunction* function, bool resolveSymbols = false);
+	JitFunction compileFunction(ManagedFunction* function, bool resolveSymbols = false);
 public:
 	//Creates a new execution engine
 	ExecutionEngine(VMState& vmState);
@@ -81,6 +81,7 @@ public:
 	void load(bool loadBody = false);
 
 	//Compiles the function with the given signature
+	bool compileFunction(std::string signature, JitFunction& entryPoint);
 	bool compileFunction(std::string signature);
 
 	//Compiles all functions

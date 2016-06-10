@@ -175,7 +175,7 @@ void ExecutionEngine::load(bool loadBody) {
 	mVMState.classProvider().createVirtualFunctionTables();
 }
 
-void ExecutionEngine::compileFunction(ManagedFunction* function, bool resolveSymbols) {
+JitFunction ExecutionEngine::compileFunction(ManagedFunction* function, bool resolveSymbols) {
 	//Type check the function
 	Verifier verifier(mVMState);
 	verifier.verifyFunction(*function);
@@ -205,9 +205,11 @@ void ExecutionEngine::compileFunction(ManagedFunction* function, bool resolveSym
 			function->def(),
 			(unsigned char*)funcPtr);
 	}
+
+	return funcPtr;
 }
 
-bool ExecutionEngine::compileFunction(std::string signature) {
+bool ExecutionEngine::compileFunction(std::string signature, JitFunction& entryPoint) {
 	auto funcImage = mImageContainer.getFunction(signature);
 
 	if (funcImage != nullptr && !mJIT.hasCompiled(signature)) {
@@ -219,11 +221,16 @@ bool ExecutionEngine::compileFunction(std::string signature) {
 		mLoadedFunctions.insert({ FunctionSignature::from(func->def()).str(), func });
 
 		//Compile it
-		compileFunction(func, true);
+		entryPoint = compileFunction(func, true);
 		return true;
 	}
 
 	return false;
+}
+
+bool ExecutionEngine::compileFunction(std::string signature) {
+	JitFunction entryPoint;
+	return compileFunction(signature, entryPoint);
 }
 
 void ExecutionEngine::generateCode() {
