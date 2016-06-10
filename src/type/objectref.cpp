@@ -13,11 +13,6 @@ ObjectRef::ObjectRef(RawObjectRef objRef)
 		mObjectSize = static_cast<const ClassType*>(type())->metadata()->size();
 	}
 }
-
-const Type* ObjectRef::type() const {
-	return mType;
-}
-
 unsigned char* ObjectRef::fullPtr() const {
 	return mPtr;
 }

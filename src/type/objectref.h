@@ -29,7 +29,9 @@ public:
 	ObjectRef(RawObjectRef objRef);
 
 	//Returns the type of the object
-	const Type* type() const;
+	inline const Type* type() const {
+		return mType;
+	}
 
 	//Returns a pointer to the header
 	unsigned char* fullPtr() const;

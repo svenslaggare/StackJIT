@@ -398,9 +398,3 @@ void GarbageCollector::collect(GCRuntimeInformation& runtimeInformation, bool fo
 		}
 	}
 }
-
-ClassRef GarbageCollector::getClassRef(RawClassRef classRef) {
-	ObjectRef objRef(classRef);
-	auto classType = static_cast<const ClassType*>(objRef.type());
-	return ClassRef(objRef, *classType->metadata());
-}

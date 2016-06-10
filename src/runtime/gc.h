@@ -104,5 +104,9 @@ public:
 	void collect(GCRuntimeInformation& runtimeInformation, bool forceGC = false);
 
 	//Returns a reference to the given class
-	ClassRef getClassRef(RawClassRef classRef);
+	inline ClassRef getClassRef(RawClassRef classRef) {
+		ObjectRef objRef(classRef);
+		auto classType = static_cast<const ClassType*>(objRef.type());
+		return ClassRef(objRef, *classType->metadata());
+	}
 };

@@ -11,5 +11,6 @@ public:
 	void testSimple() {
 		TS_ASSERT_EQUALS(invokeVM("virtual/simple1"), "36\n");
 		TS_ASSERT_EQUALS(invokeVM("virtual/simple2"), "288\n");
+		TS_ASSERT_EQUALS(invokeVM("virtual/loop"), "0\n");
 	}
 };
