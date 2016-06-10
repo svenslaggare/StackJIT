@@ -1,0 +1,29 @@
+class Point
+{
+	x Int
+	y Int
+}
+
+member Point::.constructor() Void
+{
+	RET
+}
+
+member Point::length() Int
+{
+	LDARG 0
+	LDFIELD Point::x
+
+	LDARG 0
+    LDFIELD Point::y
+
+    ADD
+    RET
+}
+
+func main() Int
+{
+	LDNULL
+	CALLVIRT Point::length()
+	RET
+}

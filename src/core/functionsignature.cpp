@@ -36,8 +36,7 @@ FunctionSignature FunctionSignature::function(std::string name, const std::vecto
 	return name + "(" + argsStr + ")";
 }
 
-FunctionSignature FunctionSignature::memberFunction(const ClassType* classType, std::string name,
-													const std::vector<const Type*>& parameters) {
+FunctionSignature FunctionSignature::memberFunction(const ClassType* classType, std::string name, const std::vector<const Type*>& parameters) {
 	auto params = parameters;
 	params.insert(params.begin(), classType);
 	return FunctionSignature::function(classType->className() + "::" + name, params);

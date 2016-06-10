@@ -28,6 +28,7 @@ enum class OpCodes : unsigned char {
 	STORE_LOCAL,
 	CALL,
 	CALL_INSTANCE,
+	CALL_VIRTUAL,
 	RET,
 	LOAD_ARG,
 	BRANCH,

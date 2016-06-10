@@ -42,6 +42,7 @@ namespace {
 		{ (unsigned char)OpCodes::LOAD_CHAR, "ldchar" },
 		{ (unsigned char)OpCodes::CALL, "call" },
 		{ (unsigned char)OpCodes::CALL_INSTANCE, "callinst" },
+		{ (unsigned char)OpCodes::CALL_VIRTUAL, "callvirt" },
 		{ (unsigned char)OpCodes::LOAD_ARG, "ldarg" },
 		{ (unsigned char)OpCodes::NEW_OBJECT, "newobj" },
 		{ (unsigned char)OpCodes::BRANCH, "br" },

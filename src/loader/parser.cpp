@@ -67,6 +67,16 @@ AssemblyParser::Instruction AssemblyParser::Instruction::makeCallInstance(std::s
 	return inst;
 }
 
+AssemblyParser::Instruction AssemblyParser::Instruction::makeCallVirtual(std::string classType, std::string funcName, std::vector<std::string> parameters) {
+	AssemblyParser::Instruction inst;
+	inst.calledClassType = classType;
+	inst.strValue = funcName;
+	inst.parameters = parameters;
+	inst.opCode = OpCodes::CALL_VIRTUAL;
+	inst.format = InstructionFormats::CallInstance;
+	return inst;
+}
+
 AssemblyParser::Instruction AssemblyParser::Instruction::makeNewObject(std::string classType, std::vector<std::string> parameters) {
 	AssemblyParser::Instruction inst;
 	inst.calledClassType = classType;
@@ -106,8 +116,7 @@ namespace {
 		return newStr;
 	}
 
-	std::unordered_map<std::string, OpCodes> noOperandsInstructions
-	{
+	std::unordered_map<std::string, OpCodes> noOperandsInstructions	{
 		{ "nop", OpCodes::NOP },
 		{ "pop", OpCodes::POP },
 		{ "dup", OpCodes::DUPLICATE },
@@ -133,8 +142,7 @@ namespace {
 		{ "ret", OpCodes::RET }
 	};
 
-	std::unordered_map<std::string, OpCodes> branchInstructions
-	{
+	std::unordered_map<std::string, OpCodes> branchInstructions	{
 		{ "beq", OpCodes::BRANCH_EQUAL },
 		{ "bne", OpCodes::BRANCH_NOT_EQUAL },
 		{ "bgt", OpCodes::BRANCH_GREATER_THAN },
@@ -143,8 +151,7 @@ namespace {
 		{ "ble", OpCodes::BRANCH_LESS_THAN_OR_EQUAL }
 	};
 
-	std::unordered_map<std::string, OpCodes> strOperandInstructions
-	{
+	std::unordered_map<std::string, OpCodes> strOperandInstructions	{
 		{ "newarr", OpCodes::NEW_ARRAY },
 		{ "stelem", OpCodes::STORE_ELEMENT },
 		{ "ldelem", OpCodes::LOAD_ELEMENT },
@@ -455,17 +462,18 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
                 }
 			}
 
-			if (currentToLower == "call" || currentToLower == "callinst") {
-				bool isInstance = currentToLower == "callinst";
+			if (currentToLower == "call" || currentToLower == "callinst" || currentToLower == "callvirt") {
+				bool isInstance = currentToLower == "callinst" || currentToLower == "callvirt";
+				bool isVirtual = currentToLower == "callvirt";
 
 				std::string funcName = nextToken(tokens, i);
-				std::string structType = "";
+				std::string classType = "";
 
 				if (isInstance) {
 					auto structNamePos = funcName.find("::");
 
 					if (structNamePos != std::string::npos) {
-						structType = funcName.substr(0, structNamePos);
+						classType = funcName.substr(0, structNamePos);
 					} else {
 						throw std::runtime_error("Expected '::' in called member function.");
 					}
@@ -481,7 +489,11 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
 				readCallParameters(tokens, i, parameters);
 
 				if (isInstance) {
-					currentFunc.instructions.push_back(Instruction::makeCallInstance(structType, funcName, parameters));
+					if (!isVirtual) {
+						currentFunc.instructions.push_back(Instruction::makeCallInstance(classType, funcName, parameters));
+					} else {
+						currentFunc.instructions.push_back(Instruction::makeCallVirtual(classType, funcName, parameters));
+					}
 				} else {
 					currentFunc.instructions.push_back(Instruction::makeCall(funcName, parameters));
 				}

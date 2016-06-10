@@ -56,7 +56,8 @@ FunctionDefinition::FunctionDefinition(
     const Type* returnType,
 	const ClassType* classType,
 	AccessModifier accessModifier,
-	bool isConstructor)
+	bool isConstructor,
+	bool isVirtual)
     : mName(name),
       mParameters(parameters),
       mReturnType(returnType),
@@ -65,7 +66,8 @@ FunctionDefinition::FunctionDefinition(
       mIsMemberFunction(classType != nullptr),
 	  mClassType(classType),
 	  mAccessModifier(accessModifier),
-	  mIsConstructor(isConstructor)	{
+	  mIsConstructor(isConstructor),
+	  mIsVirtual(isVirtual) {
 
 }
 
@@ -85,7 +87,8 @@ FunctionDefinition::FunctionDefinition(
 	  mIsMemberFunction(classType != nullptr),
 	  mClassType(classType),
 	  mAccessModifier(accessModifier),
-	  mIsConstructor(isConstructor) {
+	  mIsConstructor(isConstructor),
+	  mIsVirtual(false) {
 
 }
 
@@ -129,6 +132,10 @@ AccessModifier FunctionDefinition::accessModifier() const {
 
 bool FunctionDefinition::isConstructor() const {
 	return mIsConstructor;
+}
+
+bool FunctionDefinition::isVirtual() const {
+	return mIsVirtual;
 }
 
 void FunctionDefinition::setEntryPoint(unsigned char* entryPoint) {

@@ -31,6 +31,9 @@ public:
     //Returns the OP code
     OpCodes opCode() const;
 
+	//Indicates if the instruction calls a member function (virtual & non-virtual)
+    bool isCallInstance() const;
+
     //Returns the operand types
     const std::vector<const Type*>& operandTypes() const;
 

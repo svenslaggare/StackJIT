@@ -61,6 +61,9 @@ namespace AssemblyParser {
 	    //Creates a new call instance instruction
 	    static Instruction makeCallInstance(std::string classType, std::string funcName, std::vector<std::string> parameters);
 
+		//Creates a new call virtual instruction
+		static Instruction makeCallVirtual(std::string classType, std::string funcName, std::vector<std::string> parameters);
+
 	    //Creates a new create object instruction
 	    static Instruction makeNewObject(std::string classType, std::vector<std::string> parameters);
 	};

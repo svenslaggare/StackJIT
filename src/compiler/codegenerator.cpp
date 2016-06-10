@@ -419,10 +419,11 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 			break;
 		}
 		case OpCodes::CALL:
-		case OpCodes::CALL_INSTANCE: {
+		case OpCodes::CALL_INSTANCE:
+		case OpCodes::CALL_VIRTUAL: {
 			std::string calledSignature = "";
 
-			if (inst.opCode() == OpCodes::CALL_INSTANCE) {
+			if (inst.isCallInstance()) {
 				calledSignature = FunctionSignature::memberFunction(
 					inst.classType,
 					inst.strValue,
@@ -437,7 +438,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 				bool needsToCompile = compileAtRuntime(vmState, funcToCall, calledSignature);
 				std::size_t callIndex = 0;
 
-				//Check if the called function needs to be compiled compiled
+				//Check if the called function needs to be compiled
 				if (needsToCompile) {
 					callIndex = generateCompileCall(generatedCode, function, funcToCall);
 				}

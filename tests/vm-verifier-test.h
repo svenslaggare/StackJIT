@@ -24,6 +24,9 @@ public:
 		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/not_end_in_return")), "0: Functions must end with the 'RET' instruction.");
 		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/return_type1")), "Expected 'Int' as return type.");
 		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/return_type2")), "Expected 'Int' as return type.");
+
+		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/non_virtual_func1")), "1: Non virtual member functions must be called with the 'CALLINST' instruction.");
+		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/non_virtual_func2")), "1: Virtual member functions must be called with the 'CALLVIRT' instruction.");
 	}
 
 	//Test invalid locals

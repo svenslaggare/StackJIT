@@ -403,8 +403,10 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction inst, st
 			break;
 		}
 		case OpCodes::CALL:
-		case OpCodes::CALL_INSTANCE: {
-			bool isInstance = inst.opCode() == OpCodes::CALL_INSTANCE;
+		case OpCodes::CALL_INSTANCE:
+		case OpCodes::CALL_VIRTUAL: {
+			bool isInstance = inst.isCallInstance();
+			bool isVirtual = inst.opCode() == OpCodes::CALL_VIRTUAL;
 
 			std::string signature = "";
 
@@ -427,6 +429,14 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction inst, st
 
 			if (!isInstance && funcToCall.isMemberFunction()) {
 				typeError(index, "Member functions must be called with the 'CALLINST' instruction.");
+			}
+
+			if (isInstance && funcToCall.isMemberFunction()) {
+				if (!isVirtual && funcToCall.isVirtual()) {
+					typeError(index, "Virtual member functions must be called with the 'CALLVIRT' instruction.");
+				} else if (isVirtual && !funcToCall.isVirtual()) {
+					typeError(index, "Non virtual member functions must be called with the 'CALLINST' instruction.");
+				}
 			}
 
 			//Check if the member function can be called

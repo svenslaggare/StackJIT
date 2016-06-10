@@ -67,6 +67,27 @@ namespace {
 
 		return accessModifier;
 	}
+
+	//Indicates if the given function is virtual
+	bool getIsVirtual(const AssemblyParser::AttributeContainer& attributeContainer) {
+		bool isVirtual = false;
+
+		if (attributeContainer.count("Virtual") > 0) {
+			auto& attribute = attributeContainer.at("Virtual");
+			if (attribute.values.count("value") > 0) {
+				auto value = attribute.values.at("value");
+				if (value == "true") {
+					isVirtual = true;
+				} else if (value == "false") {
+					isVirtual = false;
+				} else {
+					throw std::runtime_error("'" + value + "' is not valid value for the attribute 'Virtual'.");
+				}
+			}
+		}
+
+		return isVirtual;
+	}
 }
 
 void Loader::generateDefinition(VMState& vmState, const AssemblyParser::Function& function, FunctionDefinition& definition) {
@@ -79,6 +100,7 @@ void Loader::generateDefinition(VMState& vmState, const AssemblyParser::Function
 
 	const ClassType* classType = nullptr;
 	AccessModifier accessModifier = ClassMetadata::DEFAULT_ACCESS_MODIFIER;
+	bool isVirtual = false;
 
 	if (function.isMemberFunction) {
 		classType = dynamic_cast<const ClassType*>(getType(vmState, "Ref." + function.className));
@@ -87,6 +109,7 @@ void Loader::generateDefinition(VMState& vmState, const AssemblyParser::Function
 		}
 
 		accessModifier = getAccessModifier(function.attributes);
+		isVirtual = getIsVirtual(function.attributes);
 	}
 
 	definition = FunctionDefinition(
@@ -95,7 +118,8 @@ void Loader::generateDefinition(VMState& vmState, const AssemblyParser::Function
 		returnType,
 		classType,
 		accessModifier,
-		function.memberFunctionName == ".constructor");
+		function.memberFunctionName == ".constructor",
+		isVirtual);
 }
 
 void Loader::loadExternalFunction(VMState& vmState, const AssemblyParser::Function& function, FunctionDefinition& loadedFunction) {
@@ -112,8 +136,7 @@ void Loader::loadExternalFunction(VMState& vmState, const AssemblyParser::Functi
 	}
 }
 
-ManagedFunction* Loader::loadManagedFunction(VMState& vmState, const AssemblyParser::Function& function,
-											 const FunctionDefinition& functionDefinition) {
+ManagedFunction* Loader::loadManagedFunction(VMState& vmState, const AssemblyParser::Function& function, const FunctionDefinition& functionDefinition) {
 	if (function.isExternal) {
 		throw std::runtime_error("Expected a managed function");
 	}

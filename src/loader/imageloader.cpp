@@ -95,32 +95,27 @@ bool AssemblyImage::loadFunctionBody(std::string function) {
 				case AssemblyParser::InstructionFormats::OpCodeOnly:
 					func.instructions.push_back(AssemblyParser::Instruction::make(opCode));
 					break;
-				case AssemblyParser::InstructionFormats::IntData:
-					{
+				case AssemblyParser::InstructionFormats::IntData: {
 						auto value = loadData<int>(mImageData, bodyOffset);
 						func.instructions.push_back(AssemblyParser::Instruction::makeWithInt(opCode, value));
 					}
 					break;
-				case AssemblyParser::InstructionFormats::FloatData:
-					{
+				case AssemblyParser::InstructionFormats::FloatData:	{
 						auto value = loadData<float>(mImageData, bodyOffset);
 						func.instructions.push_back(AssemblyParser::Instruction::makeWithFloat(opCode, value));
 					}
 					break;
-				case AssemblyParser::InstructionFormats::CharData:
-					{
+				case AssemblyParser::InstructionFormats::CharData: {
 						auto value = loadData<char>(mImageData, bodyOffset);
 						func.instructions.push_back(AssemblyParser::Instruction::makeWithChar(opCode, value));
 					}
 					break;
-				case AssemblyParser::InstructionFormats::StrData:
-					{
+				case AssemblyParser::InstructionFormats::StrData: {
 						auto value = loadString(mImageData, bodyOffset);
 						func.instructions.push_back(AssemblyParser::Instruction::makeWithStr(opCode, value));
 					}
 					break;
-				case AssemblyParser::InstructionFormats::Call:
-					{
+				case AssemblyParser::InstructionFormats::Call: {
 						auto funcName = loadString(mImageData, bodyOffset);
 						auto numParams = loadData<std::size_t>(mImageData, bodyOffset);
 						std::vector<std::string> params;
@@ -132,8 +127,7 @@ bool AssemblyImage::loadFunctionBody(std::string function) {
 						func.instructions.push_back(AssemblyParser::Instruction::makeCall(funcName, params));
 					}
 					break;
-				case AssemblyParser::InstructionFormats::CallInstance:
-					{
+				case AssemblyParser::InstructionFormats::CallInstance: {
 						auto funcName = loadString(mImageData, bodyOffset);
 						auto calledClassType = loadString(mImageData, bodyOffset);
 						auto numParams = loadData<std::size_t>(mImageData, bodyOffset);

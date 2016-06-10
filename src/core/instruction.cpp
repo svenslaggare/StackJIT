@@ -14,6 +14,10 @@ OpCodes Instruction::opCode() const {
 	return mOpCode;
 }
 
+bool Instruction::isCallInstance() const {
+	return mOpCode == OpCodes::CALL_INSTANCE || mOpCode == OpCodes::CALL_VIRTUAL;
+}
+
 const std::vector<const Type*>& Instruction::operandTypes() const {
 	return mOperandTypes;
 }

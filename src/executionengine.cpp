@@ -213,8 +213,16 @@ bool ExecutionEngine::compileFunction(std::string signature) {
 
 void ExecutionEngine::generateCode() {
 	//Generate instructions for all functions
-	for (auto loadedFunc : mLoadedFunctions) {
-		compileFunction(loadedFunc.second);
+	for (auto& image : mImageContainer.images()) {
+		for (auto& currentFunc : image->functions()) {
+			if (!currentFunc.second.isExternal) {
+				auto& funcDef = mVMState.binder().getFunction(currentFunc.first);
+				auto funcImage = mImageContainer.getFunction(currentFunc.first);
+				auto func = Loader::loadManagedFunction(mVMState, *funcImage, funcDef);
+				mLoadedFunctions.insert({ FunctionSignature::from(func->def()).str(), func });
+				compileFunction(func, false);
+			}
+		}
 	}
 
 	//Fix unresolved symbols

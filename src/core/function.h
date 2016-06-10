@@ -21,6 +21,7 @@ private:
 	const ClassType* mClassType;
 	AccessModifier mAccessModifier;
 	bool mIsConstructor;
+	bool mIsVirtual;
 public:
 	//Creates a new managed function definition
 	FunctionDefinition(
@@ -29,7 +30,8 @@ public:
 		const Type* returnType,
 	    const ClassType* classType = nullptr,
 	    AccessModifier accessModifier = ClassMetadata::DEFAULT_ACCESS_MODIFIER,
-		bool isConstructor = false);
+		bool isConstructor = false,
+		bool isVirtual = false);
 
 	//Creates a new external function definition
 	FunctionDefinition(
@@ -69,6 +71,9 @@ public:
 
 	//Indicates if the function is a constructor
 	bool isConstructor() const;
+
+	//Indicates if the function is a virtual function
+	bool isVirtual() const;
 
 	//Sets the entry point
 	void setEntryPoint(unsigned char* entryPoint);
