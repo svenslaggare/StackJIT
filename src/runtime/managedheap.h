@@ -7,7 +7,6 @@ class ManagedHeap {
 private:
 	unsigned char* const mData;
 	const std::size_t mSize;
-
 	unsigned char* mNextAllocation;
 public:
 	//Creates a heap of the given size

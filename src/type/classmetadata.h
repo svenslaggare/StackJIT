@@ -4,6 +4,7 @@
 #include <string>
 
 class Type;
+class ClassType;
 
 //The access modifiers
 enum class AccessModifier : unsigned char {
@@ -55,8 +56,6 @@ public:
 	//The default access modifier
 	static const AccessModifier DEFAULT_ACCESS_MODIFIER = AccessModifier::Public;
 };
-
-class ClassType;
 
 //Provides class metadata
 class ClassMetadataProvider {

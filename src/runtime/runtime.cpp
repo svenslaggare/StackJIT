@@ -67,8 +67,8 @@ void Runtime::compileFunction(ManagedFunction* callee, int callOffset, int check
 
 	if (vmState.enableDebug && vmState.printLazyPatching) {
 		std::cout
-		<< "Patching call to " << toCallSignature << " at " << FunctionSignature::from(callee->def()).str()
-		<< ", offset: " << callOffset << ", check offset: " << checkStart << "." << std::endl;
+			<< "Patching call to " << toCallSignature << " at " << FunctionSignature::from(callee->def()).str()
+			<< ", offset: " << callOffset << ", check offset: " << checkStart << "." << std::endl;
 	}
 
 	//Get a pointer to the function code
@@ -169,7 +169,6 @@ unsigned char* Runtime::newString(const char* string, int length) {
 
 	//Set the chars field
 	StringRef::setCharsField(strPr, (char*)charsPtr);
-
 	return strPr;
 }
 

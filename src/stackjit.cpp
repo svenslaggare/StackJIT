@@ -167,7 +167,6 @@ std::string getExecutableDir() {
 
 	//Remove the name
 	buffer[bytes - 12] = '\0';
-
 	return std::string(buffer);
 #else
 	const int bufferSize = 512;
@@ -182,7 +181,6 @@ std::string getExecutableDir() {
 
 	//Remove the name
 	buffer[bytes - 8] = '\0';
-
 	return std::string(buffer);
 #endif
 }
