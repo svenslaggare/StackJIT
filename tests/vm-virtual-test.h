@@ -4,9 +4,9 @@
 using namespace Helpers;
 
 /**
- * Tests classes
+ * Tests virtual functions
  */
-class VMClassTestSuite : public CxxTest::TestSuite {
+class VMVirtualTestSuite : public CxxTest::TestSuite {
 public:
 	void testSimple() {
 		TS_ASSERT_EQUALS(invokeVM("virtual/simple1"), "36\n");
