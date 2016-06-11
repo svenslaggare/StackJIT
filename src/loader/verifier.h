@@ -7,7 +7,7 @@ class ManagedFunction;
 class VMState;
 class Type;
 
-typedef std::stack<const Type*> InstructionTypes;
+using InstructionTypes = std::stack<const Type*>;
 
 //Represents a branch check
 struct BranchCheck {
@@ -35,8 +35,12 @@ private:
 	const Type* mStringType;
 
 	//Verifies the given instruction
-	void verifyInstruction(ManagedFunction& function, Instruction& inst, std::size_t index,
-						   InstructionTypes& operandStack, std::vector<BranchCheck>& branches);
+	void verifyInstruction(ManagedFunction& function,
+						   std::string functionSignature,
+						   Instruction& inst,
+						   std::size_t index,
+						   InstructionTypes& operandStack,
+						   std::vector<BranchCheck>& branches);
 public:
 	//Creates a new verifier using the given VM state
 	Verifier(VMState& vmState);

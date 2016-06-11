@@ -29,13 +29,13 @@ namespace {
 		return value;
 	}
 
-	void typeError(std::size_t instIndex, std::string errorMessage) {
-		throw std::runtime_error(std::to_string(instIndex) + ": " + errorMessage);
+	void typeError(std::string functionSignature, std::size_t instIndex, std::string errorMessage) {
+		throw std::runtime_error(functionSignature + " @ " + std::to_string(instIndex) + ": " + errorMessage);
 	}
 
-	void assertOperandCount(std::size_t index, const InstructionTypes& stack, std::size_t count) {
+	void assertOperandCount(std::string functionSignature, std::size_t index, const InstructionTypes& stack, std::size_t count) {
 		if (stack.size() < count) {
-			typeError(index, "Expected " + std::to_string(count) + " operand(s) on the stack.");
+			typeError(functionSignature, index, "Expected " + std::to_string(count) + " operand(s) on the stack.");
 		}
 	}
 
@@ -69,9 +69,9 @@ namespace {
 		}
 	}
 
-	void assertNotVoidType(std::size_t index, const Type* type) {
+	void assertNotVoidType(std::string functionSignature, std::size_t index, const Type* type) {
 		if (type != nullptr && type->name() == "Void") {
-			typeError(index, "Void type not allowed.");
+			typeError(functionSignature, index, "Void type not allowed.");
 		}
 	}
 
@@ -154,8 +154,10 @@ namespace {
 	}
 
 	//Indicates if the given function can read/write the given field
-	bool canReadOrWriteField(const FunctionDefinition& func, const ClassMetadata& classMetadata,
-							 const ClassType* classType, std::string fieldName) {
+	bool canReadOrWriteField(const FunctionDefinition& func,
+							 const ClassMetadata& classMetadata,
+							 const ClassType* classType,
+							 std::string fieldName) {
 		auto& field = classMetadata.fields().at(fieldName);
 
 		if (field.accessModifier() == AccessModifier::Public) {
@@ -193,7 +195,7 @@ namespace {
 	}
 
 	//Checks the local types
-	void preCheckLocalsTypes(VMState& vmState, ManagedFunction& function) {
+	void preCheckLocalsTypes(VMState& vmState, ManagedFunction& function, std::string functionSignature) {
 		const auto voidType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Void));
 
 		for (std::size_t i = 0; i < function.numLocals(); i++) {
@@ -201,14 +203,14 @@ namespace {
 
 			if (localType != nullptr) {
 				if (localType == voidType) {
-					typeError(0, "Locals of 'Void' type are not allowed.");
+					typeError(functionSignature, 0, "Locals of 'Void' type are not allowed.");
 				};
 			}
 		}
 	}
 
 	//Verifies the branches
-	void verifyBranches(ManagedFunction& function, std::vector<BranchCheck>& branches) {
+	void verifyBranches(ManagedFunction& function, std::string functionSignature, std::vector<BranchCheck>& branches) {
 		for (auto& branch : branches) {
 			auto postSourceTypes = branch.branchTypes;
 			auto preTargetTypes = asList(function.instructions()[branch.target].operandTypes());
@@ -220,20 +222,23 @@ namespace {
 					auto error = checkType(postType, preType);
 
 					if (error != "") {
-						typeError(branch.source, error);
+						typeError(functionSignature, branch.source, error);
 					}
 				}
 			} else {
-				typeError(branch.source, "Expected the number of types before and after branch to be the same.");
+				typeError(
+					functionSignature,
+					branch.source,
+					"Expected the number of types before and after branch to be the same.");
 			}
 		}
 	}
 
 	//Checks the local types
-	void postCheckLocalsTypes(ManagedFunction& function) {
+	void postCheckLocalsTypes(ManagedFunction& function, std::string functionSignature) {
 		for (std::size_t i = 0; i < function.numLocals(); i++) {
 			if (function.getLocal(i) == nullptr) {
-				typeError(0, "Local " + std::to_string(i) + " is not typed.");
+				typeError(functionSignature, 0, "Local " + std::to_string(i) + " is not typed.");
 			}
 		}
 	}
@@ -252,8 +257,12 @@ Verifier::Verifier(VMState& vmState)
 	mStringType = mVMState.typeProvider().makeType(TypeSystem::stringTypeName);
 }
 
-void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, std::size_t index,
-								 InstructionTypes& operandStack, std::vector<BranchCheck>& branches) {
+void Verifier::verifyInstruction(ManagedFunction& function,
+								 std::string functionSignature,
+								 Instruction& inst,
+								 std::size_t index,
+								 InstructionTypes& operandStack,
+								 std::vector<BranchCheck>& branches) {
 	const auto numInstructions = function.instructions().size();
 
 	switch (inst.opCode()) {
@@ -269,11 +278,11 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 			operandStack.push(mCharType);
 			break;
 		case OpCodes::POP:
-			assertOperandCount(index, operandStack, 1);
+			assertOperandCount(functionSignature, index, operandStack, 1);
 			popType(operandStack);
 			break;
 		case OpCodes::DUPLICATE: {
-			assertOperandCount(index, operandStack, 1);
+			assertOperandCount(functionSignature, index, operandStack, 1);
 			auto topType = operandStack.top();
 			operandStack.push(topType);
 			break;
@@ -282,7 +291,7 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 		case OpCodes::SUB:
 		case OpCodes::MUL:
 		case OpCodes::DIV: {
-			assertOperandCount(index, operandStack, 2);
+			assertOperandCount(functionSignature, index, operandStack, 2);
 
 			auto op1 = popType(operandStack);
 			auto op2 = popType(operandStack);
@@ -291,16 +300,16 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 				if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
 					operandStack.push(mIntType);
 				} else {
-					typeError(index, "Expected 2 operands of type Int on the stack.");
+					typeError(functionSignature, index, "Expected 2 operands of type Int on the stack.");
 				}
 			} else if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Float)) {
 				if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Float)) {
 					operandStack.push(mFloatType);
 				} else {
-					typeError(index, "Expected 2 operands of type Float on the stack.");
+					typeError(functionSignature, index, "Expected 2 operands of type Float on the stack.");
 				}
 			} else {
-				typeError(index, "Expected 2 operands of type Int or Float on the stack.");
+				typeError(functionSignature, index, "Expected 2 operands of type Int or Float on the stack.");
 			}
 			break;
 		}
@@ -311,7 +320,7 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 		}
 		case OpCodes::AND:
 		case OpCodes::OR: {
-			assertOperandCount(index, operandStack, 2);
+			assertOperandCount(functionSignature, index, operandStack, 2);
 
 			auto op1 = popType(operandStack);
 			auto op2 = popType(operandStack);
@@ -320,32 +329,32 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 				TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Bool)) {
 				operandStack.push(mBoolType);
 			} else {
-				typeError(index, "Expected 2 operands of type Bool on the stack.");
+				typeError(functionSignature, index, "Expected 2 operands of type Bool on the stack.");
 			}
 			break;
 		}
 		case OpCodes::CONVERT_INT_TO_FLOAT: {
-			assertOperandCount(index, operandStack, 1);
+			assertOperandCount(functionSignature, index, operandStack, 1);
 
 			auto op = popType(operandStack);
 
 			if (TypeSystem::isPrimitiveType(op, PrimitiveTypes::Integer)) {
 				operandStack.push(mFloatType);
 			} else {
-				typeError(index, "Expected 1 operand of type Int on the stack.");
+				typeError(functionSignature, index, "Expected 1 operand of type Int on the stack.");
 			}
 
 			break;
 		}
 		case OpCodes::CONVERT_FLOAT_TO_INT: {
-			assertOperandCount(index, operandStack, 1);
+			assertOperandCount(functionSignature, index, operandStack, 1);
 
 			auto op = popType(operandStack);
 
 			if (TypeSystem::isPrimitiveType(op, PrimitiveTypes::Float)) {
 				operandStack.push(mIntType);
 			} else {
-				typeError(index, "Expected 1 operand of type Float on the stack.");
+				typeError(functionSignature, index, "Expected 1 operand of type Float on the stack.");
 			}
 			break;
 		}
@@ -355,7 +364,7 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 		case OpCodes::COMPARE_GREATER_THAN_OR_EQUAL:
 		case OpCodes::COMPARE_LESS_THAN:
 		case OpCodes::COMPARE_LESS_THAN_OR_EQUAL: {
-			assertOperandCount(index, operandStack, 2);
+			assertOperandCount(functionSignature, index, operandStack, 2);
 
 			auto op1 = popType(operandStack);
 			auto op2 = popType(operandStack);
@@ -365,30 +374,30 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
 						operandStack.push(mBoolType);
 					} else {
-						typeError(index, "Expected 2 operands of type Int on the stack.");
+						typeError(functionSignature, index, "Expected 2 operands of type Int on the stack.");
 					}
 				} else if (*op1 == *mBoolType) {
 					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Bool)) {
 						operandStack.push(mBoolType);
 					} else {
-						typeError(index, "Expected 2 operands of type Bool on the stack.");
+						typeError(functionSignature, index, "Expected 2 operands of type Bool on the stack.");
 					}
 				} else if (*op1 == *mFloatType) {
 					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Float)) {
 						operandStack.push(mBoolType);
 					} else {
-						typeError(index, "Expected 2 operands of type Float on the stack.");
+						typeError(functionSignature, index, "Expected 2 operands of type Float on the stack.");
 					}
 				} else if (*op1 == *mCharType) {
 					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Char)) {
 						operandStack.push(mBoolType);
 					} else {
-						typeError(index, "Expected 2 operands of type Char on the stack.");
+						typeError(functionSignature, index, "Expected 2 operands of type Char on the stack.");
 					}
 				} else if (sameType(op1, op2)) {
 					operandStack.push(mBoolType);
 				} else {
-					typeError(index, "Expected 2 operands of comparable type on the stack.");
+					typeError(functionSignature, index, "Expected 2 operands of comparable type on the stack.");
 				}
 			} else {
 				if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Integer) &&
@@ -401,21 +410,21 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 						   TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Char)) {
 					operandStack.push(mBoolType);
 				} else {
-					typeError(index, "Expected 2 operands of type Int, Char or Float on the stack.");
+					typeError(functionSignature, index, "Expected 2 operands of type Int, Char or Float on the stack.");
 				}
 			}
 
 			break;
 		}
 		case OpCodes::NOT: {
-			assertOperandCount(index, operandStack, 1);
+			assertOperandCount(functionSignature, index, operandStack, 1);
 
 			auto op = popType(operandStack);
 
 			if (TypeSystem::isPrimitiveType(op, PrimitiveTypes::Bool)) {
 				operandStack.push(mBoolType);
 			} else {
-				typeError(index, "Expected 1 operand of type Bool on the stack.");
+				typeError(functionSignature, index, "Expected 1 operand of type Bool on the stack.");
 			}
 
 			break;
@@ -426,13 +435,13 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 			if (localType != nullptr) {
 				operandStack.push(localType);
 			} else {
-				typeError(index, "Cannot load untyped local (" + std::to_string(inst.intValue) + ").");
+				typeError(functionSignature, index, "Cannot load untyped local (" + std::to_string(inst.intValue) + ").");
 			}
 
 			break;
 		}
 		case OpCodes::STORE_LOCAL: {
-			assertOperandCount(index, operandStack, 1);
+			assertOperandCount(functionSignature, index, operandStack, 1);
 
 			auto localIndex = (std::size_t)inst.intValue;
 			auto valueType = popType(operandStack);
@@ -452,7 +461,7 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 					function.setLocal(localIndex, valueType);
 				}
 			} else {
-				typeError(index, error);
+				typeError(functionSignature, index, error);
 			}
 
 			break;
@@ -478,7 +487,7 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 			}
 
 			if (!mVMState.binder().isDefined(signature)) {
-				typeError(index, "The function '" + signature + "' is not defined.");
+				typeError(functionSignature, index, "The function '" + signature + "' is not defined.");
 			}
 
 			auto& funcToCall = mVMState.binder().getFunction(signature);
@@ -489,26 +498,26 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 			}
 
 			if (!isInstance && funcToCall.isMemberFunction()) {
-				typeError(index, "Member functions must be called with the 'CALLINST' instruction.");
+				typeError(functionSignature, index, "Member functions must be called with the 'CALLINST' instruction.");
 			}
 
 			if (isInstance && funcToCall.isMemberFunction()) {
 				if (!isVirtual && funcToCall.isVirtual()) {
-					typeError(index, "Virtual member functions must be called with the 'CALLVIRT' instruction.");
+					typeError(functionSignature, index, "Virtual member functions must be called with the 'CALLVIRT' instruction.");
 				} else if (isVirtual && !funcToCall.isVirtual()) {
-					typeError(index, "Non virtual member functions must be called with the 'CALLINST' instruction.");
+					typeError(functionSignature, index, "Non virtual member functions must be called with the 'CALLINST' instruction.");
 				}
 			}
 
 			//Check if the member function can be called
 			if (isInstance) {
 				if (!canCallMemberFunction(function.def(), funcToCall)) {
-					typeError(index, "Cannot call private function '" + signature + "'.");
+					typeError(functionSignature, index, "Cannot call private function '" + signature + "'.");
 				}
 			}
 
 			auto calledFuncNumArgs = funcToCall.parameters().size();
-			assertOperandCount(index, operandStack, calledFuncNumArgs);
+			assertOperandCount(functionSignature, index, operandStack, calledFuncNumArgs);
 
 			//Check the arguments
 			for (int i = (int)calledFuncNumArgs - 1; i >= 0; i--) {
@@ -516,7 +525,7 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 				auto error = checkType(funcToCall.parameters()[i], argType);
 
 				if (error != "") {
-					typeError(index, error);
+					typeError(functionSignature, index, error);
 				}
 			}
 
@@ -545,6 +554,7 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 				}
 			} else {
 				typeError(
+					functionSignature,
 					index,
 					"Expected " + std::to_string(returnCount) + " operand on the stack but got "
 					+ std::to_string(operandStack.size()) + " when returning.");
@@ -557,11 +567,11 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 			break;
 		case OpCodes::BRANCH_EQUAL:
 		case OpCodes::BRANCH_NOT_EQUAL: {
-			assertOperandCount(index, operandStack, 2);
+			assertOperandCount(functionSignature, index, operandStack, 2);
 
 			//Check if valid target
 			if (!(inst.intValue >= 0 && inst.intValue < (int)numInstructions)) {
-				typeError(index, "Invalid jump target (" + std::to_string(inst.intValue) + ").");
+				typeError(functionSignature, index, "Invalid jump target (" + std::to_string(inst.intValue) + ").");
 			}
 
 			auto op1 = popType(operandStack);
@@ -571,30 +581,30 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 				if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
 					branches.push_back({index, (std::size_t)inst.intValue, operandStack});
 				} else {
-					typeError(index, "Expected 2 operands of type Int on the stack.");
+					typeError(functionSignature, index, "Expected 2 operands of type Int on the stack.");
 				}
 			} else if (*op1 == *mBoolType) {
 				if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Bool)) {
 					branches.push_back({index, (std::size_t)inst.intValue, operandStack});
 				} else {
-					typeError(index, "Expected 2 operands of type Bool on the stack.");
+					typeError(functionSignature, index, "Expected 2 operands of type Bool on the stack.");
 				}
 			} else if (*op1 == *mFloatType) {
 				if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Float)) {
 					branches.push_back({index, (std::size_t)inst.intValue, operandStack});
 				} else {
-					typeError(index, "Expected 2 operands of type Float on the stack.");
+					typeError(functionSignature, index, "Expected 2 operands of type Float on the stack.");
 				}
 			} else if (*op1 == *mCharType) {
 				if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Char)) {
 					branches.push_back({index, (std::size_t)inst.intValue, operandStack});
 				} else {
-					typeError(index, "Expected 2 operands of type Char on the stack.");
+					typeError(functionSignature, index, "Expected 2 operands of type Char on the stack.");
 				}
 			} else if (sameType(op1, op2)) {
 				branches.push_back({index, (std::size_t)inst.intValue, operandStack});
 			} else {
-				typeError(index, "Expected 2 operands of comparable type on the stack.");
+				typeError(functionSignature, index, "Expected 2 operands of comparable type on the stack.");
 			}
 
 			break;
@@ -603,11 +613,11 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 		case OpCodes::BRANCH_GREATER_THAN_OR_EQUAL:
 		case OpCodes::BRANCH_LESS_THAN:
 		case OpCodes::BRANCH_LESS_THAN_OR_EQUAL: {
-			assertOperandCount(index, operandStack, 2);
+			assertOperandCount(functionSignature, index, operandStack, 2);
 
 			//Check if valid target
 			if (!(inst.intValue >= 0 && inst.intValue < (int)numInstructions)) {
-				typeError(index, "Invalid jump target (" + std::to_string(inst.intValue) + ").");
+				typeError(functionSignature, index, "Invalid jump target (" + std::to_string(inst.intValue) + ").");
 			}
 
 			auto op1 = popType(operandStack);
@@ -617,28 +627,28 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 				if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
 					branches.push_back({index, (std::size_t)inst.intValue, operandStack});
 				} else {
-					typeError(index, "Expected 2 operands of type Int on the stack.");
+					typeError(functionSignature, index, "Expected 2 operands of type Int on the stack.");
 				}
 			} else if (*op1 == *mBoolType) {
 				if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Bool)) {
 					branches.push_back({index, (std::size_t)inst.intValue, operandStack});
 				} else {
-					typeError(index, "Expected 2 operands of type Bool on the stack.");
+					typeError(functionSignature, index, "Expected 2 operands of type Bool on the stack.");
 				}
 			} else if (*op1 == *mFloatType) {
 				if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Float)) {
 					branches.push_back({index, (std::size_t)inst.intValue, operandStack});
 				} else {
-					typeError(index, "Expected 2 operands of type Float on the stack.");
+					typeError(functionSignature, index, "Expected 2 operands of type Float on the stack.");
 				}
 			} else if (*op1 == *mCharType) {
 				if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Char)) {
 					branches.push_back({index, (std::size_t)inst.intValue, operandStack});
 				} else {
-					typeError(index, "Expected 2 operands of type Char on the stack.");
+					typeError(functionSignature, index, "Expected 2 operands of type Char on the stack.");
 				}
 			} else {
-				typeError(index, "Expected 2 operands of comparable type on the stack.");
+				typeError(functionSignature, index, "Expected 2 operands of comparable type on the stack.");
 			}
 
 			break;
@@ -646,7 +656,7 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 		case OpCodes::BRANCH:
 			//Check if valid target
 			if (!(inst.intValue >= 0 && inst.intValue < (int)numInstructions)) {
-				typeError(index, "Invalid jump target (" + std::to_string(inst.intValue) + ").");
+				typeError(functionSignature, index, "Invalid jump target (" + std::to_string(inst.intValue) + ").");
 			}
 
 			branches.push_back({index, (std::size_t)inst.intValue, operandStack});
@@ -656,29 +666,29 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 			break;
 		}
 		case OpCodes::NEW_ARRAY: {
-			assertOperandCount(index, operandStack, 1);
+			assertOperandCount(functionSignature, index, operandStack, 1);
 
 			auto error = checkType(mIntType, popType(operandStack));
 
 			if (error != "") {
-				typeError(index, error);
+				typeError(functionSignature, index, error);
 			}
 
 			auto elemType = mVMState.typeProvider().makeType(inst.strValue);
 
 			if (elemType == nullptr) {
-				typeError(index, "'" + inst.strValue + "' is not a valid type.");
+				typeError(functionSignature, index, "'" + inst.strValue + "' is not a valid type.");
 			}
 
 			if (*elemType == *mVoidType) {
-				typeError(index, "Arrays of type 'Void' is not allowed.");
+				typeError(functionSignature, index, "Arrays of type 'Void' is not allowed.");
 			}
 
 			operandStack.push(mVMState.typeProvider().makeType("Ref.Array[" + inst.strValue + "]"));
 			break;
 		}
 		case OpCodes::STORE_ELEMENT: {
-			assertOperandCount(index, operandStack, 3);
+			assertOperandCount(functionSignature, index, operandStack, 3);
 
 			auto valueType = popType(operandStack);
 			auto indexType = popType(operandStack);
@@ -688,39 +698,40 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 
 			if (!TypeSystem::isArray(arrayRefType) && !isNull) {
 				typeError(
+					functionSignature,
 					index,
 					"Expected first operand to be an array reference, but got type: " + arrayRefType->name() + ".");
 			}
 
 			if (!TypeSystem::isPrimitiveType(indexType, PrimitiveTypes::Integer)) {
-				typeError(index, "Expected second operand to be of type Int but got type: " + indexType->name() + ".");
+				typeError(functionSignature, index, "Expected second operand to be of type Int but got type: " + indexType->name() + ".");
 			}
 
 			auto elemType = mVMState.typeProvider().makeType(inst.strValue);
 
 			if (elemType == nullptr) {
-				typeError(index, "There exists no type '" + inst.strValue + "'.");
+				typeError(functionSignature, index, "There exists no type '" + inst.strValue + "'.");
 			}
 
-			assertNotVoidType(index, elemType);
+			assertNotVoidType(functionSignature, index, elemType);
 
 			if (!isNull) {
 				auto arrayElemType = dynamic_cast<const ArrayType*>(arrayRefType)->elementType();
 				auto error = checkType(arrayElemType, elemType);
 
 				if (error != "") {
-					typeError(index, error);
+					typeError(functionSignature, index, error);
 				}
 			}
 
 			if (!sameType(valueType, elemType)) {
-				typeError(index, "Expected third operand to be of type " + elemType->name() + ".");
+				typeError(functionSignature, index, "Expected third operand to be of type " + elemType->name() + ".");
 			}
 
 			break;
 		}
 		case OpCodes::LOAD_ELEMENT: {
-			assertOperandCount(index, operandStack, 2);
+			assertOperandCount(functionSignature, index, operandStack, 2);
 
 			auto indexType = popType(operandStack);
 			auto arrayRefType = popType(operandStack);
@@ -728,30 +739,29 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 			bool isNull = arrayRefType == mNullType;
 
 			if (!TypeSystem::isArray(arrayRefType) && !isNull) {
-				typeError(index,
+				typeError(functionSignature, index,
 						  "Expected first operand to be an array reference, but got type: " + arrayRefType->name() +
 						  ".");
 			}
 
 			if (!TypeSystem::isPrimitiveType(indexType, PrimitiveTypes::Integer)) {
-				typeError(index, "Expected second operand to be of type Int but got type: " + indexType->name() + ".");
+				typeError(functionSignature, index, "Expected second operand to be of type Int but got type: " + indexType->name() + ".");
 			}
 
 			auto elemType = mVMState.typeProvider().makeType(inst.strValue);
 
 			if (elemType == nullptr) {
-				typeError(index, "There exists no type '" + inst.strValue + "'.");
+				typeError(functionSignature, index, "There exists no type '" + inst.strValue + "'.");
 			}
 
-			assertNotVoidType(index, elemType);
+			assertNotVoidType(functionSignature, index, elemType);
 
 			if (!isNull) {
 				auto arrayElemType = dynamic_cast<const ArrayType*>(arrayRefType)->elementType();
 
 				auto error = checkType(arrayElemType, elemType);
-
 				if (error != "") {
-					typeError(index, error);
+					typeError(functionSignature, index, error);
 				}
 			}
 
@@ -759,11 +769,11 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 			break;
 		}
 		case OpCodes::LOAD_ARRAY_LENGTH: {
-			assertOperandCount(index, operandStack, 1);
+			assertOperandCount(functionSignature, index, operandStack, 1);
 			auto arrayRefType = popType(operandStack);
 
 			if (!TypeSystem::isArray(arrayRefType) && arrayRefType != mNullType) {
-				typeError(index, "Expected operand to be an array reference.");
+				typeError(functionSignature, index, "Expected operand to be an array reference.");
 			}
 
 			operandStack.push(mIntType);
@@ -776,13 +786,13 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 				inst.parameters).str();
 
 			if (!mVMState.binder().isDefined(signature)) {
-				typeError(index, "The constructor '" + signature + "' is not defined.");
+				typeError(functionSignature, index, "The constructor '" + signature + "' is not defined.");
 			}
 
 			auto calledFunc = mVMState.binder().getFunction(signature);
 
 			auto calledFuncNumArgs = calledFunc.parameters().size();
-			assertOperandCount(index, operandStack, calledFuncNumArgs - 1);
+			assertOperandCount(functionSignature, index, operandStack, calledFuncNumArgs - 1);
 
 			//Check the arguments
 			for (int i = (int)calledFuncNumArgs - 1; i >= 1; i--) {
@@ -790,7 +800,7 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 				auto error = checkType(calledFunc.parameters()[i], argType);
 
 				if (error != "") {
-					typeError(index, error);
+					typeError(functionSignature, index, error);
 				}
 			}
 
@@ -798,15 +808,16 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 			break;
 		}
 		case OpCodes::LOAD_FIELD: {
-			assertOperandCount(index, operandStack, 1);
+			assertOperandCount(functionSignature, index, operandStack, 1);
 
 			auto classRefType = popType(operandStack);
 			bool isNull = classRefType == mNullType;
 
 			if (!TypeSystem::isClass(classRefType) && !isNull) {
-				typeError(index,
-						  "Expected first operand to be a class reference, but got type: " + classRefType->name() +
-						  ".");
+				typeError(
+					functionSignature,
+					index,
+					"Expected first operand to be a class reference, but got type: " + classRefType->name() + ".");
 			}
 
 			std::string className;
@@ -814,7 +825,7 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 
 			if (TypeSystem::getClassAndFieldName(inst.strValue, className, fieldName)) {
 				if (!mVMState.classProvider().isDefined(className)) {
-					typeError(index, "'" + className + "' is not a class type.");
+					typeError(functionSignature, index, "'" + className + "' is not a class type.");
 				}
 
 				auto& classMetadata = mVMState.classProvider().getMetadata(className);
@@ -824,38 +835,38 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 					auto error = checkType(classType, classRefType);
 
 					if (error != "") {
-						typeError(index, error);
+						typeError(functionSignature, index, error);
 					}
 				}
 
 				auto fieldType = classMetadata.fields().at(fieldName).type();
 
 				if (fieldType == nullptr) {
-					typeError(index, "There exists no field '" + fieldName + "' in the '" + className + "' class.");
+					typeError(functionSignature, index, "There exists no field '" + fieldName + "' in the '" + className + "' class.");
 				}
 
 				if (!canReadOrWriteField(function.def(), classMetadata, static_cast<const ClassType*>(classType),
 										 fieldName)) {
-					typeError(index,
+					typeError(functionSignature, index,
 							  "Cannot read from private field '" + fieldName + "' of class '" + className + "'.");
 				}
 
 				operandStack.push(fieldType);
 			} else {
-				typeError(index, "Invalid field reference.");
+				typeError(functionSignature, index, "Invalid field reference.");
 			}
 
 			break;
 		}
 		case OpCodes::STORE_FIELD: {
-			assertOperandCount(index, operandStack, 2);
+			assertOperandCount(functionSignature, index, operandStack, 2);
 
 			auto valueType = popType(operandStack);
 			auto classRefType = popType(operandStack);
 			bool isNull = classRefType == mNullType;
 
 			if (!TypeSystem::isClass(classRefType) && !isNull) {
-				typeError(index,
+				typeError(functionSignature, index,
 						  "Expected first operand to be a class reference, but got type: " + classRefType->name() +
 						  ".");
 			}
@@ -865,14 +876,14 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 
 			if (TypeSystem::getClassAndFieldName(inst.strValue, className, fieldName)) {
 				if (!mVMState.classProvider().isDefined(className)) {
-					typeError(index, "'" + className + "' is not a class type.");
+					typeError(functionSignature, index, "'" + className + "' is not a class type.");
 				}
 
 				auto& classMetadata = mVMState.classProvider().getMetadata(className);
 				auto fieldType = classMetadata.fields().at(fieldName).type();
 
 				if (fieldType == nullptr) {
-					typeError(index, "There exists no field '" + fieldName + "' in the '" + className + "' class.");
+					typeError(functionSignature, index, "There exists no field '" + fieldName + "' in the '" + className + "' class.");
 				}
 
 				auto classType = mVMState.typeProvider().makeType("Ref." + className);
@@ -881,26 +892,26 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 					auto error = checkType(classType, classRefType);
 
 					if (error != "") {
-						typeError(index, error);
+						typeError(functionSignature, index, error);
 					}
 				}
 
 				if (!canReadOrWriteField(function.def(), classMetadata, static_cast<const ClassType*>(classType),
 										 fieldName)) {
-					typeError(index, "Cannot write to private field '" + fieldName + "' of class '" + className + "'.");
+					typeError(functionSignature, index, "Cannot write to private field '" + fieldName + "' of class '" + className + "'.");
 				}
 
 				if (!sameType(valueType, fieldType)) {
-					typeError(index, "Expected the second operand to be of type " + fieldType->name() + ".");
+					typeError(functionSignature, index, "Expected the second operand to be of type " + fieldType->name() + ".");
 				}
 			} else {
-				typeError(index, "Invalid field reference.");
+				typeError(functionSignature, index, "Invalid field reference.");
 			}
 			break;
 		}
 		case OpCodes::LOAD_STRING:
 			if (mStringType == nullptr) {
-				typeError(index, "The 'LDSTR' instruction requires the runtime library to be loaded.");
+				typeError(functionSignature, index, "The 'LDSTR' instruction requires the runtime library to be loaded.");
 			}
 
 			operandStack.push(mStringType);
@@ -910,15 +921,15 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, s
 
 void Verifier::verifyFunction(ManagedFunction& function) {
 	InstructionTypes operandStack;
-
 	const auto numInstructions = function.instructions().size();
+	std::string functionSignature = FunctionSignature::from(function.def()).str();
 
 	if (numInstructions == 0) {
-		typeError(0, "Empty functions are not allowed.");
+		typeError(functionSignature, 0, "Empty functions are not allowed.");
 	}
 
 	//Check that local types are valid
-	preCheckLocalsTypes(mVMState, function);
+	preCheckLocalsTypes(mVMState, function, functionSignature);
 
 	//Check the function definition
 	verifyFunctionDefinition(function);
@@ -936,11 +947,11 @@ void Verifier::verifyFunction(ManagedFunction& function) {
 			function.setOperandStackSize(stackSize);
 		}
 
-		verifyInstruction(function, inst, index, operandStack, branches);
+		verifyInstruction(function, functionSignature, inst, index, operandStack, branches);
 
 		if (index == numInstructions - 1) {
 			if (inst.opCode() != OpCodes::RET) {
-				typeError(index, "Functions must end with the 'RET' instruction.");
+				typeError(functionSignature, index, "Functions must end with the 'RET' instruction.");
 			}
 		}
 
@@ -948,8 +959,8 @@ void Verifier::verifyFunction(ManagedFunction& function) {
 	}
 
 	//Check that the branches are valid
-	verifyBranches(function, branches);
+	verifyBranches(function, functionSignature, branches);
 
 	//Check that all locals has been typed
-	postCheckLocalsTypes(function);
+	postCheckLocalsTypes(function, functionSignature);
 }
