@@ -78,12 +78,12 @@ void ClassMetadata::setParentClass(const ClassType* parentClass) {
 	this->mParentClass = parentClass;
 }
 
-const std::vector<std::string>& ClassMetadata::virtualFunctions() const {
+const std::map<int, std::string>& ClassMetadata::virtualFunctions() const {
 	return mIndexToVirtualFunction;
 }
 
 void ClassMetadata::addVirtualFunction(const FunctionDefinition& funcDef) {
-	mVirtualFunctions.push_back(FunctionSignature::from(funcDef).str());
+	mVirtualFunctions.push_back(&funcDef);
 }
 
 int ClassMetadata::getVirtualFunctionIndex(const FunctionDefinition& funcDef) const {
@@ -97,7 +97,7 @@ int ClassMetadata::getVirtualFunctionIndex(const FunctionDefinition& funcDef) co
 
 std::string ClassMetadata::getVirtualFunctionSignature(int index) const {
 	//No bounds checks, we assume that this function is only called with valid indices
-	return mIndexToVirtualFunction[index];
+	return mIndexToVirtualFunction.at(index);
 }
 
 void ClassMetadata::bindVirtualFunction(const FunctionDefinition& funcDef, unsigned char* funcPtr) {
@@ -113,9 +113,23 @@ unsigned char** ClassMetadata::virtualFunctionTable() const {
 	return mVirtualFunctionTable;
 }
 
+const FunctionDefinition* ClassMetadata::getVirtualFunctionRootDefinition(const FunctionDefinition* funcDef) const {
+	if (mParentClass != nullptr) {
+		for (auto parentDef : mParentClass->metadata()->mVirtualFunctions) {
+			if (funcDef->name() == parentDef->name()
+				&& TypeSystem::areEqual(funcDef->callParameters(), parentDef->callParameters())) {
+				return getVirtualFunctionRootDefinition(parentDef);
+			}
+		}
+	}
+
+	return funcDef;
+}
+
 void ClassMetadata::makeVirtualFunctionTable() {
-	if (mVirtualFunctionTable == nullptr) {
+	if (mVirtualFunctionTable == nullptr && (mVirtualFunctions.size() > 0 || mParentClass != nullptr)) {
 		int virtualFuncIndex = 0;
+		bool hasParentVirtual = false;
 
 		//Create for parent class
 		if (mParentClass != nullptr) {
@@ -123,16 +137,26 @@ void ClassMetadata::makeVirtualFunctionTable() {
 
 			//Add the parent class virtual functions
 			for (auto& virtualFunc : mParentClass->metadata()->mIndexToVirtualFunction) {
-				mIndexToVirtualFunction.push_back(virtualFunc);
-				mVirtualFunctionToIndex.insert({ virtualFunc, virtualFuncIndex });
-				virtualFuncIndex++;
+				auto name = virtualFunc.second;
+				auto index = virtualFunc.first;
+				mIndexToVirtualFunction.insert({ index, name });
+				mVirtualFunctionToIndex.insert({ name, index });
+				virtualFuncIndex = std::max(virtualFuncIndex, index);
+				hasParentVirtual = true;
 			}
+		}
+
+		if (hasParentVirtual) {
+			virtualFuncIndex++;
 		}
 
 		//Now for this class
 		for (auto& virtualFunc : mVirtualFunctions) {
-			mIndexToVirtualFunction.push_back(virtualFunc);
-			mVirtualFunctionToIndex.insert({ virtualFunc, virtualFuncIndex });
+			auto signature = FunctionSignature::from(*virtualFunc).str();
+			auto rootDef = getVirtualFunctionRootDefinition(virtualFunc);
+//			std::cout << signature << " => " << FunctionSignature::from(*rootDef) << std::endl;
+			mIndexToVirtualFunction.insert({ virtualFuncIndex, signature });
+			mVirtualFunctionToIndex.insert({ signature, virtualFuncIndex });
 			virtualFuncIndex++;
 		}
 
@@ -179,10 +203,8 @@ void ClassMetadataProvider::createVirtualFunctionTables(const VMState& vmState) 
 		if (vmState.enableDebug && vmState.printVirtualFunctionTableLayout) {
 			std::cout << "V-table for " << currentClass.name() << std::endl;
 
-			std::size_t i = 0;
 			for (auto& virtualFunc : currentClass.virtualFunctions()) {
-				std::cout << i << ": " << virtualFunc << std::endl;
-				i++;
+				std::cout << virtualFunc.first << ": " << virtualFunc.second << std::endl;
 			}
 
 			std::cout << std::endl;

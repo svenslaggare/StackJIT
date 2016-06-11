@@ -270,6 +270,20 @@ bool TypeSystem::isSubtypeOf(const ClassType* baseClass, const ClassType* subCla
 	return isSubtypeOf(baseClass, subClass->metadata()->parentClass());
 }
 
+bool TypeSystem::areEqual(const std::vector<const Type*>& list1, const std::vector<const Type*>& list2) {
+	if (list1.size() != list2.size()) {
+		return false;
+	}
+
+	for (std::size_t i = 0; i < list1.size(); i++) {
+		if (*list1[i] != *list2[i]) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 std::string TypeSystem::arrayTypeName(const Type* type) {
 	return "Ref.Array[" + type->name() +  "]";
 }

@@ -112,6 +112,9 @@ namespace TypeSystem {
 	//Indicates if the given class is a subtype of the given class
 	bool isSubtypeOf(const ClassType* baseClass, const ClassType* subClass);
 
+	//Indicates if the given list of types are the same
+	bool areEqual(const std::vector<const Type*>& list1, const std::vector<const Type*>& list2);
+
 	//Returns the type name for an array of the given type
 	std::string arrayTypeName(const Type* type);
 

@@ -2,6 +2,7 @@
 #include <unordered_map>
 #include <vector>
 #include <string>
+#include <map>
 #include "type.h"
 
 class Type;
@@ -47,10 +48,13 @@ private:
 
 	const ClassType* mParentClass;
 
-	std::vector<std::string> mVirtualFunctions;
+	std::vector<const FunctionDefinition*> mVirtualFunctions;
 	std::unordered_map<std::string, int> mVirtualFunctionToIndex;
-	std::vector<std::string> mIndexToVirtualFunction;
+	std::map<int, std::string> mIndexToVirtualFunction;
 	unsigned char** mVirtualFunctionTable;
+
+	//Returns the root definition of the given virtual function
+	const FunctionDefinition* getVirtualFunctionRootDefinition(const FunctionDefinition* funcDef) const;
 public:
 	//The default access modifier
 	static const AccessModifier DEFAULT_ACCESS_MODIFIER = AccessModifier::Public;
@@ -86,7 +90,7 @@ public:
 	void setParentClass(const ClassType* parentClass);
 
 	//Returns the list of virtual functions
-	const std::vector<std::string>& virtualFunctions() const;
+	const std::map<int, std::string>& virtualFunctions() const;
 
 	//Adds the given function to the list of virtual functions
 	void addVirtualFunction(const FunctionDefinition& funcDef);
