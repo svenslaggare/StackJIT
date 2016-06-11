@@ -86,7 +86,7 @@ namespace {
 		return types;
 	}
 
-	std::deque<const Type*> asList(const std::vector<const Type*>& types) {
+	std::deque<const Type*> toList(const std::vector<const Type*>& types) {
 		std::deque<const Type*> typesList;
 
 		for (auto& type : types) {
@@ -213,7 +213,7 @@ namespace {
 	void verifyBranches(ManagedFunction& function, std::string functionSignature, std::vector<BranchCheck>& branches) {
 		for (auto& branch : branches) {
 			auto postSourceTypes = branch.branchTypes;
-			auto preTargetTypes = asList(function.instructions()[branch.target].operandTypes());
+			auto preTargetTypes = toList(function.instructions()[branch.target].operandTypes());
 
 			if (postSourceTypes.size() == preTargetTypes.size()) {
 				for (std::size_t i = 0; i < postSourceTypes.size(); i++) {
