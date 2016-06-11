@@ -1,0 +1,81 @@
+class A
+{
+
+}
+
+member A::.constructor() Void
+{
+	RET
+}
+
+member A::evil() Void
+{
+	@Virtual(value=true)
+	LDSTR "Evil"
+	CALL std.println(Ref.std.String)
+	RET
+}
+
+member A::test() Void
+{
+	@Virtual(value=true)
+	LDSTR "A"
+	CALL std.println(Ref.std.String)
+	RET
+}
+
+class B extends A
+{
+
+}
+
+member B::.constructor() Void
+{
+	RET
+}
+
+member B::test() Void
+{
+	@Virtual(value=true)
+	LDSTR "B"
+	CALL std.println(Ref.std.String)
+	RET
+}
+
+member B::wololo() Void
+{
+	@Virtual(value=true)
+	LDSTR "B"
+	CALL std.println(Ref.std.String)
+	RET
+}
+
+func printer(Ref.A) Void
+{
+	LDARG 0
+	CALLVIRT A::test()
+	RET
+}
+
+func main() Int
+{
+	.locals 3
+	.local 0 Ref.A
+	.local 1 Ref.A
+	.local 2 Ref.B
+
+	NEWOBJ A::.constructor()
+    STLOC 0
+
+	NEWOBJ B::.constructor()
+	STLOC 1
+
+	NEWOBJ B::.constructor()
+    STLOC 2
+
+	LDLOC 1
+	CALL printer(Ref.A)
+
+	LDINT 0
+	RET
+}

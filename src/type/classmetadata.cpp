@@ -1,6 +1,7 @@
 #include "classmetadata.h"
 #include "type.h"
 #include "../core/functionsignature.h"
+#include "../vmstate.h"
 #include <stdexcept>
 
 //Field
@@ -35,7 +36,10 @@ bool fromString(std::string str, AccessModifier& accessModifier) {
 
 //Class metadata
 ClassMetadata::ClassMetadata(std::string name)
-	: mName(name), mSize(0), mNextVirtualFunction(0), mVirtualFunctionTable(nullptr) {
+	: mName(name),
+	  mSize(0),
+	  mParentClass(nullptr),
+	  mVirtualFunctionTable(nullptr) {
 
 }
 
@@ -43,6 +47,10 @@ ClassMetadata::~ClassMetadata() {
 	if (mVirtualFunctionTable != nullptr) {
 		delete[] mVirtualFunctionTable;
 	}
+}
+
+std::string ClassMetadata::name() const {
+	return mName;
 }
 
 std::size_t ClassMetadata::size() const {
@@ -58,24 +66,38 @@ void ClassMetadata::addField(std::string name, const Type* type, AccessModifier 
 	mSize += TypeSystem::sizeOfType(type);
 }
 
+const ClassType* ClassMetadata::parentClass() const {
+	return mParentClass;
+}
+
+void ClassMetadata::setParentClass(const ClassType* parentClass) {
+	if (mParentClass != nullptr) {
+		throw std::runtime_error("The parent class has already been set.");
+	}
+
+	this->mParentClass = parentClass;
+}
+
+const std::vector<std::string>& ClassMetadata::virtualFunctions() const {
+	return mIndexToVirtualFunction;
+}
+
 void ClassMetadata::addVirtualFunction(const FunctionDefinition& funcDef) {
-	auto signature = FunctionSignature::from(funcDef).str();
-	mVirtualFunctions.insert({ signature, mNextVirtualFunction++ });
-	mIndexToVirtualFunc.push_back(signature);
+	mVirtualFunctions.push_back(FunctionSignature::from(funcDef).str());
 }
 
 int ClassMetadata::getVirtualFunctionIndex(const FunctionDefinition& funcDef) const {
 	auto signature = FunctionSignature::from(funcDef).str();
-	if (mVirtualFunctions.count(signature) == 0) {
+	if (mVirtualFunctionToIndex.count(signature) == 0) {
 		throw std::runtime_error("There exists no virtual function '" + signature + "' in the class '" + mName + "'.");
 	}
 
-	return mVirtualFunctions.at(signature);
+	return mVirtualFunctionToIndex.at(signature);
 }
 
 std::string ClassMetadata::getVirtualFunctionSignature(int index) const {
-	//No bounds checks, we assume that this function is only called by valid indices
-	return mIndexToVirtualFunc[index];
+	//No bounds checks, we assume that this function is only called with valid indices
+	return mIndexToVirtualFunction[index];
 }
 
 void ClassMetadata::bindVirtualFunction(const FunctionDefinition& funcDef, unsigned char* funcPtr) {
@@ -91,10 +113,32 @@ unsigned char** ClassMetadata::virtualFunctionTable() const {
 	return mVirtualFunctionTable;
 }
 
-void ClassMetadata::makeFunctionTable() {
-	if (mVirtualFunctionTable == nullptr && mVirtualFunctions.size() > 0) {
-		mVirtualFunctionTable = new unsigned char*[mVirtualFunctions.size()];
-		for (std::size_t i = 0; i < mVirtualFunctions.size(); i++) {
+void ClassMetadata::makeVirtualFunctionTable() {
+	if (mVirtualFunctionTable == nullptr) {
+		int virtualFuncIndex = 0;
+
+		//Create for parent class
+		if (mParentClass != nullptr) {
+			mParentClass->metadata()->makeVirtualFunctionTable();
+
+			//Add the parent class virtual functions
+			for (auto& virtualFunc : mParentClass->metadata()->mIndexToVirtualFunction) {
+				mIndexToVirtualFunction.push_back(virtualFunc);
+				mVirtualFunctionToIndex.insert({ virtualFunc, virtualFuncIndex });
+				virtualFuncIndex++;
+			}
+		}
+
+		//Now for this class
+		for (auto& virtualFunc : mVirtualFunctions) {
+			mIndexToVirtualFunction.push_back(virtualFunc);
+			mVirtualFunctionToIndex.insert({ virtualFunc, virtualFuncIndex });
+			virtualFuncIndex++;
+		}
+
+		//Create the actual table. Note that these functions are bound when compiled.
+		mVirtualFunctionTable = new unsigned char*[mIndexToVirtualFunction.size()];
+		for (std::size_t i = 0; i < mIndexToVirtualFunction.size(); i++) {
 			mVirtualFunctionTable[i] = nullptr;
 		}
 	}
@@ -127,8 +171,21 @@ ClassMetadata& ClassMetadataProvider::getMetadata(std::string className) {
 	}
 }
 
-void ClassMetadataProvider::createVirtualFunctionTables() {
-	for (auto& currentClass : mClassesMetadata) {
-		currentClass.second.makeFunctionTable();
+void ClassMetadataProvider::createVirtualFunctionTables(const VMState& vmState) {
+	for (auto& current : mClassesMetadata) {
+		auto& currentClass = current.second;
+		currentClass.makeVirtualFunctionTable();
+
+		if (vmState.enableDebug && vmState.printVirtualFunctionTableLayout) {
+			std::cout << "V-table for " << currentClass.name() << std::endl;
+
+			std::size_t i = 0;
+			for (auto& virtualFunc : currentClass.virtualFunctions()) {
+				std::cout << i << ": " << virtualFunc << std::endl;
+				i++;
+			}
+
+			std::cout << std::endl;
+		}
 	}
 }

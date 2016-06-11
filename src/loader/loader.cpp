@@ -163,9 +163,17 @@ ManagedFunction* Loader::loadManagedFunction(VMState& vmState, const AssemblyPar
 
 void Loader::loadClasses(VMState& vmState, ImageContainer& imageContainer) {
 	//First, create the classes
+	std::vector<std::pair<ClassMetadata*, std::string>> inheritingClasses;
 	for (auto& image : imageContainer.images()) {
-		for (auto& classDef : image->classes()) {
-			vmState.classProvider().add(classDef.second.name, std::move(ClassMetadata(classDef.second.name)));
+		for (auto& current : image->classes()) {
+			auto& classDef = current.second;
+			vmState.classProvider().add(classDef.name, std::move(ClassMetadata(classDef.name)));
+
+			if (classDef.parentClassName != "") {
+				inheritingClasses.push_back(std::make_pair(
+					&vmState.classProvider().getMetadata(classDef.name),
+					classDef.parentClassName));
+			}
 		}
 	}
 
@@ -181,6 +189,14 @@ void Loader::loadClasses(VMState& vmState, ImageContainer& imageContainer) {
 				auto accessModifier = getAccessModifier(field.attributes);
 				classMetadata.addField(field.name, getType(vmState, field.type), accessModifier);
 			}
+		}
+	}
+
+	//Handle inheritance
+	if (inheritingClasses.size() > 0) {
+		for (auto& current : inheritingClasses) {
+			auto parentClass = getClassType(vmState, current.second);
+			current.first->setParentClass(parentClass);
 		}
 	}
 }

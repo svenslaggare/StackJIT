@@ -72,6 +72,9 @@ public:
 	//Indicates if a deallocation is printed
 	bool printDeallocation = false;
 
+	//Indicates if the v-table layout is printed
+	bool printVirtualFunctionTableLayout = false;
+
 	//Creates a new VM State
 	VMState();
 

@@ -1,0 +1,44 @@
+class A
+{
+
+}
+
+member A::.constructor() Void
+{
+	RET
+}
+
+member A::test() Void
+{
+	LDSTR "A"
+	CALL std.println(Ref.std.String)
+	RET
+}
+
+class B extends A
+{
+
+}
+
+member B::.constructor() Void
+{
+	RET
+}
+
+func main() Int
+{
+	.locals 1
+	.local 0 Ref.B
+
+	NEWOBJ B::.constructor()
+    STLOC 0
+
+    LDLOC 0
+	CALLINST A::test()
+
+	LDLOC 0
+    CALLINST B::test()
+
+	LDINT 0
+	RET
+}

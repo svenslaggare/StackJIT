@@ -43,13 +43,13 @@ public:
 		TS_ASSERT_EQUALS(invokeVM("class/constructor2"), "15\n");
 		TS_ASSERT_EQUALS(invokeVM("class/constructor3"), "21\n");
 
-		TS_ASSERT_EQUALS(stripErrorMessage(
-							 invokeVM("class/invalid_constructor1")),
-						 "Constructors must have return type 'Void'.");
+		TS_ASSERT_EQUALS(
+			stripErrorMessage(invokeVM("class/invalid_constructor1")),
+			"Constructors must have return type 'Void'.");
 
-		TS_ASSERT_EQUALS(stripErrorMessage(
-							 invokeVM("class/invalid_constructor2")),
-						 "0: The constructor \'Point::.constructor(Ref.Point)\' is not defined.");
+		TS_ASSERT_EQUALS(
+			stripErrorMessage(invokeVM("class/invalid_constructor2")),
+			"0: The constructor \'Point::.constructor(Ref.Point)\' is not defined.");
 	}
 
 	//Tests null
@@ -67,5 +67,10 @@ public:
 
 		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/accessingprivate1")), "1: Cannot read from private field 'x' of class 'Point'.");
 		TS_ASSERT_EQUALS(invokeVM("class/accessingprivate2"), "0\n");
+	}
+
+	//Tests inheritance
+	void testInheritance() {
+		TS_ASSERT_EQUALS(invokeVM("class/inheritance1", "--allocs-before-gc 0"), "A\nA\n0\n");
 	}
 };

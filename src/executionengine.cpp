@@ -172,7 +172,7 @@ void ExecutionEngine::load(bool loadBody) {
 	}
 
 	//Create virtual function tables
-	mVMState.classProvider().createVirtualFunctionTables();
+	mVMState.classProvider().createVirtualFunctionTables(mVMState);
 }
 
 JitFunction ExecutionEngine::compileFunction(ManagedFunction* function, bool resolveSymbols) {

@@ -258,6 +258,18 @@ bool TypeSystem::isClass(const Type* type) {
 	return dynamic_cast<const ClassType*>(type) != nullptr;
 }
 
+bool TypeSystem::isSubtypeOf(const ClassType* baseClass, const ClassType* subClass) {
+	if (subClass->metadata()->parentClass() == nullptr) {
+		return false;
+	}
+
+	if (*subClass->metadata()->parentClass() == *baseClass) {
+		return true;
+	}
+
+	return isSubtypeOf(baseClass, subClass->metadata()->parentClass());
+}
+
 std::string TypeSystem::arrayTypeName(const Type* type) {
 	return "Ref.Array[" + type->name() +  "]";
 }

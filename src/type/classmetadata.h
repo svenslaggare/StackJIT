@@ -2,10 +2,12 @@
 #include <unordered_map>
 #include <vector>
 #include <string>
+#include "type.h"
 
 class Type;
 class ClassType;
 class FunctionDefinition;
+class VMState;
 
 //The access modifiers
 enum class AccessModifier : unsigned char {
@@ -43,9 +45,11 @@ private:
 	std::unordered_map<std::string, Field> mFields;
 	std::size_t mSize;
 
-	int mNextVirtualFunction;
-	std::unordered_map<std::string, int> mVirtualFunctions;
-	std::vector<std::string> mIndexToVirtualFunc;
+	const ClassType* mParentClass;
+
+	std::vector<std::string> mVirtualFunctions;
+	std::unordered_map<std::string, int> mVirtualFunctionToIndex;
+	std::vector<std::string> mIndexToVirtualFunction;
 	unsigned char** mVirtualFunctionTable;
 public:
 	//The default access modifier
@@ -63,6 +67,9 @@ public:
 	ClassMetadata(const ClassMetadata&) = delete;
 	ClassMetadata& operator=(const ClassMetadata&) = delete;
 
+	//Returns the name of the class
+	std::string name() const;
+
 	//Returns the size of the class
 	std::size_t size() const;
 
@@ -71,6 +78,15 @@ public:
 
 	//Adds a new field to the class
 	void addField(std::string name, const Type* type, AccessModifier accessModifier);
+
+	//Returns the parent class (if any, else null)
+	const ClassType* parentClass() const;
+
+	//Sets the parent class
+	void setParentClass(const ClassType* parentClass);
+
+	//Returns the list of virtual functions
+	const std::vector<std::string>& virtualFunctions() const;
 
 	//Adds the given function to the list of virtual functions
 	void addVirtualFunction(const FunctionDefinition& funcDef);
@@ -87,8 +103,8 @@ public:
 	//Returns the virtual function table
 	unsigned char** virtualFunctionTable() const;
 
-	//Creates the function table
-	void makeFunctionTable();
+	//Creates the virtual function table
+	void makeVirtualFunctionTable();
 };
 
 //Provides class metadata
@@ -107,5 +123,5 @@ public:
     ClassMetadata& getMetadata(std::string className);
 
 	//Creates the virtual function tables
-	void createVirtualFunctionTables();
+	void createVirtualFunctionTables(const VMState& vmState);
 };

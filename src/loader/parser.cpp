@@ -167,6 +167,14 @@ namespace {
 		}
 	}
 
+	std::string peekNextToken(const std::vector<std::string>& tokens, std::size_t index) {
+		if (tokens.size() >= (index + 1)) {
+			return tokens[index + 1];
+		} else {
+			throw std::runtime_error("Reached end of tokens.");
+		}
+	}
+
 	void parseFunctionDef(const std::vector<std::string>& tokens, std::size_t& tokenIndex, AssemblyParser::Function& func) {
 		func.name = nextToken(tokens, tokenIndex);
 
@@ -563,7 +571,7 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
 		if (isClassBody) {
 			if (currentToLower == "@") {
 				if (currentField == nullptr) {
-					//Struct attribute
+					//Class attribute
 					parseAttribute(tokens, i, currentClass.attributes);
 				} else {
 					//Field attribute
@@ -600,6 +608,12 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
 			} else if (currentToLower == "class") {
 				currentClass = {};
 				currentClass.name = nextToken(tokens, i);
+
+				if (peekNextToken(tokens, i) == "extends") {
+					nextToken(tokens, i);
+					currentClass.parentClassName = nextToken(tokens, i);
+				}
+
 				isClass = true;
 			} else if (currentToLower == "extern") {
 				isExternFunc = true;
@@ -647,14 +661,14 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
             auto funcName = currentFunc.name;
 
             //Get the struct name
-            auto structNamePos = funcName.find("::");
+            auto classNamePos = funcName.find("::");
 
-            if (structNamePos == std::string::npos) {
+            if (classNamePos == std::string::npos) {
                 throw std::runtime_error("Expected '::' in member function name.");
             }
 
-            auto classTypeName = funcName.substr(0, structNamePos);
-            auto memberFunctionName = funcName.substr(structNamePos + 2);
+            auto classTypeName = funcName.substr(0, classNamePos);
+            auto memberFunctionName = funcName.substr(classNamePos + 2);
 
             //Add the implicit this reference
             currentFunc.parameters.insert(currentFunc.parameters.begin(), "Ref." + classTypeName);

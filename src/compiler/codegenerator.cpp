@@ -423,13 +423,15 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 		case OpCodes::CALL_VIRTUAL: {
 			std::string calledSignature = "";
 
-			if (inst.isCallInstance()) {
+			if (!inst.isCallInstance()) {
+				calledSignature = FunctionSignature::function(
+					inst.strValue,
+					inst.parameters).str();
+			} else {
 				calledSignature = FunctionSignature::memberFunction(
 					inst.classType,
 					inst.strValue,
 					inst.parameters).str();
-			} else {
-				calledSignature = FunctionSignature::function(inst.strValue, inst.parameters).str();
 			}
 
 			const auto& funcToCall = vmState.binder().getFunction(calledSignature);

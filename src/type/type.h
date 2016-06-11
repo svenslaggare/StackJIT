@@ -109,6 +109,9 @@ namespace TypeSystem {
 	//Indicates if the given type is a class
 	bool isClass(const Type* type);
 
+	//Indicates if the given class is a subtype of the given class
+	bool isSubtypeOf(const ClassType* baseClass, const ClassType* subClass);
+
 	//Returns the type name for an array of the given type
 	std::string arrayTypeName(const Type* type);
 

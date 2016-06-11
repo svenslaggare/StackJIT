@@ -231,8 +231,7 @@ void CallingConvention::makeReturnValue(FunctionCompilationData& functionData) c
 	}
 }
 
-void CallingConvention::handleReturnValue(FunctionCompilationData& functionData,
-											   const FunctionDefinition& funcToCall) const {
+void CallingConvention::handleReturnValue(FunctionCompilationData& functionData, const FunctionDefinition& funcToCall) const {
 	auto& generatedCode = functionData.function.generatedCode();
 	auto& operandStack = functionData.operandStack;
 	Amd64Assembler assembler(generatedCode);

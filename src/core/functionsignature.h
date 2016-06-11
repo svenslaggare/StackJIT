@@ -29,3 +29,5 @@ public:
 	bool operator==(const FunctionSignature& rhs) const;
 	bool operator!=(const FunctionSignature& rhs) const;
 };
+
+std::ostream& operator<<(std::ostream& os, const FunctionSignature& signature);

@@ -35,7 +35,7 @@ private:
 	const Type* mStringType;
 
 	//Verifies the given instruction
-	void verifyInstruction(ManagedFunction& function, Instruction inst, std::size_t index,
+	void verifyInstruction(ManagedFunction& function, Instruction& inst, std::size_t index,
 						   InstructionTypes& operandStack, std::vector<BranchCheck>& branches);
 public:
 	//Creates a new verifier using the given VM state

@@ -39,6 +39,17 @@ namespace {
 		}
 	}
 
+	//Indicates if the given class is a subtype of the given class
+	bool isSubtypeOf(const Type* baseClass, const Type* subClass) {
+		if (TypeSystem::isClass(baseClass) && TypeSystem::isClass(subClass)) {
+			auto baseClassType = static_cast<const ClassType*>(baseClass);
+			auto subClassType = static_cast<const ClassType*>(subClass);
+			return TypeSystem::isSubtypeOf(baseClassType, subClassType);
+		}
+
+		return false;
+	}
+
 	//Indicates if the given types are equal
 	bool sameType(const Type* type1, const Type* type2) {
 		return
@@ -48,7 +59,7 @@ namespace {
 	}
 
 	std::string checkType(const Type* expectedType, const Type* actualType) {
-		if (*expectedType == *actualType || TypeSystem::isNullType(actualType)) {
+		if (sameType(expectedType, actualType) || isSubtypeOf(expectedType, actualType)) {
 			return "";
 		} else {
 			return
@@ -83,6 +94,50 @@ namespace {
 		}
 
 		return typesList;
+	}
+
+	//Finds an inherited member function
+	std::string findInheritedMemberFunction(const VMState& vmState,
+											std::string& initialSignature,
+											const ClassType* classType,
+											std::string name,
+											const std::vector<const Type*> parameters) {
+		std::string signature = FunctionSignature::memberFunction(
+			classType,
+			name,
+			parameters).str();
+
+		if (initialSignature.empty()) {
+			initialSignature = signature;
+		}
+
+		if (vmState.binder().isDefined(signature)) {
+			return signature;
+		}
+
+		if (classType->metadata()->parentClass() != nullptr) {
+			return findInheritedMemberFunction(
+				vmState,
+				initialSignature,
+				classType->metadata()->parentClass(),
+				name,
+				parameters);
+		} else {
+			return initialSignature;
+		}
+	}
+
+	std::string findInheritedMemberFunction(const VMState& vmState,
+											const ClassType* classType,
+											std::string name,
+											const std::vector<const Type*> parameters) {
+		std::string initial;
+		return findInheritedMemberFunction(
+			vmState,
+			initial,
+			classType,
+			name,
+			parameters);
 	}
 
 	//Indicates if the given function can call the given member function
@@ -197,7 +252,7 @@ Verifier::Verifier(VMState& vmState)
 	mStringType = mVMState.typeProvider().makeType(TypeSystem::stringTypeName);
 }
 
-void Verifier::verifyInstruction(ManagedFunction& function, Instruction inst, std::size_t index,
+void Verifier::verifyInstruction(ManagedFunction& function, Instruction& inst, std::size_t index,
 								 InstructionTypes& operandStack, std::vector<BranchCheck>& branches) {
 	const auto numInstructions = function.instructions().size();
 
@@ -415,10 +470,11 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction inst, st
 					inst.strValue,
 					inst.parameters).str();
 			} else {
-				signature = FunctionSignature::memberFunction(
+				signature = findInheritedMemberFunction(
+					mVMState,
 					inst.classType,
 					inst.strValue,
-					inst.parameters).str();
+					inst.parameters);
 			}
 
 			if (!mVMState.binder().isDefined(signature)) {
@@ -426,6 +482,11 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction inst, st
 			}
 
 			auto& funcToCall = mVMState.binder().getFunction(signature);
+
+			//Rebind the call, since we might call an inherited function
+			if (isInstance) {
+				inst.classType = funcToCall.classType();
+			}
 
 			if (!isInstance && funcToCall.isMemberFunction()) {
 				typeError(index, "Member functions must be called with the 'CALLINST' instruction.");
@@ -626,9 +687,9 @@ void Verifier::verifyInstruction(ManagedFunction& function, Instruction inst, st
 			bool isNull = arrayRefType == mNullType;
 
 			if (!TypeSystem::isArray(arrayRefType) && !isNull) {
-				typeError(index,
-						  "Expected first operand to be an array reference, but got type: " + arrayRefType->name() +
-						  ".");
+				typeError(
+					index,
+					"Expected first operand to be an array reference, but got type: " + arrayRefType->name() + ".");
 			}
 
 			if (!TypeSystem::isPrimitiveType(indexType, PrimitiveTypes::Integer)) {

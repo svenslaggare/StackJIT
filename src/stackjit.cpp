@@ -129,6 +129,11 @@ std::string handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
 			continue;
 		}
 
+		if (switchStr == "--print-vtable") {
+			vmState.printVirtualFunctionTableLayout = true;
+			continue;
+		}
+
 		if (switchStr == "-i") {
 			int next = i + 1;
 

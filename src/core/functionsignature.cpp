@@ -43,6 +43,10 @@ FunctionSignature FunctionSignature::memberFunction(const ClassType* classType, 
 }
 
 FunctionSignature FunctionSignature::from(const FunctionDefinition& function) {
-//	//TODO: Add case when member function
 	return FunctionSignature::function(function.name(), function.parameters());
+}
+
+std::ostream& operator<<(std::ostream& os, const FunctionSignature& signature) {
+	os << signature.str();
+	return os;
 }

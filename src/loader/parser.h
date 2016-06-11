@@ -116,6 +116,7 @@ namespace AssemblyParser {
 	struct Class {
 		std::string name;
 		std::vector<Field> fields;
+		std::string parentClassName;
 
 		AttributeContainer attributes;
 
