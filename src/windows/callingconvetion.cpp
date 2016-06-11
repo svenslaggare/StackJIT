@@ -131,10 +131,11 @@ void CallingConvention::moveArgsToStack(FunctionCompilationData& functionData) c
 }
 
 void CallingConvention::callFunctionArgument(FunctionCompilationData& functionData,
-												  int argIndex, const Type* argType, const FunctionDefinition& funcToCall) const {
-	auto& generatedCode = functionData.function.generatedCode();
+											 int argIndex,
+											 const Type* argType,
+											 const FunctionDefinition& funcToCall) const {
 	auto& operandStack = functionData.operandStack;
-	Amd64Assembler assembler(generatedCode);
+	Amd64Assembler assembler(functionData.function.generatedCode());
 
 	if (TypeSystem::isPrimitiveType(argType, PrimitiveTypes::Float)) {
 		//Arguments of index >= 4 are passed via the stack.
@@ -195,9 +196,8 @@ void CallingConvention::makeReturnValue(FunctionCompilationData& functionData) c
 
 void CallingConvention::handleReturnValue(FunctionCompilationData& functionData,
 										  const FunctionDefinition& funcToCall) const {
-	auto& generatedCode = functionData.function.generatedCode();
 	auto& operandStack = functionData.operandStack;
-	Amd64Assembler assembler(generatedCode);
+	Amd64Assembler assembler(functionData.function.generatedCode());
 
 	//If we have passed arguments via the stack, adjust the stack pointer.
 	int numStackArgs = numStackArguments(funcToCall.parameters());

@@ -154,9 +154,8 @@ void CodeGenerator::zeroLocals(FunctionCompilationData& functionData) {
 }
 
 void CodeGenerator::pushFunc(const VMState& vmState, FunctionCompilationData& functionData, int instIndex) {
-	auto& generatedCode = functionData.function.generatedCode();
 	auto& function = functionData.function;
-	Amd64Assembler assembler(generatedCode);
+	Amd64Assembler assembler(functionData.function.generatedCode());
 
 	//Get the top pointer
 	auto topPtr = (unsigned char*)vmState.engine().callStack().topPtr();
@@ -678,6 +677,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 			//Compute the address of the element
 			assembler.mult(ExtendedRegisters::R10, (int)TypeSystem::sizeOfType(elemType));
 			assembler.add(Registers::AX, ExtendedRegisters::R10);
+			assembler.add(Registers::AX, StackJIT::ARRAY_LENGTH_SIZE);
 
 			//Store the element
 			auto elemSize = TypeSystem::sizeOfType(elemType);
@@ -688,8 +688,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 				dataSize = DataSize::Size8;
 			}
 
-			MemoryOperand elementOffset(Registers::AX, StackJIT::ARRAY_LENGTH_SIZE);
-
+			MemoryOperand elementOffset(Registers::AX);
 			if (dataSize != DataSize::Size8) {
 				assembler.move(elementOffset, Registers::DX, dataSize);
 			} else {
@@ -756,47 +755,43 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 			//Push the call
 			pushFunc(vmState, functionData, instIndex);
 
-			//Call the constructor
+			//Check if the constructor needs to be compiled
 			auto calledSignature = FunctionSignature::memberFunction(
 				inst.classType,
 				inst.strValue,
 				inst.parameters).str();
 
-			const auto& funcToCall = vmState.binder().getFunction(calledSignature);
+			const auto& constructorToCall = vmState.binder().getFunction(calledSignature);
 
-			//Check if the constructor needs to be compiled
-			bool needsToCompile = compileAtRuntime(vmState, funcToCall, calledSignature);
+			bool needsToCompile = compileAtRuntime(vmState, constructorToCall, calledSignature);
 			std::size_t callIndex = 0;
-
-			//Check if the called function needs to be compiled compiled
 			if (needsToCompile) {
-				callIndex = generateCompileCall(generatedCode, function, funcToCall);
+				callIndex = generateCompileCall(generatedCode, function, constructorToCall);
 			}
 
-			//Call the newObject runtime function
+			//Call the newClass runtime function
 			assembler.moveLong(RegisterCallArguments::Arg0, (PtrValue)classType); //The pointer to the type
 			generateCall(generatedCode, (unsigned char*)&Runtime::newClass);
 
 			//Save the reference
 			assembler.move(ExtendedRegisters::R10, Registers::AX);
 
-			int numArgs = (int)funcToCall.parameters().size() - 1;
-
 			//Align the stack
-			int stackAlignment = mCallingConvention.calculateStackAlignment(functionData, funcToCall);
+			int stackAlignment = mCallingConvention.calculateStackAlignment(functionData, constructorToCall);
 			if (stackAlignment > 0) {
 				assembler.add(Registers::SP, -stackAlignment);
 			}
 
 			//Set the constructor arguments
 			assembler.move(RegisterCallArguments::Arg0, Registers::AX);
+			int numArgs = (int)constructorToCall.parameters().size() - 1;
 
 			for (int i = numArgs - 1; i >= 0; i--) {
 				mCallingConvention.callFunctionArgument(
 					functionData,
 					i + 1,
 					inst.parameters.at((std::size_t)i),
-					funcToCall);
+					constructorToCall);
 			}
 
 			//Push the reference to the created object
@@ -815,7 +810,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 					UnresolvedFunctionCall(
 						FunctionCallType::Relative,
 						generatedCode.size(),
-						funcToCall));
+						constructorToCall));
 			} else {
 				Helpers::setValue(generatedCode, callIndex, (int)generatedCode.size());
 			}
@@ -829,7 +824,7 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 			}
 
 			//This is for clean up after a call, as the constructor returns nothing.
-			mCallingConvention.handleReturnValue(functionData, funcToCall);
+			mCallingConvention.handleReturnValue(functionData, constructorToCall);
 
 			//Pop the call
 			popFunc(vmState, generatedCode);

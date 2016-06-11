@@ -42,7 +42,6 @@ private:
 
 	//Asserts that the stack is not empty
 	void assertNotEmpty();
-
 public:
 	//Creates a new operand stack for the given function
 	OperandStack(ManagedFunction& function);

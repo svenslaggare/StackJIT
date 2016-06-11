@@ -77,7 +77,7 @@ public:
 	//Loads the given assembly
 	void loadAssembly(AssemblyParser::Assembly& assembly, AssemblyType assemblyType);
 
-	//Loads assemblies
+	//Loads the assemblies
 	void load(bool loadBody = false);
 
 	//Compiles the function with the given signature
