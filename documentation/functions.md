@@ -9,7 +9,7 @@ syntax: `.locals <count>`. If the number of locals isn't defined, zero is chosen
 ### Function calls
 The call arguments are popped from the evaluation stack, where the top operand is the last argument. The signature of a function is defined as: `<name>(<type 1> <type 2> ...)`.
 
-### Functions
+### Syntax
 Functions are defined using the following syntax:
 ```
 func <name>(<arg type 1> <arg type 2> ...) <return type>
@@ -19,7 +19,7 @@ func <name>(<arg type 1> <arg type 2> ...) <return type>
 ```
 When a function returns, there must be only _one_ (zero if void) operand on the evaluation stack. The last instruction of a function body _must_ be the return instruction.
 
-__Main function__
+### Main function
 
 The main function _must_ and have the following signature: `main() Int` and _must_ be defined if the assembly is a program.
 The returned value from the main function will be the output for the program.
