@@ -118,6 +118,9 @@ void Assembler::generateFunctionDefinition(BinaryData& data, AssemblyParser::Fun
 }
 
 void Assembler::generateClassBody(BinaryData& data, AssemblyParser::Class& classDef) {
+	//Inheritance
+	addString(data, classDef.parentClassName);
+
 	//Class attributes
 	generateAttributes(data, classDef.attributes);
 

@@ -89,4 +89,8 @@ public:
 	void testCase5() {
 		TS_ASSERT_EQUALS(invokeAsm("test5"), "The function 'test(Int)' is already defined.\n");
 	}
+
+	void testCase6() {
+		TS_ASSERT_EQUALS(invokeAsm("test6"), readFile("test6"));
+	}
 };

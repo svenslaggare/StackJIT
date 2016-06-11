@@ -167,7 +167,9 @@ void ByteCodeGenerator::generateFunction(std::ostream& stream, const AssemblyPar
 }
 
 void ByteCodeGenerator::generateClass(std::ostream& stream, const AssemblyParser::Class& classDef) {
-	stream << "class " << classDef.name << std::endl;
+	stream << "class " << classDef.name
+		   << (classDef.parentClassName != "" ? (" extends " + classDef.parentClassName): "")
+	       << std::endl;
 	stream << "{" << std::endl;
 
 	generateAttributes(stream, classDef.attributes);

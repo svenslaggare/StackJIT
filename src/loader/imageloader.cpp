@@ -164,6 +164,7 @@ bool AssemblyImage::loadClassBody(std::string className) {
 		auto bodyOffset = mClassBodyOffsets[className];
 
 		AssemblyParser::Class& classDef = mClasses[className];
+		classDef.parentClassName = loadString(mImageData, bodyOffset);
 		classDef.attributes = AssemblyImageLoader::loadAttributes(mImageData, bodyOffset);
 
 		auto numFields = loadData<std::size_t>(mImageData, bodyOffset);
