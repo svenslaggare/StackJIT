@@ -71,6 +71,8 @@ FunctionDefinition::FunctionDefinition(
 	mCallParameters = mParameters;
 	if (mIsMemberFunction) {
 		mParameters.insert(mParameters.begin(), mClassType);
+		mMemberName = mName;
+		mName = classType->className() + "::" + mName;
 	}
 }
 
@@ -95,6 +97,8 @@ FunctionDefinition::FunctionDefinition(
 	mCallParameters = mParameters;
 	if (mIsMemberFunction) {
 		mParameters.insert(mParameters.begin(), mClassType);
+		mMemberName = mName;
+		mName = classType->className() + "::" + mName;
 	}
 }
 
@@ -134,6 +138,10 @@ bool FunctionDefinition::isMemberFunction() const {
 
 const ClassType* FunctionDefinition::classType() const {
 	return mClassType;
+}
+
+std::string FunctionDefinition::memberName() const {
+	return mMemberName;
 }
 
 AccessModifier FunctionDefinition::accessModifier() const {

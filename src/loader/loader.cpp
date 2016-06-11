@@ -113,7 +113,7 @@ void Loader::generateDefinition(VMState& vmState, const AssemblyParser::Function
 	}
 
 	definition = FunctionDefinition(
-		function.name,
+		function.isMemberFunction ? function.memberFunctionName : function.name,
 		parameters,
 		returnType,
 		classType,

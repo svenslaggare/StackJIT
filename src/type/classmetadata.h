@@ -51,6 +51,7 @@ private:
 	std::vector<const FunctionDefinition*> mVirtualFunctions;
 	std::unordered_map<std::string, int> mVirtualFunctionToIndex;
 	std::map<int, std::string> mIndexToVirtualFunction;
+	std::vector<std::string> mVirtualFunctionMapping;
 	unsigned char** mVirtualFunctionTable;
 
 	//Returns the root definition of the given virtual function

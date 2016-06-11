@@ -87,7 +87,8 @@ void ClassMetadata::addVirtualFunction(const FunctionDefinition& funcDef) {
 }
 
 int ClassMetadata::getVirtualFunctionIndex(const FunctionDefinition& funcDef) const {
-	auto signature = FunctionSignature::from(funcDef).str();
+	auto rootDef = getVirtualFunctionRootDefinition(&funcDef);
+	auto signature = FunctionSignature::from(*rootDef).str();
 	if (mVirtualFunctionToIndex.count(signature) == 0) {
 		throw std::runtime_error("There exists no virtual function '" + signature + "' in the class '" + mName + "'.");
 	}
@@ -97,7 +98,7 @@ int ClassMetadata::getVirtualFunctionIndex(const FunctionDefinition& funcDef) co
 
 std::string ClassMetadata::getVirtualFunctionSignature(int index) const {
 	//No bounds checks, we assume that this function is only called with valid indices
-	return mIndexToVirtualFunction.at(index);
+	return mVirtualFunctionMapping[index];
 }
 
 void ClassMetadata::bindVirtualFunction(const FunctionDefinition& funcDef, unsigned char* funcPtr) {
@@ -116,9 +117,9 @@ unsigned char** ClassMetadata::virtualFunctionTable() const {
 const FunctionDefinition* ClassMetadata::getVirtualFunctionRootDefinition(const FunctionDefinition* funcDef) const {
 	if (mParentClass != nullptr) {
 		for (auto parentDef : mParentClass->metadata()->mVirtualFunctions) {
-			if (funcDef->name() == parentDef->name()
+			if (funcDef->memberName() == parentDef->memberName()
 				&& TypeSystem::areEqual(funcDef->callParameters(), parentDef->callParameters())) {
-				return getVirtualFunctionRootDefinition(parentDef);
+				return mParentClass->metadata()->getVirtualFunctionRootDefinition(parentDef);
 			}
 		}
 	}
@@ -130,6 +131,7 @@ void ClassMetadata::makeVirtualFunctionTable() {
 	if (mVirtualFunctionTable == nullptr && (mVirtualFunctions.size() > 0 || mParentClass != nullptr)) {
 		int virtualFuncIndex = 0;
 		bool hasParentVirtual = false;
+		std::unordered_map<std::string, std::string> virtualFuncMapping;
 
 		//Create for parent class
 		if (mParentClass != nullptr) {
@@ -141,6 +143,7 @@ void ClassMetadata::makeVirtualFunctionTable() {
 				auto index = virtualFunc.first;
 				mIndexToVirtualFunction.insert({ index, name });
 				mVirtualFunctionToIndex.insert({ name, index });
+				virtualFuncMapping[name] = name;
 				virtualFuncIndex = std::max(virtualFuncIndex, index);
 				hasParentVirtual = true;
 			}
@@ -154,16 +157,28 @@ void ClassMetadata::makeVirtualFunctionTable() {
 		for (auto& virtualFunc : mVirtualFunctions) {
 			auto signature = FunctionSignature::from(*virtualFunc).str();
 			auto rootDef = getVirtualFunctionRootDefinition(virtualFunc);
-//			std::cout << signature << " => " << FunctionSignature::from(*rootDef) << std::endl;
-			mIndexToVirtualFunction.insert({ virtualFuncIndex, signature });
-			mVirtualFunctionToIndex.insert({ signature, virtualFuncIndex });
-			virtualFuncIndex++;
+			auto rootSignature = FunctionSignature::from(*rootDef).str();
+
+			if (mVirtualFunctionToIndex.count(rootSignature) == 0) {
+				mIndexToVirtualFunction.insert({ virtualFuncIndex, signature });
+				mVirtualFunctionToIndex.insert({ signature, virtualFuncIndex });
+				virtualFuncIndex++;
+				virtualFuncMapping[rootSignature] = signature;
+			} else {
+				virtualFuncMapping[rootSignature] = signature;
+			}
 		}
 
 		//Create the actual table. Note that these functions are bound when compiled.
 		mVirtualFunctionTable = new unsigned char*[mIndexToVirtualFunction.size()];
 		for (std::size_t i = 0; i < mIndexToVirtualFunction.size(); i++) {
 			mVirtualFunctionTable[i] = nullptr;
+		}
+
+		//Create the final mapping
+		mVirtualFunctionMapping.resize(virtualFuncMapping.size());
+		for (auto& virtualFunc : virtualFuncMapping) {
+			mVirtualFunctionMapping[mVirtualFunctionToIndex[virtualFunc.first]] = virtualFunc.second;
 		}
 	}
 }

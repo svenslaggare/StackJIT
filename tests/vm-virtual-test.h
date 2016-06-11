@@ -13,4 +13,8 @@ public:
 		TS_ASSERT_EQUALS(invokeVM("virtual/simple2"), "288\n");
 		TS_ASSERT_EQUALS(invokeVM("virtual/loop"), "0\n");
 	}
+
+	void testInheritance() {
+		TS_ASSERT_EQUALS(invokeVM("virtual/inheritance1", ""), "A\nB\nB\nB\n0\n");
+	}
 };

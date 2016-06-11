@@ -50,13 +50,6 @@ member B::wololo() Void
 	RET
 }
 
-func printer(Ref.A) Void
-{
-	LDARG 0
-	CALLVIRT A::test()
-	RET
-}
-
 func main() Int
 {
 	.locals 3
@@ -73,8 +66,17 @@ func main() Int
 	NEWOBJ B::.constructor()
     STLOC 2
 
-	LDLOC 1
-	CALL printer(Ref.A)
+	LDLOC 0
+    CALLVIRT A::test()
+
+    LDLOC 1
+    CALLVIRT A::test()
+
+	LDLOC 2
+	CALLVIRT A::test()
+
+	LDLOC 2
+    CALLVIRT B::test()
 
 	LDINT 0
 	RET

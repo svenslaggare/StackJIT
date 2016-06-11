@@ -20,6 +20,7 @@ private:
 
 	bool mIsMemberFunction;
 	const ClassType* mClassType;
+	std::string mMemberName;
 	AccessModifier mAccessModifier;
 	bool mIsConstructor;
 	bool mIsVirtual;
@@ -69,6 +70,9 @@ public:
 
 	//Returns the type of the class if a member function
 	const ClassType* classType() const;
+
+	//Returns the name of the function is member
+	std::string memberName() const;
 
 	//Returns the access modifier
 	AccessModifier accessModifier() const;
