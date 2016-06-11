@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <functional>
 
 class Type;
 class ClassType;
@@ -14,6 +15,12 @@ private:
 	//Creates a new signature from the given string
 	FunctionSignature(std::string signature);
 public:
+	//Creates a signature for the given name and parameters
+	template<typename T>
+	static std::string createSignature(std::string name,
+									   const std::vector<T>& parameters,
+									   std::function<std::string (T)> toStringFn);
+
 	//Constructs a signature for the given function
 	static FunctionSignature function(std::string name, const std::vector<const Type*>& parameters);
 
@@ -31,3 +38,23 @@ public:
 };
 
 std::ostream& operator<<(std::ostream& os, const FunctionSignature& signature);
+
+template<typename T>
+std::string FunctionSignature::createSignature(std::string name,
+											   const std::vector<T>& parameters,
+											   std::function<std::string (T)> toStringFn) {
+	std::string argsStr = "";
+	bool isFirst = true;
+
+	for (auto param : parameters) {
+		if (isFirst) {
+			isFirst = false;
+		} else {
+			argsStr += " ";
+		}
+
+		argsStr += toStringFn(param);
+	}
+
+	return name + "(" + argsStr + ")";
+}

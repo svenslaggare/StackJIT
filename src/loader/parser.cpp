@@ -1,5 +1,6 @@
 #include "parser.h"
 #include "../core/instruction.h"
+#include "../core/functionsignature.h"
 #include <cctype>
 #include <string>
 #include <iostream>
@@ -246,29 +247,8 @@ namespace {
 	}
 }
 
-std::string AssemblyParser::getSignature(const AssemblyParser::Function& function, bool ignoreMemberThisRef) {
-	std::string signature = "";
-
-	signature += function.name;
-	signature += "(";
-
-	bool isFirst = true;
-
-	std::size_t start = 0;
-	for (std::size_t i = start; i < function.parameters.size(); i++) {
-		auto param = function.parameters[i];
-		if (!isFirst) {
-			signature += " ";
-		} else {
-			isFirst = false;
-		}
-
-		signature += param;
-	}
-
-	signature += ")";
-
-	return signature;
+std::string AssemblyParser::getSignature(const AssemblyParser::Function& function) {
+	return FunctionSignature::createSignature<std::string>(function.name, function.parameters, [](std::string str) { return str; });
 }
 
 std::vector<std::string> AssemblyParser::tokenize(std::istream& stream) {

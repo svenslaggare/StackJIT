@@ -20,20 +20,7 @@ bool FunctionSignature::operator!=(const FunctionSignature& rhs) const {
 }
 
 FunctionSignature FunctionSignature::function(std::string name, const std::vector<const Type*>& parameters) {
-	std::string argsStr = "";
-	bool isFirst = true;
-
-	for (auto param : parameters) {
-		if (isFirst) {
-			isFirst = false;
-		} else {
-			argsStr += " ";
-		}
-
-		argsStr += param->name();
-	}
-
-	return name + "(" + argsStr + ")";
+	return FunctionSignature::createSignature<const Type*>(name, parameters, [](const Type* type) { return type->name(); });
 }
 
 FunctionSignature FunctionSignature::memberFunction(const ClassType* classType, std::string name, const std::vector<const Type*>& parameters) {

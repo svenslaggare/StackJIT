@@ -131,7 +131,7 @@ namespace AssemblyParser {
 	};
 
 	//Returns the signature for the given function
-	std::string getSignature(const AssemblyParser::Function& function, bool ignoreMemberThisRef = false);
+	std::string getSignature(const AssemblyParser::Function& function);
 
 	//Tokenizes from the given stream
 	std::vector<std::string> tokenize(std::istream& stream);
