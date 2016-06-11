@@ -75,7 +75,7 @@ namespace {
 		}
 	}
 
-	std::vector<const Type*> asVector(InstructionTypes typesStack) {
+	std::vector<const Type*> toVector(InstructionTypes typesStack) {
 		std::vector<const Type*> types;
 
 		while (!typesStack.empty()) {
@@ -204,7 +204,7 @@ namespace {
 			if (localType != nullptr) {
 				if (localType == voidType) {
 					typeError(functionSignature, 0, "Locals of 'Void' type are not allowed.");
-				};
+				}
 			}
 		}
 	}
@@ -563,16 +563,15 @@ void Verifier::verifyInstruction(ManagedFunction& function,
 			break;
 		}
 		case OpCodes::LOAD_ARG: {
-				int argNum = inst.intValue;
+			int argNum = inst.intValue;
 
-				if (argNum >= 0 && argNum < (int)function.def().parameters().size()) {
-					operandStack.push(function.def().parameters()[argNum]);
-
-				} else {
-					throw std::runtime_error("The argument index is out of range.");
-				}
+			if (argNum >= 0 && argNum < (int)function.def().parameters().size()) {
+				operandStack.push(function.def().parameters()[argNum]);
+			} else {
+				throw std::runtime_error("The argument index is out of range.");
 			}
 			break;
+		}
 		case OpCodes::BRANCH_EQUAL:
 		case OpCodes::BRANCH_NOT_EQUAL: {
 			assertOperandCount(functionSignature, index, operandStack, 2);
@@ -948,7 +947,7 @@ void Verifier::verifyFunction(ManagedFunction& function) {
 
 	//Check instructions
 	for (auto& inst : function.instructions()) {
-		inst.setOperandTypes(asVector(operandStack));
+		inst.setOperandTypes(toVector(operandStack));
 
 		//Calculate the maximum size of the stack
 		auto stackSize = inst.operandTypes().size();
