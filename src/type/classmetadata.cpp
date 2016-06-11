@@ -3,6 +3,7 @@
 #include "../core/functionsignature.h"
 #include "../vmstate.h"
 #include <stdexcept>
+#include <algorithm>
 
 //Field
 Field::Field(const Type* type, std::size_t offset, AccessModifier accessModifier)
