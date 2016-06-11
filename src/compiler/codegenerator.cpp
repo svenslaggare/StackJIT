@@ -784,7 +784,6 @@ void CodeGenerator::generateInstruction(FunctionCompilationData& functionData,
 
 			//Align the stack
 			int stackAlignment = mCallingConvention.calculateStackAlignment(functionData, funcToCall);
-
 			if (stackAlignment > 0) {
 				assembler.add(Registers::SP, -stackAlignment);
 			}

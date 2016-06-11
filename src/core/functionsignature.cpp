@@ -37,13 +37,11 @@ FunctionSignature FunctionSignature::function(std::string name, const std::vecto
 }
 
 FunctionSignature FunctionSignature::memberFunction(const ClassType* classType, std::string name, const std::vector<const Type*>& parameters) {
-	auto params = parameters;
-	params.insert(params.begin(), classType);
-	return FunctionSignature::function(classType->className() + "::" + name, params);
+	return FunctionSignature::function(classType->className() + "::" + name, parameters);
 }
 
 FunctionSignature FunctionSignature::from(const FunctionDefinition& function) {
-	return FunctionSignature::function(function.name(), function.parameters());
+	return FunctionSignature::function(function.name(), function.callParameters());
 }
 
 std::ostream& operator<<(std::ostream& os, const FunctionSignature& signature) {

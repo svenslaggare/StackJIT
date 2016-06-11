@@ -49,7 +49,7 @@ public:
 
 		TS_ASSERT_EQUALS(
 			stripErrorMessage(invokeVM("class/invalid_constructor2")),
-			"main() @ 0: The constructor \'Point::.constructor(Ref.Point)\' is not defined.");
+			"main() @ 0: The constructor \'Point::.constructor()\' is not defined.");
 	}
 
 	//Tests null
@@ -62,7 +62,7 @@ public:
 
 	//Tests access modifiers
 	void testAccess() {
-		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/callingprivate1")), "main() @ 1: Cannot call private function 'Point::length(Ref.Point)'.");
+		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/callingprivate1")), "main() @ 1: Cannot call private function 'Point::length()'.");
 		TS_ASSERT_EQUALS(invokeVM("class/callingprivate2"), "0\n");
 
 		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/accessingprivate1")), "main() @ 1: Cannot read from private field 'x' of class 'Point'.");

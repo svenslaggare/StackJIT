@@ -12,6 +12,7 @@ class FunctionDefinition {
 private:
 	std::string mName;
 	std::vector<const Type*> mParameters;
+	std::vector<const Type*> mCallParameters;
 	const Type* mReturnType;
 
 	unsigned char* mEntryPoint;
@@ -51,8 +52,11 @@ public:
 	//Returns the type of the return value
 	const Type* returnType() const;
 
-	//Returns the types of the arguments
+	//Returns the types of the parameters
 	const std::vector<const Type*>& parameters() const;
+
+	//Returns the parameters used for resolving calls
+	const std::vector<const Type*>& callParameters() const;
 
 	//The number of parameters
 	std::size_t numParams() const;

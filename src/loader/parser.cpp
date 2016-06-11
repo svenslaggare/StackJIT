@@ -510,12 +510,7 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
 
 			if (currentToLower == "ldarg") {
 				int argNum = stoi(nextToken(tokens, i));
-
-				if (argNum >= 0 && argNum < (int)currentFunc.parameters.size()) {
-                	currentFunc.instructions.push_back(Instruction::makeWithInt(OpCodes::LOAD_ARG, argNum));
-                } else {
-                    throw std::runtime_error("The argument index is out of range.");
-                }
+				currentFunc.instructions.push_back(Instruction::makeWithInt(OpCodes::LOAD_ARG, argNum));
 				continue;
 			}
 
@@ -669,9 +664,6 @@ void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, Assembl
 
             auto classTypeName = funcName.substr(0, classNamePos);
             auto memberFunctionName = funcName.substr(classNamePos + 2);
-
-            //Add the implicit this reference
-            currentFunc.parameters.insert(currentFunc.parameters.begin(), "Ref." + classTypeName);
 
 			currentFunc.className = classTypeName;
 			currentFunc.memberFunctionName = memberFunctionName;

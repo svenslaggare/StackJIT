@@ -68,7 +68,10 @@ FunctionDefinition::FunctionDefinition(
 	  mAccessModifier(accessModifier),
 	  mIsConstructor(isConstructor),
 	  mIsVirtual(isVirtual) {
-
+	mCallParameters = mParameters;
+	if (mIsMemberFunction) {
+		mParameters.insert(mParameters.begin(), mClassType);
+	}
 }
 
 FunctionDefinition::FunctionDefinition(
@@ -89,7 +92,10 @@ FunctionDefinition::FunctionDefinition(
 	  mAccessModifier(accessModifier),
 	  mIsConstructor(isConstructor),
 	  mIsVirtual(false) {
-
+	mCallParameters = mParameters;
+	if (mIsMemberFunction) {
+		mParameters.insert(mParameters.begin(), mClassType);
+	}
 }
 
 FunctionDefinition::FunctionDefinition()
@@ -108,6 +114,10 @@ const Type* FunctionDefinition::returnType() const {
 
 const std::vector<const Type*>& FunctionDefinition::parameters() const {
     return mParameters;
+}
+
+const std::vector<const Type*>& FunctionDefinition::callParameters() const {
+	return mCallParameters;
 }
 
 std::size_t FunctionDefinition::numParams() const {

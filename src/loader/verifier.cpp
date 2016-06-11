@@ -562,8 +562,16 @@ void Verifier::verifyInstruction(ManagedFunction& function,
 
 			break;
 		}
-		case OpCodes::LOAD_ARG:
-			operandStack.push(function.def().parameters()[inst.intValue]);
+		case OpCodes::LOAD_ARG: {
+				int argNum = inst.intValue;
+
+				if (argNum >= 0 && argNum < (int)function.def().parameters().size()) {
+					operandStack.push(function.def().parameters()[argNum]);
+
+				} else {
+					throw std::runtime_error("The argument index is out of range.");
+				}
+			}
 			break;
 		case OpCodes::BRANCH_EQUAL:
 		case OpCodes::BRANCH_NOT_EQUAL: {
@@ -739,9 +747,10 @@ void Verifier::verifyInstruction(ManagedFunction& function,
 			bool isNull = arrayRefType == mNullType;
 
 			if (!TypeSystem::isArray(arrayRefType) && !isNull) {
-				typeError(functionSignature, index,
-						  "Expected first operand to be an array reference, but got type: " + arrayRefType->name() +
-						  ".");
+				typeError(
+					functionSignature,
+					index,
+					"Expected first operand to be an array reference, but got type: " + arrayRefType->name() + ".");
 			}
 
 			if (!TypeSystem::isPrimitiveType(indexType, PrimitiveTypes::Integer)) {
