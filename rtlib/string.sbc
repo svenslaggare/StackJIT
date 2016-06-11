@@ -205,13 +205,13 @@ func std.println(Ref.std.String) Void
    LDARG 0
    LDLOC 0
    CALLINST std.String::charAt(Int)
-   CALL std.printchar(Char)
+   CALL std.print(Char)
    LDLOC 0
    LDINT 1
    ADD
    STLOC 0
    BR 2
    LDCHAR 10
-   CALL std.printchar(Char)
+   CALL std.print(Char)
    RET
 }

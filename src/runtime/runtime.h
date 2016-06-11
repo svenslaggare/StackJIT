@@ -20,6 +20,9 @@ namespace Runtime {
 
 	//Functions not intended to be called from outside the runtime.
 	namespace Internal {
+		//Prints the given value
+		void printValue(RegisterValue value, const Type* type);
+
 		//Prints the alive objects
 		void printAliveObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex, std::string indentation = "");
 

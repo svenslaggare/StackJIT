@@ -15,27 +15,6 @@ namespace Runtime {
 	VMState vmState;
 };
 
-namespace {
-	//Prints the given value
-	void printValue(RegisterValue value, const Type* type) {
-		if (TypeSystem::isReferenceType(type)) {
-			if (value == 0) {
-				std::cout << "nullref";
-			} else {
-				std::cout << "0x" << std::hex << value << std::dec;
-			}
-		} else if (type->name() == TypeSystem::toString(PrimitiveTypes::Float)) {
-			int floatPattern = (int)value;
-			float floatValue = *(reinterpret_cast<float*>(&floatPattern));
-			std::cout << floatValue;
-		} else {
-			std::cout << value;
-		}
-
-		std::cout << " (" + type->name() + ")";
-	}
-}
-
 void Runtime::printStackFrame(RegisterValue* basePtr, ManagedFunction* func) {
 	using namespace Runtime::Internal;
 
@@ -106,6 +85,24 @@ unsigned char* Runtime::getVirtualFunctionAddress(RawClassRef rawClassRef, int i
 
 		return (unsigned char*)entryPoint;
 	}
+}
+
+void Runtime::Internal::printValue(RegisterValue value, const Type* type) {
+	if (TypeSystem::isReferenceType(type)) {
+		if (value == 0) {
+			std::cout << "nullref";
+		} else {
+			std::cout << "0x" << std::hex << value << std::dec;
+		}
+	} else if (type->name() == TypeSystem::toString(PrimitiveTypes::Float)) {
+		int floatPattern = (int)value;
+		float floatValue = *(reinterpret_cast<float*>(&floatPattern));
+		std::cout << floatValue;
+	} else {
+		std::cout << value;
+	}
+
+	std::cout << " (" + type->name() + ")";
 }
 
 void Runtime::Internal::printAliveObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex,	std::string indentation) {

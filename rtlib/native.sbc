@@ -22,7 +22,7 @@ extern std.println(Bool) Void
 extern std.println(Char) Void
 
 #Prints the given character
-extern std.printchar(Char) Void
+extern std.print(Char) Void
 
 #Prints the given string followed by a new line
 extern std.println(Ref.Array[Char]) Void

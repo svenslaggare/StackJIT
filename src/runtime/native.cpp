@@ -116,7 +116,7 @@ void NativeLibrary::add(VMState& vmState) {
 	binder.define(FunctionDefinition("std.print", { intType }, voidType, (unsigned char*)(printInt)));
 	binder.define(FunctionDefinition("std.print", { floatType }, voidType, (unsigned char*)(printFloat)));
 	binder.define(FunctionDefinition("std.print", { boolType }, voidType, (unsigned char*)(printBool)));
-	binder.define(FunctionDefinition("std.printchar", { charType }, voidType, (unsigned char*)(printChar)));
+	binder.define(FunctionDefinition("std.print", { charType }, voidType, (unsigned char*)(printChar)));
 
 	binder.define(FunctionDefinition("std.println", { intType }, voidType, (unsigned char*)(printlnInt)));
 	binder.define(FunctionDefinition("std.println", { floatType }, voidType, (unsigned char*)(printlnFloat)));

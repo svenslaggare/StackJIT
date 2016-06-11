@@ -33,9 +33,9 @@ void GarbageCollector::initialize() {
 
 void GarbageCollector::printObject(ObjectRef objRef) {
 	std::cout
-	<< "0x" << std::hex << (PtrValue)objRef.dataPtr() << std::dec << ": " << objRef.size()
-	<< " bytes (" << objRef.type()->name() << ")"
-	<< std::endl;
+		<< "0x" << std::hex << (PtrValue)objRef.dataPtr() << std::dec << ": " << objRef.size()
+		<< " bytes (" << objRef.type()->name() << ")"
+		<< std::endl;
 }
 
 RawObjectRef GarbageCollector::allocateObject(ManagedHeap& heap, const Type* type, std::size_t size) {

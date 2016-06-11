@@ -5,14 +5,14 @@ func printPoint(Ref.Point) Void
 	CALL std.print(Int)
 
 	LDCHAR 58
-    CALL std.printchar(Char)
+    CALL std.print(Char)
 
 	LDARG 0
 	LDFIELD Point::y
 	CALL std.print(Int)
 
 	LDCHAR 10
-	CALL std.printchar(Char)
+	CALL std.print(Char)
 
 	RET
 }
