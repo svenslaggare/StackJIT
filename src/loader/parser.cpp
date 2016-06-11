@@ -255,11 +255,6 @@ std::string AssemblyParser::getSignature(const AssemblyParser::Function& functio
 	bool isFirst = true;
 
 	std::size_t start = 0;
-
-	if (function.isMemberFunction && ignoreMemberThisRef) {
-		start = 1;
-	}
-
 	for (std::size_t i = start; i < function.parameters.size(); i++) {
 		auto param = function.parameters[i];
 		if (!isFirst) {

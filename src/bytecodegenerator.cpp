@@ -121,8 +121,7 @@ void ByteCodeGenerator::generateFunction(std::ostream& stream, const AssemblyPar
 				case AssemblyParser::InstructionFormats::StrData:
 					stream << " " << inst.strValue;
 					break;
-				case AssemblyParser::InstructionFormats::Call:
-					{
+				case AssemblyParser::InstructionFormats::Call: {
 						stream << " " << inst.strValue;
 						stream << "(";
 						bool isFirst = true;
@@ -140,8 +139,7 @@ void ByteCodeGenerator::generateFunction(std::ostream& stream, const AssemblyPar
 						stream << ")";
 					}
 					break;
-				case AssemblyParser::InstructionFormats::CallInstance:
-					{
+				case AssemblyParser::InstructionFormats::CallInstance: {
 						stream << " " << inst.calledClassType << "::" << inst.strValue;
 						stream << "(";
 						bool isFirst = true;
