@@ -45,7 +45,7 @@ public:
 
 //Represents a field definition
 struct FieldDefinition {
-	std::string name;
+	const std::string name;
 	const Type* type;
 	const AccessModifier accessModifier;
 
@@ -66,7 +66,6 @@ private:
 
 	std::vector<FieldDefinition> mFieldDefinitions;
 	std::unordered_map<std::string, Field> mFields;
-
 
 	std::vector<const FunctionDefinition*> mVirtualFunctions;
 	std::unordered_map<std::string, int> mVirtualFunctionToIndex;
