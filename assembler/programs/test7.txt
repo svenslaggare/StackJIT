@@ -1,0 +1,26 @@
+member Point2D::.constructor() Void
+{
+	RET
+}
+
+member Point3D::.constructor() Void
+{
+	RET
+}
+
+func main() Int
+{
+	LDINT 0
+	RET
+}
+
+class Point2D
+{
+	y Float
+	x Float
+}
+
+class Point3D extends Point2D
+{
+	z Float
+}

@@ -72,5 +72,15 @@ public:
 	//Tests inheritance
 	void testInheritance() {
 		TS_ASSERT_EQUALS(invokeVM("class/inheritance1", "--allocs-before-gc 0"), "A\nA\n0\n");
+		TS_ASSERT_EQUALS(invokeVM("class/inheritance2", "--allocs-before-gc 0"), "2\n4\n6\n0\n");
+		TS_ASSERT_EQUALS(invokeVM("class/inheritance3", "--allocs-before-gc 0"), "2\n4\n0\n");
+
+		TS_ASSERT_EQUALS(
+			stripErrorMessage(invokeVM("class/invalid_inheritance1")),
+			"Self inheritance is not allowed (Point3D).");
+
+		TS_ASSERT_EQUALS(
+			stripErrorMessage(invokeVM("class/invalid_inheritance2")),
+			"Mutual inheritance is not allowed (Point2D, Point3D).");
 	}
 };

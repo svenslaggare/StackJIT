@@ -1,0 +1,56 @@
+class Point2D
+{
+	x Int
+	y Int
+}
+
+class Point3D extends Point2D
+{
+	z Int
+}
+
+member Point2D::.constructor() Void
+{
+	RET
+}
+
+member Point3D::.constructor() Void
+{
+	RET
+}
+
+func main() Int
+{
+	.locals 2
+	.local 0 Ref.Point3D
+	.local 1 Ref.Point2D
+
+	NEWOBJ Point3D::.constructor()
+	STLOC 0
+
+	LDLOC 0
+	LDINT 2
+	STFIELD Point3D::x
+
+	LDLOC 0
+	LDINT 4
+	STFIELD Point3D::y
+
+	LDLOC 0
+    LDINT 6
+	STFIELD Point3D::z
+
+	LDLOC 0
+	STLOC 1
+
+	LDLOC 1
+	LDFIELD Point2D::x
+	CALL std.println(Int)
+
+	LDLOC 1
+    LDFIELD Point2D::y
+	CALL std.println(Int)
+
+	LDINT 0
+	RET
+}

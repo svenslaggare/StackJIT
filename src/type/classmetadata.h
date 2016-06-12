@@ -25,28 +25,48 @@ private:
 	const Type* mType;
 	const std::size_t mOffset;
 	const AccessModifier mAccessModifier;
+	const bool mIsDefined;
 public:
 	//Creates a new field
-	Field(const Type* type, std::size_t offset, AccessModifier accessModifier);
+	Field(const Type* type, std::size_t offset, AccessModifier accessModifier, bool isDefined = true);
 
 	//Returns the type of the field
 	const Type* type() const;
 
 	//Returns the offset of the field in the class
-	const std::size_t offset() const;
+	std::size_t offset() const;
 
 	//Returns the access modifier
-	const AccessModifier accessModifier() const;
+	AccessModifier accessModifier() const;
+
+	//Indicates if the field is defined in the current class, or in a parent class
+	bool isDefined() const;
+};
+
+//Represents a field definition
+struct FieldDefinition {
+	std::string name;
+	const Type* type;
+	const AccessModifier accessModifier;
+
+	FieldDefinition(const std::string& name, const Type* type, const AccessModifier accessModifier)
+		: name(name),
+		  type(type),
+		  accessModifier(accessModifier) {
+
+	}
 };
 
 //Contains metadata for a class
 class ClassMetadata {
 private:
 	std::string mName;
-	std::unordered_map<std::string, Field> mFields;
 	std::size_t mSize;
-
 	const ClassType* mParentClass;
+
+	std::vector<FieldDefinition> mFieldDefinitions;
+	std::unordered_map<std::string, Field> mFields;
+
 
 	std::vector<const FunctionDefinition*> mVirtualFunctions;
 	std::unordered_map<std::string, int> mVirtualFunctionToIndex;
@@ -78,17 +98,20 @@ public:
 	//Returns the size of the class
 	std::size_t size() const;
 
+	//Returns the parent class (if any, else null)
+	const ClassType* parentClass() const;
+
+	//Sets the parent class
+	void setParentClass(const ClassType* parentClass);
+
 	//Returns the fields
 	const std::unordered_map<std::string, Field>& fields() const;
 
 	//Adds a new field to the class
 	void addField(std::string name, const Type* type, AccessModifier accessModifier);
 
-	//Returns the parent class (if any, else null)
-	const ClassType* parentClass() const;
-
-	//Sets the parent class
-	void setParentClass(const ClassType* parentClass);
+	//Creates the fields
+	void makeFields();
 
 	//Returns the list of virtual functions
 	const std::map<int, std::string>& virtualFunctions() const;

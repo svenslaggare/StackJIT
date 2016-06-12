@@ -1,0 +1,21 @@
+class Point3D extends Point3D
+{
+
+}
+
+member Point3D::.constructor() Void
+{
+	RET
+}
+
+func main() Int
+{
+	.locals 1
+	.local 0 Ref.Point#D
+
+	NEWOBJ Point3D::.constructor()
+	STLOC 0
+
+	LDINT 0
+	RET
+}

@@ -177,6 +177,27 @@ void Loader::loadClasses(VMState& vmState, ImageContainer& imageContainer) {
 		}
 	}
 
+	//Handle inheritance
+	if (inheritingClasses.size() > 0) {
+		for (auto& current : inheritingClasses) {
+			auto parentClass = getClassType(vmState, current.second);
+			auto thisClass = getClassType(vmState, current.first->name());
+
+			//Check if valid inheritance
+			if (parentClass == thisClass) {
+				throw std::runtime_error("Self inheritance is not allowed (" + current.first->name() + ").");
+			}
+
+			current.first->setParentClass(parentClass);
+
+			if (TypeSystem::isSubtypeOf(parentClass, thisClass)
+				&& TypeSystem::isSubtypeOf(thisClass, parentClass)) {
+				throw std::runtime_error(
+					"Mutual inheritance is not allowed (" + parentClass->className() + ", " + thisClass->className() + ").");
+			}
+		}
+	}
+
 	//Then add the fields
 	for (auto& image : imageContainer.images()) {
 		for (auto& current : image->classes()) {
@@ -189,14 +210,8 @@ void Loader::loadClasses(VMState& vmState, ImageContainer& imageContainer) {
 				auto accessModifier = getAccessModifier(field.attributes);
 				classMetadata.addField(field.name, getType(vmState, field.type), accessModifier);
 			}
-		}
-	}
 
-	//Handle inheritance
-	if (inheritingClasses.size() > 0) {
-		for (auto& current : inheritingClasses) {
-			auto parentClass = getClassType(vmState, current.second);
-			current.first->setParentClass(parentClass);
+			classMetadata.makeFields();
 		}
 	}
 }

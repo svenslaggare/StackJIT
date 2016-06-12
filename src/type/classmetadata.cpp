@@ -6,8 +6,8 @@
 #include <algorithm>
 
 //Field
-Field::Field(const Type* type, std::size_t offset, AccessModifier accessModifier)
-	: mType(type), mOffset(offset), mAccessModifier(accessModifier) {
+Field::Field(const Type* type, std::size_t offset, AccessModifier accessModifier, bool isDefined)
+	: mType(type), mOffset(offset), mAccessModifier(accessModifier), mIsDefined(isDefined) {
 
 }
 
@@ -15,12 +15,16 @@ const Type* Field::type() const {
 	return mType;
 }
 
-const std::size_t Field::offset() const {
+std::size_t Field::offset() const {
 	return mOffset;
 }
 
-const AccessModifier Field::accessModifier() const {
+AccessModifier Field::accessModifier() const {
 	return mAccessModifier;
+}
+
+bool Field::isDefined() const {
+	return mIsDefined;
 }
 
 bool fromString(std::string str, AccessModifier& accessModifier) {
@@ -63,8 +67,26 @@ const std::unordered_map<std::string, Field>& ClassMetadata::fields() const {
 }
 
 void ClassMetadata::addField(std::string name, const Type* type, AccessModifier accessModifier) {
-	mFields.insert({ name, Field(type, mSize, accessModifier) });
-	mSize += TypeSystem::sizeOfType(type);
+	mFieldDefinitions.push_back(FieldDefinition(name, type, accessModifier));
+}
+
+void ClassMetadata::makeFields() {
+	if (mFields.size() == 0) {
+		//Add from parent class
+		if (mParentClass != nullptr) {
+			mParentClass->metadata()->makeFields();
+
+			for (auto& fieldDef : mParentClass->metadata()->mFieldDefinitions) {
+				mFields.insert({ fieldDef.name, Field(fieldDef.type, mSize, fieldDef.accessModifier, false) });
+				mSize += TypeSystem::sizeOfType(fieldDef.type);
+			}
+		}
+
+		for (auto& fieldDef : mFieldDefinitions) {
+			mFields.insert({ fieldDef.name, Field(fieldDef.type, mSize, fieldDef.accessModifier) });
+			mSize += TypeSystem::sizeOfType(fieldDef.type);
+		}
+	}
 }
 
 const ClassType* ClassMetadata::parentClass() const {
@@ -164,10 +186,9 @@ void ClassMetadata::makeVirtualFunctionTable() {
 				mIndexToVirtualFunction.insert({ virtualFuncIndex, signature });
 				mVirtualFunctionToIndex.insert({ signature, virtualFuncIndex });
 				virtualFuncIndex++;
-				virtualFuncMapping[rootSignature] = signature;
-			} else {
-				virtualFuncMapping[rootSignature] = signature;
 			}
+
+			virtualFuncMapping[rootSignature] = signature;
 		}
 
 		//Create the actual table. Note that these functions are bound when compiled.

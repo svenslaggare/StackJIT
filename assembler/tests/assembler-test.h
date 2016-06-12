@@ -93,4 +93,8 @@ public:
 	void testCase6() {
 		TS_ASSERT_EQUALS(invokeAsm("test6"), readFile("test6"));
 	}
+
+	void testCase7() {
+		TS_ASSERT_EQUALS(invokeAsm("test6"), readFile("test6"));
+	}
 };
