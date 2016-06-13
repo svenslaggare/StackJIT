@@ -134,8 +134,10 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 endif()
 
 add_custom_target(BuildRuntimeLibrary ALL DEPENDS ${RUNTIME_LIBRARY} stackasm)
-
 add_dependencies(stackjit BuildRuntimeLibrary)
+
+# Build the embeddable VM
+add_library(stackjitvm STATIC ${SOURCE_FILES})
 
 # Tests
 set(TESTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
@@ -143,9 +145,9 @@ set(TESTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 find_package(CxxTest)
 if(CXXTEST_FOUND)
     add_custom_target(
-            check ${CMAKE_COMMAND} -E env CTEST_OUTPUT_ON_FAILURE=1
-            ${CMAKE_CTEST_COMMAND} -C $<CONFIG> --verbose
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+        check ${CMAKE_COMMAND} -E env CTEST_OUTPUT_ON_FAILURE=1
+        ${CMAKE_CTEST_COMMAND} -C $<CONFIG> --verbose
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 
     include_directories(${CXXTEST_INCLUDE_DIR})
     enable_testing()

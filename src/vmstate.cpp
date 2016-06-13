@@ -5,6 +5,10 @@ VMState::VMState()
 
 }
 
+void VMState::initialize() {
+    mGC.initialize();
+}
+
 TypeProvider& VMState::typeProvider() {
     return mTypeProvider;
 }

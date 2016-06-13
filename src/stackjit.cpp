@@ -200,7 +200,7 @@ int main(int argc, char* argv[]) {
 
 		//Handle options
 		auto programPath = handleOptions(argc, argv, engine);
-		vmState.gc().initialize();
+		vmState.initialize();
 
 		//Load the program
 		switch (vmState.programLoadMode) {

@@ -82,6 +82,9 @@ public:
 	VMState(const VMState&) = delete;
 	VMState& operator=(const VMState&) = delete;
 
+	//Initializes the VM
+	void initialize();
+
 	//Returns the type provider
 	TypeProvider& typeProvider();
 	const TypeProvider& typeProvider() const;
