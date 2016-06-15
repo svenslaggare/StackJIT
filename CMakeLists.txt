@@ -137,7 +137,7 @@ add_custom_target(BuildRuntimeLibrary ALL DEPENDS ${RUNTIME_LIBRARY} stackasm)
 add_dependencies(stackjit BuildRuntimeLibrary)
 
 # Build the embeddable VM
-add_library(stackjitvm STATIC ${SOURCE_FILES})
+#add_library(stackjitvm STATIC ${SOURCE_FILES})
 
 # Tests
 set(TESTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
