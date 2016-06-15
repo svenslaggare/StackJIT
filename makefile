@@ -6,6 +6,8 @@ SRC_DIR=src
 OBJ_DIR=obj
 TESTS_DIR=tests
 EXECUTABLE=stackjit
+LIBRARY=libstackjit.a
+LIBRARY_OUTPUT_FOLDER=lib
 
 ASSEMBLER_DIR=assembler
 RTLIB_DIR=rtlib
@@ -75,9 +77,18 @@ $(TEST_RUNNERS_DIR)/%: $(TESTS_DIR)/%.h $(OBJ_DIR) $(EXECUTABLE) $(RTLIB_OUT) $(
 	$(CXXC) $(CXXFLAGS) -o $@ -I $(CXXTEST) $(TEST_OBJECTS) $@-runner.cpp -DUSE_VALGRIND=$(TEST_WITH_VALGRIND)
 	./$@
 
+lib: $(OBJECTS)
+	mkdir -p $(LIBRARY_OUTPUT_FOLDER)
+	mkdir -p $(LIBRARY_OUTPUT_FOLDER)/stackjit
+	ar rvs $(LIBRARY_OUTPUT_FOLDER)/$(LIBRARY) $(OBJECTS)
+	cd src;
+	find . -name '*.h' | cpio -pdm ../$(LIBRARY_OUTPUT_FOLDER)/stackjit
+	cd ../;
+
 clean:
 	rm -rf $(OBJ_DIR)
 	rm -rf $(TEST_RUNNERS_DIR)
 	rm -f $(EXECUTABLE)
 	make -C $(ASSEMBLER_DIR) clean
 	rm -f $(RTLIB_OUT)
+	rm -f $(LIBRARY_OUTPUT_FOLDER)/$(LIBRARY)

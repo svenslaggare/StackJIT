@@ -4,6 +4,7 @@
 #include <ostream>
 
 using BinaryData = std::vector<char>;
+using namespace stackjit;
 
 //Represents an assembler
 class Assembler {

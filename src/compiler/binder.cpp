@@ -3,29 +3,31 @@
 #include "../core/functionsignature.h"
 #include <iostream>
 
-const std::unordered_map<std::string, FunctionDefinition>& Binder::functionTable() const {
-	return mFunctionTable;
-}
-
-bool Binder::define(FunctionDefinition funcDef) {
-	std::string signature = FunctionSignature::from(funcDef).str();
-
-	if (mFunctionTable.count(signature) == 0) {
-		mFunctionTable.insert({ signature, funcDef });
-		return true;
-	} else {
-		return false;
+namespace stackjit {
+	const std::unordered_map<std::string, FunctionDefinition>& Binder::functionTable() const {
+		return mFunctionTable;
 	}
-}
 
-bool Binder::isDefined(std::string signature) const {
-	return mFunctionTable.count(signature) > 0;
-}
+	bool Binder::define(FunctionDefinition funcDef) {
+		std::string signature = FunctionSignature::from(funcDef).str();
 
-FunctionDefinition& Binder::getFunction(std::string signature) {
-	return mFunctionTable.at(signature);
-}
+		if (mFunctionTable.count(signature) == 0) {
+			mFunctionTable.insert({ signature, funcDef });
+			return true;
+		} else {
+			return false;
+		}
+	}
 
-const FunctionDefinition& Binder::getFunction(std::string signature) const {
-	return mFunctionTable.at(signature);
+	bool Binder::isDefined(std::string signature) const {
+		return mFunctionTable.count(signature) > 0;
+	}
+
+	FunctionDefinition& Binder::getFunction(std::string signature) {
+		return mFunctionTable.at(signature);
+	}
+
+	const FunctionDefinition& Binder::getFunction(std::string signature) const {
+		return mFunctionTable.at(signature);
+	}
 }

@@ -13,6 +13,8 @@
 #include <unistd.h>
 #endif
 
+using namespace stackjit;
+
 //Parses the options
 std::string handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
 	std::string program = "";
@@ -234,7 +236,7 @@ int main(int argc, char* argv[]) {
 			engine.load();
 
 			//Compile the entry point
-			engine.compileFunction("main()");
+			engine.compileFunction(stackjit::entryPointSignature);
 		}
 
 		//Execute the program
