@@ -7,7 +7,7 @@
 
 int main(int argc, char* argv[]) {
 	try {
-		std::vector<AssemblyParser::Assembly> assemblies;
+		std::vector<stackjit::AssemblyParser::Assembly> assemblies;
 		std::string outputFile = "library.simg";
 
 		bool disassemble = false;
@@ -31,8 +31,8 @@ int main(int argc, char* argv[]) {
 				if (!disassemble) {
 					std::ifstream fileStream(file);
 					if (fileStream.is_open()) {
-						AssemblyParser::Assembly assembly;
-						AssemblyParser::parseTokens(AssemblyParser::tokenize(fileStream), assembly);
+						stackjit::AssemblyParser::Assembly assembly;
+						stackjit::AssemblyParser::parseTokens(stackjit::AssemblyParser::tokenize(fileStream), assembly);
 						assemblies.emplace_back(assembly);
 					} else {
 						std::cerr << "Could not load file '" + file + "'" << std::endl;
@@ -65,13 +65,13 @@ int main(int argc, char* argv[]) {
 		} else {
 			//Load the image
 			for (auto& imageData : images) {
-				AssemblyImage image;
-				AssemblyImageLoader::load(imageData, image);
+				stackjit::AssemblyImage image;
+				stackjit::AssemblyImageLoader::load(imageData, image);
 
 				std::size_t i = 0;
 				for (auto& func : image.functions()) {
 					image.loadFunctionBody(func.first);
-					ByteCodeGenerator::generateFunction(std::cout, func.second);
+					stackjit::ByteCodeGenerator::generateFunction(std::cout, func.second);
 
 					if (i != image.functions().size() - 1) {
 						std::cout << std::endl;
@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
 				i = 0;
 				for (auto& classDef : image.classes()) {
 					image.loadClassBody(classDef.first);
-					ByteCodeGenerator::generateClass(std::cout, classDef.second);
+					stackjit::ByteCodeGenerator::generateClass(std::cout, classDef.second);
 
 					if (i != image.classes().size() - 1) {
 						std::cout << std::endl;
