@@ -1,0 +1,56 @@
+class Point
+{
+	x Int
+	y Int
+}
+
+member Point::.constructor() Void
+{
+	RET
+}
+
+member Point::sum() Int
+{
+	@Virtual(value=true)
+	LDARG 0
+	LDFIELD Point::x
+
+	LDARG 0
+	LDFIELD Point::y
+
+	ADD
+	RET
+}
+
+member Point::prod() Int
+{
+	@Virtual(value=true)
+	LDARG 0
+	LDFIELD Point::x
+
+	LDARG 0
+	LDFIELD Point::y
+
+	MUL
+	RET
+}
+
+func main() Int
+{
+	.locals 1
+
+	NEWOBJ Point::.constructor()
+	STLOC 0
+
+	LDLOC 0
+	LDINT 24
+	STFIELD Point::x
+
+	LDLOC 0
+	LDINT 12
+	STFIELD Point::y
+
+	LDLOC 0
+	CALLVIRT Point::sum()
+	RET
+}

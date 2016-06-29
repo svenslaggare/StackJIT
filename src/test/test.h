@@ -1,8 +1,10 @@
 #pragma once
-class VMState;
+namespace stackjit {
+	class VMState;
 
-//Exposes native functions used in tests
-namespace TestLibrary {
-	//Adds the test library to the given VM state
-	void add(VMState& vmState);
+	//Exposes native functions used in tests
+	namespace TestLibrary {
+		//Adds the test library to the given VM state
+		void add(VMState& vmState);
+	}
 }

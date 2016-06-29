@@ -1,0 +1,45 @@
+class Point
+{
+	x Int
+	y Int
+}
+
+member Point::.constructor() Void
+{
+	RET
+}
+
+member Point::nop() Void
+{
+	@Virtual(value=true)
+	RET
+}
+
+func main() Int
+{
+	.locals 2
+	.local 0 Int
+	.local 1 Ref.Point
+
+	NEWOBJ Point::.constructor()
+	STLOC 1
+
+	LDINT 1000000
+	STLOC 0
+
+	LDLOC 1
+	CALLVIRT Point::nop()
+	#CALLINST Point::nop()
+
+	LDLOC 0
+	LDINT 1
+	SUB
+	STLOC 0
+
+	LDLOC 0
+	LDINT 0
+	BNE 4
+
+	LDINT 0
+	RET
+}

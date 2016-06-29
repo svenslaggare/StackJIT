@@ -56,8 +56,14 @@ namespace Helpers {
 	const std::string programsPath = baseDir + "programs";
 	#else
 	const std::string executable = "./stackjit";
+
+	#if defined(USE_CMAKE)
+	const std::string baseDir = "../";
+	#else
 	const std::string baseDir = "";
-	const std::string programsPath = "programs";
+	#endif
+
+	const std::string programsPath = baseDir + "programs";
 	#endif
 
 	//Invokes the VM with the given program

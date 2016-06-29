@@ -4,56 +4,64 @@
 #include "../type/type.h"
 #include "../vmstate.h"
 
-class ManagedFunction;
-class FunctionDefinition;
-class Type;
-class ClassType;
-class ArrayType;
+namespace stackjit {
+	class ManagedFunction;
+	class FunctionDefinition;
+	class Type;
+	class ClassType;
+	class ArrayType;
 
-//Defines the runtime
-namespace Runtime {
-	//The global VM state
-	extern VMState vmState;
+	//Defines the runtime
+	namespace Runtime {
+		//The global VM state
+		extern VMState vmState;
 
-	//Prints the given stack frame
-	void printStackFrame(RegisterValue* basePtr, ManagedFunction* func);
+		//Prints the given stack frame
+		void printStackFrame(RegisterValue* basePtr, ManagedFunction* func);
 
-	//Functions not intended to be called from outside the runtime.
-	namespace Internal {
-		//Prints the alive objects
-		void printAliveObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex, std::string indentation = "");
+		//Functions not intended to be called from outside the runtime.
+		namespace Internal {
+			//Prints the given value
+			void printValue(RegisterValue value, const Type* type);
 
-		//Finds the base ptr for the function at the given index
-		RegisterValue* findBasePtr(RegisterValue* currentBasePtr, int currentIndex, int targetIndex);
-	};
+			//Prints the alive objects
+			void printAliveObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex, std::string indentation = "");
 
-	//Compiles the given function
-	void compileFunction(ManagedFunction* callee, int callOffset, int checkStart, int checkEnd, FunctionDefinition* funcToCall);
+			//Finds the base ptr for the function at the given index
+			RegisterValue* findBasePtr(RegisterValue* currentBasePtr, int currentIndex, int targetIndex);
+		};
 
-	//Tries to collect garbage
-	void garbageCollect(RegisterValue* basePtr, ManagedFunction* func, int instIndex);
+		//Compiles the given function
+		void compileFunction(ManagedFunction* callee, int callOffset, int checkStart, int checkEnd, FunctionDefinition* funcToCall);
 
-	//Creates a new array of the given type and length
-	unsigned char* newArray(const ArrayType* arrayType, int length);
+		//Returns the exact address of the given virtual function
+		unsigned char* getVirtualFunctionAddress(RawClassRef rawClassRef, int index);
 
-	//Creates a new class of the given type
-	unsigned char* newObject(const ClassType* classType);
+		//Tries to collect garbage
+		void garbageCollect(RegisterValue* basePtr, ManagedFunction* func, int instIndex);
 
-	//Creates a new string of the given length
-	unsigned char* newString(const char* string, int length);
+		//Creates a new array of the given type and length
+		RawArrayRef newArray(const ArrayType* arrayType, int length);
 
-	//Stops the execution
-	void runtimeError(std::string errorMessage);
+		//Creates a new class of the given type
+		RawClassRef newClass(const ClassType* classType);
 
-	//Signals that an invalid array creation has been made
-	void invalidArrayCreation();
+		//Creates a new string of the given length
+		RawClassRef newString(const char* string, int length);
 
-	//Signals that an invalid array access has been made
-	void arrayOutOfBoundsError();
+		//Stops the execution
+		void runtimeError(std::string errorMessage);
 
-	//Signals that a null reference has been made
-	void nullReferenceError();
+		//Signals that an invalid array creation has been made
+		void invalidArrayCreation();
 
-	//Signals that the call stack has run out of memory
-	void stackOverflow();
+		//Signals that an invalid array access has been made
+		void arrayOutOfBoundsError();
+
+		//Signals that a null reference has been made
+		void nullReferenceError();
+
+		//Signals that the call stack has run out of memory
+		void stackOverflow();
+	}
 }

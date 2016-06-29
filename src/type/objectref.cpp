@@ -1,57 +1,54 @@
 #include "objectref.h"
 
-//Object ref
-ObjectRef::ObjectRef(RawObjectRef objRef)
-	: mPtr(objRef - StackJIT::OBJECT_HEADER_SIZE), mType(*((const Type**)mPtr)) {
-	if (TypeSystem::isArray(type())) {
-		auto arrayType = static_cast<const ArrayType*>(type());
-		auto elementType = arrayType->elementType();
-		auto elemSize = TypeSystem::sizeOfType(elementType);
-		auto length = *(int*)dataPtr();
-		mObjectSize = StackJIT::ARRAY_LENGTH_SIZE + (length * elemSize);
-	} else {
-		mObjectSize = static_cast<const ClassType*>(type())->classMetadata()->size();
+namespace stackjit {
+	//Object ref
+	ObjectRef::ObjectRef(RawObjectRef objRef)
+		: mPtr(objRef - stackjit::OBJECT_HEADER_SIZE), mType(*((const Type**)mPtr)) {
+		if (TypeSystem::isArray(type())) {
+			auto arrayType = static_cast<const ArrayType*>(type());
+			auto elementType = arrayType->elementType();
+			auto elemSize = TypeSystem::sizeOfType(elementType);
+			auto length = *(int*)dataPtr();
+			mObjectSize = stackjit::ARRAY_LENGTH_SIZE + (length * elemSize);
+		} else {
+			mObjectSize = static_cast<const ClassType*>(type())->metadata()->size();
+		}
 	}
-}
+	unsigned char* ObjectRef::fullPtr() const {
+		return mPtr;
+	}
 
-const Type* ObjectRef::type() const {
-	return mType;
-}
+	unsigned char* ObjectRef::dataPtr() const {
+		return mPtr + sizeof(PtrValue) + 1;
+	}
 
-unsigned char* ObjectRef::fullPtr() const {
-	return mPtr;
-}
+	std::size_t ObjectRef::size() const {
+		return mObjectSize;
+	}
 
-unsigned char* ObjectRef::dataPtr() const {
-	return mPtr + sizeof(PtrValue) + 1;
-}
+	std::size_t ObjectRef::fullSize() const {
+		return size() + stackjit::OBJECT_HEADER_SIZE;
+	}
 
-std::size_t ObjectRef::size() const {
-	return mObjectSize;
-}
+	void ObjectRef::setMarked(bool isMarked) {
+		mPtr[sizeof(PtrValue)] = (unsigned char)isMarked;
+	}
 
-std::size_t ObjectRef::fullSize() const {
-	return size() + StackJIT::OBJECT_HEADER_SIZE;
-}
+	bool ObjectRef::isMarked() const {
+		return (bool)mPtr[sizeof(PtrValue)];
+	}
 
-void ObjectRef::setMarked(bool isMarked) {
-	mPtr[sizeof(PtrValue)] = (unsigned char)isMarked;
-}
+	void ObjectRef::mark() {
+		setMarked(true);
+	}
 
-bool ObjectRef::isMarked() const {
-	return (bool)mPtr[sizeof(PtrValue)];
-}
+	void ObjectRef::unmark() {
+		setMarked(false);
+	}
 
-void ObjectRef::mark() {
-	setMarked(true);
-}
+	//Class ref
+	ClassRef::ClassRef(ObjectRef objRef, const ClassMetadata& metadata)
+		: mObjRef(objRef), mMetadata(metadata) {
 
-void ObjectRef::unmark() {
-	setMarked(false);
-}
-
-//Class ref
-ClassRef::ClassRef(ObjectRef objRef, const ClassMetadata& metadata)
-	: mObjRef(objRef), mMetadata(metadata) {
-
+	}
 }

@@ -13,6 +13,8 @@
 #include <unistd.h>
 #endif
 
+using namespace stackjit;
+
 //Parses the options
 std::string handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
 	std::string program = "";
@@ -129,6 +131,11 @@ std::string handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
 			continue;
 		}
 
+		if (switchStr == "--print-vtable") {
+			vmState.printVirtualFunctionTableLayout = true;
+			continue;
+		}
+
 		if (switchStr == "-i") {
 			int next = i + 1;
 
@@ -167,7 +174,6 @@ std::string getExecutableDir() {
 
 	//Remove the name
 	buffer[bytes - 12] = '\0';
-
 	return std::string(buffer);
 #else
 	const int bufferSize = 512;
@@ -182,7 +188,6 @@ std::string getExecutableDir() {
 
 	//Remove the name
 	buffer[bytes - 8] = '\0';
-
 	return std::string(buffer);
 #endif
 }
@@ -197,7 +202,7 @@ int main(int argc, char* argv[]) {
 
 		//Handle options
 		auto programPath = handleOptions(argc, argv, engine);
-		vmState.gc().initialize();
+		vmState.initialize();
 
 		//Load the program
 		switch (vmState.programLoadMode) {
@@ -231,7 +236,7 @@ int main(int argc, char* argv[]) {
 			engine.load();
 
 			//Compile the entry point
-			engine.compileFunction("main()");
+			engine.compileFunction(stackjit::entryPointSignature);
 		}
 
 		//Execute the program

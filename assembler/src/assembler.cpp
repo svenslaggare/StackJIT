@@ -30,7 +30,7 @@ namespace {
 	}
 }
 
-void Assembler::generateAttributes(BinaryData& data, const AssemblyParser::AttributeContainer& attributes) {
+void Assembler::generateAttributes(BinaryData& data, const stackjit::AssemblyParser::AttributeContainer& attributes) {
 	addData(data, attributes.size());
 
 	for (auto& current : attributes) {
@@ -45,7 +45,7 @@ void Assembler::generateAttributes(BinaryData& data, const AssemblyParser::Attri
 	}
 }
 
-void Assembler::generateFunctionBody(BinaryData& data, AssemblyParser::Function& function) {
+void Assembler::generateFunctionBody(BinaryData& data, stackjit::AssemblyParser::Function& function) {
 	//Attributes
 	generateAttributes(data, function.attributes);
 
@@ -63,21 +63,21 @@ void Assembler::generateFunctionBody(BinaryData& data, AssemblyParser::Function&
 		addData<unsigned char>(data, (unsigned char)inst.opCode);
 
 		switch (inst.format) {
-			case AssemblyParser::InstructionFormats::OpCodeOnly:
+			case stackjit::AssemblyParser::InstructionFormats::OpCodeOnly:
 				break;
-			case AssemblyParser::InstructionFormats::IntData:
+			case stackjit::AssemblyParser::InstructionFormats::IntData:
 				addData(data, inst.intValue);
 				break;
-			case AssemblyParser::InstructionFormats::FloatData:
+			case stackjit::AssemblyParser::InstructionFormats::FloatData:
 				addData(data, inst.floatValue);
 				break;
-			case AssemblyParser::InstructionFormats::CharData:
+			case stackjit::AssemblyParser::InstructionFormats::CharData:
 				addData(data, inst.charValue);
 				break;
-			case AssemblyParser::InstructionFormats::StrData:
+			case stackjit::AssemblyParser::InstructionFormats::StrData:
 				addString(data, inst.strValue);
 				break;
-			case AssemblyParser::InstructionFormats::Call:
+			case stackjit::AssemblyParser::InstructionFormats::Call:
 				addString(data, inst.strValue);
 				addData(data, inst.parameters.size());
 
@@ -85,7 +85,7 @@ void Assembler::generateFunctionBody(BinaryData& data, AssemblyParser::Function&
 					addString(data, param);
 				}
 				break;
-			case AssemblyParser::InstructionFormats::CallInstance:
+			case stackjit::AssemblyParser::InstructionFormats::CallInstance:
 				addString(data, inst.strValue);
 				addString(data, inst.calledClassType);
 				addData(data, inst.parameters.size());
@@ -98,7 +98,7 @@ void Assembler::generateFunctionBody(BinaryData& data, AssemblyParser::Function&
 	}
 }
 
-void Assembler::generateFunctionDefinition(BinaryData& data, AssemblyParser::Function& function) {
+void Assembler::generateFunctionDefinition(BinaryData& data, stackjit::AssemblyParser::Function& function) {
 	addData<bool>(data, function.isExternal);
 	addData<bool>(data, function.isMemberFunction);
 
@@ -117,7 +117,10 @@ void Assembler::generateFunctionDefinition(BinaryData& data, AssemblyParser::Fun
 	addString(data, function.returnType);
 }
 
-void Assembler::generateClassBody(BinaryData& data, AssemblyParser::Class& classDef) {
+void Assembler::generateClassBody(BinaryData& data, stackjit::AssemblyParser::Class& classDef) {
+	//Inheritance
+	addString(data, classDef.parentClassName);
+
 	//Class attributes
 	generateAttributes(data, classDef.attributes);
 
@@ -130,11 +133,11 @@ void Assembler::generateClassBody(BinaryData& data, AssemblyParser::Class& class
 	}
 }
 
-void Assembler::generateClassDefinition(BinaryData& data, AssemblyParser::Class& classDef) {
+void Assembler::generateClassDefinition(BinaryData& data, stackjit::AssemblyParser::Class& classDef) {
 	addString(data, classDef.name);
 }
 
-void Assembler::generateImage(std::vector<AssemblyParser::Assembly>& assemblies, std::ostream& stream) {
+void Assembler::generateImage(std::vector<stackjit::AssemblyParser::Assembly>& assemblies, std::ostream& stream) {
 	BinaryData data;
 
 	//Compute the number of functions & classes
@@ -155,7 +158,7 @@ void Assembler::generateImage(std::vector<AssemblyParser::Assembly>& assemblies,
 	for (auto& assembly : assemblies) {
 		for (auto& func : assembly.functions) {
 			generateFunctionDefinition(data, func);
-			funcBodyOffsets.insert({ AssemblyParser::getSignature(func), data.size() });
+			funcBodyOffsets.insert({ stackjit::AssemblyParser::getSignature(func), data.size() });
 			addData<std::size_t>(data, 0);
 		}
 	}
@@ -175,7 +178,7 @@ void Assembler::generateImage(std::vector<AssemblyParser::Assembly>& assemblies,
 	for (auto& assembly : assemblies) {
 		for (auto& func : assembly.functions) {
 			//Patch the offset
-			setData<std::size_t>(data, funcBodyOffsets.at(AssemblyParser::getSignature(func)), data.size());
+			setData<std::size_t>(data, funcBodyOffsets.at(stackjit::AssemblyParser::getSignature(func)), data.size());
 			generateFunctionBody(data, func);
 		}
 	}

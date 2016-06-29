@@ -1,42 +1,48 @@
 #include "vmstate.h"
 
-VMState::VMState()
-    : mTypeProvider(mClassProvider), mGC(*this), mEngine(*this) {
+namespace stackjit {
+	VMState::VMState()
+	    : mTypeProvider(mClassProvider), mGC(*this), mEngine(*this) {
 
-}
+	}
 
-TypeProvider& VMState::typeProvider() {
-    return mTypeProvider;
-}
+	void VMState::initialize() {
+	    mGC.initialize();
+	}
 
-const TypeProvider& VMState::typeProvider() const {
-    return mTypeProvider;
-}
+	TypeProvider& VMState::typeProvider() {
+	    return mTypeProvider;
+	}
 
-Binder& VMState::binder() {
-    return mBinder;
-}
+	const TypeProvider& VMState::typeProvider() const {
+	    return mTypeProvider;
+	}
 
-ExecutionEngine& VMState::engine() {
-    return mEngine;
-}
+	Binder& VMState::binder() {
+	    return mBinder;
+	}
 
-const ExecutionEngine& VMState::engine() const {
-    return mEngine;
-}
+	ExecutionEngine& VMState::engine() {
+	    return mEngine;
+	}
 
-const Binder& VMState::binder() const {
-    return mBinder;
-}
+	const ExecutionEngine& VMState::engine() const {
+	    return mEngine;
+	}
 
-ClassMetadataProvider& VMState::classProvider() {
-    return mClassProvider;
-}
+	const Binder& VMState::binder() const {
+	    return mBinder;
+	}
 
-const ClassMetadataProvider& VMState::classProvider() const {
-    return mClassProvider;
-}
+	ClassMetadataProvider& VMState::classProvider() {
+	    return mClassProvider;
+	}
 
-GarbageCollector& VMState::gc() {
-    return mGC;
+	const ClassMetadataProvider& VMState::classProvider() const {
+	    return mClassProvider;
+	}
+
+	GarbageCollector& VMState::gc() {
+	    return mGC;
+	}
 }

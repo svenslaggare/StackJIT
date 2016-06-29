@@ -39,6 +39,7 @@ public:
 
     void testLazy() {
         TS_ASSERT_EQUALS(invokeVM("lazy/onlymain", "--no-rtlib -lc 1"), "1337\n");
+        TS_ASSERT_EQUALS(invokeVM("lazy/with_invalid", "--no-rtlib -lc 1"), "1337\n");
         TS_ASSERT_EQUALS(invokeVM("lazy/mainwithcall", "--no-rtlib -lc 1"), "15\n");
         TS_ASSERT_EQUALS(invokeVM("lazy/mainwith2calls", "--no-rtlib -lc 1"), "25\n");
         TS_ASSERT_EQUALS(invokeVM("lazy/callchainwithoutpatching", "--no-rtlib -lc 1"), "25\n");

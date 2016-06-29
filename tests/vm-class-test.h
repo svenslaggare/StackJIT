@@ -16,7 +16,7 @@ public:
 		TS_ASSERT_EQUALS(invokeVM("class/program4"), "1337:4711\n0\n");
 
 		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program1")), "\'Point\' is not a defined class.");
-		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program2")), "1: \'Point\' is not a class type.");
+		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program2")), "main() @ 1: \'Point\' is not a class type.");
 		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program3")), "There exists no type called 'Ref.Point'.");
 
 		TS_ASSERT_EQUALS(invokeVM("class/largeclass1"), "1337\n");
@@ -43,13 +43,13 @@ public:
 		TS_ASSERT_EQUALS(invokeVM("class/constructor2"), "15\n");
 		TS_ASSERT_EQUALS(invokeVM("class/constructor3"), "21\n");
 
-		TS_ASSERT_EQUALS(stripErrorMessage(
-							 invokeVM("class/invalid_constructor1")),
-						 "Constructors must have return type 'Void'.");
+		TS_ASSERT_EQUALS(
+			stripErrorMessage(invokeVM("class/invalid_constructor1")),
+			"Constructors must have return type 'Void'.");
 
-		TS_ASSERT_EQUALS(stripErrorMessage(
-							 invokeVM("class/invalid_constructor2")),
-						 "0: The constructor \'Point::.constructor(Ref.Point)\' is not defined.");
+		TS_ASSERT_EQUALS(
+			stripErrorMessage(invokeVM("class/invalid_constructor2")),
+			"main() @ 0: The constructor \'Point::.constructor()\' is not defined.");
 	}
 
 	//Tests null
@@ -62,10 +62,25 @@ public:
 
 	//Tests access modifiers
 	void testAccess() {
-		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/callingprivate1")), "1: Cannot call private function 'Point::length(Ref.Point)'.");
+		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/callingprivate1")), "main() @ 1: Cannot call private function 'Point::length()'.");
 		TS_ASSERT_EQUALS(invokeVM("class/callingprivate2"), "0\n");
 
-		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/accessingprivate1")), "1: Cannot read from private field 'x' of class 'Point'.");
+		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/accessingprivate1")), "main() @ 1: Cannot read from private field 'x' of class 'Point'.");
 		TS_ASSERT_EQUALS(invokeVM("class/accessingprivate2"), "0\n");
+	}
+
+	//Tests inheritance
+	void testInheritance() {
+		TS_ASSERT_EQUALS(invokeVM("class/inheritance1", "--allocs-before-gc 0"), "A\nA\n0\n");
+		TS_ASSERT_EQUALS(invokeVM("class/inheritance2", "--allocs-before-gc 0"), "2\n4\n6\n0\n");
+		TS_ASSERT_EQUALS(invokeVM("class/inheritance3", "--allocs-before-gc 0"), "2\n4\n0\n");
+
+		TS_ASSERT_EQUALS(
+			stripErrorMessage(invokeVM("class/invalid_inheritance1")),
+			"Self inheritance is not allowed (Point3D).");
+
+		TS_ASSERT_EQUALS(
+			stripErrorMessage(invokeVM("class/invalid_inheritance2")),
+			"Mutual inheritance is not allowed (Point2D, Point3D).");
 	}
 };

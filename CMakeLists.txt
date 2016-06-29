@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.3)
 project(StackJIT)
 
+add_definitions(-DUSE_CMAKE)
+
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
@@ -82,6 +84,8 @@ set(SOURCE_FILES
         src/runtime/native/stringref.cpp
         src/runtime/native/stringref.h)
 
+add_executable(stackjit ${SOURCE_FILES} src/stackjit.cpp)
+
 # Project structure for VS
 SOURCE_GROUP(base REGULAR_EXPRESSION "src/(.*)\\.((cpp)|(h))")
 SOURCE_GROUP(core REGULAR_EXPRESSION "src/core/(.*)")
@@ -92,8 +96,6 @@ SOURCE_GROUP(type REGULAR_EXPRESSION "src/type/(.*)")
 SOURCE_GROUP(test REGULAR_EXPRESSION "src/test/(.*)")
 SOURCE_GROUP(windows REGULAR_EXPRESSION "src/windows/(.*)")
 SOURCE_GROUP(linux REGULAR_EXPRESSION "src/linux/(.*)")
-
-add_executable(stackjit ${SOURCE_FILES} src/stackjit.cpp)
 
 # StackAssembler
 set(STACK_ASSEMBLER_SOURCE_FILES
@@ -126,58 +128,71 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
     add_custom_command(
             OUTPUT ${RUNTIME_LIBRARY}
-            COMMAND ./stackasm ${RUNTIME_LIBRARY_FILES} -o ${RUNTIME_LIBRARY}
+            COMMAND mkdir -p rtlib
+            COMMAND ./stackasm ${RUNTIME_LIBRARY_FILES} -o ${CMAKE_BINARY_DIR}/${RUNTIME_LIBRARY}
             VERBATIM)
 endif()
 
 add_custom_target(BuildRuntimeLibrary ALL DEPENDS ${RUNTIME_LIBRARY} stackasm)
+add_dependencies(stackjit BuildRuntimeLibrary)
+
+# Build the embeddable VM
+#add_library(stackjitvm STATIC ${SOURCE_FILES})
 
 # Tests
 set(TESTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 find_package(CxxTest)
 if(CXXTEST_FOUND)
+    add_custom_target(
+        check ${CMAKE_COMMAND} -E env CTEST_OUTPUT_ON_FAILURE=1
+        ${CMAKE_CTEST_COMMAND} -C $<CONFIG> --verbose
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
     include_directories(${CXXTEST_INCLUDE_DIR})
     enable_testing()
 
     CXXTEST_ADD_TEST(tests-basic-vm test-vm-basic-runner.cpp ${TESTS_DIR}/vm-basic-test.h)
-    add_dependencies(tests-basic-vm BuildRuntimeLibrary stackjit)
+    add_dependencies(tests-basic-vm stackjit)
 
     CXXTEST_ADD_TEST(tests-vm-array test-vm-array-runner.cpp ${TESTS_DIR}/vm-array-test.h)
-    add_dependencies(tests-vm-array BuildRuntimeLibrary stackjit)
+    add_dependencies(tests-vm-array stackjit)
 
     CXXTEST_ADD_TEST(tests-vm-attributes test-vm-attributes-runner.cpp ${TESTS_DIR}/vm-attributes-test.h)
-    add_dependencies(tests-vm-attributes BuildRuntimeLibrary stackjit)
+    add_dependencies(tests-vm-attributes stackjit)
 
     CXXTEST_ADD_TEST(tests-vm-branch test-vm-branch-runner.cpp ${TESTS_DIR}/vm-branch-test.h)
-    add_dependencies(tests-vm-branch BuildRuntimeLibrary stackjit)
+    add_dependencies(tests-vm-branch stackjit)
 
     CXXTEST_ADD_TEST(tests-vm-calling test-vm-calling-runner.cpp ${TESTS_DIR}/vm-calling-test.h)
-    add_dependencies(tests-vm-calling BuildRuntimeLibrary stackjit)
-
-    CXXTEST_ADD_TEST(tests-vm-class test-vm-class-runner.cpp ${TESTS_DIR}/vm-class-test.h)
-    add_dependencies(tests-vm-class BuildRuntimeLibrary stackjit)
+    add_dependencies(tests-vm-calling stackjit)
 
     CXXTEST_ADD_TEST(tests-vm-comparison test-vm-comparison-runner.cpp ${TESTS_DIR}/vm-comparison-test.h)
-    add_dependencies(tests-vm-comparison BuildRuntimeLibrary stackjit)
+    add_dependencies(tests-vm-comparison stackjit)
+
+    CXXTEST_ADD_TEST(tests-vm-class test-vm-class-runner.cpp ${TESTS_DIR}/vm-class-test.h)
+    add_dependencies(tests-vm-class stackjit)
+
+    CXXTEST_ADD_TEST(tests-vm-virtual test-vm-virtual-runner.cpp ${TESTS_DIR}/vm-virtual-test.h)
+    add_dependencies(tests-vm-virtual stackjit)
 
     CXXTEST_ADD_TEST(tests-vm-exception test-vm-exception-runner.cpp ${TESTS_DIR}/vm-exception-test.h)
-    add_dependencies(tests-vm-exception BuildRuntimeLibrary stackjit)
+    add_dependencies(tests-vm-exception stackjit)
 
     CXXTEST_ADD_TEST(tests-vm-library test-vm-library-runner.cpp ${TESTS_DIR}/vm-library-test.h)
-    add_dependencies(tests-vm-library BuildRuntimeLibrary stackjit)
+    add_dependencies(tests-vm-library stackjit)
 
     CXXTEST_ADD_TEST(tests-vm-rtlib test-vm-rtlib-runner.cpp ${TESTS_DIR}/vm-rtlib-test.h)
-    add_dependencies(tests-vm-rtlib BuildRuntimeLibrary stackjit)
+    add_dependencies(tests-vm-rtlib stackjit)
 
     CXXTEST_ADD_TEST(tests-vm-string test-vm-string-runner.cpp ${TESTS_DIR}/vm-string-test.h)
-    add_dependencies(tests-vm-string BuildRuntimeLibrary stackjit)
+    add_dependencies(tests-vm-string stackjit)
 
     CXXTEST_ADD_TEST(tests-vm-verifier test-vm-verifier-runner.cpp ${TESTS_DIR}/vm-verifier-test.h)
-    add_dependencies(tests-vm-verifier BuildRuntimeLibrary stackjit)
+    add_dependencies(tests-vm-verifier stackjit)
 
     CXXTEST_ADD_TEST(tests-vm-gc test-vm-gc-runner.cpp ${TESTS_DIR}/vm-gc-test.h)
-    add_dependencies(tests-vm-gc BuildRuntimeLibrary stackjit)
+    add_dependencies(tests-vm-gc stackjit)
 
     CXXTEST_ADD_TEST(tests-amd64 test-amd64-runner.cpp ${TESTS_DIR}/amd64-test.h src/compiler/amd64.cpp src/compiler/amd64.h src/helpers.h src/helpers.cpp)
 endif()

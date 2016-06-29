@@ -1,7 +1,7 @@
 #include <cxxtest/TestSuite.h>
 #include <vector>
-
 #include "../src/compiler/amd64.h"
+using namespace stackjit;
 
 /**
  * Tests the Amd64 backend

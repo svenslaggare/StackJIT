@@ -1,0 +1,30 @@
+class Point
+{
+	x Int
+	y Int
+}
+
+member Point::.constructor() Void
+{
+	RET
+}
+
+member Point::length() Int
+{
+	@Virtual(value=true)
+	LDARG 0
+	LDFIELD Point::x
+
+	LDARG 0
+    LDFIELD Point::y
+
+    ADD
+    RET
+}
+
+func main() Int
+{
+	LDNULL
+	CALLINST Point::length()
+	RET
+}

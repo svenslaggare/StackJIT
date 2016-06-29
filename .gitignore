@@ -17,3 +17,5 @@ Windows.old/tests/x64
 Windows.old/StackAssembler/x64
 *.simg
 Windows
+Linux
+lib

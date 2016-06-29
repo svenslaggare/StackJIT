@@ -1,0 +1,10 @@
+func add() Int
+{
+	RET
+}
+
+func main() Int
+{
+	LDINT 1337
+	RET
+}

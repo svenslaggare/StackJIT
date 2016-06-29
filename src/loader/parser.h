@@ -4,134 +4,140 @@
 #include <string>
 #include <unordered_map>
 
-//The assembly parser
-namespace AssemblyParser {
-	//The instruction formats
-	enum class InstructionFormats : char {
-		OpCodeOnly,
-		IntData,
-		FloatData,
-		CharData,
-		StrData,
-		Call,
-		CallInstance,
-	};
+namespace stackjit {
+	//The assembly parser
+	namespace AssemblyParser {
+		//The instruction formats
+		enum class InstructionFormats : char {
+			OpCodeOnly,
+			IntData,
+			FloatData,
+			CharData,
+			StrData,
+			Call,
+			CallInstance,
+		};
 
-	//Represents a parsed but not bound instruction.
-	struct Instruction {
-		//The instruction format
-		InstructionFormats format;
+		//Represents a parsed but not bound instruction.
+		struct Instruction {
+			//The instruction format
+			InstructionFormats format;
 
-	    //The op code
-	    OpCodes opCode;
+		    //The op code
+		    OpCodes opCode;
 
-	    //Primitive values
-	    float floatValue;
-	    int intValue;
-	    char charValue;
-	    std::string strValue;
+		    //Primitive values
+		    float floatValue;
+		    int intValue;
+		    char charValue;
+		    std::string strValue;
 
-	    //Used by call instructions
-	    std::vector<std::string> parameters;
+		    //Used by call instructions
+		    std::vector<std::string> parameters;
 
-	    //Used by the object instructions
-	    std::string calledClassType;
+		    //Used by the object instructions
+		    std::string calledClassType;
 
-	    //Creates a new instruction
-	    Instruction();
+		    //Creates a new instruction
+		    Instruction();
 
-	    //Creates a new instruction with the given op code
-	    static Instruction make(OpCodes opCode);
+		    //Creates a new instruction with the given op code
+		    static Instruction make(OpCodes opCode);
 
-	    //Creates a new instruction with an int as value
-	    static Instruction makeWithInt(OpCodes opCode, int value);
+		    //Creates a new instruction with an int as value
+		    static Instruction makeWithInt(OpCodes opCode, int value);
 
-	    //Creates a new instruction with a float as value
-	    static Instruction makeWithFloat(OpCodes opCode, float value);
+		    //Creates a new instruction with a float as value
+		    static Instruction makeWithFloat(OpCodes opCode, float value);
 
-	    //Creates a new instruction with a char as value
-	    static Instruction makeWithChar(OpCodes opCode, char value);
+		    //Creates a new instruction with a char as value
+		    static Instruction makeWithChar(OpCodes opCode, char value);
 
-	    //Creates a new instruction with a string as the value
-	    static Instruction makeWithStr(OpCodes opCode, std::string value);
+		    //Creates a new instruction with a string as the value
+		    static Instruction makeWithStr(OpCodes opCode, std::string value);
 
-	    //Creates a new call instruction
-	    static Instruction makeCall(std::string funcName, std::vector<std::string> parameters);
+		    //Creates a new call instruction
+		    static Instruction makeCall(std::string funcName, std::vector<std::string> parameters);
 
-	    //Creates a new call instance instruction
-	    static Instruction makeCallInstance(std::string classType, std::string funcName, std::vector<std::string> parameters);
+		    //Creates a new call instance instruction
+		    static Instruction makeCallInstance(std::string classType, std::string funcName, std::vector<std::string> parameters);
 
-	    //Creates a new create object instruction
-	    static Instruction makeNewObject(std::string classType, std::vector<std::string> parameters);
-	};
+			//Creates a new call virtual instruction
+			static Instruction makeCallVirtual(std::string classType, std::string funcName, std::vector<std::string> parameters);
 
-	//Represents an attribute
-	struct Attribute {
-		std::string name;
-		std::unordered_map<std::string, std::string> values;
-	};
+		    //Creates a new create object instruction
+		    static Instruction makeNewObject(std::string classType, std::vector<std::string> parameters);
+		};
 
-	//Represents an attributes container
-	using AttributeContainer = std::unordered_map<std::string, Attribute>;
+		//Represents an attribute
+		struct Attribute {
+			std::string name;
+			std::unordered_map<std::string, std::string> values;
+		};
 
-	//Represents a function
-	struct Function {
-		std::string name;
-		std::string returnType;
-		std::vector<std::string> parameters;
+		//Represents an attributes container
+		using AttributeContainer = std::unordered_map<std::string, Attribute>;
 
-		bool isMemberFunction;
-		std::string className;
-		std::string memberFunctionName;
+		//Represents a function
+		struct Function {
+			std::string name;
+			std::string returnType;
+			std::vector<std::string> parameters;
 
-		bool isExternal;
+			bool isMemberFunction;
+			std::string className;
+			std::string memberFunctionName;
 
-		std::vector<Instruction> instructions;
-		std::vector<std::string> localTypes;
+			bool isExternal;
 
-		AttributeContainer attributes;
+			std::vector<Instruction> instructions;
+			std::vector<std::string> localTypes;
 
-		//Creates a new function
-		Function();
+			AttributeContainer attributes;
 
-		//Sets the number of locals
-		void setNumLocals(int num);
+			//Creates a new function
+			Function();
 
-		//Returns the number of locals
-		std::size_t numLocals() const;
-	};
+			//Sets the number of locals
+			void setNumLocals(int num);
 
-	//Represents a field in a class
-	struct Field {
-		std::string name;
-		std::string type;
+			//Returns the number of locals
+			std::size_t numLocals() const;
+		};
 
-		AttributeContainer attributes;
-	};
+		//Represents a field in a class
+		struct Field {
+			std::string name;
+			std::string type;
 
-	//Represents a class
-	struct Class {
-		std::string name;
-		std::vector<Field> fields;
+			AttributeContainer attributes;
+		};
 
-		AttributeContainer attributes;
+		//Represents a class
+		struct Class {
+			std::string name;
+			std::vector<Field> fields;
+			std::string parentClassName;
 
-		//Creates a new class
-		Class();
-	};
+			AttributeContainer attributes;
 
-	//Represents an assembly
-	struct Assembly {
-		std::vector<Function> functions;
-		std::vector<Class> classes;
-	};
+			//Creates a new class
+			Class();
+		};
 
-	//Returns the signature for the given function
-	std::string getSignature(const AssemblyParser::Function& function, bool ignoreMemberThisRef = false);
+		//Represents an assembly
+		struct Assembly {
+			std::vector<Function> functions;
+			std::vector<Class> classes;
+		};
 
-	//Tokenizes from the given stream
-	std::vector<std::string> tokenize(std::istream& stream);
-	
-	//Parses the given tokens into the given assembly
-	void parseTokens(const std::vector<std::string>& tokens, AssemblyParser::Assembly& assembly);
+		//Returns the signature for the given function
+		std::string getSignature(const AssemblyParser::Function& function);
+
+		//Tokenizes from the given stream
+		std::vector<std::string> tokenize(std::istream& stream);
+
+		//Parses the given tokens into the given assembly
+		void parseTokens(const std::vector<std::string>& tokens, AssemblyParser::Assembly& assembly);
+	}
 }
