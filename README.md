@@ -23,7 +23,7 @@ Supports Linux x64 and Windows x64.
 ### Linux
 Requirments:
 * C++11 compiler.
-* [CXXTest](http://cxxtest.com/) for tests.
+* [CxxTest](http://cxxtest.com/) for tests.
 
 To build:
 ```
@@ -38,7 +38,7 @@ make test
 Requirements:
 * Visual Studio 2015.
 * CMake.
-* [CXXTest](http://cxxtest.com/) for tests.
+* [CxxTest](http://cxxtest.com/) for tests.
 
 The following command installs CxxTest:
 ```
