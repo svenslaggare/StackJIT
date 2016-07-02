@@ -17,7 +17,8 @@ To run the VM, supply a program via stdin:
 * `-i <library file>`: Loads a library.
 
 ## Supported platforms
-Supports Linux x64 and Windows x64.
+* Linux x64
+* Windows x64
 
 ## Build
 ### Linux
