@@ -130,7 +130,6 @@ namespace stackjit {
 			}
 
 			typeParts.push_back(token);
-
 			return typeParts;
 		}
 

@@ -77,13 +77,14 @@ $(TEST_RUNNERS_DIR)/%: $(TESTS_DIR)/%.h $(OBJ_DIR) $(EXECUTABLE) $(RTLIB_OUT) $(
 	$(CXXC) $(CXXFLAGS) -o $@ -I $(CXXTEST) $(TEST_OBJECTS) $@-runner.cpp -DUSE_VALGRIND=$(TEST_WITH_VALGRIND)
 	./$@
 
-lib: $(OBJECTS)
+lib: $(OBJECTS) $(RTLIB_OUT)
 	mkdir -p $(LIBRARY_OUTPUT_FOLDER)
 	mkdir -p $(LIBRARY_OUTPUT_FOLDER)/stackjit
 	ar rvs $(LIBRARY_OUTPUT_FOLDER)/$(LIBRARY) $(OBJECTS)
 	find src/ -name '*.h*' | cpio -pdm $(LIBRARY_OUTPUT_FOLDER)/stackjit
 	mv $(LIBRARY_OUTPUT_FOLDER)/stackjit/src/* $(LIBRARY_OUTPUT_FOLDER)/stackjit
 	rmdir $(LIBRARY_OUTPUT_FOLDER)/stackjit/src
+	cp -r rtlib $(LIBRARY_OUTPUT_FOLDER)
 
 clean:
 	rm -rf $(OBJ_DIR)
