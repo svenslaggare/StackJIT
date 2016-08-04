@@ -1,0 +1,52 @@
+class Point2D
+{
+	x Int
+	y Int
+}
+
+class Point3D
+{
+	z Int
+}
+
+member Point2D::.constructor(Int Int) Void
+{
+	LDARG 0
+	LDARG 1
+	STFIELD Point2D::x
+
+	LDARG 0
+	LDARG 2
+	STFIELD Point2D::y
+
+	RET
+}
+
+member Point3D::.constructor(Int Int Int) Void
+{
+	LDARG 0
+	LDARG 1
+	LDARG 2
+	CALLINST Point2D::.constructor(Int Int)
+
+	LDARG 0
+	LDARG 3
+	STFIELD Point3D::z
+
+	RET
+}
+
+func main() Int
+{
+	.locals 1
+	.local 0 Ref.Point3D
+
+	LDINT 1
+	LDINT 2
+	LDINT 3
+	NEWOBJ Point3D::.constructor(Int Int Int)
+	STLOC 0
+
+	LDINT 0
+	RET
+}

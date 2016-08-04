@@ -67,6 +67,10 @@ namespace stackjit {
 		return mFields;
 	}
 
+	bool ClassMetadata::fieldExists(std::string fieldName) const {
+		return mFields.count(fieldName) > 0;
+	}
+
 	void ClassMetadata::addField(std::string name, const Type* type, AccessModifier accessModifier) {
 		mFieldDefinitions.push_back(FieldDefinition(name, type, accessModifier));
 	}

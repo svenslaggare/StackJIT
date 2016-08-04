@@ -510,6 +510,20 @@ namespace stackjit {
 					}
 				}
 
+				if (funcToCall.isConstructor()) {
+					bool isInvalid = false;
+					if (!isInstance) {
+						isInvalid = true;
+					} else if (!(function.def().isConstructor()
+							   && TypeSystem::isSubtypeOf(funcToCall.classType(), function.def().classType()))) {
+						isInvalid = true;
+					}
+
+					if (isInvalid) {
+						typeError(functionSignature, index, "Cannot call constructor '" + signature + "'.");
+					}
+				}
+
 				//Check if the member function can be called
 				if (isInstance) {
 					if (!canCallMemberFunction(function.def(), funcToCall)) {
@@ -848,19 +862,27 @@ namespace stackjit {
 						}
 					}
 
-					auto fieldType = classMetadata.fields().at(fieldName).type();
-
-					if (fieldType == nullptr) {
-						typeError(functionSignature, index, "There exists no field '" + fieldName + "' in the '" + className + "' class.");
+					if (!classMetadata.fieldExists(fieldName)) {
+						typeError(
+							functionSignature,
+							index,
+							"There exists no field '" + fieldName + "' in the '" + className + "' class.");
 					}
 
-					if (!canReadOrWriteField(function.def(), classMetadata, static_cast<const ClassType*>(classType),
-											 fieldName)) {
-						typeError(functionSignature, index,
-								  "Cannot read from private field '" + fieldName + "' of class '" + className + "'.");
+					auto canReadOrWrite = canReadOrWriteField(
+						function.def(),
+						classMetadata,
+						static_cast<const ClassType*>(classType),
+						fieldName);
+
+					if (!canReadOrWrite) {
+						typeError(
+							functionSignature,
+							index,
+							"Cannot read from private field '" + fieldName + "' of class '" + className + "'.");
 					}
 
-					operandStack.push(fieldType);
+					operandStack.push(classMetadata.fields().at(fieldName).type());
 				} else {
 					typeError(functionSignature, index, "Invalid field reference.");
 				}
@@ -875,9 +897,10 @@ namespace stackjit {
 				bool isNull = classRefType == mNullType;
 
 				if (!TypeSystem::isClass(classRefType) && !isNull) {
-					typeError(functionSignature, index,
-							  "Expected first operand to be a class reference, but got type: " + classRefType->name() +
-							  ".");
+					typeError(
+						functionSignature,
+						index,
+						"Expected first operand to be a class reference, but got type: " + classRefType->name() + ".");
 				}
 
 				std::string className;
@@ -889,10 +912,12 @@ namespace stackjit {
 					}
 
 					auto& classMetadata = mVMState.classProvider().getMetadata(className);
-					auto fieldType = classMetadata.fields().at(fieldName).type();
 
-					if (fieldType == nullptr) {
-						typeError(functionSignature, index, "There exists no field '" + fieldName + "' in the '" + className + "' class.");
+					if (!classMetadata.fieldExists(fieldName)) {
+						typeError(
+							functionSignature,
+							index,
+							"There exists no field '" + fieldName + "' in the '" + className + "' class.");
 					}
 
 					auto classType = mVMState.typeProvider().makeType("Ref." + className);
@@ -905,13 +930,24 @@ namespace stackjit {
 						}
 					}
 
-					if (!canReadOrWriteField(function.def(), classMetadata, static_cast<const ClassType*>(classType),
-											 fieldName)) {
-						typeError(functionSignature, index, "Cannot write to private field '" + fieldName + "' of class '" + className + "'.");
+					auto canReadOrWrite = canReadOrWriteField(
+						function.def(),
+						classMetadata,
+						static_cast<const ClassType*>(classType),
+						fieldName);
+					if (!canReadOrWrite) {
+						typeError(
+							functionSignature,
+							index,
+							"Cannot write to private field '" + fieldName + "' of class '" + className + "'.");
 					}
 
+					auto fieldType = classMetadata.fields().at(fieldName).type();
 					if (!sameType(valueType, fieldType)) {
-						typeError(functionSignature, index, "Expected the second operand to be of type " + fieldType->name() + ".");
+						typeError(
+							functionSignature,
+							index,
+							"Expected the second operand to be of type " + fieldType->name() + ".");
 					}
 				} else {
 					typeError(functionSignature, index, "Invalid field reference.");

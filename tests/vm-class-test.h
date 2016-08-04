@@ -24,7 +24,6 @@ public:
 
 	//Tests with nested and recursive classes
 	void testNested() {
-
 		TS_ASSERT_EQUALS(invokeVM("class/recursiveclass1"), "0\n");
 		TS_ASSERT_EQUALS(invokeVM("class/classwithclass1"), "0\n");
 		TS_ASSERT_EQUALS(invokeVM("class/classwithclass2"), "0\n");
@@ -50,6 +49,10 @@ public:
 		TS_ASSERT_EQUALS(
 			stripErrorMessage(invokeVM("class/invalid_constructor2")),
 			"main() @ 0: The constructor \'Point::.constructor()\' is not defined.");
+
+		TS_ASSERT_EQUALS(
+			stripErrorMessage(invokeVM("class/invalid_constructor3")),
+			"main() @ 3: Cannot call constructor 'Point2D::.constructor(Int Int)'.");
 	}
 
 	//Tests null
@@ -74,6 +77,7 @@ public:
 		TS_ASSERT_EQUALS(invokeVM("class/inheritance1", "--allocs-before-gc 0"), "A\nA\n0\n");
 		TS_ASSERT_EQUALS(invokeVM("class/inheritance2", "--allocs-before-gc 0"), "2\n4\n6\n0\n");
 		TS_ASSERT_EQUALS(invokeVM("class/inheritance3", "--allocs-before-gc 0"), "2\n4\n0\n");
+		TS_ASSERT_EQUALS(invokeVM("class/inheritance4", "--allocs-before-gc 0"), "1\n2\n3\n0\n");
 
 		TS_ASSERT_EQUALS(
 			stripErrorMessage(invokeVM("class/invalid_inheritance1")),
@@ -82,5 +86,15 @@ public:
 		TS_ASSERT_EQUALS(
 			stripErrorMessage(invokeVM("class/invalid_inheritance2")),
 			"Mutual inheritance is not allowed (Point2D, Point3D).");
+
+		TS_ASSERT_EQUALS(
+			stripErrorMessage(invokeVM("class/invalid_inheritance3")),
+			"Point3D::.constructor(Int Int Int) @ 3: Cannot call constructor 'Point2D::.constructor(Int Int)'.");
+	}
+
+	//Tests invalid field
+	void testInvalidFields() {
+		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_field1")), "main() @ 1: There exists no field 'x' in the 'Point2D' class.");
+		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_field1")), "main() @ 1: There exists no field 'x' in the 'Point2D' class.");
 	}
 };

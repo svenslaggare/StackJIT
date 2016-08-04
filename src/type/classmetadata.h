@@ -107,6 +107,9 @@ namespace stackjit {
 		//Returns the fields
 		const std::unordered_map<std::string, Field>& fields() const;
 
+		//Indicates if a field with the given name exits
+		bool fieldExists(std::string fieldName) const;
+
 		//Adds a new field to the class
 		void addField(std::string name, const Type* type, AccessModifier accessModifier);
 

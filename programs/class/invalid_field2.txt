@@ -1,0 +1,14 @@
+class Point2D
+{
+
+}
+
+func main() Int
+{
+	LDNULL
+	LDINT 0
+	STFIELD Point2D::x
+
+	LDINT 0
+	RET
+}
