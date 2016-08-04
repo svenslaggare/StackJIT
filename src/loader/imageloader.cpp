@@ -273,12 +273,11 @@ namespace stackjit {
 			classes.emplace(classDef.name, classDef);
 		}
 
-		image = std::move(AssemblyImage(
+		image = AssemblyImage(
 			  std::move(imageData),
 			  std::move(functionBodyOffset),
 			  std::move(classBodyOffsets),
 			  std::move(functions),
-			  std::move(classes)
-		));
+			  std::move(classes));
 	}
 }

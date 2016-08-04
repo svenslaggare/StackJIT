@@ -168,7 +168,7 @@ namespace stackjit {
 		for (auto& image : imageContainer.images()) {
 			for (auto& current : image->classes()) {
 				auto& classDef = current.second;
-				vmState.classProvider().add(classDef.name, std::move(ClassMetadata(classDef.name)));
+				vmState.classProvider().add(classDef.name, ClassMetadata(classDef.name));
 
 				if (classDef.parentClassName != "") {
 					inheritingClasses.push_back(std::make_pair(
