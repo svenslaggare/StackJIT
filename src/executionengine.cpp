@@ -186,7 +186,8 @@ namespace stackjit {
 
 		if (mVMState.config.enableDebug && mVMState.config.printFunctionGeneration) {
 			std::cout
-				<< "Defined function '" << function->def().name() << "' at 0x" << std::hex << (PtrValue)funcPtr << std::dec << "."
+				<< "Defined function '" << function->def().name()
+				<< "' at 0x" << std::hex << (PtrValue)funcPtr << std::dec << "."
 				<< std::endl;
 		}
 
