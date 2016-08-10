@@ -1,4 +1,3 @@
-#include <backward/strstream>
 #include "helpers.h"
 
 namespace stackjit {
