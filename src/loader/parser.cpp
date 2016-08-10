@@ -95,7 +95,7 @@ namespace stackjit {
 	}
 
 	void AssemblyParser::Function::setNumLocals(int num) {
-		localTypes.resize(num);
+		localTypes.resize((std::size_t)num);
 	}
 
 	std::size_t AssemblyParser::Function::numLocals() const {
@@ -420,7 +420,7 @@ namespace stackjit {
 						auto localType = nextToken(tokens, i);
 
 						if (localIndex >= 0 && localIndex < (int)currentFunc.numLocals()) {
-							currentFunc.localTypes.at(localIndex) = localType;
+							currentFunc.localTypes.at((std::size_t)localIndex) = localType;
 						} else {
 	                    	throw std::runtime_error("Invalid local index.");
 	                    }

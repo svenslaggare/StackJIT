@@ -81,7 +81,6 @@ namespace stackjit {
 
 		//Prevent the VM state from being copied
 		VMState(const VMState&) = delete;
-
 		VMState& operator=(const VMState&) = delete;
 
 		//Initializes the VM
@@ -89,22 +88,18 @@ namespace stackjit {
 
 		//Returns the type provider
 		TypeProvider& typeProvider();
-
 		const TypeProvider& typeProvider() const;
 
 		//Returns the binder
 		Binder& binder();
-
 		const Binder& binder() const;
 
 		//Returns the class metadata provider
 		ClassMetadataProvider& classProvider();
-
 		const ClassMetadataProvider& classProvider() const;
 
 		//Returns the execution engine
 		ExecutionEngine& engine();
-
 		const ExecutionEngine& engine() const;
 
 		//Returns the GC

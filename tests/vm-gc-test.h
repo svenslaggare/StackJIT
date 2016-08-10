@@ -9,6 +9,7 @@
 #include <cxxtest/TestSuite.h>
 #include <regex>
 #include "helpers.h"
+#include "../src/helpers.h"
 
 //Contains info about an GC
 struct GC {
@@ -38,7 +39,7 @@ std::string parseGCData(std::string data, GCTest& gcTest) {
 	gcTest = {};
 
 	//Split into lines
-	auto lines = Helpers::splitString(data, "\n");
+	auto lines = stackjit::Helpers::splitString(data, "\n");
 	GC currentGC;
 	bool hasFound = false;
 

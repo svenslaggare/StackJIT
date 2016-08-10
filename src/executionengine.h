@@ -60,12 +60,10 @@ namespace stackjit {
 	public:
 		//Creates a new execution engine
 		ExecutionEngine(VMState& vmState);
-
 		~ExecutionEngine();
 
 		//Prevent it from being copied
 		ExecutionEngine(const ExecutionEngine&) = delete;
-
 		ExecutionEngine& operator=(const ExecutionEngine&) = delete;
 
 		//Returns the JIT compiler
@@ -98,7 +96,6 @@ namespace stackjit {
 
 		//Returns the call stack
 		CallStack& callStack();
-
 		const CallStack& callStack() const;
 	};
 }

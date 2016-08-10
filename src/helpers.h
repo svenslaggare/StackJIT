@@ -2,6 +2,7 @@
 #include "compiler/amd64.h"
 #include <vector>
 #include <chrono>
+#include <functional>
 
 namespace stackjit {
 	//Contains helper methods
@@ -22,6 +23,28 @@ namespace stackjit {
 
 		//Indicates if the given value fits in a char
 		bool validCharValue(int value);
+
+		//Splits the given string
+		std::vector<std::string> splitString(std::string str, std::string delimiter);
+
+		//Joins the given values using the given separator
+		template <class T>
+		std::string join(const std::vector<T>& values, std::function<std::string(T)> toString, std::string sep) {
+			bool isFirst = true;
+			std::string str = "";
+
+			for (auto val : values) {
+				if (!isFirst) {
+					str += sep;
+				} else {
+					isFirst = false;
+				}
+
+				str += toString(val);
+			}
+
+			return str;
+		}
 	}
 
 	template<typename T>

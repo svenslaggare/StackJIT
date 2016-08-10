@@ -78,11 +78,12 @@ $(TEST_RUNNERS_DIR)/%: $(TESTS_DIR)/%.h $(OBJ_DIR) $(EXECUTABLE) $(RTLIB_OUT) $(
 	./$@
 
 lib: $(OBJECTS) $(RTLIB_OUT)
+	rm -rf $(LIBRARY_OUTPUT_FOLDER)
 	mkdir -p $(LIBRARY_OUTPUT_FOLDER)
 	mkdir -p $(LIBRARY_OUTPUT_FOLDER)/stackjit
 	ar rvs $(LIBRARY_OUTPUT_FOLDER)/$(LIBRARY) $(OBJECTS)
 	find src/ -name '*.h*' | cpio -pdm $(LIBRARY_OUTPUT_FOLDER)/stackjit
-	mv $(LIBRARY_OUTPUT_FOLDER)/stackjit/src/* $(LIBRARY_OUTPUT_FOLDER)/stackjit
+	mv -f $(LIBRARY_OUTPUT_FOLDER)/stackjit/src/* $(LIBRARY_OUTPUT_FOLDER)/stackjit
 	rmdir $(LIBRARY_OUTPUT_FOLDER)/stackjit/src
 	cp -r rtlib $(LIBRARY_OUTPUT_FOLDER)
 

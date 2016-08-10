@@ -19,7 +19,7 @@ namespace stackjit {
 	//The type of a function call
 	enum class FunctionCallType : unsigned char {
 		Absolute, //A direct address to the function is used
-		Relative  //An address relative callee function to the function is used
+		Relative  //An address relative to the callee function to the function is used
 	};
 
 	//Represents the JIT compiler

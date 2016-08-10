@@ -51,6 +51,12 @@ namespace stackjit {
 		//Returns the name
 		std::string name() const;
 
+		//Returns the namespace and the name of the function
+		std::pair<std::string, std::string> namespaceAndName() const;
+
+		//Finds the name of the namespace that the function is defined in
+		std::string namespaceName() const;
+
 		//Returns the type of the return value
 		const Type* returnType() const;
 

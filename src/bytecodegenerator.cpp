@@ -92,12 +92,12 @@ namespace stackjit {
 			ByteCodeGenerator::generateAttributes(stream, function.attributes);
 
 			if (function.localTypes.size() > 0) {
-				std::cout << "\t.locals " << function.localTypes.size() << std::endl;
+				stream << "\t.locals " << function.localTypes.size() << std::endl;
 
 				std::size_t i = 0;
 				for (auto& local : function.localTypes) {
 					if (local != "") {
-						std::cout << "\t.local " << i << " " << local << std::endl;
+						stream << "\t.local " << i << " " << local << std::endl;
 					}
 					i++;
 				}
@@ -177,7 +177,7 @@ namespace stackjit {
 		generateAttributes(stream, classDef.attributes);
 
 		for (auto& field : classDef.fields) {
-			std::cout << "\t" << field.name << " " << field.type << std::endl;
+			stream << "\t" << field.name << " " << field.type << std::endl;
 			generateAttributes(stream, field.attributes);
 		}
 

@@ -1,4 +1,5 @@
 #include "function.h"
+#include "../helpers.h"
 
 namespace stackjit {
 	ManagedFunction::ManagedFunction(const FunctionDefinition& definition)
@@ -111,6 +112,26 @@ namespace stackjit {
 
 	std::string FunctionDefinition::name() const {
 	    return mName;
+	}
+
+	std::pair<std::string, std::string> FunctionDefinition::namespaceAndName() const {
+		auto parts = Helpers::splitString(mName, ".");
+		std::string namespaceName = "";
+		std::string funcName = "";
+
+		if (parts.size() > 1) {
+			funcName = parts.back();
+			parts.erase(parts.begin() + (parts.size() - 1));
+			namespaceName = Helpers::join<std::string>(parts, [](std::string str) { return str; }, ".");
+		} else {
+			funcName = mName;
+		}
+
+		return std::make_pair(namespaceName, funcName);
+	}
+
+	std::string FunctionDefinition::namespaceName() const {
+		return namespaceAndName().first;
 	}
 
 	const Type* FunctionDefinition::returnType() const {
