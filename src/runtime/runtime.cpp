@@ -13,8 +13,12 @@
 
 namespace stackjit {
 	namespace Runtime {
-		VMState vmState;
+		VMState* vmState = nullptr;
 	};
+
+	void Runtime::initialize(VMState* vmState) {
+		Runtime::vmState = vmState;
+	}
 
 	void Runtime::printStackFrame(RegisterValue* basePtr, ManagedFunction* func) {
 		using namespace Runtime::Internal;
@@ -39,13 +43,13 @@ namespace stackjit {
 
 		//Compile the function (if needed)
 		try {
-			vmState.engine().compileFunction(toCallSignature);
+			vmState->engine().compileFunction(toCallSignature);
 		} catch (std::runtime_error& e) {
 			std::cout << e.what() << std::endl;
 			exit(0);
 		}
 
-		if (vmState.enableDebug && vmState.printLazyPatching) {
+		if (vmState->enableDebug && vmState->printLazyPatching) {
 			std::cout
 				<< "Patching call to " << toCallSignature << " at " << FunctionSignature::from(callee->def()).str()
 				<< ", offset: " << callOffset << ", check offset: " << checkStart << "." << std::endl;
@@ -67,7 +71,7 @@ namespace stackjit {
 	}
 
 	unsigned char* Runtime::getVirtualFunctionAddress(RawClassRef rawClassRef, int index) {
-		ClassRef classRef = vmState.gc().getClassRef(rawClassRef);
+		ClassRef classRef = vmState->gc().getClassRef(rawClassRef);
 		auto classType = static_cast<const ClassType*>(classRef.objRef().type());
 		auto funcPtr = classType->metadata()->virtualFunctionTable()[index];
 
@@ -78,7 +82,7 @@ namespace stackjit {
 			auto signature = classType->metadata()->getVirtualFunctionSignature(index);
 			JitFunction entryPoint;
 			try {
-				vmState.engine().compileFunction(signature, entryPoint);
+				vmState->engine().compileFunction(signature, entryPoint);
 			} catch (std::runtime_error& e) {
 				std::cout << e.what() << std::endl;
 				exit(0);
@@ -164,20 +168,20 @@ namespace stackjit {
 
 	void Runtime::garbageCollect(RegisterValue* basePtr, ManagedFunction* func, int instIndex) {
 		GCRuntimeInformation runtimeInformation(basePtr, func, instIndex);
-		vmState.gc().collect(runtimeInformation);
+		vmState->gc().collect(runtimeInformation);
 	}
 
 	RawArrayRef Runtime::newArray(const ArrayType* arrayType, int length) {
-		return vmState.gc().newArray(arrayType, length);
+		return vmState->gc().newArray(arrayType, length);
 	}
 
 	RawClassRef Runtime::newClass(const ClassType* classType) {
-		return vmState.gc().newClass(classType);
+		return vmState->gc().newClass(classType);
 	}
 
 	RawClassRef Runtime::newString(const char* string, int length) {
 		//Allocate the underlying char array
-		auto charsPtr = vmState.gc().newArray(StringRef::charArrayType(), length);
+		auto charsPtr = vmState->gc().newArray(StringRef::charArrayType(), length);
 
 		//Set the value for the char array
 		for (int i = 0; i < length; i++) {
@@ -185,7 +189,7 @@ namespace stackjit {
 		}
 
 		//Allocate the string object
-		auto strPr = vmState.gc().newClass(StringRef::stringType());
+		auto strPr = vmState->gc().newClass(StringRef::stringType());
 
 		//Set the chars field
 		StringRef::setCharsField(strPr, (char*)charsPtr);

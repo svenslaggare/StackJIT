@@ -2,7 +2,9 @@
 
 namespace stackjit {
 	VMState::VMState()
-	    : mTypeProvider(mClassProvider), mGC(*this), mEngine(*this) {
+	    : mTypeProvider(mClassProvider),
+		  mGC(*this),
+		  mEngine(*this) {
 
 	}
 

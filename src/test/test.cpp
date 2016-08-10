@@ -17,9 +17,9 @@ namespace stackjit {
 			auto& vmState = Runtime::vmState;
 
 			//Obtain a reference to the class
-			auto pointRef = vmState.gc().getClassRef(objRef);
+			auto pointRef = vmState->gc().getClassRef(objRef);
 
-			auto intType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Integer));
+			auto intType = vmState->typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Integer));
 
 			auto xField = pointRef.getField<int>("x", intType);
 			auto yField = pointRef.getField<int>("y", intType);

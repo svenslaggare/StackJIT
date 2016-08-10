@@ -16,10 +16,10 @@
 using namespace stackjit;
 
 //Parses the options
-std::string handleOptions(int argc, char* argv[], ExecutionEngine& engine) {
+std::string handleOptions(int argc, char* argv[], VMState& vmState) {
 	std::string program = "";
-	auto& vmState = Runtime::vmState;
 	bool isFile = false;
+	auto& engine = vmState.engine();
 
 	for (int i = 1; i < argc; i++) {
 		std::string switchStr = argv[i];
@@ -194,14 +194,16 @@ std::string getExecutableDir() {
 
 int main(int argc, char* argv[]) {
 	try {
-		auto& vmState = Runtime::vmState;
+		VMState vmState;
+		Runtime::initialize(&vmState);
+
 		auto start = std::chrono::high_resolution_clock::now();
 		auto& engine = vmState.engine();
 
 		engine.setBaseDir(getExecutableDir());
 
 		//Handle options
-		auto programPath = handleOptions(argc, argv, engine);
+		auto programPath = handleOptions(argc, argv, vmState);
 		vmState.initialize();
 
 		//Load the program

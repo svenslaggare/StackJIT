@@ -13,6 +13,63 @@ namespace stackjit {
 		File
 	};
 
+	//Holds the configuration for the VM state
+	struct VMStateConfig {
+		//Indicates if debugging is enabled
+		bool enableDebug = false;
+
+		//Indicates if testing mode is enabled
+		bool testMode = false;
+
+		//How the input program is loaded
+		ProgramLoadMode programLoadMode = ProgramLoadMode::Stdin;
+
+		//Indicates if the generated code is outputted as a file
+		bool outputGeneratedCode = false;
+
+		//Indicates if the GC is disabled
+		bool disableGC = false;
+
+		//Indicates if the runtime library is loaded at startup.
+		bool loadRuntimeLibrary = true;
+
+		//Indicates if the functions are lazily compiled
+		bool lazyJIT = true;
+
+		//The number of allocations before a GC happens
+		int allocationsBeforeGC = 1000;
+
+		//Prints the info about the stack frame
+		bool printStackFrame = false;
+
+		//Prints when lazy calls are patched
+		bool printLazyPatching = false;
+
+		//Prints when a function has been compiled
+		bool printFunctionGeneration = false;
+
+		//Indicates if the start and end of a GC is printed
+		bool printGCPeriod = false;
+
+		//Indicates if stats about the GC is printed
+		bool printGCStats = false;
+
+		//Indicates if alive objects are printed at GC
+		bool printAliveObjects = false;
+
+		//Indicates if the stack trace is printed at GC
+		bool printGCStackTrace = false;
+
+		//Indicates if an allocation is printed
+		bool printAllocation = false;
+
+		//Indicates if a deallocation is printed
+		bool printDeallocation = false;
+
+		//Indicates if the v-table layout is printed
+		bool printVirtualFunctionTableLayout = false;
+	};
+
 	//Contains the state of the VM
 	class VMState {
 	private:
