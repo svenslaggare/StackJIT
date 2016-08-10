@@ -234,7 +234,7 @@ int main(int argc, char* argv[]) {
 					Loader::load(file, vmState, program);
 					engine.loadAssembly(program, AssemblyType::Program);
 				} else {
-					throw std::runtime_error("Could not load program.");
+					throw std::runtime_error("Could not load the program.");
 				}
 				break;
 			}

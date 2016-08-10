@@ -78,7 +78,7 @@ namespace stackjit {
 
 		BinaryData imageData(size);
 		if (!stream.read(imageData.data(), size)) {
-			throw std::runtime_error("Could not load image.");
+			throw std::runtime_error("Could not load the image.");
 		}
 
 		auto image = new AssemblyImage();
@@ -100,7 +100,7 @@ namespace stackjit {
 		std::ifstream fileStream(filePath, openMode);
 
 		if (!fileStream.is_open()) {
-			std::cout << "Could not load assembly '" << filePath << "'." << std::endl;
+			std::cout << "Could not load the assembly '" << filePath << "'." << std::endl;
 			return false;
 		}
 
@@ -120,7 +120,7 @@ namespace stackjit {
 			bool loaded = loadAssembly(mBaseDir + "rtlib/rtlib.simg");
 
 			if (!loaded) {
-				throw std::runtime_error("Could not load runtime library.");
+				throw std::runtime_error("Could not load the runtime library.");
 			}
 		}
 	}
