@@ -41,7 +41,7 @@ namespace stackjit {
 	bool CodeGenerator::compileAtRuntime(const VMState& vmState,
 										 const FunctionDefinition& funcToCall,
 										 std::string funcSignature) {
-		return vmState.lazyJIT
+		return vmState.config.lazyJIT
 			   && funcToCall.isManaged()
 			   && !vmState.engine().jitCompiler().hasCompiled(funcSignature);
 	}
@@ -544,7 +544,7 @@ namespace stackjit {
 			}
 			case OpCodes::RET: {
 				//If debug is enabled, print the stack frame before return
-				if (vmState.enableDebug && vmState.printStackFrame) {
+				if (vmState.config.enableDebug && vmState.config.printStackFrame) {
 					assembler.move(RegisterCallArguments::Arg0, Registers::BP);
 					assembler.moveLong(RegisterCallArguments::Arg1, (PtrValue)&function);
 					generateCall(generatedCode, (unsigned char*)&Runtime::printStackFrame);
@@ -643,7 +643,7 @@ namespace stackjit {
 				auto arrayType = static_cast<const ArrayType*>(
 						vmState.typeProvider().getType(TypeSystem::arrayTypeName(elemType)));
 
-				if (!vmState.disableGC) {
+				if (!vmState.config.disableGC) {
 					generateGCCall(generatedCode, function, instIndex);
 				}
 
@@ -749,7 +749,7 @@ namespace stackjit {
 				auto classType = inst.classType;
 
 				//Call the garbageCollect runtime function
-				if (!vmState.disableGC) {
+				if (!vmState.config.disableGC) {
 					generateGCCall(generatedCode, function, instIndex);
 				}
 
@@ -889,7 +889,7 @@ namespace stackjit {
 				break;
 			}
 			case OpCodes::LOAD_STRING: {
-				if (!vmState.disableGC) {
+				if (!vmState.config.disableGC) {
 					generateGCCall(generatedCode, function, instIndex);
 				}
 

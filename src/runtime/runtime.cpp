@@ -49,7 +49,7 @@ namespace stackjit {
 			exit(0);
 		}
 
-		if (vmState->enableDebug && vmState->printLazyPatching) {
+		if (vmState->config.enableDebug && vmState->config.printLazyPatching) {
 			std::cout
 				<< "Patching call to " << toCallSignature << " at " << FunctionSignature::from(callee->def()).str()
 				<< ", offset: " << callOffset << ", check offset: " << checkStart << "." << std::endl;

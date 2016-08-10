@@ -29,7 +29,7 @@ namespace stackjit {
 	}
 
 	void GarbageCollector::initialize() {
-		mAllocatedBeforeCollection = (std::size_t)vmState.allocationsBeforeGC;
+		mAllocatedBeforeCollection = (std::size_t)vmState.config.allocationsBeforeGC;
 	}
 
 	void GarbageCollector::printObject(ObjectRef objRef) {
@@ -76,7 +76,7 @@ namespace stackjit {
 	    //Set the length of the array
 		Helpers::setValue(arrayPtr, 0, length);
 
-	    if (vmState.enableDebug && vmState.printAllocation) {
+	    if (vmState.config.enableDebug && vmState.config.printAllocation) {
 	        std::cout
 	            << "Allocated array ("
 	            << "size: " << memSize << " bytes, "
@@ -92,7 +92,7 @@ namespace stackjit {
 	    std::size_t memSize = classType->metadata()->size();
 	    auto classPtr = allocateObject(mHeap, classType, memSize);
 
-	    if (vmState.enableDebug && vmState.printAllocation) {
+	    if (vmState.config.enableDebug && vmState.config.printAllocation) {
 	        std::cout
 	            << "Allocated object (size: " << memSize << " bytes, type: " <<  classType->name()
 	            << ") at 0x" << std::hex << (PtrValue)classPtr << std::dec
@@ -211,14 +211,14 @@ namespace stackjit {
 	}
 
 	void GarbageCollector::markAllObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex) {
-		if (vmState.enableDebug && vmState.printGCStackTrace) {
+		if (vmState.config.enableDebug && vmState.config.printGCStackTrace) {
 			std::cout << "Stack trace: " << std::endl;
 		}
 
 		visitAllFrameReferences(basePtr, func, instIndex, [this](StackFrameEntry frameEntry) {
 			markObject(ObjectRef((RawObjectRef)frameEntry.value()));
 		}, [this](RegisterValue* frameBasePtr, ManagedFunction* frameFunc, int frameCallPoint) {
-			if (vmState.enableDebug && vmState.printGCStackTrace) {
+			if (vmState.config.enableDebug && vmState.config.printGCStackTrace) {
 				std::cout << frameFunc->def().name() << " (" << frameCallPoint << ")" << std::endl;
 				Runtime::Internal::printAliveObjects(frameBasePtr, frameFunc, frameCallPoint, "\t");
 			}
@@ -232,7 +232,7 @@ namespace stackjit {
 			if (!objRef.isMarked()) {
 				numDeallocatedObjects++;
 
-				if (vmState.enableDebug && vmState.printDeallocation) {
+				if (vmState.config.enableDebug && vmState.config.printDeallocation) {
 					std::cout << "Deleted object: ";
 					printObject(objRef);
 				}
@@ -243,7 +243,7 @@ namespace stackjit {
 			}
 		});
 
-		if (vmState.enableDebug && vmState.printGCStats) {
+		if (vmState.config.enableDebug && vmState.config.printGCStats) {
 			std::cout << "Deallocated: " << numDeallocatedObjects << " objects." << std::endl;
 			std::cout << "GC time: " << Helpers::getDuration(mGCStart) << " ms." << std::endl;
 		}
@@ -316,7 +316,7 @@ namespace stackjit {
 			} else {
 				numDeallocatedObjects++;
 
-				if (vmState.enableDebug && vmState.printDeallocation) {
+				if (vmState.config.enableDebug && vmState.config.printDeallocation) {
 					std::cout << "Deleted object: ";
 					printObject(objRef);
 				}
@@ -339,7 +339,7 @@ namespace stackjit {
 		int numDeallocatedObjects = moveObjects(forwardingAddress);
 		mHeap.setNextAllocation(free);
 
-		if (vmState.enableDebug && vmState.printGCStats) {
+		if (vmState.config.enableDebug && vmState.config.printGCStats) {
 			std::cout << "Deallocated: " << numDeallocatedObjects << " objects." << std::endl;
 			std::cout << "GC time: " << Helpers::getDuration(mGCStart) << " ms." << std::endl;
 		}
@@ -347,7 +347,7 @@ namespace stackjit {
 
 	bool GarbageCollector::beginGC(bool forceGC) {
 		if (mNumAllocated >= mAllocatedBeforeCollection || forceGC) {
-			if (vmState.enableDebug && vmState.printAliveObjects) {
+			if (vmState.config.enableDebug && vmState.config.printAliveObjects) {
 				std::cout << "Alive objects: " << std::endl;
 
 				mHeap.visitObjects([this](ObjectRef objRef) {
@@ -355,7 +355,7 @@ namespace stackjit {
 				});
 			}
 
-			if (vmState.enableDebug && vmState.printGCStats) {
+			if (vmState.config.enableDebug && vmState.config.printGCStats) {
 				mGCStart = std::chrono::high_resolution_clock::now();
 			}
 
@@ -373,7 +373,7 @@ namespace stackjit {
 		if (beginGC(forceGC)) {
 			std::size_t startStrLength = 0;
 
-			if (vmState.enableDebug && vmState.printGCPeriod) {
+			if (vmState.config.enableDebug && vmState.config.printGCPeriod) {
 				auto startStr = "---------------Start GC in func " + func->def().name() + " (" + std::to_string(instIndex) +
 								")---------------";
 				std::cout << startStr << std::endl;
@@ -391,7 +391,7 @@ namespace stackjit {
 			compactObjects(runtimeInformation);
 			mNumAllocated = 0;
 
-			if (vmState.enableDebug && vmState.printGCPeriod) {
+			if (vmState.config.enableDebug && vmState.config.printGCPeriod) {
 				printTimes('-', (int)startStrLength / 2 - 3);
 				std::cout << "End GC";
 				printTimes('-', ((int)startStrLength + 1) / 2 - 3);

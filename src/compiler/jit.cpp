@@ -64,7 +64,7 @@ namespace stackjit {
 		unsigned char* code = function->generatedCode().data();
 		std::size_t length = function->generatedCode().size();
 
-		if (mVMState.enableDebug && mVMState.printFunctionGeneration) {
+		if (mVMState.config.enableDebug && mVMState.config.printFunctionGeneration) {
 			auto funcSignature = FunctionSignature::from(function->def()).str();
 			std::cout
 				<< "Generated function '" << funcSignature << " " << function->def().returnType()->name()
@@ -73,7 +73,7 @@ namespace stackjit {
 		}
 
 		//Indicates if to output the generated code to a file
-		if (mVMState.outputGeneratedCode) {
+		if (mVMState.config.outputGeneratedCode) {
 			std::ofstream asmFile(function->def().name() + ".jit", std::ios::binary);
 
 			if (asmFile.is_open()) {

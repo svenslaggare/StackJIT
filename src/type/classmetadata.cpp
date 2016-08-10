@@ -242,7 +242,7 @@ namespace stackjit {
 			auto& currentClass = current.second;
 			currentClass.makeVirtualFunctionTable();
 
-			if (vmState.enableDebug && vmState.printVirtualFunctionTableLayout) {
+			if (vmState.config.enableDebug && vmState.config.printVirtualFunctionTableLayout) {
 				std::cout << "V-table for " << currentClass.name() << std::endl;
 
 				for (auto& virtualFunc : currentClass.virtualFunctions()) {

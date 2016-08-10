@@ -116,7 +116,7 @@ namespace stackjit {
 	}
 
 	void ExecutionEngine::loadRuntimeLibrary() {
-		if (mVMState.loadRuntimeLibrary) {
+		if (mVMState.config.loadRuntimeLibrary) {
 			bool loaded = loadAssembly(mBaseDir + "rtlib/rtlib.simg");
 
 			if (!loaded) {
@@ -138,7 +138,7 @@ namespace stackjit {
 		NativeLibrary::add(mVMState);
 
 		//Load test functions
-		if (mVMState.testMode) {
+		if (mVMState.config.testMode) {
 			TestLibrary::add(mVMState);
 		}
 
@@ -184,7 +184,7 @@ namespace stackjit {
 		//Compile it
 		auto funcPtr = mJIT.compileFunction(function);
 
-		if (mVMState.enableDebug && mVMState.printFunctionGeneration) {
+		if (mVMState.config.enableDebug && mVMState.config.printFunctionGeneration) {
 			std::cout
 				<< "Defined function '" << function->def().name() << "' at 0x" << std::hex << (PtrValue)funcPtr << std::dec << "."
 				<< std::endl;

@@ -25,12 +25,12 @@ std::string handleOptions(int argc, char* argv[], VMState& vmState) {
 		std::string switchStr = argv[i];
 
 		if (switchStr == "-d" || switchStr == "--debug") {
-			vmState.enableDebug = true;
+			vmState.config.enableDebug = true;
 			continue;
 		}
 
 		if (switchStr == "-ogc" || switchStr == "--output-generated-code") {
-			vmState.outputGeneratedCode = true;
+			vmState.config.outputGeneratedCode = true;
 			continue;
 		}
 
@@ -38,7 +38,7 @@ std::string handleOptions(int argc, char* argv[], VMState& vmState) {
 			int next = i + 1;
 
 			if (next < argc) {
-				vmState.lazyJIT = std::string(argv[next]) == "1";
+				vmState.config.lazyJIT = std::string(argv[next]) == "1";
 				i++;
 			} else {
 				std::cout << "Expected value after '" << switchStr << "' option." << std::endl;
@@ -48,27 +48,27 @@ std::string handleOptions(int argc, char* argv[], VMState& vmState) {
 		}
 
 		if (switchStr == "-ngc" || switchStr == "--no-gc") {
-			vmState.disableGC = true;
+			vmState.config.disableGC = true;
 			continue;
 		}
 
 		if (switchStr == "-nrl" || switchStr == "--no-rtlib") {
-			vmState.loadRuntimeLibrary = false;
+			vmState.config.loadRuntimeLibrary = false;
 			continue;
 		}
 
 		if (switchStr == "-t" || switchStr == "--test") {
-			vmState.testMode = true;
+			vmState.config.testMode = true;
 			continue;
 		}
 
 		if (switchStr == "-im" || switchStr == "--image-mode") {
-			vmState.programLoadMode = ProgramLoadMode::Image;
+			vmState.config.programLoadMode = ProgramLoadMode::Image;
 			continue;
 		}
 
 		if (switchStr == "-fm" || switchStr == "--file-mode") {
-			vmState.programLoadMode = ProgramLoadMode::File;
+			vmState.config.programLoadMode = ProgramLoadMode::File;
 			isFile = true;
 			continue;
 		}
@@ -77,7 +77,7 @@ std::string handleOptions(int argc, char* argv[], VMState& vmState) {
 			int next = i + 1;
 
 			if (next < argc) {
-				vmState.allocationsBeforeGC = std::stoi(argv[next]);
+				vmState.config.allocationsBeforeGC = std::stoi(argv[next]);
 				i++;
 			} else {
 				std::cout << "Expected an number after the '--allocs-before-gc' option." << std::endl;
@@ -87,52 +87,52 @@ std::string handleOptions(int argc, char* argv[], VMState& vmState) {
 		}
 
 		if (switchStr == "-psf" || switchStr == "--print-stack-frame") {
-			vmState.printStackFrame = true;
+			vmState.config.printStackFrame = true;
 			continue;
 		}
 
 		if (switchStr == "-pfg" || switchStr == "--print-function-generation") {
-			vmState.printFunctionGeneration = true;
+			vmState.config.printFunctionGeneration = true;
 			continue;
 		}
 
 		if (switchStr == "-plp" || switchStr == "--print-lazy-patching") {
-			vmState.printLazyPatching = true;
+			vmState.config.printLazyPatching = true;
 			continue;
 		}
 
 		if (switchStr == "--print-gc-period") {
-			vmState.printGCPeriod = true;
+			vmState.config.printGCPeriod = true;
 			continue;
 		}
 
 		if (switchStr == "--print-gc-stats") {
-			vmState.printGCStats = true;
+			vmState.config.printGCStats = true;
 			continue;
 		}
 
 		if (switchStr == "--print-alive-objects") {
-			vmState.printAliveObjects = true;
+			vmState.config.printAliveObjects = true;
 			continue;
 		}
 
 		if (switchStr == "--print-gc-stack-trace") {
-			vmState.printGCStackTrace = true;
+			vmState.config.printGCStackTrace = true;
 			continue;
 		}
 
 		if (switchStr == "--print-alloc") {
-			vmState.printAllocation = true;
+			vmState.config.printAllocation = true;
 			continue;
 		}
 
 		if (switchStr == "--print-dealloc") {
-			vmState.printDeallocation = true;
+			vmState.config.printDeallocation = true;
 			continue;
 		}
 
 		if (switchStr == "--print-vtable") {
-			vmState.printVirtualFunctionTableLayout = true;
+			vmState.config.printVirtualFunctionTableLayout = true;
 			continue;
 		}
 
@@ -207,7 +207,7 @@ int main(int argc, char* argv[]) {
 		vmState.initialize();
 
 		//Load the program
-		switch (vmState.programLoadMode) {
+		switch (vmState.config.programLoadMode) {
 			case ProgramLoadMode::Stdin: {
 				AssemblyParser::Assembly program;
 				Loader::load(std::cin, vmState, program);
@@ -230,7 +230,7 @@ int main(int argc, char* argv[]) {
 			}
 		}
 
-		if (!vmState.lazyJIT) {
+		if (!vmState.config.lazyJIT) {
 			//Compile all functions
 			engine.compile();
 		} else {
@@ -242,7 +242,7 @@ int main(int argc, char* argv[]) {
 		}
 
 		//Execute the program
-		if (vmState.enableDebug) {
+		if (vmState.config.enableDebug) {
 			std::cout << "Load time: " << Helpers::getDuration(start) << " ms." << std::endl;
 			std::cout << "Program output:" << std::endl;
 		}
@@ -252,7 +252,7 @@ int main(int argc, char* argv[]) {
 		start = std::chrono::high_resolution_clock::now();
 		int res = programPtr();
 
-		if (vmState.enableDebug) {
+		if (vmState.config.enableDebug) {
 			std::cout << "Return value (executed for " << Helpers::getDuration(start) << " ms): " << std::endl;
 		}
 
