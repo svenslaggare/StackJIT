@@ -24,12 +24,10 @@ namespace stackjit {
 	}
 
 	GarbageCollector::GarbageCollector(VMState& vmState)
-		: vmState(vmState), mHeap(10 * 1024 * 1024) {
+		: vmState(vmState),
+		  mHeap(10 * 1024 * 1024),
+		  mAllocatedBeforeCollection((std::size_t)vmState.config.allocationsBeforeGC) {
 
-	}
-
-	void GarbageCollector::initialize() {
-		mAllocatedBeforeCollection = (std::size_t)vmState.config.allocationsBeforeGC;
 	}
 
 	void GarbageCollector::printObject(ObjectRef objRef) {

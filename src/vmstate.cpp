@@ -1,15 +1,12 @@
 #include "vmstate.h"
 
 namespace stackjit {
-	VMState::VMState()
-	    : mTypeProvider(mClassProvider),
+	VMState::VMState(VMStateConfig config)
+	    : config(config),
+		  mTypeProvider(mClassProvider),
 		  mGC(*this),
 		  mEngine(*this) {
 
-	}
-
-	void VMState::initialize() {
-	    mGC.initialize();
 	}
 
 	TypeProvider& VMState::typeProvider() {

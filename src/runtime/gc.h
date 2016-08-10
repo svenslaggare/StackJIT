@@ -92,9 +92,6 @@ namespace stackjit {
 		GarbageCollector(const GarbageCollector&) = delete;
 		GarbageCollector& operator=(const GarbageCollector&) = delete;
 
-		//Initializes the GC
-		void initialize();
-
 		//Allocates a new array of the given type and length.
 		RawArrayRef newArray(const ArrayType* arrayType, int length);
 

@@ -72,6 +72,9 @@ namespace stackjit {
 
 	//Contains the state of the VM
 	class VMState {
+	public:
+		//Holds the config for the VM
+		VMStateConfig config;
 	private:
 		ClassMetadataProvider mClassProvider;
 		TypeProvider mTypeProvider;
@@ -79,17 +82,12 @@ namespace stackjit {
 		GarbageCollector mGC;
 		ExecutionEngine mEngine;
 	public:
-		VMStateConfig config;
-
 		//Creates a new VM State
-		VMState();
+		VMState(VMStateConfig config = VMStateConfig());
 
 		//Prevent the VM state from being copied
 		VMState(const VMState&) = delete;
 		VMState& operator=(const VMState&) = delete;
-
-		//Initializes the VM
-		void initialize();
 
 		//Returns the type provider
 		TypeProvider& typeProvider();

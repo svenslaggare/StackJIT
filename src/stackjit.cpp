@@ -15,22 +15,28 @@
 
 using namespace stackjit;
 
-//Parses the options
-std::string handleOptions(int argc, char* argv[], VMState& vmState) {
+//The results of parsing the options
+struct OptionsResult {
+	VMStateConfig config;
 	std::string program = "";
+	std::vector<std::string> libraries;
+};
+
+//Parses the options
+OptionsResult handleOptions(int argc, char* argv[]) {
 	bool isFile = false;
-	auto& engine = vmState.engine();
+	OptionsResult result;
 
 	for (int i = 1; i < argc; i++) {
 		std::string switchStr = argv[i];
 
 		if (switchStr == "-d" || switchStr == "--debug") {
-			vmState.config.enableDebug = true;
+			result.config.enableDebug = true;
 			continue;
 		}
 
 		if (switchStr == "-ogc" || switchStr == "--output-generated-code") {
-			vmState.config.outputGeneratedCode = true;
+			result.config.outputGeneratedCode = true;
 			continue;
 		}
 
@@ -38,7 +44,7 @@ std::string handleOptions(int argc, char* argv[], VMState& vmState) {
 			int next = i + 1;
 
 			if (next < argc) {
-				vmState.config.lazyJIT = std::string(argv[next]) == "1";
+				result.config.lazyJIT = std::string(argv[next]) == "1";
 				i++;
 			} else {
 				std::cout << "Expected value after '" << switchStr << "' option." << std::endl;
@@ -48,27 +54,27 @@ std::string handleOptions(int argc, char* argv[], VMState& vmState) {
 		}
 
 		if (switchStr == "-ngc" || switchStr == "--no-gc") {
-			vmState.config.disableGC = true;
+			result.config.disableGC = true;
 			continue;
 		}
 
 		if (switchStr == "-nrl" || switchStr == "--no-rtlib") {
-			vmState.config.loadRuntimeLibrary = false;
+			result.config.loadRuntimeLibrary = false;
 			continue;
 		}
 
 		if (switchStr == "-t" || switchStr == "--test") {
-			vmState.config.testMode = true;
+			result.config.testMode = true;
 			continue;
 		}
 
 		if (switchStr == "-im" || switchStr == "--image-mode") {
-			vmState.config.programLoadMode = ProgramLoadMode::Image;
+			result.config.programLoadMode = ProgramLoadMode::Image;
 			continue;
 		}
 
 		if (switchStr == "-fm" || switchStr == "--file-mode") {
-			vmState.config.programLoadMode = ProgramLoadMode::File;
+			result.config.programLoadMode = ProgramLoadMode::File;
 			isFile = true;
 			continue;
 		}
@@ -77,7 +83,7 @@ std::string handleOptions(int argc, char* argv[], VMState& vmState) {
 			int next = i + 1;
 
 			if (next < argc) {
-				vmState.config.allocationsBeforeGC = std::stoi(argv[next]);
+				result.config.allocationsBeforeGC = std::stoi(argv[next]);
 				i++;
 			} else {
 				std::cout << "Expected an number after the '--allocs-before-gc' option." << std::endl;
@@ -87,52 +93,52 @@ std::string handleOptions(int argc, char* argv[], VMState& vmState) {
 		}
 
 		if (switchStr == "-psf" || switchStr == "--print-stack-frame") {
-			vmState.config.printStackFrame = true;
+			result.config.printStackFrame = true;
 			continue;
 		}
 
 		if (switchStr == "-pfg" || switchStr == "--print-function-generation") {
-			vmState.config.printFunctionGeneration = true;
+			result.config.printFunctionGeneration = true;
 			continue;
 		}
 
 		if (switchStr == "-plp" || switchStr == "--print-lazy-patching") {
-			vmState.config.printLazyPatching = true;
+			result.config.printLazyPatching = true;
 			continue;
 		}
 
 		if (switchStr == "--print-gc-period") {
-			vmState.config.printGCPeriod = true;
+			result.config.printGCPeriod = true;
 			continue;
 		}
 
 		if (switchStr == "--print-gc-stats") {
-			vmState.config.printGCStats = true;
+			result.config.printGCStats = true;
 			continue;
 		}
 
 		if (switchStr == "--print-alive-objects") {
-			vmState.config.printAliveObjects = true;
+			result.config.printAliveObjects = true;
 			continue;
 		}
 
 		if (switchStr == "--print-gc-stack-trace") {
-			vmState.config.printGCStackTrace = true;
+			result.config.printGCStackTrace = true;
 			continue;
 		}
 
 		if (switchStr == "--print-alloc") {
-			vmState.config.printAllocation = true;
+			result.config.printAllocation = true;
 			continue;
 		}
 
 		if (switchStr == "--print-dealloc") {
-			vmState.config.printDeallocation = true;
+			result.config.printDeallocation = true;
 			continue;
 		}
 
 		if (switchStr == "--print-vtable") {
-			vmState.config.printVirtualFunctionTableLayout = true;
+			result.config.printVirtualFunctionTableLayout = true;
 			continue;
 		}
 
@@ -140,7 +146,7 @@ std::string handleOptions(int argc, char* argv[], VMState& vmState) {
 			int next = i + 1;
 
 			if (next < argc) {
-				engine.loadAssembly(argv[next]);
+				result.libraries.push_back(argv[next]);
 				i++;
 			} else {
 				std::cout << "Expected a library file after '-i' option." << std::endl;
@@ -150,12 +156,12 @@ std::string handleOptions(int argc, char* argv[], VMState& vmState) {
 		}
 
 		if (switchStr.find(".simg") != std::string::npos) {
-			program = switchStr;
+			result.program = switchStr;
 			continue;
 		}
 
 		if (isFile) {
-			program = switchStr;
+			result.program = switchStr;
 			isFile = false;
 			continue;
 		}
@@ -163,7 +169,7 @@ std::string handleOptions(int argc, char* argv[], VMState& vmState) {
 		std::cout << "Unhandled option: " << switchStr << std::endl;
 	}
 
-	return program;
+	return result;
 }
 
 //Returns the directory of the executing VM
@@ -194,7 +200,10 @@ std::string getExecutableDir() {
 
 int main(int argc, char* argv[]) {
 	try {
-		VMState vmState;
+		//Handle options
+		auto options = handleOptions(argc, argv);
+
+		VMState vmState(options.config);
 		Runtime::initialize(&vmState);
 
 		auto start = std::chrono::high_resolution_clock::now();
@@ -202,9 +211,10 @@ int main(int argc, char* argv[]) {
 
 		engine.setBaseDir(getExecutableDir());
 
-		//Handle options
-		auto programPath = handleOptions(argc, argv, vmState);
-		vmState.initialize();
+		//Load the libraries
+		for (auto& lib : options.libraries) {
+			engine.loadAssembly(lib);
+		}
 
 		//Load the program
 		switch (vmState.config.programLoadMode) {
@@ -215,10 +225,10 @@ int main(int argc, char* argv[]) {
 				break;
 			}
 			case ProgramLoadMode::Image:
-				engine.loadAssembly(programPath, AssemblyType::Program);
+				engine.loadAssembly(options.program, AssemblyType::Program);
 				break;
 			case ProgramLoadMode::File: {
-				std::ifstream file(programPath);
+				std::ifstream file(options.program);
 				if (file.is_open()) {
 					AssemblyParser::Assembly program;
 					Loader::load(file, vmState, program);
