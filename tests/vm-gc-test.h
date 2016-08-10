@@ -6,8 +6,9 @@
 #include <functional>
 #include <cctype>
 #include <locale>
-#include <cxxtest/TestSuite.h>
 #include <regex>
+#include <vector>
+#include <cxxtest/TestSuite.h>
 #include "helpers.h"
 #include "../src/helpers.h"
 
