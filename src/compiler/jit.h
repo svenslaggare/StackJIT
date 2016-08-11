@@ -18,8 +18,8 @@ namespace stackjit {
 
 	//The type of a function call
 	enum class FunctionCallType : unsigned char {
-		Absolute, //A direct address to the function is used
-		Relative  //An address relative to the callee function to the function is used
+		Absolute,
+		Relative
 	};
 
 	//Represents the JIT compiler
@@ -66,7 +66,8 @@ namespace stackjit {
 		//Resolves symbols for the given function
 		void resolveSymbols(std::string signature);
 
-		//Resolves symbols. This function should only be called after all functions has been compiled.
+		//Resolves symbols for all functions.
+		//This function should only be called after all functions has been compiled.
 		void resolveSymbols();
 
 		//Makes compiled functions executable.

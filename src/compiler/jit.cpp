@@ -61,8 +61,8 @@ namespace stackjit {
 		resolveBranches(functionData);
 
 		//Get a pointer & size of the generated instructions
-		unsigned char* code = function->generatedCode().data();
-		std::size_t length = function->generatedCode().size();
+		auto code = function->generatedCode().data();
+		auto length = function->generatedCode().size();
 
 		if (mVMState.config.enableDebug && mVMState.config.printFunctionGeneration) {
 			auto funcSignature = FunctionSignature::from(function->def()).str();
@@ -83,13 +83,13 @@ namespace stackjit {
 		}
 
 		//Allocate writable and readable memory
-		void* mem = mMemoryManager.allocateMemory(length);
+		auto memory = mMemoryManager.allocateMemory(length);
 
 		//Copy the instructions
-		memcpy(mem, code, length);
+		memcpy(memory, code, length);
 
 		//Return the generated instructions as a function pointer
-		return (JitFunction)mem;
+		return (JitFunction)memory;
 	}
 
 	void JITCompiler::resolveBranches(FunctionCompilationData& functionData) {
@@ -103,7 +103,7 @@ namespace stackjit {
 			auto nativeTarget = functionData.instructionNumMapping[branchTarget.target];
 
 			//Calculate the native jump location
-			int target = (int)nativeTarget - (int)source - (int)branchTarget.instructionSize;
+			auto target = (int)nativeTarget - (int)source - (int)branchTarget.instructionSize;
 
 			//Update the source with the native target
 			auto sourceOffset = (int)source + (int)branchTarget.instructionSize - sizeof(int);
@@ -123,7 +123,7 @@ namespace stackjit {
 			auto target = branch.second;
 
 			//Calculate the native jump location
-			int nativeTarget = (int)(target - (PtrValue)(codePtr + source) - 6);
+			auto nativeTarget = (int)(target - (PtrValue)(codePtr + source) - 6);
 
 			//Update the source with the native target
 			auto sourceOffset = source + 6 - sizeof(int);

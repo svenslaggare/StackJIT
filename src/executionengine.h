@@ -21,7 +21,7 @@ namespace stackjit {
 	//The type of the assembly
 	enum class AssemblyType {
 		Program, //The assembly is a program. This requires an entry point (main function).
-		Library    //The assembly is a library. A library cannot be executed.
+		Library  //The assembly is a library. A library cannot be executed.
 	};
 
 	//Represents an entry point
@@ -68,7 +68,6 @@ namespace stackjit {
 
 		//Returns the JIT compiler
 		JITCompiler& jitCompiler();
-
 		const JITCompiler& jitCompiler() const;
 
 		//Sets the base directory of the VM
@@ -88,7 +87,6 @@ namespace stackjit {
 
 		//Compiles the function with the given signature
 		bool compileFunction(std::string signature, JitFunction& entryPoint);
-
 		bool compileFunction(std::string signature);
 
 		//Compiles all functions
