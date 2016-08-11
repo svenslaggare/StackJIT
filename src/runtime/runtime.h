@@ -13,6 +13,9 @@ namespace stackjit {
 
 	//Defines the runtime
 	namespace Runtime {
+		//The standard output stream (used for printing from programs, not the VM)
+		extern std::ostream& standardOutputStream;
+
 		//Returns the vm state
 		VMState* vmState();
 

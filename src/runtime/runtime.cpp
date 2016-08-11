@@ -13,6 +13,8 @@
 
 namespace stackjit {
 	namespace Runtime {
+		std::ostream& standardOutputStream = std::cout;
+
 		namespace Internal {
 			//The global VM state
 			VMState* vmState = nullptr;
