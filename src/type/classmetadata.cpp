@@ -155,7 +155,7 @@ namespace stackjit {
 		return funcDef;
 	}
 
-	void ClassMetadata::makeVirtualFunctionTable() {
+	bool ClassMetadata::makeVirtualFunctionTable() {
 		if (mVirtualFunctionTable == nullptr && (mVirtualFunctions.size() > 0 || mParentClass != nullptr)) {
 			int virtualFuncIndex = 0;
 			bool hasParentVirtual = false;
@@ -207,7 +207,11 @@ namespace stackjit {
 			for (auto& virtualFunc : virtualFuncMapping) {
 				mVirtualFunctionMapping[mVirtualFunctionToIndex[virtualFunc.first]] = virtualFunc.second;
 			}
+
+			return true;
 		}
+
+		return false;
 	}
 
 	//Provider
@@ -240,9 +244,9 @@ namespace stackjit {
 	void ClassMetadataProvider::createVirtualFunctionTables(const VMState& vmState) {
 		for (auto& current : mClassesMetadata) {
 			auto& currentClass = current.second;
-			currentClass.makeVirtualFunctionTable();
+			auto createdVTable = currentClass.makeVirtualFunctionTable();
 
-			if (vmState.config.enableDebug && vmState.config.printVirtualFunctionTableLayout) {
+			if (createdVTable && vmState.config.enableDebug && vmState.config.printVirtualFunctionTableLayout) {
 				std::cout << "V-table for " << currentClass.name() << std::endl;
 
 				for (auto& virtualFunc : currentClass.virtualFunctions()) {

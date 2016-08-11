@@ -135,7 +135,7 @@ namespace stackjit {
 		unsigned char** virtualFunctionTable() const;
 
 		//Creates the virtual function table
-		void makeVirtualFunctionTable();
+		bool makeVirtualFunctionTable();
 	};
 
 	//Provides class metadata

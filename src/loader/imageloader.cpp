@@ -184,6 +184,14 @@ namespace stackjit {
 		return false;
 	}
 
+	bool AssemblyImage::hasLoadedDefinitions() const {
+		return mLoadedDefinitions;
+	}
+
+	void AssemblyImage::loadedDefinitions() {
+		mLoadedDefinitions = true;
+	}
+
 	AssemblyParser::AttributeContainer AssemblyImageLoader::loadAttributes(BinaryData& data, std::size_t& index) {
 		AssemblyParser::AttributeContainer attributes;
 		std::size_t numAttributes = loadData<std::size_t>(data, index);

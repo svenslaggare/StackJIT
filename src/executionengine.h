@@ -41,6 +41,7 @@ namespace stackjit {
 
 		ImageContainer mImageContainer;
 		std::unordered_map<std::string, ManagedFunction*> mLoadedFunctions;
+		bool mHasMainInit = false;
 
 		//Generates code for loaded functions
 		void generateCode();
@@ -56,7 +57,6 @@ namespace stackjit {
 
 		//Compiles the given function
 		JitFunction compileFunction(ManagedFunction* function, bool resolveSymbols = false);
-
 	public:
 		//Creates a new execution engine
 		ExecutionEngine(VMState& vmState);

@@ -128,22 +128,32 @@ namespace stackjit {
 	void ExecutionEngine::load(bool loadBody) {
 		auto& binder = mVMState.binder();
 
-		//Load runtime library
-		loadRuntimeLibrary();
+		if (!mHasMainInit) {
+			//Load runtime library
+			loadRuntimeLibrary();
+		}
 
 		//Load classes
 		Loader::loadClasses(mVMState, mImageContainer);
 
-		//Load native functions
-		NativeLibrary::add(mVMState);
+		if (!mHasMainInit) {
+			//Load native functions
+			NativeLibrary::add(mVMState);
 
-		//Load test functions
-		if (mVMState.config.testMode) {
-			TestLibrary::add(mVMState);
+			//Load test functions
+			if (mVMState.config.testMode) {
+				TestLibrary::add(mVMState);
+			}
+
+			mHasMainInit = true; //Mark that the main initialization has been made
 		}
 
 		//Load functions
 		for (auto& image : mImageContainer.images()) {
+			if (image->hasLoadedDefinitions()) {
+				continue;
+			}
+
 			for (auto& current : image->functions()) {
 				auto& currentFunc = current.second;
 				FunctionDefinition funcDef;
@@ -170,6 +180,8 @@ namespace stackjit {
 					funcDef.classType()->metadata()->addVirtualFunction(binder.getFunction(current.first));
 				}
 			}
+
+			image->loadedDefinitions();
 		}
 
 		//Create virtual function tables

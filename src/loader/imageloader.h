@@ -17,6 +17,8 @@ namespace stackjit {
 
 		std::map<std::string, AssemblyParser::Function> mFunctions;
 		std::map<std::string, AssemblyParser::Class> mClasses;
+
+		bool mLoadedDefinitions = false;
 	public:
 		//Creates a new image
 		AssemblyImage();
@@ -43,6 +45,12 @@ namespace stackjit {
 
 		//Loads the body of the given class
 		bool loadClassBody(std::string className);
+
+		//Indicates if the definitions has been loaded
+		bool hasLoadedDefinitions() const;
+
+		//Marks that the definitions has been loaded
+		void loadedDefinitions();
 	};
 
 	//Loads assembly images

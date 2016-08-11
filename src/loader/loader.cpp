@@ -166,6 +166,10 @@ namespace stackjit {
 		//First, create the classes
 		std::vector<std::pair<ClassMetadata*, std::string>> inheritingClasses;
 		for (auto& image : imageContainer.images()) {
+			if (image->hasLoadedDefinitions()) {
+				continue;
+			}
+
 			for (auto& current : image->classes()) {
 				auto& classDef = current.second;
 				vmState.classProvider().add(classDef.name, ClassMetadata(classDef.name));
@@ -201,6 +205,10 @@ namespace stackjit {
 
 		//Then add the fields
 		for (auto& image : imageContainer.images()) {
+			if (image->hasLoadedDefinitions()) {
+				continue;
+			}
+
 			for (auto& current : image->classes()) {
 				auto& classDef = current.second;
 
