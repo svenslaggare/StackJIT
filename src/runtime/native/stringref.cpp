@@ -32,7 +32,7 @@ namespace stackjit {
 	}
 
 	void StringRef::initialize(VMState& vmState) {
-		auto& classMetadata = vmState.classProvider().getMetadata("std.String");
+		auto& classMetadata = vmState.classProvider().getMetadata(TypeSystem::stringClassName);
 		auto& typeProvider = vmState.typeProvider();
 
 		auto charType = typeProvider.makeType(TypeSystem::toString(PrimitiveTypes::Char));

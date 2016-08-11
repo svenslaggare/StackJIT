@@ -80,8 +80,10 @@ namespace stackjit {
 	class ClassMetadataProvider;
 
 	namespace TypeSystem {
+		const std::string stringClassName = "std.String";
+
 		//The string type name
-		const std::string stringTypeName = "Ref.std.String";
+		const std::string stringTypeName = "Ref." + stringClassName;
 
 		//The type type name
 		const std::string nullTypeName = "Ref.Null";

@@ -22,7 +22,7 @@ namespace stackjit {
 	    //Used by call instructions
 	    std::vector<const Type*> parameters;
 
-	    //Used by the objects instruction
+	    //Used by object instructions
 	    const ClassType* classType;
 
 	    //Creates a new instruction
