@@ -13,8 +13,8 @@ namespace stackjit {
 
 	//Defines the runtime
 	namespace Runtime {
-		//The global VM state
-		extern VMState* vmState;
+		//Returns the vm state
+		VMState* vmState();
 
 		//Initializes the runtime using the given VM state
 		void initialize(VMState* vmState);

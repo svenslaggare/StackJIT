@@ -14,7 +14,7 @@ namespace stackjit {
 
 	void printPoint(RawClassRef objRef) {
 		if (objRef != nullptr) {
-			auto& vmState = Runtime::vmState;
+			auto vmState = Runtime::vmState();
 
 			//Obtain a reference to the class
 			auto pointRef = vmState->gc().getClassRef(objRef);
@@ -29,6 +29,7 @@ namespace stackjit {
 			Runtime::nullReferenceError();
 		}
 	}
+
 
 	void TestLibrary::add(VMState& vmState) {
 		auto& binder = vmState.binder();
