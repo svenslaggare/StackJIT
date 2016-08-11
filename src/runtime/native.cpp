@@ -9,50 +9,50 @@
 
 namespace stackjit {
 	void NativeLibrary::print(int x) {
-		Runtime::standardOutputStream << x;
+		*Runtime::standardOutputStream << x;
 	}
 
 	void NativeLibrary::print(float x) {
-		Runtime::standardOutputStream << x;
+		*Runtime::standardOutputStream << x;
 	}
 
 	void NativeLibrary::print(bool x) {
 		if (x) {
-			Runtime::standardOutputStream << "true";
+			*Runtime::standardOutputStream << "true";
 		} else {
-			Runtime::standardOutputStream << "false";
+			*Runtime::standardOutputStream << "false";
 		}
 	}
 
 	void NativeLibrary::print(char x) {
-		Runtime::standardOutputStream << x;
+		*Runtime::standardOutputStream << x;
 	}
 
 	void NativeLibrary::println(int x) {
-		Runtime::standardOutputStream << x << std::endl;
+		*Runtime::standardOutputStream << x << std::endl;
 	}
 
 	void NativeLibrary::println(float x) {
-		Runtime::standardOutputStream << x << std::endl;
+		*Runtime::standardOutputStream << x << std::endl;
 	}
 
 	void NativeLibrary::println(bool x) {
 		print(x);
-		Runtime::standardOutputStream << std::endl;
+		*Runtime::standardOutputStream << std::endl;
 	}
 
 	void NativeLibrary::println(char x) {
-		Runtime::standardOutputStream << x << std::endl;
+		*Runtime::standardOutputStream << x << std::endl;
 	}
 
 	void NativeLibrary::println(RawArrayRef rawArrayRef) {
 		if (rawArrayRef != nullptr) {
 			ArrayRef<char> arrayRef(rawArrayRef);
 			for (int i = 0; i < arrayRef.length(); i++) {
-				Runtime::standardOutputStream << arrayRef.getElement(i);
+				*Runtime::standardOutputStream << arrayRef.getElement(i);
 			}
 
-			Runtime::standardOutputStream << std::endl;
+			*Runtime::standardOutputStream << std::endl;
 		} else {
 			Runtime::nullReferenceError();
 		}
