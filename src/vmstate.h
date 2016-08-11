@@ -74,7 +74,7 @@ namespace stackjit {
 	class VMState {
 	public:
 		//Holds the config for the VM
-		VMStateConfig config;
+		const VMStateConfig config;
 	private:
 		ClassMetadataProvider mClassProvider;
 		TypeProvider mTypeProvider;

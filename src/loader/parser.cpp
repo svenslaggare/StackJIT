@@ -454,15 +454,15 @@ namespace stackjit {
 					std::string classType = "";
 
 					if (isInstance) {
-						auto structNamePos = funcName.find("::");
+						auto classNamePos = funcName.find("::");
 
-						if (structNamePos != std::string::npos) {
-							classType = funcName.substr(0, structNamePos);
+						if (classNamePos != std::string::npos) {
+							classType = funcName.substr(0, classNamePos);
 						} else {
 							throw std::runtime_error("Expected '::' in called member function.");
 						}
 
-						funcName = funcName.substr(structNamePos + 2);
+						funcName = funcName.substr(classNamePos + 2);
 					}
 
 					if (nextToken(tokens, i) != "(") {
@@ -492,17 +492,17 @@ namespace stackjit {
 
 				if (currentToLower == "newobj") {
 					std::string funcName = nextToken(tokens, i);
-					std::string structType = "";
+					std::string classType = "";
 
-					auto structNamePos = funcName.find("::");
+					auto classNamePos = funcName.find("::");
 
-					if (structNamePos != std::string::npos) {
-						structType = funcName.substr(0, structNamePos);
+					if (classNamePos != std::string::npos) {
+						classType = funcName.substr(0, classNamePos);
 					} else {
 						throw std::runtime_error("Expected '::' after the type in a new object instruction.");
 					}
 
-					funcName = funcName.substr(structNamePos + 2);
+					funcName = funcName.substr(classNamePos + 2);
 
 					if (funcName != ".constructor") {
 						throw std::runtime_error("Expected call to constructor.");
@@ -514,7 +514,7 @@ namespace stackjit {
 
 					std::vector<std::string> parameters;
 					readCallParameters(tokens, i, parameters);
-					currentFunc.instructions.push_back(Instruction::makeNewObject(structType, parameters));
+					currentFunc.instructions.push_back(Instruction::makeNewObject(classType, parameters));
 					continue;
 				}
 
