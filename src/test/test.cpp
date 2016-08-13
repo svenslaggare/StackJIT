@@ -24,7 +24,7 @@ namespace stackjit {
 			auto xField = pointRef.getField<int>("x", intType);
 			auto yField = pointRef.getField<int>("y", intType);
 
-			std::cout << *xField.value() << ":" << *yField.value() << std::endl;
+			Runtime::standardOutputStream() << *xField.value() << ":" << *yField.value() << std::endl;
 		} else {
 			Runtime::nullReferenceError();
 		}

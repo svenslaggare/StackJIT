@@ -13,11 +13,12 @@
 
 namespace stackjit {
 	namespace Runtime {
-		std::ostream* standardOutputStream = &std::cout;
-
 		namespace Internal {
 			//The global VM state
 			VMState* vmState = nullptr;
+
+			//The standard output stream
+			std::ostream* standardOutputStream = nullptr;
 		}
 	};
 
@@ -25,8 +26,17 @@ namespace stackjit {
 		return Runtime::Internal::vmState;
 	}
 
+	std::ostream& stackjit::Runtime::standardOutputStream() {
+		return *Runtime::Internal::standardOutputStream;
+	}
+
+	void stackjit::Runtime::setStandardOutputStream(std::ostream& standardOutputStream) {
+		Runtime::Internal::standardOutputStream = &standardOutputStream;
+	}
+
 	void Runtime::initialize(VMState* vmState) {
 		Runtime::Internal::vmState = vmState;
+		setStandardOutputStream(std::cout);
 	}
 
 	void Runtime::printStackFrame(RegisterValue* basePtr, ManagedFunction* func) {
