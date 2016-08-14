@@ -99,7 +99,7 @@ namespace stackjit {
 		} else {
 			//Compile
 			auto signature = classType->metadata()->getVirtualFunctionSignature(index);
-			JitFunction entryPoint;
+			JitFunction entryPoint = nullptr;
 			try {
 				vmState()->engine().compileFunction(signature, entryPoint);
 			} catch (std::runtime_error& e) {

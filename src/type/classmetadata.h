@@ -74,6 +74,9 @@ namespace stackjit {
 		std::vector<std::string> mVirtualFunctionMapping;
 		unsigned char** mVirtualFunctionTable;
 
+		//Inserts the given field
+		void insertField(std::string name, const Field& field);
+
 		//Returns the root definition of the given virtual function
 		const FunctionDefinition* getVirtualFunctionRootDefinition(const FunctionDefinition* funcDef) const;
 	public:

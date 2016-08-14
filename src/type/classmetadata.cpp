@@ -75,6 +75,14 @@ namespace stackjit {
 		mFieldDefinitions.push_back(FieldDefinition(name, type, accessModifier));
 	}
 
+	void ClassMetadata::insertField(std::string name, const Field& field) {
+		if (mFields.count(name) > 0) {
+			throw std::runtime_error("The field '" + name + "' is already defined in the class '" + mName + "'.");
+		}
+
+		mFields.insert({ name, field });
+	}
+
 	void ClassMetadata::makeFields() {
 		if (mFields.size() == 0) {
 			//Add from parent class
@@ -82,13 +90,13 @@ namespace stackjit {
 				mParentClass->metadata()->makeFields();
 
 				for (auto& fieldDef : mParentClass->metadata()->mFieldDefinitions) {
-					mFields.insert({ fieldDef.name, Field(fieldDef.type, mSize, fieldDef.accessModifier, false) });
+					insertField(fieldDef.name, Field(fieldDef.type, mSize, fieldDef.accessModifier, false));
 					mSize += TypeSystem::sizeOfType(fieldDef.type);
 				}
 			}
 
 			for (auto& fieldDef : mFieldDefinitions) {
-				mFields.insert({ fieldDef.name, Field(fieldDef.type, mSize, fieldDef.accessModifier) });
+				insertField(fieldDef.name, Field(fieldDef.type, mSize, fieldDef.accessModifier));
 				mSize += TypeSystem::sizeOfType(fieldDef.type);
 			}
 		}
