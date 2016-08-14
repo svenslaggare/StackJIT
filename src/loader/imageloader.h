@@ -2,7 +2,6 @@
 #include "parser.h"
 #include <iostream>
 #include <unordered_map>
-#include <map>
 
 namespace stackjit {
 	using BinaryData = std::vector<char>;
@@ -15,8 +14,8 @@ namespace stackjit {
 		std::unordered_map<std::string, std::size_t> mFunctionBodyOffsets;
 		std::unordered_map<std::string, std::size_t> mClassBodyOffsets;
 
-		std::map<std::string, AssemblyParser::Function> mFunctions;
-		std::map<std::string, AssemblyParser::Class> mClasses;
+		std::unordered_map<std::string, AssemblyParser::Function> mFunctions;
+		std::unordered_map<std::string, AssemblyParser::Class> mClasses;
 
 		bool mLoadedDefinitions = false;
 	public:
@@ -28,17 +27,17 @@ namespace stackjit {
 			BinaryData imageData,
 			std::unordered_map<std::string, std::size_t> functionBodyOffset,
 			std::unordered_map<std::string, std::size_t> classBodyOffsets,
-			std::map<std::string, AssemblyParser::Function> functions,
-			std::map<std::string, AssemblyParser::Class> classes);
+			std::unordered_map<std::string, AssemblyParser::Function> functions,
+			std::unordered_map<std::string, AssemblyParser::Class> classes);
 
 		//Creates a new image from the given loaded assembly
 		AssemblyImage(const AssemblyParser::Assembly& assembly);
 
 		//Returns the functions
-		const std::map<std::string, AssemblyParser::Function>& functions() const;
+		const std::unordered_map<std::string, AssemblyParser::Function>& functions() const;
 
 		//Returns the classes
-		const std::map<std::string, AssemblyParser::Class>& classes() const;
+		const std::unordered_map<std::string, AssemblyParser::Class>& classes() const;
 
 		//Loads the body of the given function
 		bool loadFunctionBody(std::string function);

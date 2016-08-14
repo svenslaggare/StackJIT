@@ -36,8 +36,8 @@ namespace stackjit {
 	AssemblyImage::AssemblyImage(std::vector<char> imageData,
 								 std::unordered_map<std::string, std::size_t> functionBodyOffset,
 								 std::unordered_map<std::string, std::size_t> classBodyOffsets,
-								 std::map<std::string, AssemblyParser::Function> functions,
-								 std::map<std::string, AssemblyParser::Class> classes)
+								 std::unordered_map<std::string, AssemblyParser::Function> functions,
+								 std::unordered_map<std::string, AssemblyParser::Class> classes)
 		: mImageData(std::move(imageData)),
 		  mFunctionBodyOffsets(std::move(functionBodyOffset)),
 		  mClassBodyOffsets(std::move(classBodyOffsets)),
@@ -66,11 +66,11 @@ namespace stackjit {
 		}
 	}
 
-	const std::map<std::string, AssemblyParser::Function>& AssemblyImage::functions() const {
+	const std::unordered_map<std::string, AssemblyParser::Function>& AssemblyImage::functions() const {
 		return mFunctions;
 	}
 
-	const std::map<std::string, AssemblyParser::Class>& AssemblyImage::classes() const {
+	const std::unordered_map<std::string, AssemblyParser::Class>& AssemblyImage::classes() const {
 		return mClasses;
 	}
 
@@ -246,8 +246,8 @@ namespace stackjit {
 	void AssemblyImageLoader::load(BinaryData& imageData, AssemblyImage& image) {
 		std::unordered_map<std::string, std::size_t> functionBodyOffset;
 		std::unordered_map<std::string, std::size_t> classBodyOffsets;
-		std::map<std::string, AssemblyParser::Function> functions;
-		std::map<std::string, AssemblyParser::Class> classes;
+		std::unordered_map<std::string, AssemblyParser::Function> functions;
+		std::unordered_map<std::string, AssemblyParser::Class> classes;
 
 		std::size_t index = 0;
 

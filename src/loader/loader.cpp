@@ -197,13 +197,19 @@ namespace stackjit {
 
 				if (TypeSystem::isSubtypeOf(parentClass, thisClass)
 					&& TypeSystem::isSubtypeOf(thisClass, parentClass)) {
+					auto parentName = parentClass->className();
+					auto thisName = thisClass->className();
+					if (parentName > thisName) {
+						std::swap(parentName, thisName);
+					}
+
 					throw std::runtime_error(
-						"Mutual inheritance is not allowed (" + parentClass->className() + ", " + thisClass->className() + ").");
+						"Mutual inheritance is not allowed (" + parentName + ", " + thisName + ").");
 				}
 			}
 		}
 
-		//Then add the fields
+		//Then add the fields defs
 		for (auto& image : imageContainer.images()) {
 			if (image->hasLoadedDefinitions()) {
 				continue;
@@ -219,7 +225,18 @@ namespace stackjit {
 					auto accessModifier = getAccessModifier(field.attributes);
 					classMetadata.addField(field.name, getType(vmState, field.type), accessModifier);
 				}
+			}
+		}
 
+		//Finally, create the actual fields
+		for (auto& image : imageContainer.images()) {
+			if (image->hasLoadedDefinitions()) {
+				continue;
+			}
+
+			for (auto& current : image->classes()) {
+				auto& classDef = current.second;
+				auto& classMetadata = vmState.classProvider().getMetadata(classDef.name);
 				classMetadata.makeFields();
 			}
 		}
