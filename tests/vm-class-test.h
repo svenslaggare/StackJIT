@@ -94,8 +94,8 @@ public:
 
 	//Tests invalid field
 	void testInvalidFields() {
-		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_field1")), "main() @ 1: There exists no field 'x' in the 'Point2D' class.");
-		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_field2")), "main() @ 2: There exists no field 'x' in the 'Point2D' class.");
+		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_field1")), "main() @ 1: There exists no field 'x' in the class 'Point2D'.");
+		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_field2")), "main() @ 2: There exists no field 'x' in the class 'Point2D'.");
 		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_field3")), "The field 'x' is already defined in the class 'Point2D'.");
 		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_field4")), "The field 'x' is already defined in the class 'Point3D'.");
 	}

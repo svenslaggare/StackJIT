@@ -866,7 +866,7 @@ namespace stackjit {
 						typeError(
 							functionSignature,
 							index,
-							"There exists no field '" + fieldName + "' in the '" + className + "' class.");
+							"There exists no field '" + fieldName + "' in the class '" + className + "'.");
 					}
 
 					auto canReadOrWrite = canReadOrWriteField(
@@ -917,7 +917,7 @@ namespace stackjit {
 						typeError(
 							functionSignature,
 							index,
-							"There exists no field '" + fieldName + "' in the '" + className + "' class.");
+							"There exists no field '" + fieldName + "' in the class '" + className + "'.");
 					}
 
 					auto classType = mVMState.typeProvider().makeType("Ref." + className);

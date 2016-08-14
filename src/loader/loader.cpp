@@ -89,6 +89,19 @@ namespace stackjit {
 
 			return isVirtual;
 		}
+
+		//Applies the given function to each class
+		void forEachClass(ImageContainer& imageContainer, std::function<void (const stackjit::AssemblyParser::Class&)> fn) {
+			for (auto& image : imageContainer.images()) {
+				if (image->hasLoadedDefinitions()) {
+					continue;
+				}
+
+				for (auto& current : image->classes()) {
+					fn(current.second);
+				}
+			}
+		}
 	}
 
 	void Loader::generateDefinition(VMState& vmState, const AssemblyParser::Function& function, FunctionDefinition& definition) {
@@ -165,22 +178,15 @@ namespace stackjit {
 	void Loader::loadClasses(VMState& vmState, ImageContainer& imageContainer) {
 		//First, create the classes
 		std::vector<std::pair<ClassMetadata*, std::string>> inheritingClasses;
-		for (auto& image : imageContainer.images()) {
-			if (image->hasLoadedDefinitions()) {
-				continue;
-			}
+		forEachClass(imageContainer, [&](const stackjit::AssemblyParser::Class& classDef) {
+			vmState.classProvider().add(classDef.name, ClassMetadata(classDef.name));
 
-			for (auto& current : image->classes()) {
-				auto& classDef = current.second;
-				vmState.classProvider().add(classDef.name, ClassMetadata(classDef.name));
-
-				if (classDef.parentClassName != "") {
-					inheritingClasses.push_back(std::make_pair(
-						&vmState.classProvider().getMetadata(classDef.name),
-						classDef.parentClassName));
-				}
+			if (classDef.parentClassName != "") {
+				inheritingClasses.push_back(std::make_pair(
+					&vmState.classProvider().getMetadata(classDef.name),
+					classDef.parentClassName));
 			}
-		}
+		});
 
 		//Handle inheritance
 		if (inheritingClasses.size() > 0) {
@@ -210,36 +216,21 @@ namespace stackjit {
 		}
 
 		//Then add the fields defs
-		for (auto& image : imageContainer.images()) {
-			if (image->hasLoadedDefinitions()) {
-				continue;
+		forEachClass(imageContainer, [&](const stackjit::AssemblyParser::Class& classDef) {
+			imageContainer.loadClassBody(classDef.name);
+			auto& classMetadata = vmState.classProvider().getMetadata(classDef.name);
+
+			for (auto& field : classDef.fields) {
+				auto accessModifier = getAccessModifier(field.attributes);
+				classMetadata.addField(field.name, getType(vmState, field.type), accessModifier);
 			}
-
-			for (auto& current : image->classes()) {
-				auto& classDef = current.second;
-
-				imageContainer.loadClassBody(classDef.name);
-				auto& classMetadata = vmState.classProvider().getMetadata(classDef.name);
-
-				for (auto& field : classDef.fields) {
-					auto accessModifier = getAccessModifier(field.attributes);
-					classMetadata.addField(field.name, getType(vmState, field.type), accessModifier);
-				}
-			}
-		}
+		});
 
 		//Finally, create the actual fields
-		for (auto& image : imageContainer.images()) {
-			if (image->hasLoadedDefinitions()) {
-				continue;
-			}
-
-			for (auto& current : image->classes()) {
-				auto& classDef = current.second;
-				auto& classMetadata = vmState.classProvider().getMetadata(classDef.name);
-				classMetadata.makeFields();
-			}
-		}
+		forEachClass(imageContainer, [&](const stackjit::AssemblyParser::Class& classDef) {
+			auto& classMetadata = vmState.classProvider().getMetadata(classDef.name);
+			classMetadata.makeFields();
+		});
 	}
 
 	void Loader::load(std::istream& stream, VMState& vmState, AssemblyParser::Assembly& assembly) {
