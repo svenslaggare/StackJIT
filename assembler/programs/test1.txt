@@ -1,11 +1,3 @@
-func add2(Int Int) Int
-{
-	LDARG 0
-	LDARG 1
-	ADD
-	RET
-}
-
 func main() Int
 {
 	.locals 1
@@ -15,5 +7,13 @@ func main() Int
 	CALL add2(Int Int)
 	STLOC 0
 	LDLOC 0
+	RET
+}
+
+func add2(Int Int) Int
+{
+	LDARG 0
+	LDARG 1
+	ADD
 	RET
 }

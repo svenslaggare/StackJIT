@@ -102,7 +102,9 @@ std::vector<std::string> splitParts(std::string str) {
 			part.clear();
 		}
 
-		part += line + "\n";
+		if (line != "") {
+			part += line + "\n";
+		}
 	}
 
 	parts.push_back(part);
