@@ -13,12 +13,23 @@ namespace stackjit {
 	    }
 	}
 
+	void TypeProvider::insertType(std::string name, const Type* type) {
+		mTypes.insert({ name, type });
+
+		if (TypeSystem::isArray(type)) {
+			auto arrayType = static_cast<const ArrayType*>(type);
+			if (mTypes.count(arrayType->name()) == 0) {
+				insertType(arrayType->elementType()->name(), arrayType->elementType());
+			}
+		}
+	}
+
 	const Type* TypeProvider::makeType(std::string name) {
 		if (mTypes.count(name) > 0) {
 	        return mTypes[name];
 	    } else {
 	        auto type = TypeSystem::makeTypeFromString(name, mClassMetadataProvider);
-	        mTypes.insert({ name, type });
+			insertType(name, type);
 	        return type;
 	    }
 	}
