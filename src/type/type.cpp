@@ -49,7 +49,7 @@ namespace stackjit {
 	}
 
 	ArrayType::~ArrayType() {
-		delete mElementType;
+//		delete mElementType;
 	}
 
 	ClassType::ClassType(std::string name, ClassMetadata* metadata)

@@ -1,6 +1,8 @@
 #include "typeprovider.h"
 #include "type.h"
 
+#include <iostream>
+
 namespace stackjit {
 	TypeProvider::TypeProvider(ClassMetadataProvider& classMetadataProvider)
 		: mClassMetadataProvider(classMetadataProvider) {
@@ -18,7 +20,7 @@ namespace stackjit {
 
 		if (TypeSystem::isArray(type)) {
 			auto arrayType = static_cast<const ArrayType*>(type);
-			if (mTypes.count(arrayType->name()) == 0) {
+			if (mTypes.count(arrayType->elementType()->name()) == 0) {
 				insertType(arrayType->elementType()->name(), arrayType->elementType());
 			}
 		}
