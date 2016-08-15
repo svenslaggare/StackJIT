@@ -18,12 +18,12 @@ namespace stackjit {
 	void TypeProvider::insertType(std::string name, const Type* type) {
 		mTypes.insert({ name, type });
 
-		if (TypeSystem::isArray(type)) {
-			auto arrayType = static_cast<const ArrayType*>(type);
-			if (mTypes.count(arrayType->elementType()->name()) == 0) {
-				insertType(arrayType->elementType()->name(), arrayType->elementType());
-			}
-		}
+//		if (TypeSystem::isArray(type)) {
+//			auto arrayType = static_cast<const ArrayType*>(type);
+//			if (mTypes.count(arrayType->elementType()->name()) == 0) {
+//				insertType(arrayType->elementType()->name(), arrayType->elementType());
+//			}
+//		}
 	}
 
 	const Type* TypeProvider::makeType(std::string name) {
