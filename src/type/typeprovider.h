@@ -11,9 +11,6 @@ namespace stackjit {
 	private:
 		std::unordered_map<std::string, const Type*> mTypes;
 		ClassMetadataProvider& mClassMetadataProvider;
-
-		//Inserts the given type
-		void insertType(std::string name, const Type* type);
 	public:
 		//Creates a new type provider
 		TypeProvider(ClassMetadataProvider& classMetadataProvider);

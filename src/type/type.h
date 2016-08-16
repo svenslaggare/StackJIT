@@ -94,9 +94,6 @@ namespace stackjit {
 		//Returns the given primitive type as a string
 		std::string toString(PrimitiveTypes primitiveType);
 
-		//Creates a new type from the given string
-		Type* makeTypeFromString(std::string typeName, ClassMetadataProvider& classProvider);
-
 		//Indicates if the given type is of the given primitive type
 		bool isPrimitiveType(const Type* type, PrimitiveTypes primitiveType);
 

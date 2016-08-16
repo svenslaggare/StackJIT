@@ -49,7 +49,7 @@ namespace stackjit {
 	}
 
 	ArrayType::~ArrayType() {
-		delete mElementType;
+
 	}
 
 	ClassType::ClassType(std::string name, ClassMetadata* metadata)
@@ -101,117 +101,6 @@ namespace stackjit {
 		}
 
 		return "";
-	}
-
-	namespace {
-		//Splits the given type name
-		std::vector<std::string> splitTypeName(std::string typeName) {
-			std::string token;
-			std::vector<std::string> typeParts;
-
-			bool isInsideBrackets = false;
-			for (char c : typeName) {
-				if (!isInsideBrackets) {
-					if (c == '[') {
-						isInsideBrackets = true;
-					}
-				} else {
-					if (c == ']') {
-						isInsideBrackets = false;
-					}
-				}
-
-				if (c == '.' && !isInsideBrackets) {
-					typeParts.push_back(token);
-					token = "";
-				} else {
-					token += c;
-				}
-			}
-
-			typeParts.push_back(token);
-			return typeParts;
-		}
-
-		//Extracts the element type from the given type part. Returns true if extracted.
-		bool extractElementType(std::string typePart, std::string& elementPart) {
-			std::string buffer;
-			bool foundArrayElement = false;
-			bool foundStart = false;
-			int bracketCount = 0;
-
-			for (char c : typePart) {
-				if (c == '[') {
-					bracketCount++;
-				}
-
-				if (c == ']') {
-					bracketCount--;
-				}
-
-				if (c == ']' && bracketCount == 0) {
-					if (foundStart) {
-						foundArrayElement = true;
-					}
-
-					break;
-				}
-
-				buffer += c;
-
-				if (buffer == "Array[" && !foundStart) {
-					foundStart = true;
-					buffer.clear();
-				}
-			}
-
-			if (foundArrayElement) {
-				elementPart = buffer;
-				return  true;
-			} else {
-				return false;
-			}
-		}
-	}
-
-	Type* TypeSystem::makeTypeFromString(std::string typeName, ClassMetadataProvider& classProvider) {
-		//Split the type name
-		std::vector<std::string> typeParts = splitTypeName(typeName);
-		PrimitiveTypes primitiveType;
-
-		if (fromString(typeParts.at(0), primitiveType)) {
-			return new Type(typeParts.at(0));
-		} else if (typeParts.at(0) == "Ref") {
-			std::string elementType;
-			if (extractElementType(typeParts.at(1), elementType)) {
-				return new ArrayType(makeTypeFromString(elementType, classProvider));
-			} else if (typeParts.at(1) == "Null") {
-				return new NullReferenceType();
-			} else {
-				if (typeParts.size() >= 2) {
-					std::string className = "";
-					bool isFirst = true;
-
-					for (std::size_t i = 1; i < typeParts.size(); i++) {
-						if (isFirst) {
-							isFirst = false;
-						} else {
-							className += ".";
-						}
-
-						className += typeParts.at(i);
-					}
-
-					if (classProvider.isDefined(className)) {
-						return new ClassType(className, &classProvider.getMetadata(className));
-					} else {
-						return nullptr;
-					}
-				}
-			}
-		}
-
-		return nullptr;
 	}
 
 	bool TypeSystem::isPrimitiveType(const Type* type, PrimitiveTypes primitiveType) {
