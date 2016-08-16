@@ -73,8 +73,8 @@ namespace {
 }
 
 namespace stackjit {
-	TypeProvider::TypeProvider(ClassMetadataProvider& classMetadataProvider)
-		: mClassMetadataProvider(classMetadataProvider) {
+	TypeProvider::TypeProvider(ClassMetadataProvider& classProvider)
+		: mClassProvider(classProvider) {
 
 	}
 
@@ -117,14 +117,17 @@ namespace stackjit {
 						className += typeParts.at(i);
 					}
 
-					if (mClassMetadataProvider.isDefined(className)) {
-						type = new ClassType(className, &mClassMetadataProvider.getMetadata(className));
+					if (mClassProvider.isDefined(className)) {
+						type = new ClassType(className, &mClassProvider.getMetadata(className));
 					}
 				}
 			}
 		}
 
-		mTypes.insert({ name, type });
+		if (type != nullptr) {
+			mTypes.insert({ name, type });
+		}
+
 		return type;
 	}
 

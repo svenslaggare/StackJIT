@@ -77,8 +77,6 @@ namespace stackjit {
 		Char
 	};
 
-	class ClassMetadataProvider;
-
 	namespace TypeSystem {
 		const std::string stringClassName = "std.String";
 

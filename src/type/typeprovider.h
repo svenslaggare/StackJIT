@@ -10,10 +10,10 @@ namespace stackjit {
 	class TypeProvider {
 	private:
 		std::unordered_map<std::string, const Type*> mTypes;
-		ClassMetadataProvider& mClassMetadataProvider;
+		ClassMetadataProvider& mClassProvider;
 	public:
 		//Creates a new type provider
-		TypeProvider(ClassMetadataProvider& classMetadataProvider);
+		TypeProvider(ClassMetadataProvider& classProvider);
 		~TypeProvider();
 
 		TypeProvider(const TypeProvider&) = delete;
