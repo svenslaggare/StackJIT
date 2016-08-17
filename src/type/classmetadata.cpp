@@ -265,4 +265,8 @@ namespace stackjit {
 			}
 		}
 	}
+
+	const std::unordered_map<std::string, ClassMetadata>& ClassMetadataProvider::classesMetadata() const {
+		return mClassesMetadata;
+	}
 }

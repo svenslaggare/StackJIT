@@ -158,5 +158,8 @@ namespace stackjit {
 
 		//Creates the virtual function tables
 		void createVirtualFunctionTables(const VMState& vmState);
+
+		//Returns the metadata
+		const std::unordered_map<std::string, ClassMetadata>& classesMetadata() const;
 	};
 }

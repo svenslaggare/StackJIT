@@ -97,9 +97,13 @@ namespace stackjit {
 		if (TypeSystem::fromString(typeParts.at(0), primitiveType)) {
 			type = new Type(typeParts.at(0));
 		} else if (typeParts.at(0) == "Ref") {
-			std::string elementType;
-			if (extractElementType(typeParts.at(1), elementType)) {
-				type = new ArrayType(makeType(elementType));
+			std::string elementTypeName;
+			if (extractElementType(typeParts.at(1), elementTypeName)) {
+				auto elementType = makeType(elementTypeName);
+
+				if (elementType != nullptr) {
+					type = new ArrayType(elementType);
+				}
 			} else if (typeParts.at(1) == "Null") {
 				type = new NullReferenceType();
 			} else {
