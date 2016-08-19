@@ -6,6 +6,9 @@
 namespace stackjit {
 	//Generates StackByteCode from the assembler parser structure
 	namespace ByteCodeGenerator {
+		//Returns an escaped version of the given string
+		std::string escapedString(std::string str);
+
 		//Generates byte code for the given attributes
 		void generateAttributes(std::ostream& stream, const AssemblyParser::AttributeContainer& attributes);
 

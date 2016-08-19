@@ -53,6 +53,20 @@ namespace stackjit {
 		};
 	}
 
+	std::string ByteCodeGenerator::escapedString(std::string str) {
+		std::string res = "";
+
+		for (char c : str) {
+			if (c == '"' || c == '\\') {
+				res += "\\";
+			}
+
+			res += c;
+		}
+
+		return res;
+	}
+
 	void ByteCodeGenerator::generateAttributes(std::ostream& stream,
 											   const AssemblyParser::AttributeContainer& attributes) {
 		for (auto& current : attributes) {
@@ -121,7 +135,7 @@ namespace stackjit {
 						stream << " " << inst.charValue;
 						break;
 					case AssemblyParser::InstructionFormats::StrData:
-						stream << " " << inst.strValue;
+						stream << " " << escapedString(inst.strValue);
 						break;
 					case AssemblyParser::InstructionFormats::Call: {
 						stream << " " << inst.strValue;
