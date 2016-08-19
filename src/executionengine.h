@@ -36,6 +36,7 @@ namespace stackjit {
 		VMState& mVMState;
 		JITCompiler mJIT;
 		CallStack mCallStack;
+		Verifier mVerifier;
 
 		std::string mBaseDir;
 

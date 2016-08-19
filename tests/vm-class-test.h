@@ -18,6 +18,7 @@ public:
 		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program1")), "\'Point\' is not a defined class.");
 		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program2")), "main() @ 1: \'Point\' is not a class type.");
 		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program3")), "There exists no type called 'Ref.Point'.");
+		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program4")), "The class 'Point' is already defined.");
 
 		TS_ASSERT_EQUALS(invokeVM("class/largeclass1"), "1337\n");
 	}

@@ -12,7 +12,10 @@
 
 namespace stackjit {
 	ExecutionEngine::ExecutionEngine(VMState& vmState)
-		: mVMState(vmState), mJIT(vmState), mCallStack(2000) {
+		: mVMState(vmState),
+		  mJIT(vmState),
+		  mCallStack(2000),
+		  mVerifier(vmState) {
 
 	}
 
@@ -190,8 +193,7 @@ namespace stackjit {
 
 	JitFunction ExecutionEngine::compileFunction(ManagedFunction* function, bool resolveSymbols) {
 		//Type check the function
-		Verifier verifier(mVMState);
-		verifier.verifyFunction(*function);
+		mVerifier.verifyFunction(*function);
 
 		//Compile it
 		auto funcPtr = mJIT.compileFunction(function);

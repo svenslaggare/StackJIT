@@ -27,13 +27,29 @@ namespace stackjit {
 	private:
 		VMState& mVMState;
 
-		const Type* mIntType;
-		const Type* mFloatType;
-		const Type* mBoolType;
-		const Type* mCharType;
-		const Type* mVoidType;
-		const Type* mNullType;
-		const Type* mStringType;
+		static const std::string intTypeName;
+		static const std::string floatTypeName;
+		static const std::string boolTypeName;
+		static const std::string charTypeName;
+		static const std::string voidTypeName;
+
+		//Getters for common types
+		const Type* mIntType = nullptr;
+		const Type* mFloatType = nullptr;
+		const Type* mBoolType = nullptr;
+		const Type* mCharType = nullptr;
+		const Type* mVoidType = nullptr;
+		const Type* mNullType = nullptr;
+		const Type* mStringType = nullptr;
+		const Type* getOrSetType(const std::string& name, const Type*& typeField);
+
+		const Type* intType();
+		const Type* floatType();
+		const Type* boolType();
+		const Type* charType();
+		const Type* voidType();
+		const Type* nullType();
+		const Type* stringType();
 
 		//Verifies the given instruction
 		void verifyInstruction(ManagedFunction& function,
