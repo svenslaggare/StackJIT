@@ -33,7 +33,7 @@ public:
 	void testInvalid() {
 		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program1")), "main() @ 1: Arrays of type 'Void' is not allowed.");
 		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program2")), "main() @ 1: 'RT' is not a valid type.");
-		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program3")), "main() @ 5: There exists no type 'RT'.");
-		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program4")), "main() @ 6: There exists no type 'RT'.");
+		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program3")), "main() @ 5: There exists no type called 'RT'.");
+		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("array/invalid_program4")), "main() @ 6: There exists no type called 'RT'.");
 	}
 };

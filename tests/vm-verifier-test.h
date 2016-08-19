@@ -22,8 +22,8 @@ public:
 		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/empty_func")), "test() @ 0: Empty functions are not allowed.");
 
 		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/not_end_in_return")), "main() @ 0: Functions must end with the 'RET' instruction.");
-		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/return_type1")), "Expected 'Int' as return type.");
-		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/return_type2")), "Expected 'Int' as return type.");
+		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/return_type1")), "Expected 'Int' as the return type.");
+		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/return_type2")), "Expected 'Int' as the return type.");
 
 		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/non_virtual_func1")), "main() @ 1: Non virtual member functions must be called with the 'CALLINST' instruction.");
 		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("invalid/non_virtual_func2")), "main() @ 1: Virtual member functions must be called with the 'CALLVIRT' instruction.");
