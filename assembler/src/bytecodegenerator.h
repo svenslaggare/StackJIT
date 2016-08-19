@@ -1,2 +1,2 @@
 #pragma once
-#include "../../src/bytecodegenerator.h"
+#include "../../src/bytecode/bytecodegenerator.h"

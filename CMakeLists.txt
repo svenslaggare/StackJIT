@@ -64,8 +64,8 @@ set(SOURCE_FILES
         src/linux/callingconvetion.cpp
         src/windows/callingconvention.h
         src/windows/callingconvetion.cpp
-        src/bytecodegenerator.h
-        src/bytecodegenerator.cpp
+        src/bytecode/bytecodegenerator.h
+        src/bytecode/bytecodegenerator.cpp
         src/loader/imageloader.h
         src/loader/imageloader.cpp
         src/core/functionsignature.cpp

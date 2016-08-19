@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 #include <functional>
-#include "loader/parser.h"
+#include "../loader/parser.h"
 
 namespace stackjit {
 	//Generates StackByteCode from the assembler parser structure

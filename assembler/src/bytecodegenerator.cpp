@@ -1,2 +1,2 @@
 #include "bytecodegenerator.h"
-#include "../../src/bytecodegenerator.cpp"
+#include "../../src/bytecode/bytecodegenerator.cpp"
