@@ -53,10 +53,7 @@ namespace stackjit {
 
 		//Indicates if the given types are equal
 		bool sameType(const Type* type1, const Type* type2) {
-			return
-				*type1 == *type2
-				|| (TypeSystem::isReferenceType(type1) && TypeSystem::isNullType(type2))
-				|| (TypeSystem::isReferenceType(type2) && TypeSystem::isNullType(type1));
+			return TypeSystem::sameType(type1, type2);
 		}
 
 		std::string checkType(const Type* expectedType, const Type* actualType) {
@@ -250,11 +247,11 @@ namespace stackjit {
 
 	}
 
-	const std::string Verifier::intTypeName = TypeSystem::toString(PrimitiveTypes::Integer);
-	const std::string Verifier::floatTypeName = TypeSystem::toString(PrimitiveTypes::Float);
-	const std::string Verifier::boolTypeName = TypeSystem::toString(PrimitiveTypes::Bool);
-	const std::string Verifier::charTypeName = TypeSystem::toString(PrimitiveTypes::Char);
-	const std::string Verifier::voidTypeName = TypeSystem::toString(PrimitiveTypes::Void);
+	const std::string Verifier::sIntTypeName = TypeSystem::toString(PrimitiveTypes::Integer);
+	const std::string Verifier::sFloatTypeName = TypeSystem::toString(PrimitiveTypes::Float);
+	const std::string Verifier::sBoolTypeName = TypeSystem::toString(PrimitiveTypes::Bool);
+	const std::string Verifier::sCharTypeName = TypeSystem::toString(PrimitiveTypes::Char);
+	const std::string Verifier::sVoidTypeName = TypeSystem::toString(PrimitiveTypes::Void);
 
 	const Type* Verifier::getOrSetType(const std::string& name, const Type*& typeField) {
 		if (typeField == nullptr) {
@@ -266,23 +263,23 @@ namespace stackjit {
 	}
 
 	const Type* Verifier::intType() {
-		return getOrSetType(intTypeName, mIntType);
+		return getOrSetType(sIntTypeName, mIntType);
 	}
 
 	const Type* Verifier::floatType() {
-		return getOrSetType(floatTypeName, mFloatType);
+		return getOrSetType(sFloatTypeName, mFloatType);
 	}
 
 	const Type* Verifier::boolType() {
-		return getOrSetType(boolTypeName, mBoolType);
+		return getOrSetType(sBoolTypeName, mBoolType);
 	}
 
 	const Type* Verifier::charType() {
-		return getOrSetType(charTypeName, mCharType);
+		return getOrSetType(sCharTypeName, mCharType);
 	}
 
 	const Type* Verifier::voidType() {
-		return getOrSetType(voidTypeName, mVoidType);
+		return getOrSetType(sVoidTypeName, mVoidType);
 	}
 
 	const Type* Verifier::nullType() {
@@ -336,16 +333,16 @@ namespace stackjit {
 					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
 						operandStack.push(intType());
 					} else {
-						typeError(functionSignature, index, "Expected 2 operands of type " + intTypeName + " on the stack.");
+						typeError(functionSignature, index, "Expected 2 operands of type " + sIntTypeName + " on the stack.");
 					}
 				} else if (TypeSystem::isPrimitiveType(op1, PrimitiveTypes::Float)) {
 					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Float)) {
 						operandStack.push(floatType());
 					} else {
-						typeError(functionSignature, index, "Expected 2 operands of type " + floatTypeName + " on the stack.");
+						typeError(functionSignature, index, "Expected 2 operands of type " + sFloatTypeName + " on the stack.");
 					}
 				} else {
-					typeError(functionSignature, index, "Expected 2 operands of type " + intTypeName + " or " + floatTypeName + " on the stack.");
+					typeError(functionSignature, index, "Expected 2 operands of type " + sIntTypeName + " or " + sFloatTypeName + " on the stack.");
 				}
 				break;
 			}
@@ -365,7 +362,7 @@ namespace stackjit {
 					TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Bool)) {
 					operandStack.push(boolType());
 				} else {
-					typeError(functionSignature, index, "Expected 2 operands of type " + boolTypeName + " on the stack.");
+					typeError(functionSignature, index, "Expected 2 operands of type " + sBoolTypeName + " on the stack.");
 				}
 				break;
 			}
@@ -376,7 +373,7 @@ namespace stackjit {
 				if (TypeSystem::isPrimitiveType(op, PrimitiveTypes::Integer)) {
 					operandStack.push(floatType());
 				} else {
-					typeError(functionSignature, index, "Expected 1 operand of type " + intTypeName + " on the stack.");
+					typeError(functionSignature, index, "Expected 1 operand of type " + sIntTypeName + " on the stack.");
 				}
 
 				break;
@@ -388,7 +385,7 @@ namespace stackjit {
 				if (TypeSystem::isPrimitiveType(op, PrimitiveTypes::Float)) {
 					operandStack.push(intType());
 				} else {
-					typeError(functionSignature, index, "Expected 1 operand of type " + floatTypeName + " on the stack.");
+					typeError(functionSignature, index, "Expected 1 operand of type " + sFloatTypeName + " on the stack.");
 				}
 				break;
 			}
@@ -408,25 +405,25 @@ namespace stackjit {
 						if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
 							operandStack.push(boolType());
 						} else {
-							typeError(functionSignature, index, "Expected 2 operands of type " + intTypeName + " on the stack.");
+							typeError(functionSignature, index, "Expected 2 operands of type " + sIntTypeName + " on the stack.");
 						}
 					} else if (*op1 == *boolType()) {
 						if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Bool)) {
 							operandStack.push(boolType());
 						} else {
-							typeError(functionSignature, index, "Expected 2 operands of type " + boolTypeName + " on the stack.");
+							typeError(functionSignature, index, "Expected 2 operands of type " + sBoolTypeName + " on the stack.");
 						}
 					} else if (*op1 == *floatType()) {
 						if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Float)) {
 							operandStack.push(boolType());
 						} else {
-							typeError(functionSignature, index, "Expected 2 operands of type " + floatTypeName + " on the stack.");
+							typeError(functionSignature, index, "Expected 2 operands of type " + sFloatTypeName + " on the stack.");
 						}
 					} else if (*op1 == *charType()) {
 						if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Char)) {
 							operandStack.push(boolType());
 						} else {
-							typeError(functionSignature, index, "Expected 2 operands of type " + charTypeName + " on the stack.");
+							typeError(functionSignature, index, "Expected 2 operands of type " + sCharTypeName + " on the stack.");
 						}
 					} else if (sameType(op1, op2)) {
 						operandStack.push(boolType());
@@ -447,7 +444,7 @@ namespace stackjit {
 						typeError(
 							functionSignature,
 							index,
-							"Expected 2 operands of type " + intTypeName + ", " + floatTypeName + " or " + charTypeName + " on the stack.");
+							"Expected 2 operands of type " + sIntTypeName + ", " + sFloatTypeName + " or " + sCharTypeName + " on the stack.");
 					}
 				}
 
@@ -461,7 +458,7 @@ namespace stackjit {
 				if (TypeSystem::isPrimitiveType(op, PrimitiveTypes::Bool)) {
 					operandStack.push(boolType());
 				} else {
-					typeError(functionSignature, index, "Expected 1 operand of type " + boolTypeName + " on the stack.");
+					typeError(functionSignature, index, "Expected 1 operand of type " + sBoolTypeName + " on the stack.");
 				}
 
 				break;
@@ -639,25 +636,25 @@ namespace stackjit {
 					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
 						branches.push_back({index, (std::size_t)inst.intValue, operandStack});
 					} else {
-						typeError(functionSignature, index, "Expected 2 operands of type " + intTypeName + " on the stack.");
+						typeError(functionSignature, index, "Expected 2 operands of type " + sIntTypeName + " on the stack.");
 					}
 				} else if (*op1 == *boolType()) {
 					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Bool)) {
 						branches.push_back({index, (std::size_t)inst.intValue, operandStack});
 					} else {
-						typeError(functionSignature, index, "Expected 2 operands of type " + boolTypeName + " on the stack.");
+						typeError(functionSignature, index, "Expected 2 operands of type " + sBoolTypeName + " on the stack.");
 					}
 				} else if (*op1 == *floatType()) {
 					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Float)) {
 						branches.push_back({index, (std::size_t)inst.intValue, operandStack});
 					} else {
-						typeError(functionSignature, index, "Expected 2 operands of type " + floatTypeName + " on the stack.");
+						typeError(functionSignature, index, "Expected 2 operands of type " + sFloatTypeName + " on the stack.");
 					}
 				} else if (*op1 == *charType()) {
 					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Char)) {
 						branches.push_back({index, (std::size_t)inst.intValue, operandStack});
 					} else {
-						typeError(functionSignature, index, "Expected 2 operands of type " + charTypeName + " on the stack.");
+						typeError(functionSignature, index, "Expected 2 operands of type " + sCharTypeName + " on the stack.");
 					}
 				} else if (sameType(op1, op2)) {
 					branches.push_back({index, (std::size_t)inst.intValue, operandStack});
@@ -685,25 +682,25 @@ namespace stackjit {
 					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
 						branches.push_back({index, (std::size_t)inst.intValue, operandStack});
 					} else {
-						typeError(functionSignature, index, "Expected 2 operands of type " + intTypeName + " on the stack.");
+						typeError(functionSignature, index, "Expected 2 operands of type " + sIntTypeName + " on the stack.");
 					}
 				} else if (*op1 == *boolType()) {
 					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Bool)) {
 						branches.push_back({index, (std::size_t)inst.intValue, operandStack});
 					} else {
-						typeError(functionSignature, index, "Expected 2 operands of type " + boolTypeName + " on the stack.");
+						typeError(functionSignature, index, "Expected 2 operands of type " + sBoolTypeName + " on the stack.");
 					}
 				} else if (*op1 == *floatType()) {
 					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Float)) {
 						branches.push_back({index, (std::size_t)inst.intValue, operandStack});
 					} else {
-						typeError(functionSignature, index, "Expected 2 operands of type " + floatTypeName + " on the stack.");
+						typeError(functionSignature, index, "Expected 2 operands of type " + sFloatTypeName + " on the stack.");
 					}
 				} else if (*op1 == *charType()) {
 					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Char)) {
 						branches.push_back({index, (std::size_t)inst.intValue, operandStack});
 					} else {
-						typeError(functionSignature, index, "Expected 2 operands of type " + charTypeName + " on the stack.");
+						typeError(functionSignature, index, "Expected 2 operands of type " + sCharTypeName + " on the stack.");
 					}
 				} else {
 					typeError(functionSignature, index, "Expected 2 operands of comparable type on the stack.");
@@ -739,7 +736,7 @@ namespace stackjit {
 				}
 
 				if (*elemType == *voidType()) {
-					typeError(functionSignature, index, "Arrays of type '" + voidTypeName + "' is not allowed.");
+					typeError(functionSignature, index, "Arrays of type '" + sVoidTypeName + "' is not allowed.");
 				}
 
 				operandStack.push(mVMState.typeProvider().makeType("Ref.Array[" + inst.strValue + "]"));
@@ -765,7 +762,7 @@ namespace stackjit {
 					typeError(
 						functionSignature,
 						index,
-						"Expected second operand to be of type " + intTypeName + " but got type: " + indexType->name() + ".");
+						"Expected second operand to be of type " + sIntTypeName + " but got type: " + indexType->name() + ".");
 				}
 
 				auto elemType = mVMState.typeProvider().makeType(inst.strValue);
@@ -810,7 +807,7 @@ namespace stackjit {
 					typeError(
 						functionSignature,
 						index,
-						"Expected second operand to be of type " + intTypeName + " but got type: " + indexType->name() + ".");
+						"Expected second operand to be of type " + sIntTypeName + " but got type: " + indexType->name() + ".");
 				}
 
 				auto elemType = mVMState.typeProvider().makeType(inst.strValue);

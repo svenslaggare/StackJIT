@@ -27,11 +27,11 @@ namespace stackjit {
 	private:
 		VMState& mVMState;
 
-		static const std::string intTypeName;
-		static const std::string floatTypeName;
-		static const std::string boolTypeName;
-		static const std::string charTypeName;
-		static const std::string voidTypeName;
+		static const std::string sIntTypeName;
+		static const std::string sFloatTypeName;
+		static const std::string sBoolTypeName;
+		static const std::string sCharTypeName;
+		static const std::string sVoidTypeName;
 
 		//Getters for common types
 		const Type* mIntType = nullptr;
