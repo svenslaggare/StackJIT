@@ -64,7 +64,7 @@ namespace stackjit {
 			res += c;
 		}
 
-		return res;
+		return "\"" + res + "\"";
 	}
 
 	void ByteCodeGenerator::generateAttributes(std::ostream& stream,
