@@ -13,7 +13,8 @@ namespace stackjit {
 			IntData,
 			FloatData,
 			CharData,
-			StrData,
+			StringData,
+			StringConstantData,
 			Call,
 			CallInstance,
 		};
@@ -54,7 +55,10 @@ namespace stackjit {
 		    static Instruction makeWithChar(OpCodes opCode, char value);
 
 		    //Creates a new instruction with a string as the value
-		    static Instruction makeWithStr(OpCodes opCode, std::string value);
+		    static Instruction makeWithString(OpCodes opCode, std::string value);
+
+			//Creates a new instruction with a string constant as the value
+			static Instruction makeWithStringConstant(OpCodes opCode, std::string value);
 
 		    //Creates a new call instruction
 		    static Instruction makeCall(std::string funcName, std::vector<std::string> parameters);

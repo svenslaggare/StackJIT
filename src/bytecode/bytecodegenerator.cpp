@@ -134,7 +134,10 @@ namespace stackjit {
 					case AssemblyParser::InstructionFormats::CharData:
 						stream << " " << inst.charValue;
 						break;
-					case AssemblyParser::InstructionFormats::StrData:
+					case AssemblyParser::InstructionFormats::StringData:
+						stream << " " << inst.strValue;
+						break;
+					case AssemblyParser::InstructionFormats::StringConstantData:
 						stream << " " << escapedString(inst.strValue);
 						break;
 					case AssemblyParser::InstructionFormats::Call: {

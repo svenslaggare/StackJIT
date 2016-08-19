@@ -42,11 +42,19 @@ namespace stackjit {
 		return inst;
 	}
 
-	AssemblyParser::Instruction AssemblyParser::Instruction::makeWithStr(OpCodes opCode, std::string value) {
+	AssemblyParser::Instruction AssemblyParser::Instruction::makeWithString(OpCodes opCode, std::string value) {
 		AssemblyParser::Instruction inst;
 		inst.strValue = value;
 		inst.opCode = opCode;
-		inst.format = InstructionFormats::StrData;
+		inst.format = InstructionFormats::StringData;
+		return inst;
+	}
+
+	AssemblyParser::Instruction AssemblyParser::Instruction::makeWithStringConstant(OpCodes opCode, std::string value) {
+		AssemblyParser::Instruction inst;
+		inst.strValue = value;
+		inst.opCode = opCode;
+		inst.format = InstructionFormats::StringConstantData;
 		return inst;
 	}
 
@@ -394,7 +402,8 @@ namespace stackjit {
 
 				if (strOperandInstructions.count(currentToLower) > 0) {
 					std::string value = nextToken(tokens, i);
-					currentFunc.instructions.push_back(Instruction::makeWithStr(strOperandInstructions[currentToLower], value));
+					currentFunc.instructions.push_back(
+						Instruction::makeWithString(strOperandInstructions[currentToLower], value));
 					continue;
 				}
 
@@ -532,7 +541,7 @@ namespace stackjit {
 
 				if (currentToLower == "ldstr") {
 					auto str = nextToken(tokens, i);
-					currentFunc.instructions.push_back(Instruction::makeWithStr(OpCodes::LOAD_STRING, str));
+					currentFunc.instructions.push_back(Instruction::makeWithStringConstant(OpCodes::LOAD_STRING, str));
 					continue;
 				}
 

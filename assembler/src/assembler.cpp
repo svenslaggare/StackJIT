@@ -74,7 +74,10 @@ void Assembler::generateFunctionBody(BinaryData& data, stackjit::AssemblyParser:
 			case stackjit::AssemblyParser::InstructionFormats::CharData:
 				addData(data, inst.charValue);
 				break;
-			case stackjit::AssemblyParser::InstructionFormats::StrData:
+			case stackjit::AssemblyParser::InstructionFormats::StringData:
+				addString(data, inst.strValue);
+				break;
+			case stackjit::AssemblyParser::InstructionFormats::StringConstantData:
 				addString(data, inst.strValue);
 				break;
 			case stackjit::AssemblyParser::InstructionFormats::Call:

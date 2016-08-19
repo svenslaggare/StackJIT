@@ -111,9 +111,14 @@ namespace stackjit {
 							func.instructions.push_back(AssemblyParser::Instruction::makeWithChar(opCode, value));
 						}
 						break;
-					case AssemblyParser::InstructionFormats::StrData: {
+					case AssemblyParser::InstructionFormats::StringData: {
 							auto value = loadString(mImageData, bodyOffset);
-							func.instructions.push_back(AssemblyParser::Instruction::makeWithStr(opCode, value));
+							func.instructions.push_back(AssemblyParser::Instruction::makeWithString(opCode, value));
+						}
+						break;
+					case AssemblyParser::InstructionFormats::StringConstantData: {
+							auto value = loadString(mImageData, bodyOffset);
+							func.instructions.push_back(AssemblyParser::Instruction::makeWithStringConstant(opCode, value));
 						}
 						break;
 					case AssemblyParser::InstructionFormats::Call: {
