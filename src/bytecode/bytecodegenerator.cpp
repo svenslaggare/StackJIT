@@ -132,7 +132,7 @@ namespace stackjit {
 						stream << " " << inst.floatValue;
 						break;
 					case AssemblyParser::InstructionFormats::CharData:
-						stream << " " << inst.charValue;
+						stream << " " << (int)inst.charValue;
 						break;
 					case AssemblyParser::InstructionFormats::StringData:
 						stream << " " << inst.strValue;
