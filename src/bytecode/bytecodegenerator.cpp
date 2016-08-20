@@ -156,8 +156,8 @@ namespace stackjit {
 						}
 
 						stream << ")";
-					}
 						break;
+					}
 					case AssemblyParser::InstructionFormats::CallInstance: {
 						stream << " " << inst.calledClassType << "::" << inst.strValue;
 						stream << "(";
@@ -174,8 +174,8 @@ namespace stackjit {
 						}
 
 						stream << ")";
-					}
 						break;
+					}
 				}
 
 				stream << std::endl;

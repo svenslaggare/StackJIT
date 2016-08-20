@@ -31,7 +31,7 @@ namespace stackjit {
 		}
 
 		//Loads the given instruction
-		Instruction loadInstruction(VMState& vmState, ManagedFunction* function, AssemblyParser::Instruction inst) {
+		Instruction loadInstruction(VMState& vmState, const AssemblyParser::Instruction& inst) {
 			Instruction newInst(inst.opCode);
 
 			newInst.intValue = inst.intValue;
@@ -104,7 +104,9 @@ namespace stackjit {
 		}
 	}
 
-	void Loader::generateDefinition(VMState& vmState, const AssemblyParser::Function& function, FunctionDefinition& definition) {
+	void Loader::generateDefinition(VMState& vmState,
+									const AssemblyParser::Function& function,
+									FunctionDefinition& definition) {
 		auto returnType = getType(vmState, function.returnType);
 
 		std::vector<const Type*> parameters;
@@ -136,7 +138,9 @@ namespace stackjit {
 			isVirtual);
 	}
 
-	void Loader::loadExternalFunction(VMState& vmState, const AssemblyParser::Function& function, FunctionDefinition& loadedFunction) {
+	void Loader::loadExternalFunction(VMState& vmState,
+									  const AssemblyParser::Function& function,
+									  FunctionDefinition& loadedFunction) {
 		if (!function.isExternal) {
 			throw std::runtime_error("Expected an external function");
 		}
@@ -150,7 +154,9 @@ namespace stackjit {
 		}
 	}
 
-	ManagedFunction* Loader::loadManagedFunction(VMState& vmState, const AssemblyParser::Function& function, const FunctionDefinition& functionDefinition) {
+	ManagedFunction* Loader::loadManagedFunction(VMState& vmState,
+												 const AssemblyParser::Function& function,
+												 const FunctionDefinition& functionDefinition) {
 		if (function.isExternal) {
 			throw std::runtime_error("Expected a managed function");
 		}
@@ -168,8 +174,8 @@ namespace stackjit {
 		}
 
 		//Instructions
-		for (auto inst : function.instructions) {
-			loadedFunc->instructions().push_back(loadInstruction(vmState, loadedFunc, inst));
+		for (auto& inst : function.instructions) {
+			loadedFunc->instructions().push_back(loadInstruction(vmState, inst));
 		}
 
 		return loadedFunc;

@@ -38,13 +38,13 @@ namespace stackjit {
 		StackFrame(RegisterValue* basePtr, const ManagedFunction* function, const int instIndex);
 
 		//Returns the given function argument
-		StackFrameEntry getArgument(std::int64_t index);
+		StackFrameEntry getArgument(std::size_t index);
 
 		//Returns the given local
-		StackFrameEntry getLocal(std::int64_t index);
+		StackFrameEntry getLocal(std::size_t index);
 
 		//Returns the given operand
-		StackFrameEntry getStackOperand(std::int64_t index);
+		StackFrameEntry getStackOperand(std::size_t index);
 
 		//Returns the size of the operand stack at the current instruction
 		std::size_t operandStackSize() const;

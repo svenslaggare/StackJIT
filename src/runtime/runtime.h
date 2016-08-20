@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 #include "../stackjit.h"
-#include "../type/type.h"
 #include "../vmstate.h"
 
 namespace stackjit {

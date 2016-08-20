@@ -19,12 +19,18 @@ namespace stackjit {
 		void loadClasses(VMState& vmState, ImageContainer& imageContainer);
 
 		//Generates a definition for the given function
-		void generateDefinition(VMState& vmState, const AssemblyParser::Function& function, FunctionDefinition& definition);
+		void generateDefinition(VMState& vmState,
+								const AssemblyParser::Function& function,
+								FunctionDefinition& definition);
 
 		//Loads the given external function
-		void loadExternalFunction(VMState& vmState, const AssemblyParser::Function& function, FunctionDefinition& loadedFunction);
+		void loadExternalFunction(VMState& vmState,
+								  const AssemblyParser::Function& function,
+								  FunctionDefinition& loadedFunction);
 
 		//Loads the given managed function
-		ManagedFunction* loadManagedFunction(VMState& vmState, const AssemblyParser::Function& function, const FunctionDefinition& functionDefinition);
+		ManagedFunction* loadManagedFunction(VMState& vmState,
+											 const AssemblyParser::Function& function,
+											 const FunctionDefinition& functionDefinition);
 	}
 }
