@@ -30,7 +30,6 @@ namespace stackjit {
 		}
 	}
 
-
 	void TestLibrary::add(VMState& vmState) {
 		auto& binder = vmState.binder();
 		auto intType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Integer));

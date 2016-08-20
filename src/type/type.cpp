@@ -6,6 +6,7 @@
 #include <unordered_map>
 
 namespace stackjit {
+	//Type
 	Type::Type(std::string name)
 		: mName(name) {
 
@@ -31,14 +32,47 @@ namespace stackjit {
 		return !(*this == type);
 	}
 
+	//Primitive type
+	PrimitiveType::PrimitiveType(PrimitiveTypes primitiveType)
+		: Type(TypeSystem::toString(primitiveType)) {
+
+	}
+
+	bool PrimitiveType::isReferenceType() const {
+		return false;
+	}
+
+	bool PrimitiveType::isArrayType() const {
+		return false;
+	}
+
+	bool PrimitiveType::isClassType() const {
+		return false;
+	}
+
+	//Reference type
 	ReferenceType::ReferenceType(std::string name): Type("Ref." + name) {
 
 	}
 
+	bool ReferenceType::isReferenceType() const {
+		return true;
+	}
+
+	//Null type
 	NullReferenceType::NullReferenceType(): ReferenceType("Null") {
 
 	}
 
+	bool NullReferenceType::isArrayType() const {
+		return false;
+	}
+
+	bool NullReferenceType::isClassType() const {
+		return false;
+	}
+
+	//Array type
 	ArrayType::ArrayType(const Type* elementType)
 		: ReferenceType("Array[" + elementType->name() + "]"), mElementType(elementType) {
 
@@ -52,6 +86,15 @@ namespace stackjit {
 
 	}
 
+	bool ArrayType::isArrayType() const {
+		return true;
+	}
+
+	bool ArrayType::isClassType() const {
+		return false;
+	}
+
+	//Class type
 	ClassType::ClassType(std::string name, ClassMetadata* metadata)
 		: ReferenceType(name), mClassName(name), mMetadata(metadata) {
 
@@ -65,6 +108,15 @@ namespace stackjit {
 		return mMetadata;
 	}
 
+	bool ClassType::isArrayType() const {
+		return false;
+	}
+
+	bool ClassType::isClassType() const {
+		return true;
+	}
+
+	//Type system
 	bool TypeSystem::fromString(std::string typeName, PrimitiveTypes& primitiveType) {
 		if (typeName == "Int") {
 			primitiveType = PrimitiveTypes::Integer;
@@ -116,35 +168,19 @@ namespace stackjit {
 	}
 
 	bool TypeSystem::isReferenceType(const Type* type) {
-		if (type == nullptr) {
-			return false;
-		}
-
-		return dynamic_cast<const ReferenceType*>(type) != nullptr;
+		return type->isReferenceType();
 	}
 
 	bool TypeSystem::isNullType(const Type* type) {
-		if (type == nullptr) {
-			return false;
-		}
-
 		return dynamic_cast<const NullReferenceType*>(type) != nullptr;
 	}
 
 	bool TypeSystem::isArray(const Type* type) {
-		if (type == nullptr) {
-			return false;
-		}
-
-		return dynamic_cast<const ArrayType*>(type) != nullptr;
+		return type->isArrayType();
 	}
 
 	bool TypeSystem::isClass(const Type* type) {
-		if (type == nullptr) {
-			return false;
-		}
-
-		return dynamic_cast<const ClassType*>(type) != nullptr;
+		return type->isClassType();
 	}
 
 	bool TypeSystem::isSubtypeOf(const ClassType* baseClass, const ClassType* subClass) {

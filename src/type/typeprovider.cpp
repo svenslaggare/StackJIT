@@ -95,7 +95,7 @@ namespace stackjit {
 		Type* type = nullptr;
 
 		if (TypeSystem::fromString(typeParts.at(0), primitiveType)) {
-			type = new Type(typeParts.at(0));
+			type = new PrimitiveType(primitiveType);
 		} else if (typeParts.at(0) == "Ref") {
 			std::string elementTypeName;
 			if (extractElementType(typeParts.at(1), elementTypeName)) {
