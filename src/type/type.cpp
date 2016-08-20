@@ -25,7 +25,10 @@ namespace stackjit {
 			return true;
 		}
 
-		return mName.compare(type.mName) == 0;
+		return
+			mName == type.mName
+			|| (TypeSystem::isReferenceType(this) && TypeSystem::isNullType(&type))
+			|| (TypeSystem::isReferenceType(&type) && TypeSystem::isNullType(this));
 	}
 
 	bool Type::operator!=(const Type& type) const {
@@ -193,13 +196,6 @@ namespace stackjit {
 		}
 
 		return isSubtypeOf(baseClass, subClass->metadata()->parentClass());
-	}
-
-	bool TypeSystem::sameType(const Type* type1, const Type* type2) {
-		return
-			*type1 == *type2
-			|| (TypeSystem::isReferenceType(type1) && TypeSystem::isNullType(type2))
-			|| (TypeSystem::isReferenceType(type2) && TypeSystem::isNullType(type1));
 	}
 
 	bool TypeSystem::areEqual(const std::vector<const Type*>& list1, const std::vector<const Type*>& list2) {

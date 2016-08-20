@@ -109,6 +109,7 @@ namespace stackjit {
 	};
 
 	namespace TypeSystem {
+		//The name of the string class
 		const std::string stringClassName = "std.String";
 
 		//The string type name
@@ -140,9 +141,6 @@ namespace stackjit {
 
 		//Indicates if the given class is a subtype of the given class
 		bool isSubtypeOf(const ClassType* baseClass, const ClassType* subClass);
-
-		//Indicates if the given types are equal
-		bool sameType(const Type* type1, const Type* type2);
 
 		//Indicates if the given list of types are the same
 		bool areEqual(const std::vector<const Type*>& list1, const std::vector<const Type*>& list2);

@@ -53,7 +53,7 @@ namespace stackjit {
 
 		//Indicates if the given types are equal
 		bool sameType(const Type* type1, const Type* type2) {
-			return TypeSystem::sameType(type1, type2);
+			return *type1 == *type2;
 		}
 
 		std::string checkType(const Type* expectedType, const Type* actualType) {
