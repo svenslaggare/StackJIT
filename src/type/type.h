@@ -30,13 +30,13 @@ namespace stackjit {
 		std::string name() const;
 
 		//Indicates if the current type is a reference type
-		virtual bool isReferenceType() const = 0;
+		virtual bool isReference() const = 0;
 
 		//Indicates if the current type is an array type
-		virtual bool isArrayType() const = 0;
+		virtual bool isArray() const = 0;
 
 		//Indicates if the current type is a class type
-		virtual bool isClassType() const = 0;
+		virtual bool isClass() const = 0;
 
 		//Compares if two types are equal
 		bool operator==(const Type& type) const;
@@ -51,9 +51,9 @@ namespace stackjit {
 		//Creates a primitive type of the given type
 		PrimitiveType(PrimitiveTypes primitiveType);
 
-		virtual bool isReferenceType() const override;
-		virtual bool isArrayType() const override;
-		virtual bool isClassType() const override;
+		virtual bool isReference() const override;
+		virtual bool isArray() const override;
+		virtual bool isClass() const override;
 	};
 
 	//Represents a reference type
@@ -61,7 +61,7 @@ namespace stackjit {
 	public:
 		ReferenceType(std::string name);
 
-		virtual bool isReferenceType() const override;
+		virtual bool isReference() const override;
 	};
 
 	//Represents a null reference
@@ -69,8 +69,8 @@ namespace stackjit {
 	public:
 		NullReferenceType();
 
-		virtual bool isArrayType() const override;
-		virtual bool isClassType() const override;
+		virtual bool isArray() const override;
+		virtual bool isClass() const override;
 	};
 
 	//Represents an array type
@@ -85,8 +85,8 @@ namespace stackjit {
 		//Returns the type of the element
 		const Type* elementType() const;
 
-		virtual bool isArrayType() const override;
-		virtual bool isClassType() const override;
+		virtual bool isArray() const override;
+		virtual bool isClass() const override;
 	};
 
 	//Represents a class type
@@ -104,8 +104,8 @@ namespace stackjit {
 		//Returns the metadata for the class
 		ClassMetadata* metadata() const;
 
-		virtual bool isArrayType() const override;
-		virtual bool isClassType() const override;
+		virtual bool isArray() const override;
+		virtual bool isClass() const override;
 	};
 
 	namespace TypeSystem {
@@ -127,18 +127,9 @@ namespace stackjit {
 		//Indicates if the given type is of the given primitive type
 		bool isPrimitiveType(const Type* type, PrimitiveTypes primitiveType);
 
-		//Indicates if the given type is a reference type
-		bool isReferenceType(const Type* type);
-
 		//Indicates if the given type is the null type
 		bool isNullType(const Type* type);
-
-		//Indicates if the given type is an array
-		bool isArray(const Type* type);
-
-		//Indicates if the given type is a class
-		bool isClass(const Type* type);
-
+		
 		//Indicates if the given class is a subtype of the given class
 		bool isSubtypeOf(const ClassType* baseClass, const ClassType* subClass);
 

@@ -4,7 +4,7 @@ namespace stackjit {
 	//Object ref
 	ObjectRef::ObjectRef(RawObjectRef objRef)
 		: mPtr(objRef - stackjit::OBJECT_HEADER_SIZE), mType(*((const Type**)mPtr)) {
-		if (TypeSystem::isArray(type())) {
+		if (type()->isArray()) {
 			auto arrayType = static_cast<const ArrayType*>(type());
 			auto elementType = arrayType->elementType();
 			auto elemSize = TypeSystem::sizeOfType(elementType);

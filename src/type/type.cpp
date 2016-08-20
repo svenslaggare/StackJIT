@@ -27,8 +27,8 @@ namespace stackjit {
 
 		return
 			mName == type.mName
-			|| (TypeSystem::isReferenceType(this) && TypeSystem::isNullType(&type))
-			|| (TypeSystem::isReferenceType(&type) && TypeSystem::isNullType(this));
+			|| (this->isReference() && TypeSystem::isNullType(&type))
+			|| (type.isReference() && TypeSystem::isNullType(this));
 	}
 
 	bool Type::operator!=(const Type& type) const {
@@ -41,15 +41,15 @@ namespace stackjit {
 
 	}
 
-	bool PrimitiveType::isReferenceType() const {
+	bool PrimitiveType::isReference() const {
 		return false;
 	}
 
-	bool PrimitiveType::isArrayType() const {
+	bool PrimitiveType::isArray() const {
 		return false;
 	}
 
-	bool PrimitiveType::isClassType() const {
+	bool PrimitiveType::isClass() const {
 		return false;
 	}
 
@@ -58,7 +58,7 @@ namespace stackjit {
 
 	}
 
-	bool ReferenceType::isReferenceType() const {
+	bool ReferenceType::isReference() const {
 		return true;
 	}
 
@@ -67,11 +67,11 @@ namespace stackjit {
 
 	}
 
-	bool NullReferenceType::isArrayType() const {
+	bool NullReferenceType::isArray() const {
 		return false;
 	}
 
-	bool NullReferenceType::isClassType() const {
+	bool NullReferenceType::isClass() const {
 		return false;
 	}
 
@@ -89,11 +89,11 @@ namespace stackjit {
 
 	}
 
-	bool ArrayType::isArrayType() const {
+	bool ArrayType::isArray() const {
 		return true;
 	}
 
-	bool ArrayType::isClassType() const {
+	bool ArrayType::isClass() const {
 		return false;
 	}
 
@@ -111,11 +111,11 @@ namespace stackjit {
 		return mMetadata;
 	}
 
-	bool ClassType::isArrayType() const {
+	bool ClassType::isArray() const {
 		return false;
 	}
 
-	bool ClassType::isClassType() const {
+	bool ClassType::isClass() const {
 		return true;
 	}
 
@@ -170,20 +170,8 @@ namespace stackjit {
 		return false;
 	}
 
-	bool TypeSystem::isReferenceType(const Type* type) {
-		return type->isReferenceType();
-	}
-
 	bool TypeSystem::isNullType(const Type* type) {
 		return dynamic_cast<const NullReferenceType*>(type) != nullptr;
-	}
-
-	bool TypeSystem::isArray(const Type* type) {
-		return type->isArrayType();
-	}
-
-	bool TypeSystem::isClass(const Type* type) {
-		return type->isClassType();
 	}
 
 	bool TypeSystem::isSubtypeOf(const ClassType* baseClass, const ClassType* subClass) {
@@ -239,7 +227,7 @@ namespace stackjit {
 
 		if (fromString(typeName, primitiveType)) {
 			return sizeOfType(primitiveType);
-		} else if (TypeSystem::isReferenceType(type)) {
+		} else if (type->isReference()) {
 			return sizeof(unsigned char*);
 		}
 

@@ -112,7 +112,7 @@ namespace stackjit {
 	}
 
 	void Runtime::Internal::printValue(RegisterValue value, const Type* type) {
-		if (TypeSystem::isReferenceType(type)) {
+		if (type->isReference()) {
 			if (value == 0) {
 				std::cout << "nullref";
 			} else {

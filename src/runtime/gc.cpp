@@ -101,7 +101,7 @@ namespace stackjit {
 	}
 
 	void GarbageCollector::visitFrameReference(StackFrameEntry frameEntry, VisitReferenceFn fn) {
-		if (TypeSystem::isReferenceType(frameEntry.type())) {
+		if (frameEntry.type()->isReference()) {
 			auto objPtr = (unsigned char*)frameEntry.value();
 
 			//Don't visit nulls
@@ -166,19 +166,19 @@ namespace stackjit {
 
 	void GarbageCollector::markObject(ObjectRef objRef) {
 		if (!objRef.isMarked()) {
-			if (TypeSystem::isArray(objRef.type())) {
+			if (objRef.type()->isArray()) {
 				objRef.mark();
 
 				auto arrayType = static_cast<const ArrayType*>(objRef.type());
 
 				//Mark ref elements
-				if (TypeSystem::isReferenceType(arrayType->elementType())) {
+				if (arrayType->elementType()->isReference()) {
 					ArrayRef<PtrValue> arrayRef(objRef.dataPtr());
 					for (int i = 0; i < arrayRef.length(); i++) {
 						markValue(arrayRef.getElement(i), arrayType->elementType());
 					}
 				}
-			} else if (TypeSystem::isClass(objRef.type())) {
+			} else if (objRef.type()->isClass()) {
 				objRef.mark();
 
 				//Mark ref fields
@@ -186,7 +186,7 @@ namespace stackjit {
 				for (auto fieldEntry : classType->metadata()->fields()) {
 					auto field = fieldEntry.second;
 
-					if (TypeSystem::isReferenceType(field.type())) {
+					if (field.type()->isReference()) {
 						RegisterValue fieldValue = *(PtrValue*)(objRef.dataPtr() + field.offset());
 						markValue(fieldValue, field.type());
 					}
@@ -196,7 +196,7 @@ namespace stackjit {
 	}
 
 	void GarbageCollector::markValue(RegisterValue value, const Type* type) {
-		if (TypeSystem::isReferenceType(type)) {
+		if (type->isReference()) {
 			auto objPtr = (unsigned char*)value;
 
 			//Don't mark nulls
@@ -279,23 +279,23 @@ namespace stackjit {
 		//Update the field/element references
 		mHeap.visitObjects([&](ObjectRef objRef) {
 			if (objRef.isMarked()) {
-				if (TypeSystem::isArray(objRef.type())) {
+				if (objRef.type()->isArray()) {
 					auto arrayType = static_cast<const ArrayType*>(objRef.type());
 
 					//Update ref elements
-					if (TypeSystem::isReferenceType(arrayType->elementType())) {
+					if (arrayType->elementType()->isReference()) {
 						ArrayRef<PtrValue> arrayRef(objRef.dataPtr());
 						for (int i = 0; i < arrayRef.length(); i++) {
 							updateRef(arrayRef.elementsPtr() + i);
 						}
 					}
-				} else if (TypeSystem::isClass(objRef.type())) {
+				} else if (objRef.type()->isClass()) {
 					//Update ref fields
 					auto classType = static_cast<const ClassType*>(objRef.type());
 					for (auto fieldEntry : classType->metadata()->fields()) {
 						auto field = fieldEntry.second;
 
-						if (TypeSystem::isReferenceType(field.type())) {
+						if (field.type()->isReference()) {
 							updateRef((PtrValue*)(objRef.dataPtr() + field.offset()));
 						}
 					}

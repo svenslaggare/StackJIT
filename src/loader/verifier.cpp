@@ -42,7 +42,7 @@ namespace stackjit {
 
 		//Indicates if the given class is a subtype of the given class
 		bool isSubtypeOf(const Type* baseClass, const Type* subClass) {
-			if (TypeSystem::isClass(baseClass) && TypeSystem::isClass(subClass)) {
+			if (baseClass->isClass() && subClass->isClass()) {
 				auto baseClassType = static_cast<const ClassType*>(baseClass);
 				auto subClassType = static_cast<const ClassType*>(subClass);
 				return TypeSystem::isSubtypeOf(baseClassType, subClassType);
@@ -751,7 +751,7 @@ namespace stackjit {
 
 				bool isNull = arrayRefType == nullType();
 
-				if (!TypeSystem::isArray(arrayRefType) && !isNull) {
+				if (!arrayRefType->isArray() && !isNull) {
 					typeError(
 						functionSignature,
 						index,
@@ -796,7 +796,7 @@ namespace stackjit {
 
 				bool isNull = arrayRefType == nullType();
 
-				if (!TypeSystem::isArray(arrayRefType) && !isNull) {
+				if (!arrayRefType->isArray() && !isNull) {
 					typeError(
 						functionSignature,
 						index,
@@ -834,7 +834,7 @@ namespace stackjit {
 				assertOperandCount(functionSignature, index, operandStack, 1);
 				auto arrayRefType = popType(operandStack);
 
-				if (!TypeSystem::isArray(arrayRefType) && arrayRefType != nullType()) {
+				if (!arrayRefType->isArray() && arrayRefType != nullType()) {
 					typeError(functionSignature, index, "Expected operand to be an array reference.");
 				}
 
@@ -875,7 +875,7 @@ namespace stackjit {
 				auto classRefType = popType(operandStack);
 				bool isNull = classRefType == nullType();
 
-				if (!TypeSystem::isClass(classRefType) && !isNull) {
+				if (!classRefType->isClass() && !isNull) {
 					typeError(
 						functionSignature,
 						index,
@@ -935,7 +935,7 @@ namespace stackjit {
 				auto classRefType = popType(operandStack);
 				bool isNull = classRefType == nullType();
 
-				if (!TypeSystem::isClass(classRefType) && !isNull) {
+				if (!classRefType->isClass() && !isNull) {
 					typeError(
 						functionSignature,
 						index,
