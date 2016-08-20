@@ -129,7 +129,7 @@ namespace stackjit {
 
 		//Indicates if the given type is the null type
 		bool isNullType(const Type* type);
-		
+
 		//Indicates if the given class is a subtype of the given class
 		bool isSubtypeOf(const ClassType* baseClass, const ClassType* subClass);
 

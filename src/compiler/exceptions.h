@@ -22,7 +22,9 @@ namespace stackjit {
 		void generateHandlers(MemoryManager& memoryManger, CallingConvention& callingConvention);
 
 		//Adds a null check
-		void addNullCheck(FunctionCompilationData& function, Registers refReg = Registers::AX, ExtendedRegisters cmpReg = ExtendedRegisters::R11) const;
+		void addNullCheck(FunctionCompilationData& function,
+						  Registers refReg = Registers::AX,
+						  ExtendedRegisters cmpReg = ExtendedRegisters::R11) const;
 
 		//Adds an array bounds check
 		void addArrayBoundsCheck(FunctionCompilationData& function) const;

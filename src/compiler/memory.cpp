@@ -54,7 +54,7 @@ namespace stackjit {
 
 	CodePage* MemoryManager::newPage(std::size_t size) {
 		//Align to page size
-		size = ((size + PAGE_SIZE - 1) / PAGE_SIZE) * PAGE_SIZE;
+		size = ((size + sPageSize - 1) / sPageSize) * sPageSize;
 
 		void *mem = Allocator::allocate(size);
 		if (mem == nullptr) {

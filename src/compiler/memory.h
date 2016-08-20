@@ -36,7 +36,7 @@ namespace stackjit {
 	//Represents a memory manager
 	class MemoryManager {
 	private:
-		const static std::size_t PAGE_SIZE = 4096;
+		const static std::size_t sPageSize = 4096;
 
 		std::vector<CodePage*> mPages;
 

@@ -10,10 +10,10 @@ namespace stackjit {
 	//Represents a binder
 	class Binder {
 	private:
-		std::unordered_map<std::string, FunctionDefinition> mFunctionTable;
+		std::unordered_map<std::string, FunctionDefinition> mDefinedFunctions;
 	public:
-		//Returns the function table
-		const std::unordered_map<std::string, FunctionDefinition>& functionTable() const;
+		//Returns the defined functions
+		const std::unordered_map<std::string, FunctionDefinition>& definedFunctions() const;
 
 		//Defines the given function
 		bool define(FunctionDefinition funcDef);
