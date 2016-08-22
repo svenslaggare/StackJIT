@@ -40,6 +40,15 @@ namespace stackjit {
 		return false;
 	}
 
+	std::string toString(const AccessModifier& accessModifier) {
+		switch (accessModifier) {
+			case AccessModifier::Private:
+				return "private";
+			case AccessModifier::Public:
+				return "public";
+		}
+	}
+
 	//Class metadata
 	ClassMetadata::ClassMetadata(std::string name)
 		: mName(name),

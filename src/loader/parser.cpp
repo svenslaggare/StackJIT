@@ -1,6 +1,7 @@
 #include "parser.h"
 #include "../core/instruction.h"
 #include "../core/functionsignature.h"
+#include "../type/classmetadata.h"
 #include <cctype>
 #include <string>
 #include <iostream>
@@ -95,6 +96,14 @@ namespace stackjit {
 		inst.opCode = OpCodes::NEW_OBJECT;
 		inst.format = InstructionFormats::CallInstance;
 		return inst;
+	}
+
+	void stackjit::AssemblyParser::addAccessModifier(AssemblyParser::AttributeContainer& attributes,
+													 AccessModifier accessModifier) {
+		AssemblyParser::Attribute accessModifierAttribute;
+		accessModifierAttribute.name = "AccessModifier";
+		accessModifierAttribute.values["value"] = toString(accessModifier);
+		attributes["AccessModifier"] = accessModifierAttribute;
 	}
 
 	AssemblyParser::Function::Function()

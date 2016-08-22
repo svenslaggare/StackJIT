@@ -32,7 +32,7 @@ namespace stackjit {
 			std::vector<const Type*> parameters,
 			const Type* returnType,
 		    const ClassType* classType = nullptr,
-		    AccessModifier accessModifier = ClassMetadata::DEFAULT_ACCESS_MODIFIER,
+		    AccessModifier accessModifier = DEFAULT_ACCESS_MODIFIER,
 			bool isConstructor = false,
 			bool isVirtual = false);
 
@@ -43,7 +43,7 @@ namespace stackjit {
 			const Type* returnType,
 			unsigned char* entryPoint,
 			const ClassType* classType = nullptr,
-			AccessModifier accessModifier = ClassMetadata::DEFAULT_ACCESS_MODIFIER,
+			AccessModifier accessModifier = DEFAULT_ACCESS_MODIFIER,
 			bool isConstructor = false);
 
 		FunctionDefinition();

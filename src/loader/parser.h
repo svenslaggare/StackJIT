@@ -5,6 +5,8 @@
 #include <unordered_map>
 
 namespace stackjit {
+	enum class AccessModifier : unsigned char;
+
 	//The assembly parser
 	namespace AssemblyParser {
 		//The instruction formats
@@ -81,6 +83,10 @@ namespace stackjit {
 
 		//Represents an attributes container
 		using AttributeContainer = std::unordered_map<std::string, Attribute>;
+
+		//Adds the access modifier to the given attributes
+		void addAccessModifier(AssemblyParser::AttributeContainer& attributes,
+							   AccessModifier accessModifier);
 
 		//Represents a function
 		struct Function {

@@ -17,8 +17,14 @@ namespace stackjit {
 		Public
 	};
 
+	//The default access modifier
+	const AccessModifier DEFAULT_ACCESS_MODIFIER = AccessModifier::Public;
+
 	//Gets an access modifier from the given string
 	bool fromString(std::string str, AccessModifier& accessModifier);
+
+	//Convert sthe given access modifier to a string
+	std::string toString(const AccessModifier& accessModifier);
 
 	//Represents a field
 	class Field {
@@ -80,9 +86,6 @@ namespace stackjit {
 		//Returns the root definition of the given virtual function
 		const FunctionDefinition* getVirtualFunctionRootDefinition(const FunctionDefinition* funcDef) const;
 	public:
-		//The default access modifier
-		static const AccessModifier DEFAULT_ACCESS_MODIFIER = AccessModifier::Public;
-
 		//Creates new class metadata
 		ClassMetadata(std::string name);
 		~ClassMetadata();

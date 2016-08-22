@@ -54,7 +54,7 @@ namespace stackjit {
 
 		//Returns the access modifier or the default modifier
 		AccessModifier getAccessModifier(const AssemblyParser::AttributeContainer& attributeContainer) {
-			AccessModifier accessModifier = ClassMetadata::DEFAULT_ACCESS_MODIFIER;
+			AccessModifier accessModifier = DEFAULT_ACCESS_MODIFIER;
 
 			if (attributeContainer.count("AccessModifier") > 0) {
 				auto& accessModifierAttribute = attributeContainer.at("AccessModifier");
@@ -115,7 +115,7 @@ namespace stackjit {
 		}
 
 		const ClassType* classType = nullptr;
-		AccessModifier accessModifier = ClassMetadata::DEFAULT_ACCESS_MODIFIER;
+		AccessModifier accessModifier = DEFAULT_ACCESS_MODIFIER;
 		bool isVirtual = false;
 
 		if (function.isMemberFunction) {
