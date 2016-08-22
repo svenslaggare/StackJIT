@@ -98,14 +98,6 @@ namespace stackjit {
 		return inst;
 	}
 
-	void stackjit::AssemblyParser::addAccessModifier(AssemblyParser::AttributeContainer& attributes,
-													 AccessModifier accessModifier) {
-		AssemblyParser::Attribute accessModifierAttribute;
-		accessModifierAttribute.name = "AccessModifier";
-		accessModifierAttribute.values["value"] = toString(accessModifier);
-		attributes["AccessModifier"] = accessModifierAttribute;
-	}
-
 	AssemblyParser::Function::Function()
 		: isMemberFunction(false), isExternal(false) {
 
