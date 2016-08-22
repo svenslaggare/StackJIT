@@ -1,217 +1,201 @@
 class std.String
 {
-   chars Ref.Array[Char]
-   @AccessModifier(value=private)
+	chars Ref.Array[Char]
+	@AccessModifier(value=private)
 }
 
 member std.String::.constructor(Ref.Array[Char]) Void
 {
-   @AccessModifier(value=public)
-   .locals 1
-   .local 0 Int
-
-   LDARG 0
-   LDARG 1
-   LDLEN
-   NEWARR Char
-   STFIELD std.String::chars
-   LDINT 0
-   STLOC 0
-   LDLOC 0
-   LDARG 0
-   LDFIELD std.String::chars
-   LDLEN
-   BGE 24
-   LDARG 0
-   LDFIELD std.String::chars
-   LDLOC 0
-   LDARG 1
-   LDLOC 0
-   LDELEM Char
-   STELEM Char
-   LDLOC 0
-   LDINT 1
-   ADD
-   STLOC 0
-   BR 7
-   RET
+	.locals 1
+	.local 0 Int
+	LDARG 0
+	LDARG 1
+	LDLEN
+	NEWARR Char
+	STFIELD std.String::chars
+	LDINT 0
+	STLOC 0
+	LDLOC 0
+	LDARG 1
+	LDLEN
+	CMPLT
+	LDTRUE
+	BNE 25
+	LDARG 0
+	LDFIELD std.String::chars
+	LDLOC 0
+	LDARG 1
+	LDLOC 0
+	LDELEM Char
+	STELEM Char
+	LDLOC 0
+	LDINT 1
+	ADD
+	STLOC 0
+	BR 7
+	RET
 }
 
 member std.String::charAt(Int) Char
 {
-   @AccessModifier(value=public)
-   .locals 1
-   .local 0 Char
-
-   LDARG 0
-   LDFIELD std.String::chars
-   LDARG 1
-   LDELEM Char
-   STLOC 0
-   BR 6
-   LDLOC 0
-   RET
+	LDARG 0
+	LDFIELD std.String::chars
+	LDARG 1
+	LDELEM Char
+	RET
 }
 
 member std.String::length() Int
 {
-   @AccessModifier(value=public)
-   .locals 1
-   .local 0 Int
-
-   LDARG 0
-   LDFIELD std.String::chars
-   LDLEN
-   STLOC 0
-   BR 5
-   LDLOC 0
-   RET
+	LDARG 0
+	LDFIELD std.String::chars
+	LDLEN
+	RET
 }
 
 member std.String::concat(Ref.std.String) Ref.std.String
 {
-   @AccessModifier(value=public)
-   .locals 5
-   .local 2 Ref.Array[Char]
-   .local 1 Int
-   .local 3 Int
-   .local 4 Int
-   .local 0 Ref.std.String
-
-   LDARG 0
-   LDFIELD std.String::chars
-   LDLEN
-   LDARG 1
-   LDFIELD std.String::chars
-   LDLEN
-   ADD
-   STLOC 1
-   LDLOC 1
-   NEWARR Char
-   STLOC 2
-   LDINT 0
-   STLOC 3
-   LDLOC 3
-   LDARG 0
-   CALLINST std.String::length()
-   BGE 29
-   LDLOC 2
-   LDLOC 3
-   LDARG 0
-   LDFIELD std.String::chars
-   LDLOC 3
-   LDELEM Char
-   STELEM Char
-   LDLOC 3
-   LDINT 1
-   ADD
-   STLOC 3
-   BR 13
-   LDINT 0
-   STLOC 4
-   LDLOC 4
-   LDARG 1
-   CALLINST std.String::length()
-   BGE 50
-   LDLOC 2
-   LDARG 0
-   CALLINST std.String::length()
-   LDLOC 4
-   ADD
-   LDARG 1
-   LDFIELD std.String::chars
-   LDLOC 4
-   LDELEM Char
-   STELEM Char
-   LDLOC 4
-   LDINT 1
-   ADD
-   STLOC 4
-   BR 31
-   LDLOC 2
-   NEWOBJ std.String::.constructor(Ref.Array[Char])
-   STLOC 0
-   BR 54
-   LDLOC 0
-   RET
+	.locals 4
+	.local 0 Int
+	.local 1 Ref.Array[Char]
+	.local 2 Int
+	.local 3 Int
+	LDARG 0
+	LDFIELD std.String::chars
+	LDLEN
+	LDARG 1
+	LDFIELD std.String::chars
+	LDLEN
+	ADD
+	STLOC 0
+	LDLOC 0
+	NEWARR Char
+	STLOC 1
+	LDINT 0
+	STLOC 2
+	LDLOC 2
+	LDARG 0
+	CALLINST std.String::length()
+	CMPLT
+	LDTRUE
+	BNE 31
+	LDLOC 1
+	LDLOC 2
+	LDARG 0
+	LDFIELD std.String::chars
+	LDLOC 2
+	LDELEM Char
+	STELEM Char
+	LDLOC 2
+	LDINT 1
+	ADD
+	STLOC 2
+	BR 13
+	LDINT 0
+	STLOC 3
+	LDLOC 3
+	LDARG 1
+	CALLINST std.String::length()
+	CMPLT
+	LDTRUE
+	BNE 54
+	LDLOC 1
+	LDARG 0
+	CALLINST std.String::length()
+	LDLOC 3
+	ADD
+	LDARG 1
+	LDFIELD std.String::chars
+	LDLOC 3
+	LDELEM Char
+	STELEM Char
+	LDLOC 3
+	LDINT 1
+	ADD
+	STLOC 3
+	BR 33
+	LDLOC 1
+	NEWOBJ std.String::.constructor(Ref.Array[Char])
+	RET
 }
 
 member std.String::equals(Ref.std.String) Bool
 {
-   @AccessModifier(value=public)
-   .locals 2
-   .local 1 Int
-   .local 0 Bool
-
-   LDARG 1
-   LDNULL
-   BNE 6
-   LDFALSE
-   STLOC 0
-   BR 44
-   LDARG 0
-   LDARG 1
-   BNE 12
-   LDTRUE
-   STLOC 0
-   BR 44
-   LDARG 0
-   CALLINST std.String::length()
-   LDARG 1
-   CALLINST std.String::length()
-   BEQ 20
-   LDFALSE
-   STLOC 0
-   BR 44
-   LDINT 0
-   STLOC 1
-   LDLOC 1
-   LDARG 0
-   CALLINST std.String::length()
-   BGE 41
-   LDARG 0
-   LDLOC 1
-   CALLINST std.String::charAt(Int)
-   LDARG 1
-   LDLOC 1
-   CALLINST std.String::charAt(Int)
-   BEQ 36
-   LDFALSE
-   STLOC 0
-   BR 44
-   LDLOC 1
-   LDINT 1
-   ADD
-   STLOC 1
-   BR 22
-   LDTRUE
-   STLOC 0
-   BR 44
-   LDLOC 0
-   RET
+	.locals 1
+	.local 0 Int
+	LDARG 1
+	LDNULL
+	CMPEQ
+	LDTRUE
+	BNE 7
+	LDFALSE
+	RET
+	LDARG 0
+	LDARG 1
+	CMPEQ
+	LDTRUE
+	BNE 14
+	LDTRUE
+	RET
+	LDARG 0
+	CALLINST std.String::length()
+	LDARG 1
+	CALLINST std.String::length()
+	CMPNE
+	LDTRUE
+	BNE 23
+	LDFALSE
+	RET
+	LDINT 0
+	STLOC 0
+	LDLOC 0
+	LDARG 0
+	CALLINST std.String::length()
+	CMPLT
+	LDTRUE
+	BNE 47
+	LDARG 0
+	LDLOC 0
+	CALLINST std.String::charAt(Int)
+	LDARG 1
+	LDLOC 0
+	CALLINST std.String::charAt(Int)
+	CMPNE
+	LDTRUE
+	BNE 42
+	LDFALSE
+	RET
+	LDLOC 0
+	LDINT 1
+	ADD
+	STLOC 0
+	BR 25
+	LDTRUE
+	RET
 }
 
 func std.println(Ref.std.String) Void
 {
-   .locals 1
-   .local 0 Int
-
-   LDINT 0
-   STLOC 0
-   LDLOC 0
-   LDARG 0
-   CALLINST std.String::length()
-   BGE 15
-   LDARG 0
-   LDLOC 0
-   CALLINST std.String::charAt(Int)
-   CALL std.print(Char)
-   LDLOC 0
-   LDINT 1
-   ADD
-   STLOC 0
-   BR 2
-   LDCHAR 10
-   CALL std.print(Char)
-   RET
+	.locals 1
+	.local 0 Int
+	LDINT 0
+	STLOC 0
+	LDLOC 0
+	LDARG 0
+	CALLINST std.String::length()
+	CMPLT
+	LDTRUE
+	BNE 17
+	LDARG 0
+	LDLOC 0
+	CALLINST std.String::charAt(Int)
+	CALL std.print(Char)
+	LDLOC 0
+	LDINT 1
+	ADD
+	STLOC 0
+	BR 2
+	LDCHAR 10
+	CALL std.print(Char)
+	RET
 }
