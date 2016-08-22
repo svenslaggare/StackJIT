@@ -15,12 +15,19 @@ public:
 		TS_ASSERT_EQUALS(invokeVM("class/program3"), "0\n");
 		TS_ASSERT_EQUALS(invokeVM("class/program4"), "1337:4711\n0\n");
 
+		TS_ASSERT_EQUALS(invokeVM("class/largeclass1"), "1337\n");
+	}
+
+	void testInvalid() {
 		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program1")), "\'Point\' is not a defined class.");
 		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program2")), "main() @ 1: \'Point\' is not a class type.");
 		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program3")), "There exists no type called 'Ref.Point'.");
 		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program4")), "The class 'Point' is already defined.");
 
-		TS_ASSERT_EQUALS(invokeVM("class/largeclass1"), "1337\n");
+		std::string options =
+			"--no-rtlib --allocs-before-gc 0 -i " + programsPath + "/class/pointlib1.txt -i " + programsPath + "/class/pointlib1.txt";
+
+		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("class/invalid_program5", options)), "The class 'Point' is already defined.");
 	}
 
 	//Tests with nested and recursive classes

@@ -90,7 +90,7 @@ namespace stackjit {
 	}
 
 	unsigned char* Runtime::getVirtualFunctionAddress(RawClassRef rawClassRef, int index) {
-		ClassRef classRef = vmState()->gc().getClassRef(rawClassRef);
+		auto classRef = vmState()->gc().getClassRef(rawClassRef);
 		auto classType = static_cast<const ClassType*>(classRef.objRef().type());
 		auto funcPtr = classType->metadata()->virtualFunctionTable()[index];
 

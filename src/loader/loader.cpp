@@ -185,6 +185,10 @@ namespace stackjit {
 		//First, create the classes
 		std::vector<std::pair<ClassMetadata*, std::string>> inheritingClasses;
 		forEachClass(imageContainer, [&](const stackjit::AssemblyParser::Class& classDef) {
+			if (vmState.classProvider().isDefined(classDef.name)) {
+				throw std::runtime_error("The class '" + classDef.name + "' is already defined.");
+			}
+
 			vmState.classProvider().add(classDef.name, ClassMetadata(classDef.name));
 
 			if (classDef.parentClassName != "") {

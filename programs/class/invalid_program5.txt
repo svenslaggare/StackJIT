@@ -1,0 +1,15 @@
+func main() Int
+{
+	.locals 1
+
+	NEWOBJ Point::.constructor()
+	STLOC 0
+
+	LDLOC 0
+	LDINT 1337
+	STFIELD Point::y
+
+	LDLOC 0
+	LDFIELD Point::y
+	RET
+}

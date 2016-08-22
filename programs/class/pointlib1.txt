@@ -1,0 +1,10 @@
+class Point
+{
+	x Int
+	y Int
+}
+
+member Point::.constructor() Void
+{
+   RET
+}
