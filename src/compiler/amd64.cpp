@@ -1399,35 +1399,35 @@ namespace stackjit {
 		codeGen.push_back(0x99);
 	}
 
-	void Amd64Backend::convertIntToFloat(CodeGen& codeGen, FloatRegisters destination, Registers source) {
+	void Amd64Backend::convertIntToFloat(CodeGen& codeGen, FloatRegisters dest, Registers src) {
 		codeGen.push_back(0xf3);
 		codeGen.push_back(0x48);
 		codeGen.push_back(0x0f);
 		codeGen.push_back(0x2a);
-		codeGen.push_back((0xc0 | (Byte)source | (Byte)destination << 3));
+		codeGen.push_back((0xc0 | (Byte)src | (Byte)dest << 3));
 	}
 
-	void Amd64Backend::convertIntToFloat(CodeGen& codeGen, FloatRegisters destination, ExtendedRegisters source) {
+	void Amd64Backend::convertIntToFloat(CodeGen& codeGen, FloatRegisters dest, ExtendedRegisters src) {
 		codeGen.push_back(0xf3);
 		codeGen.push_back(0x49);
 		codeGen.push_back(0x0f);
 		codeGen.push_back(0x2a);
-		codeGen.push_back((0xc0 | (Byte)source | (Byte)destination << 3));
+		codeGen.push_back((0xc0 | (Byte)src | (Byte)dest << 3));
 	}
 
-	void Amd64Backend::convertFloatToInt(CodeGen& codeGen, Registers destination, FloatRegisters source) {
+	void Amd64Backend::convertFloatToInt(CodeGen& codeGen, Registers dest, FloatRegisters src) {
 		codeGen.push_back(0xf3);
 		codeGen.push_back(0x48);
 		codeGen.push_back(0x0f);
 		codeGen.push_back(0x2c);
-		codeGen.push_back((0xc0 | (Byte)source | (Byte)destination << 3));
+		codeGen.push_back((0xc0 | (Byte)src | (Byte)dest << 3));
 	}
 
-	void Amd64Backend::convertFloatToInt(CodeGen& codeGen, ExtendedRegisters destination, FloatRegisters source) {
+	void Amd64Backend::convertFloatToInt(CodeGen& codeGen, ExtendedRegisters dest, FloatRegisters src) {
 		codeGen.push_back(0xf3);
 		codeGen.push_back(0x4c);
 		codeGen.push_back(0x0f);
 		codeGen.push_back(0x2c);
-		codeGen.push_back((0xc0 | (Byte)source | (Byte)destination << 3));
+		codeGen.push_back((0xc0 | (Byte)src | (Byte)dest << 3));
 	}
 }

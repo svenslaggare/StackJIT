@@ -86,254 +86,254 @@ namespace stackjit {
 		const int REGISTER_SIZE = 8;
 
 		//Pushes the given register to the stack
-		void pushReg(CodeGen&, Registers);
-		void pushReg(CodeGen&, ExtendedRegisters);
+		void pushReg(CodeGen& codeGen, Registers reg);
+		void pushReg(CodeGen& codeGen, ExtendedRegisters reg);
 
 		//Pushes the given register to the stack
-		void pushReg(CodeGen&, FloatRegisters);
+		void pushReg(CodeGen& codeGen, FloatRegisters reg);
 
 		//Pushes the given integer to the stack
-		void pushInt(CodeGen&, int);
+		void pushInt(CodeGen& codeGen, int value);
 
 		//Pops from the stack to the given register
-		void popReg(CodeGen&, Registers);
+		void popReg(CodeGen& codeGen, Registers reg);
 
 		//Pops from the stack to the given register
-		void popReg(CodeGen&, ExtendedRegisters);
+		void popReg(CodeGen& codeGen, ExtendedRegisters reg);
 
 		//Pops from the stack to the given register
-		void popReg(CodeGen&, FloatRegisters);
+		void popReg(CodeGen& codeGen, FloatRegisters reg);
 
 		//Moves the content from the second register to the first register
-		void moveRegToReg(CodeGen&, Registers, Registers);
-		void moveRegToReg(CodeGen&, ExtendedRegisters, ExtendedRegisters);
-		void moveRegToReg(CodeGen&, ExtendedRegisters, Registers);
-		void moveRegToReg(CodeGen&, Registers, ExtendedRegisters);
+		void moveRegToReg(CodeGen& codeGen, Registers dest, Registers src);
+		void moveRegToReg(CodeGen& codeGen, ExtendedRegisters dest, ExtendedRegisters src);
+		void moveRegToReg(CodeGen& codeGen, ExtendedRegisters dest, Registers src);
+		void moveRegToReg(CodeGen& codeGen, Registers dest, ExtendedRegisters src);
 
 		//Moves the content from the register to the memory address
-		void moveRegToMemory(CodeGen&, unsigned char*, Registers);
+		void moveRegToMemory(CodeGen& codeGen, unsigned char* destAddr, Registers srcReg);
 
 		//Moves the content from given memory address to the register
-		void moveMemoryToReg(CodeGen&, Registers, unsigned char*);
+		void moveMemoryToReg(CodeGen& codeGen, Registers destReg, unsigned char* srcAddr);
 
 		//Moves the content from memory where the address is in the second register to the first register
-		void moveMemoryByRegToReg(CodeGen&, Registers, Registers, bool is32bits = false);
-		void moveMemoryByRegToReg(CodeGen&, ExtendedRegisters, ExtendedRegisters);
-		void moveMemoryByRegToReg(CodeGen&, Registers, ExtendedRegisters, bool is32bits = false);
-		void moveMemoryByRegToReg(CodeGen&, ExtendedRegisters, Registers);
+		void moveMemoryByRegToReg(CodeGen& codeGen, Registers dest, Registers srcMemReg, bool is32bits = false);
+		void moveMemoryByRegToReg(CodeGen& codeGen, ExtendedRegisters dest, ExtendedRegisters srcMemReg);
+		void moveMemoryByRegToReg(CodeGen& codeGen, Registers dest, ExtendedRegisters srcMemReg, bool is32bits = false);
+		void moveMemoryByRegToReg(CodeGen& codeGen, ExtendedRegisters dest, Registers srcMemReg);
 
 		//Moves the content from a register to memory where the address is in a register + offset
-		void moveRegToMemoryRegWithOffset(CodeGen&, Registers, int, Registers, bool is32bits = false);
-		void moveRegToMemoryRegWithOffset(CodeGen&, Registers, int, ExtendedRegisters);
+		void moveRegToMemoryRegWithOffset(CodeGen& codeGen, Registers destMemReg, int offset, Registers src, bool is32bits = false);
+		void moveRegToMemoryRegWithOffset(CodeGen& codeGen, Registers destMemReg, int offset, ExtendedRegisters src);
 
 		//Moves the content from a register to memory where the address is in a register + char offset
-		void moveRegToMemoryRegWithCharOffset(CodeGen&, Registers, char, Registers, bool is32bits = false);
-		void moveRegToMemoryRegWithCharOffset(CodeGen&, Registers, char, ExtendedRegisters);
+		void moveRegToMemoryRegWithCharOffset(CodeGen& codeGen, Registers destMemReg, char offset, Registers src, bool is32bits = false);
+		void moveRegToMemoryRegWithCharOffset(CodeGen& codeGen, Registers destMemReg, char offset, ExtendedRegisters src);
 
 		//Moves the content from a register to memory where the address is in a register + int offset
-		void moveRegToMemoryRegWithIntOffset(CodeGen&, Registers, int, Registers, bool is32bits = false);
-		void moveRegToMemoryRegWithIntOffset(CodeGen&, ExtendedRegisters, int, ExtendedRegisters);
-		void moveRegToMemoryRegWithIntOffset(CodeGen&, Registers, int, ExtendedRegisters);
-		void moveRegToMemoryRegWithIntOffset(CodeGen&, ExtendedRegisters, int, Registers, bool is32bits = false);
-		void moveRegToMemoryRegWithIntOffset(CodeGen&, ExtendedRegisters, int, FloatRegisters);
+		void moveRegToMemoryRegWithIntOffset(CodeGen& codeGen, Registers destMemReg, int offset, Registers src, bool is32bits = false);
+		void moveRegToMemoryRegWithIntOffset(CodeGen& codeGen, ExtendedRegisters destMemReg, int offset, ExtendedRegisters src);
+		void moveRegToMemoryRegWithIntOffset(CodeGen& codeGen, Registers destMemReg, int offset, ExtendedRegisters src);
+		void moveRegToMemoryRegWithIntOffset(CodeGen& codeGen, ExtendedRegisters destMemReg, int offset, Registers src, bool is32bits = false);
+		void moveRegToMemoryRegWithIntOffset(CodeGen& codeGen, ExtendedRegisters destMemReg, int offset, FloatRegisters src);
 
-		void moveRegToMemoryRegWithIntOffset(CodeGen&, Registers, int, Register8Bits);
-		void moveRegToMemoryRegWithIntOffset(CodeGen&, ExtendedRegisters, int, Register8Bits);
+		void moveRegToMemoryRegWithIntOffset(CodeGen& codeGen, Registers destMemReg, int offset, Register8Bits src);
+		void moveRegToMemoryRegWithIntOffset(CodeGen& codeGen, ExtendedRegisters destMemReg, int offset, Register8Bits src);
 
 		//Moves a 32-bits integer to the memory where the address is in a register + int offset
-		void moveIntToMemoryRegWithIntOffset(CodeGen&, Registers, int, int);
-		void moveIntToMemoryRegWithIntOffset(CodeGen&, ExtendedRegisters, int, int);
+		void moveIntToMemoryRegWithIntOffset(CodeGen& codeGen, Registers destMemReg, int offset, int value);
+		void moveIntToMemoryRegWithIntOffset(CodeGen& codeGen, ExtendedRegisters destMemReg, int offset, int value);
 
 		//Moves the content from a memory where the address is a register + offset to a register
-		void moveMemoryRegWithOffsetToReg(CodeGen&, Registers, Registers, int);
+		void moveMemoryRegWithOffsetToReg(CodeGen& codeGen, Registers dest, Registers srcMemReg, int offset);
 
 		//Moves the content from a memory where the address is a register + char offset to a register
-		void moveMemoryRegWithCharOffsetToReg(CodeGen&, Registers, Registers, char);
+		void moveMemoryRegWithCharOffsetToReg(CodeGen& codeGen, Registers dest, Registers srcMemReg, char offset);
 
 		//Moves the content from a memory where the address is a register + int offset to a register
-		void moveMemoryRegWithIntOffsetToReg(CodeGen&, Registers, Registers, int, bool is32bits = false);
-		void moveMemoryRegWithIntOffsetToReg(CodeGen&, ExtendedRegisters, ExtendedRegisters, int);
-		void moveMemoryRegWithIntOffsetToReg(CodeGen&, Registers, ExtendedRegisters, int, bool is32bits = false);
-		void moveMemoryRegWithIntOffsetToReg(CodeGen&, ExtendedRegisters, Registers, int);
-		void moveMemoryRegWithIntOffsetToReg(CodeGen&, FloatRegisters, Registers, int);
-		void moveMemoryRegWithIntOffsetToReg(CodeGen&, FloatRegisters, ExtendedRegisters, int);
+		void moveMemoryRegWithIntOffsetToReg(CodeGen& codeGen, Registers dest, Registers srcMemReg, int offset, bool is32bits = false);
+		void moveMemoryRegWithIntOffsetToReg(CodeGen& codeGen, ExtendedRegisters dest, ExtendedRegisters srcMemReg, int offset);
+		void moveMemoryRegWithIntOffsetToReg(CodeGen& codeGen, Registers dest, ExtendedRegisters srcMemReg, int offset, bool is32bits = false);
+		void moveMemoryRegWithIntOffsetToReg(CodeGen& codeGen, ExtendedRegisters dest, Registers srcMemReg, int offset);
+		void moveMemoryRegWithIntOffsetToReg(CodeGen& codeGen, FloatRegisters dest, Registers srcMemReg, int offset);
+		void moveMemoryRegWithIntOffsetToReg(CodeGen& codeGen, FloatRegisters dest, ExtendedRegisters srcMemReg, int offset);
 
-		void moveMemoryRegWithIntOffsetToReg(CodeGen&, Register8Bits, Registers, int);
-		void moveMemoryRegWithIntOffsetToReg(CodeGen&, Register8Bits, ExtendedRegisters, int);
+		void moveMemoryRegWithIntOffsetToReg(CodeGen& codeGen, Register8Bits dest, Registers srcMemReg, int offset);
+		void moveMemoryRegWithIntOffsetToReg(CodeGen& codeGen, Register8Bits dest, ExtendedRegisters srcMemReg, int offset);
 
 		//Moves the given integer (32-bits) to the given register
-		void moveIntToReg(CodeGen&, Registers, int);
-		void moveIntToReg(CodeGen&, ExtendedRegisters, int);
+		void moveIntToReg(CodeGen& codeGen, Registers dest, int value);
+		void moveIntToReg(CodeGen& codeGen, ExtendedRegisters dest, int value);
 
 		//Moves the given long (64-bits) to the given register
-		void moveLongToReg(CodeGen&, Registers, std::int64_t);
-		void moveLongToReg(CodeGen&, ExtendedRegisters, std::int64_t);
+		void moveLongToReg(CodeGen& codeGen, Registers dest, std::int64_t value);
+		void moveLongToReg(CodeGen& codeGen, ExtendedRegisters dest, std::int64_t value);
 
 		//Moves the content from memory where the address is in the second register to the first register
-		void moveMemoryByRegToReg(CodeGen&, FloatRegisters, Registers);
+		void moveMemoryByRegToReg(CodeGen& codeGen, FloatRegisters dest, Registers srcMemReg);
 
 		//Moves the content from a register to memory where the address is in a register + offset
-		void moveRegToMemoryRegWithOffset(CodeGen&, Registers, int, FloatRegisters);
+		void moveRegToMemoryRegWithOffset(CodeGen& codeGen, Registers destMemReg, int offset, FloatRegisters src);
 
 		//Moves the content from a register to memory where the address is in a register + char offset
-		void moveRegToMemoryRegWithCharOffset(CodeGen&, Registers, char, FloatRegisters);
+		void moveRegToMemoryRegWithCharOffset(CodeGen& codeGen, Registers destMemReg, char offset, FloatRegisters src);
 
 		//Moves the content from a register to memory where the address is in a register + int offset
-		void moveRegToMemoryRegWithIntOffset(CodeGen&, Registers, int, FloatRegisters);
+		void moveRegToMemoryRegWithIntOffset(CodeGen& codeGen, Registers destMemReg, int offset, FloatRegisters src);
 
 		//Calls the given function where the entry points is in a register
-		void callInReg(CodeGen&, Registers);
-		void callInReg(CodeGen&, ExtendedRegisters);
+		void callInReg(CodeGen& codeGen, Registers func);
+		void callInReg(CodeGen& codeGen, ExtendedRegisters func);
 
 		//Calls the given function
-		void call(CodeGen&, int);
+		void call(CodeGen& codeGen, int funcAddr);
 
 		//The return instruction
-		void ret(CodeGen&);
+		void ret(CodeGen& codeGen);
 
 		//Adds the second register to the first
-		void addRegToReg(CodeGen&, Registers, Registers, bool is32bits = false);
-		void addRegToReg(CodeGen&, ExtendedRegisters, ExtendedRegisters);
-		void addRegToReg(CodeGen&, Registers, ExtendedRegisters);
-		void addRegToReg(CodeGen&, ExtendedRegisters, Registers);
-		void addRegToReg(CodeGen&, FloatRegisters, FloatRegisters);
+		void addRegToReg(CodeGen& codeGen, Registers dest, Registers src, bool is32bits = false);
+		void addRegToReg(CodeGen& codeGen, ExtendedRegisters dest, ExtendedRegisters src);
+		void addRegToReg(CodeGen& codeGen, Registers dest, ExtendedRegisters src);
+		void addRegToReg(CodeGen& codeGen, ExtendedRegisters dest, Registers src);
+		void addRegToReg(CodeGen& codeGen, FloatRegisters dest, FloatRegisters src);
 
 		//Adds the given integer constant to the given register
-		void addConstantToReg(CodeGen&, Registers, int, bool is32bits = false);
-		void addConstantToReg(CodeGen&, ExtendedRegisters, int);
+		void addConstantToReg(CodeGen& codeGen, Registers dest, int value, bool is32bits = false);
+		void addConstantToReg(CodeGen& codeGen, ExtendedRegisters dest, int value);
 
 		//Adds the given byte to the given register
-		void addByteToReg(CodeGen&, Registers, char, bool is32bits = false);
-		void addByteToReg(CodeGen&, ExtendedRegisters, char);
+		void addByteToReg(CodeGen& codeGen, Registers dest, char value, bool is32bits = false);
+		void addByteToReg(CodeGen& codeGen, ExtendedRegisters dest, char value);
 
 		//Adds the given int to the given register
-		void addIntToReg(CodeGen&, Registers, int, bool is32bits = false);
-		void addIntToReg(CodeGen&, ExtendedRegisters, int);
+		void addIntToReg(CodeGen& codeGen, Registers dest, int value, bool is32bits = false);
+		void addIntToReg(CodeGen& codeGen, ExtendedRegisters dest, int value);
 
 		//Subtracts the second register from the first
-		void subRegFromReg(CodeGen&, Registers, Registers, bool is32bits = false);
-		void subRegFromReg(CodeGen&, ExtendedRegisters, ExtendedRegisters);
-		void subRegFromReg(CodeGen&, Registers, ExtendedRegisters);
-		void subRegFromReg(CodeGen&, ExtendedRegisters, Registers);
-		void subRegFromReg(CodeGen&, FloatRegisters, FloatRegisters);
+		void subRegFromReg(CodeGen& codeGen, Registers dest, Registers src, bool is32bits = false);
+		void subRegFromReg(CodeGen& codeGen, ExtendedRegisters dest, ExtendedRegisters src);
+		void subRegFromReg(CodeGen& codeGen, Registers dest, ExtendedRegisters src);
+		void subRegFromReg(CodeGen& codeGen, ExtendedRegisters dest, Registers src);
+		void subRegFromReg(CodeGen& codeGen, FloatRegisters dest, FloatRegisters src);
 
 		//Subtracts the given constant from  the given register
-		void subConstantFromReg(CodeGen&, Registers, int, bool is32bits = false);
-		void subConstantFromReg(CodeGen&, ExtendedRegisters, int);
+		void subConstantFromReg(CodeGen& codeGen, Registers dest, int value, bool is32bits = false);
+		void subConstantFromReg(CodeGen& codeGen, ExtendedRegisters dest, int value);
 
 		//Subtracts the given byte from the given register
-		void subByteFromReg(CodeGen&, Registers, char, bool is32bits = false);
-		void subByteFromReg(CodeGen&, ExtendedRegisters, char);
+		void subByteFromReg(CodeGen& codeGen, Registers dest, char value, bool is32bits = false);
+		void subByteFromReg(CodeGen& codeGen, ExtendedRegisters dest, char value);
 
 		//Subtracts the given int from the given register
-		void subIntFromReg(CodeGen&, Registers, int, bool is32bits = false);
-		void subIntFromReg(CodeGen&, ExtendedRegisters, int);
+		void subIntFromReg(CodeGen& codeGen, Registers dest, int value, bool is32bits = false);
+		void subIntFromReg(CodeGen& codeGen, ExtendedRegisters dest, int value);
 
 		//Multiplies the first register by the second
-		void multRegToReg(CodeGen&, Registers, Registers, bool is32bits = false);
-		void multRegToReg(CodeGen&, ExtendedRegisters, ExtendedRegisters);
-		void multRegToReg(CodeGen&, Registers, ExtendedRegisters);
-		void multRegToReg(CodeGen&, ExtendedRegisters, Registers);
-		void multRegToReg(CodeGen&, FloatRegisters, FloatRegisters);
+		void multRegToReg(CodeGen& codeGen, Registers dest, Registers src, bool is32bits = false);
+		void multRegToReg(CodeGen& codeGen, ExtendedRegisters dest, ExtendedRegisters src);
+		void multRegToReg(CodeGen& codeGen, Registers dest, ExtendedRegisters src);
+		void multRegToReg(CodeGen& codeGen, ExtendedRegisters dest, Registers src);
+		void multRegToReg(CodeGen& codeGen, FloatRegisters dest, FloatRegisters src);
 
 		//Multiplies the given integer constant to the given register
-		void multConstantToReg(CodeGen&, Registers, int, bool is32bits = false);
-		void multConstantToReg(CodeGen&, ExtendedRegisters, int);
+		void multConstantToReg(CodeGen& codeGen, Registers dest, int value, bool is32bits = false);
+		void multConstantToReg(CodeGen& codeGen, ExtendedRegisters dest, int value);
 
 		//Multiplies the given byte to the given register
-		void multByteToReg(CodeGen&, Registers, char, bool is32bits = false);
-		void multByteToReg(CodeGen&, ExtendedRegisters, char);
+		void multByteToReg(CodeGen& codeGen, Registers dest, char value, bool is32bits = false);
+		void multByteToReg(CodeGen& codeGen, ExtendedRegisters dest, char value);
 
 		//Multiplies the given int to the given register
-		void multIntToReg(CodeGen&, Registers, int, bool is32bits = false);
-		void multIntToReg(CodeGen&, ExtendedRegisters, int);
+		void multIntToReg(CodeGen& codeGen, Registers dest, int value, bool is32bits = false);
+		void multIntToReg(CodeGen& codeGen, ExtendedRegisters dest, int value);
 
 		//Divides the second register from the first
-		void divRegFromReg(CodeGen&, Registers, Registers, bool is32bits = false);
-		void divRegFromReg(CodeGen&, Registers, ExtendedRegisters);
-		void divRegFromReg(CodeGen&, FloatRegisters, FloatRegisters);
+		void divRegFromReg(CodeGen& codeGen, Registers dest, Registers src, bool is32bits = false);
+		void divRegFromReg(CodeGen& codeGen, Registers dest, ExtendedRegisters src);
+		void divRegFromReg(CodeGen& codeGen, FloatRegisters dest, FloatRegisters src);
 
 		//AND's the second register to the first
-		void andRegToReg(CodeGen&, Registers, Registers, bool is32bits = false);
-		void andRegToReg(CodeGen&, ExtendedRegisters, ExtendedRegisters);
-		void andRegToReg(CodeGen&, Registers, ExtendedRegisters);
-		void andRegToReg(CodeGen&, ExtendedRegisters, Registers);
+		void andRegToReg(CodeGen& codeGen, Registers dest, Registers src, bool is32bits = false);
+		void andRegToReg(CodeGen& codeGen, ExtendedRegisters dest, ExtendedRegisters src);
+		void andRegToReg(CodeGen& codeGen, Registers dest, ExtendedRegisters src);
+		void andRegToReg(CodeGen& codeGen, ExtendedRegisters dest, Registers src);
 
 		//AND's the given 32-bit int constant to the first register
-		void andIntToReg(CodeGen&, Registers, int, bool is32bits = false);
-		void andIntToReg(CodeGen&, ExtendedRegisters, int);
+		void andIntToReg(CodeGen& codeGen, Registers dest, int value, bool is32bits = false);
+		void andIntToReg(CodeGen& codeGen, ExtendedRegisters dest, int value);
 
 		//OR's the second register to the first
-		void orRegToReg(CodeGen&, Registers, Registers, bool is32bits = false);
-		void orRegToReg(CodeGen&, ExtendedRegisters, ExtendedRegisters);
-		void orRegToReg(CodeGen&, Registers, ExtendedRegisters);
-		void orRegToReg(CodeGen&, ExtendedRegisters, Registers);
+		void orRegToReg(CodeGen& codeGen, Registers dest, Registers, bool is32bits = false);
+		void orRegToReg(CodeGen& codeGen, ExtendedRegisters dest, ExtendedRegisters src);
+		void orRegToReg(CodeGen& codeGen, Registers dest, ExtendedRegisters src);
+		void orRegToReg(CodeGen& codeGen, ExtendedRegisters dest, Registers src);
 
 		//XOR's the second register to the first
-		void xorRegToReg(CodeGen&, Registers, Registers, bool is32bits = false);
-		void xorRegToReg(CodeGen&, ExtendedRegisters, ExtendedRegisters);
-		void xorRegToReg(CodeGen&, Registers, ExtendedRegisters);
-		void xorRegToReg(CodeGen&, ExtendedRegisters, Registers);
+		void xorRegToReg(CodeGen& codeGen, Registers dest, Registers src, bool is32bits = false);
+		void xorRegToReg(CodeGen& codeGen, ExtendedRegisters dest, ExtendedRegisters src);
+		void xorRegToReg(CodeGen& codeGen, Registers dest, ExtendedRegisters src);
+		void xorRegToReg(CodeGen& codeGen, ExtendedRegisters dest, Registers src);
 
 		//NOT's the register
-		void notReg(CodeGen&, Registers, bool is32bits = false);
-		void notReg(CodeGen&, ExtendedRegisters);
+		void notReg(CodeGen& codeGen, Registers reg, bool is32bits = false);
+		void notReg(CodeGen& codeGen, ExtendedRegisters reg);
 
 		//Compares the two registers
-		void compareRegToReg(CodeGen&, Registers, Registers);
-		void compareRegToReg(CodeGen&, ExtendedRegisters, ExtendedRegisters);
-		void compareRegToReg(CodeGen&, Registers, ExtendedRegisters);
-		void compareRegToReg(CodeGen&, ExtendedRegisters, Registers);
-		void compareRegToReg(CodeGen&, FloatRegisters, FloatRegisters);
+		void compareRegToReg(CodeGen& codeGen, Registers reg1, Registers reg2);
+		void compareRegToReg(CodeGen& codeGen, ExtendedRegisters reg1, ExtendedRegisters reg2);
+		void compareRegToReg(CodeGen& codeGen, Registers reg1, ExtendedRegisters reg2);
+		void compareRegToReg(CodeGen& codeGen, ExtendedRegisters reg1, Registers reg2);
+		void compareRegToReg(CodeGen& codeGen, FloatRegisters reg1, FloatRegisters reg2);
 
 		//Jumps to the target relative the current instruction
-		void jump(CodeGen&, int);
+		void jump(CodeGen& codeGen, int target);
 
 		//Jumps if equal to the target relative the current instruction
-		void jumpEqual(CodeGen&, int);
+		void jumpEqual(CodeGen& codeGen, int target);
 
 		//Jumps if not equal to the target relative the current instruction
-		void jumpNotEqual(CodeGen&, int);
+		void jumpNotEqual(CodeGen& codeGen, int target);
 
 		//Jumps if > to the target relative the current instruction
-		void jumpGreaterThan(CodeGen&, int);
+		void jumpGreaterThan(CodeGen& codeGen, int target);
 
 		//Jumps if > to the target relative the current instruction. Uses unsigned comparison.
-		void jumpGreaterThanUnsigned(CodeGen&, int);
+		void jumpGreaterThanUnsigned(CodeGen& codeGen, int target);
 
 		//Jumps if >= to the target relative the current instruction
-		void jumpGreaterThanOrEqual(CodeGen&, int);
+		void jumpGreaterThanOrEqual(CodeGen& codeGen, int target);
 
 		//Jumps if >= to the target relative the current instruction. Uses unsigned comparison.
-		void jumpGreaterThanOrEqualUnsigned(CodeGen&, int);
+		void jumpGreaterThanOrEqualUnsigned(CodeGen& codeGen, int target);
 
 		//Jumps if < to the target relative the current instruction
-		void jumpLessThan(CodeGen&, int);
+		void jumpLessThan(CodeGen& codeGen, int target);
 
 		//Jumps if < to the target relative the current instruction. Uses unsigned comparison.
-		void jumpLessThanUnsigned(CodeGen&, int);
+		void jumpLessThanUnsigned(CodeGen& codeGen, int target);
 
 		//Jumps if <= to the target relative the current instruction
-		void jumpLessThanOrEqual(CodeGen&, int);
+		void jumpLessThanOrEqual(CodeGen& codeGen, int target);
 
 		//Jumps if <= to the target relative the current instruction. Uses unsigned comparison.
-		void jumpLessThanOrEqualUnsigned(CodeGen&, int);
+		void jumpLessThanOrEqualUnsigned(CodeGen& codeGen, int target);
 
 		//Sign extends the RAX register
-		void signExtend64(CodeGen&);
+		void signExtend64(CodeGen& codeGen);
 
 		//Sign extends the EAX register
-		void signExtend32(CodeGen&);
+		void signExtend32(CodeGen& codeGen);
 
 		//Sign extends the AX register
-		void signExtend16(CodeGen&);
+		void signExtend16(CodeGen& codeGen);
 
 		//Converts the second register to a float
-		void convertIntToFloat(CodeGen&, FloatRegisters, Registers);
-		void convertIntToFloat(CodeGen&, FloatRegisters, ExtendedRegisters);
+		void convertIntToFloat(CodeGen& codeGen, FloatRegisters dest, Registers src);
+		void convertIntToFloat(CodeGen& codeGen, FloatRegisters dest, ExtendedRegisters src);
 
 		//Converts the second register to an int
-		void convertFloatToInt(CodeGen&, Registers, FloatRegisters);
-		void convertFloatToInt(CodeGen&, ExtendedRegisters, FloatRegisters);
+		void convertFloatToInt(CodeGen& codeGen, Registers dest, FloatRegisters src);
+		void convertFloatToInt(CodeGen& codeGen, ExtendedRegisters dest, FloatRegisters src);
 	}
 }
