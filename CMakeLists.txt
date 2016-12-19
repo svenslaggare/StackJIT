@@ -99,14 +99,14 @@ SOURCE_GROUP(linux REGULAR_EXPRESSION "src/linux/(.*)")
 
 # StackAssembler
 set(STACK_ASSEMBLER_SOURCE_FILES
-    "assembler/src/assembler.cpp"
-    "assembler/src/assembler.h"
-    "assembler/src/bytecodegenerator.cpp"
-    "assembler/src/bytecodegenerator.h"
-    "assembler/src/imageloader.cpp"
-    "assembler/src/imageloader.h"
-    "assembler/src/parser.cpp"
-    "assembler/src/parser.h")
+        assembler/src/assembler.cpp
+        assembler/src/assembler.h
+        assembler/src/bytecodegenerator.cpp
+        assembler/src/bytecodegenerator.h
+        assembler/src/imageloader.cpp
+        assembler/src/imageloader.h
+        assembler/src/parser.cpp
+        assembler/src/parser.h)
 
 add_executable(stackasm ${STACK_ASSEMBLER_SOURCE_FILES} assembler/src/stackasm.cpp)
 
@@ -118,9 +118,9 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     set(RUNTIME_LIBRARY Debug/${RUNTIME_LIBRARY_FOLDER}/rtlib.simg)
 
     add_custom_command(
-        OUTPUT ${RUNTIME_LIBRARY}
-        COMMAND stackasm ${RUNTIME_LIBRARY_FILES} -o ${RUNTIME_LIBRARY}
-        VERBATIM)
+            OUTPUT ${RUNTIME_LIBRARY}
+            COMMAND stackasm ${RUNTIME_LIBRARY_FILES} -o ${RUNTIME_LIBRARY}
+            VERBATIM)
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -145,9 +145,9 @@ set(TESTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 find_package(CxxTest)
 if(CXXTEST_FOUND)
     add_custom_target(
-        check ${CMAKE_COMMAND} -E env CTEST_OUTPUT_ON_FAILURE=1
-        ${CMAKE_CTEST_COMMAND} -C $<CONFIG> --verbose
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+            check ${CMAKE_COMMAND} -E env CTEST_OUTPUT_ON_FAILURE=1
+            ${CMAKE_CTEST_COMMAND} -C $<CONFIG> --verbose
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 
     include_directories(${CXXTEST_INCLUDE_DIR})
     enable_testing()

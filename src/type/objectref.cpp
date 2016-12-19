@@ -9,9 +9,9 @@ namespace stackjit {
 			auto elementType = arrayType->elementType();
 			auto elemSize = TypeSystem::sizeOfType(elementType);
 			auto length = *(int*)dataPtr();
-			mObjectSize = stackjit::ARRAY_LENGTH_SIZE + (length * elemSize);
+			mSize = stackjit::ARRAY_LENGTH_SIZE + (length * elemSize);
 		} else {
-			mObjectSize = static_cast<const ClassType*>(type())->metadata()->size();
+			mSize = static_cast<const ClassType*>(type())->metadata()->size();
 		}
 	}
 	unsigned char* ObjectRef::fullPtr() const {
@@ -23,7 +23,7 @@ namespace stackjit {
 	}
 
 	std::size_t ObjectRef::size() const {
-		return mObjectSize;
+		return mSize;
 	}
 
 	std::size_t ObjectRef::fullSize() const {

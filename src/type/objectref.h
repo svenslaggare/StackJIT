@@ -20,7 +20,7 @@ namespace stackjit {
 	private:
 		unsigned char* mPtr;
 		const Type* mType;
-		std::size_t mObjectSize;
+		std::size_t mSize;
 
 		//Sets the mark status
 		void setMarked(bool isMarked);

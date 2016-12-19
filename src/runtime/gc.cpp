@@ -58,7 +58,6 @@ namespace stackjit {
 	}
 
 	void GarbageCollector::deleteObject(ManagedHeap& heap, ObjectRef objRef) {
-		//TODO: We just do some temp deleting, so that the object is avoided when visiting the objects.
 		auto fullPtr = objRef.dataPtr() - stackjit::OBJECT_HEADER_SIZE;
 		Helpers::setValue<std::size_t>(fullPtr, 0, objRef.fullSize());  //The amount of data to skip from the start.
 		Helpers::setValue<unsigned char>(fullPtr, sizeof(std::size_t), 0xFF); //Indicator for dead object

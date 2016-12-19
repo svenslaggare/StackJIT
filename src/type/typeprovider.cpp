@@ -91,9 +91,9 @@ namespace stackjit {
 
 		//Split the type name
 		auto typeParts = splitTypeName(name);
-		PrimitiveTypes primitiveType;
 		Type* type = nullptr;
 
+		PrimitiveTypes primitiveType;
 		if (TypeSystem::fromString(typeParts.at(0), primitiveType)) {
 			type = new PrimitiveType(primitiveType);
 		} else if (typeParts.at(0) == "Ref") {
