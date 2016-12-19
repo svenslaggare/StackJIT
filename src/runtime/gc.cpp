@@ -74,8 +74,8 @@ namespace stackjit {
 		memset(objPtr, 0, fullSize);
 
 		//Set the header
-		Helpers::setValue(objPtr, 0, (PtrValue)type);
-		Helpers::setValue(objPtr, sizeof(PtrValue), 0); //GC info
+		Helpers::setValue<std::size_t>(objPtr, 0, (PtrValue)type);
+		Helpers::setValue<unsigned char>(objPtr, sizeof(PtrValue), 0); //GC info
 
 		//The returned ptr is to the data
 		return objPtr + stackjit::OBJECT_HEADER_SIZE;
@@ -89,10 +89,10 @@ namespace stackjit {
 
 	RawArrayRef GarbageCollector::newArray(const ArrayType* arrayType, int length) {
 	    auto elementType = arrayType->elementType();
-	    auto elemSize = TypeSystem::sizeOfType(elementType);
+	    auto elementSize = TypeSystem::sizeOfType(elementType);
 
-	    std::size_t memSize = stackjit::ARRAY_LENGTH_SIZE + (length * elemSize);
-	    auto arrayPtr = allocateObject(mYoungGeneration, arrayType, memSize);
+	    std::size_t objectSize = stackjit::ARRAY_LENGTH_SIZE + (length * elementSize);
+	    auto arrayPtr = allocateObject(mYoungGeneration, arrayType, objectSize);
 
 	    //Set the length of the array
 		Helpers::setValue(arrayPtr, 0, length);
@@ -100,7 +100,7 @@ namespace stackjit {
 	    if (vmState.config.enableDebug && vmState.config.printAllocation) {
 	        std::cout
 	            << "Allocated array ("
-	            << "size: " << memSize << " bytes, "
+	            << "size: " << objectSize << " bytes, "
 				<< "length: " << length << ", type: " << elementType->name()
 	            << ") at 0x" << std::hex << (PtrValue)arrayPtr << std::dec
 	            << std::endl;
@@ -110,12 +110,12 @@ namespace stackjit {
 	}
 
 	RawClassRef GarbageCollector::newClass(const ClassType* classType) {
-	    std::size_t memSize = classType->metadata()->size();
-	    auto classPtr = allocateObject(mYoungGeneration, classType, memSize);
+	    std::size_t objectSize = classType->metadata()->size();
+	    auto classPtr = allocateObject(mYoungGeneration, classType, objectSize);
 
 	    if (vmState.config.enableDebug && vmState.config.printAllocation) {
 	        std::cout
-	            << "Allocated object (size: " << memSize << " bytes, type: " <<  classType->name()
+	            << "Allocated object (size: " << objectSize << " bytes, type: " <<  classType->name()
 	            << ") at 0x" << std::hex << (PtrValue)classPtr << std::dec
 	            << std::endl;
 	    }
