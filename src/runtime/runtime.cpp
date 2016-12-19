@@ -89,7 +89,7 @@ namespace stackjit {
 		Helpers::setValue(codePtr, (std::size_t)checkStart + 1, checkEnd - (checkStart + 5));
 	}
 
-	unsigned char* Runtime::getVirtualFunctionAddress(RawClassRef rawClassRef, int index) {
+	BytePtr Runtime::getVirtualFunctionAddress(RawClassRef rawClassRef, int index) {
 		auto classRef = vmState()->gc().getClassRef(rawClassRef);
 		auto classType = static_cast<const ClassType*>(classRef.objRef().type());
 		auto funcPtr = classType->metadata()->virtualFunctionTable()[index];
@@ -107,7 +107,7 @@ namespace stackjit {
 				exit(0);
 			}
 
-			return (unsigned char*)entryPoint;
+			return (BytePtr)entryPoint;
 		}
 	}
 

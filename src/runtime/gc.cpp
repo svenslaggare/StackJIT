@@ -18,16 +18,42 @@ namespace stackjit {
 		}
 	}
 
-	GCRuntimeInformation::GCRuntimeInformation(RegisterValue* basePtr, ManagedFunction* function, int instIndex)
-		: basePtr(basePtr), function(function), instIndex(instIndex) {
+	GCRuntimeInformation::GCRuntimeInformation(RegisterValue* basePtr, ManagedFunction* function, int instructionIndex)
+			: basePtr(basePtr), function(function), instructionIndex(instructionIndex) {
+
+	}
+
+	CollectorGeneration::CollectorGeneration(std::size_t size, std::size_t allocatedBeforeCollection)
+			: mHeap(size),
+			  mAllocatedBeforeCollection(allocatedBeforeCollection) {
 
 	}
 
 	GarbageCollector::GarbageCollector(VMState& vmState)
-		: vmState(vmState),
-		  mHeap(10 * 1024 * 1024),
-		  mAllocatedBeforeCollection((std::size_t)vmState.config.allocationsBeforeGC) {
+			: vmState(vmState),
+			  mYoungGeneration(10 * 1024 * 1024, (std::size_t)vmState.config.allocationsBeforeGC) {
 
+	}
+
+	bool CollectorGeneration::needsToCollect() const {
+		return mNumAllocated >= mAllocatedBeforeCollection;
+	}
+
+	ManagedHeap& CollectorGeneration::heap() {
+		return mHeap;
+	}
+
+	BytePtr CollectorGeneration::allocate(std::size_t size) {
+		auto objPtr = mHeap.allocate(size);
+		if (objPtr != nullptr) {
+			mNumAllocated++;
+		}
+
+		return objPtr;
+	}
+
+	void CollectorGeneration::collected() {
+		mNumAllocated = 0;
 	}
 
 	void GarbageCollector::printObject(ObjectRef objRef) {
@@ -37,9 +63,9 @@ namespace stackjit {
 			<< std::endl;
 	}
 
-	RawObjectRef GarbageCollector::allocateObject(ManagedHeap& heap, const Type* type, std::size_t size) {
+	RawObjectRef GarbageCollector::allocateObject(CollectorGeneration& generation, const Type* type, std::size_t size) {
 		auto fullSize = stackjit::OBJECT_HEADER_SIZE + size;
-		auto objPtr = heap.allocate(fullSize);
+		auto objPtr = generation.allocate(fullSize);
 
 		if (objPtr == nullptr) {
 			throw std::runtime_error("Could not allocate object.");
@@ -51,13 +77,11 @@ namespace stackjit {
 		Helpers::setValue(objPtr, 0, (PtrValue)type);
 		Helpers::setValue(objPtr, sizeof(PtrValue), 0); //GC info
 
-		mNumAllocated++;
-
 		//The returned ptr is to the data
 		return objPtr + stackjit::OBJECT_HEADER_SIZE;
 	}
 
-	void GarbageCollector::deleteObject(ManagedHeap& heap, ObjectRef objRef) {
+	void GarbageCollector::deleteObject(CollectorGeneration& generation, ObjectRef objRef) {
 		auto fullPtr = objRef.dataPtr() - stackjit::OBJECT_HEADER_SIZE;
 		Helpers::setValue<std::size_t>(fullPtr, 0, objRef.fullSize());  //The amount of data to skip from the start.
 		Helpers::setValue<unsigned char>(fullPtr, sizeof(std::size_t), 0xFF); //Indicator for dead object
@@ -68,7 +92,7 @@ namespace stackjit {
 	    auto elemSize = TypeSystem::sizeOfType(elementType);
 
 	    std::size_t memSize = stackjit::ARRAY_LENGTH_SIZE + (length * elemSize);
-	    auto arrayPtr = allocateObject(mHeap, arrayType, memSize);
+	    auto arrayPtr = allocateObject(mYoungGeneration, arrayType, memSize);
 
 	    //Set the length of the array
 		Helpers::setValue(arrayPtr, 0, length);
@@ -87,7 +111,7 @@ namespace stackjit {
 
 	RawClassRef GarbageCollector::newClass(const ClassType* classType) {
 	    std::size_t memSize = classType->metadata()->size();
-	    auto classPtr = allocateObject(mHeap, classType, memSize);
+	    auto classPtr = allocateObject(mYoungGeneration, classType, memSize);
 
 	    if (vmState.config.enableDebug && vmState.config.printAllocation) {
 	        std::cout
@@ -101,7 +125,7 @@ namespace stackjit {
 
 	void GarbageCollector::visitFrameReference(StackFrameEntry frameEntry, VisitReferenceFn fn) {
 		if (frameEntry.type()->isReference()) {
-			auto objPtr = (unsigned char*)frameEntry.value();
+			auto objPtr = (BytePtr)frameEntry.value();
 
 			//Don't visit nulls
 			if (objPtr == nullptr) {
@@ -196,7 +220,7 @@ namespace stackjit {
 
 	void GarbageCollector::markValue(RegisterValue value, const Type* type) {
 		if (type->isReference()) {
-			auto objPtr = (unsigned char*)value;
+			auto objPtr = (BytePtr)value;
 
 			//Don't mark nulls
 			if (objPtr == nullptr) {
@@ -222,10 +246,10 @@ namespace stackjit {
 		});
 	}
 
-	void GarbageCollector::sweepObjects() {
+	void GarbageCollector::sweepObjects(CollectorGeneration& generation) {
 		int numDeallocatedObjects = 0;
 
-		mHeap.visitObjects([&](ObjectRef objRef) {
+		generation.heap().visitObjects([&](ObjectRef objRef) {
 			if (!objRef.isMarked()) {
 				numDeallocatedObjects++;
 
@@ -234,7 +258,7 @@ namespace stackjit {
 					printObject(objRef);
 				}
 
-				deleteObject(mHeap, objRef);
+				deleteObject(generation, objRef);
 			} else {
 				objRef.unmark();
 			}
@@ -246,9 +270,9 @@ namespace stackjit {
 		}
 	}
 
-	unsigned char* GarbageCollector::computeLocations(ForwardingTable& forwardingAddress) {
-		auto free = mHeap.data();
-		mHeap.visitObjects([&](ObjectRef objRef) {
+	BytePtr GarbageCollector::computeLocations(CollectorGeneration& generation, ForwardingTable& forwardingAddress) {
+		auto free = generation.heap().data();
+		generation.heap().visitObjects([&](ObjectRef objRef) {
 			if (objRef.isMarked()) {
 				forwardingAddress.insert({ objRef.fullPtr(), free });
 				free += objRef.fullSize();
@@ -257,11 +281,11 @@ namespace stackjit {
 		return free;
 	}
 
-	void GarbageCollector::updateReferences(GCRuntimeInformation& runtimeInformation, ForwardingTable& forwardingAddress) {
+	void GarbageCollector::updateReferences(CollectorGeneration& generation, GCRuntimeInformation& runtimeInformation, ForwardingTable& forwardingAddress) {
 		//Updates the given reference
 		auto updateRef = [&](PtrValue* objRef) {
 			if (*objRef != 0) {
-				auto newLocation = forwardingAddress[((unsigned char*)*objRef) - stackjit::OBJECT_HEADER_SIZE];
+				auto newLocation = forwardingAddress[((BytePtr)*objRef) - stackjit::OBJECT_HEADER_SIZE];
 				*objRef = (PtrValue)(newLocation + stackjit::OBJECT_HEADER_SIZE);
 			}
 		};
@@ -270,13 +294,13 @@ namespace stackjit {
 		visitAllFrameReferences(
 			runtimeInformation.basePtr,
 			runtimeInformation.function,
-			runtimeInformation.instIndex,
+			runtimeInformation.instructionIndex,
 			[&](StackFrameEntry frameEntry) {
 				updateRef((PtrValue*)frameEntry.valuePtr());
 			});
 
 		//Update the field/element references
-		mHeap.visitObjects([&](ObjectRef objRef) {
+		generation.heap().visitObjects([&](ObjectRef objRef) {
 			if (objRef.isMarked()) {
 				if (objRef.type()->isArray()) {
 					auto arrayType = static_cast<const ArrayType*>(objRef.type());
@@ -303,9 +327,9 @@ namespace stackjit {
 		});
 	}
 
-	int GarbageCollector::moveObjects(ForwardingTable& forwardingAddress) {
+	int GarbageCollector::moveObjects(CollectorGeneration& generation, ForwardingTable& forwardingAddress) {
 		int numDeallocatedObjects = 0;
-		mHeap.visitObjects([&](ObjectRef objRef) {
+		generation.heap().visitObjects([&](ObjectRef objRef) {
 			if (objRef.isMarked()) {
 				auto dest = forwardingAddress[objRef.fullPtr()];
 				memmove(dest, objRef.fullPtr(), objRef.fullSize());
@@ -323,18 +347,18 @@ namespace stackjit {
 		return numDeallocatedObjects;
 	}
 
-	void GarbageCollector::compactObjects(GCRuntimeInformation& runtimeInformation) {
+	void GarbageCollector::compactObjects(CollectorGeneration& generation, GCRuntimeInformation& runtimeInformation) {
 		ForwardingTable forwardingAddress;
 
 		//Compute the new locations of the objects
-		auto free = computeLocations(forwardingAddress);
+		auto free = computeLocations(generation, forwardingAddress);
 
 		//Update the references
-		updateReferences(runtimeInformation, forwardingAddress);
+		updateReferences(generation, runtimeInformation, forwardingAddress);
 
 		//Move the objects
-		int numDeallocatedObjects = moveObjects(forwardingAddress);
-		mHeap.setNextAllocation(free);
+		int numDeallocatedObjects = moveObjects(generation, forwardingAddress);
+		generation.heap().setNextAllocation(free);
 
 		if (vmState.config.enableDebug && vmState.config.printGCStats) {
 			std::cout << "Deallocated: " << numDeallocatedObjects << " objects." << std::endl;
@@ -343,11 +367,11 @@ namespace stackjit {
 	}
 
 	bool GarbageCollector::beginGC(bool forceGC) {
-		if (mNumAllocated >= mAllocatedBeforeCollection || forceGC) {
+		if (mYoungGeneration.needsToCollect() || forceGC) {
 			if (vmState.config.enableDebug && vmState.config.printAliveObjects) {
 				std::cout << "Alive objects: " << std::endl;
 
-				mHeap.visitObjects([this](ObjectRef objRef) {
+				mYoungGeneration.heap().visitObjects([this](ObjectRef objRef) {
 					printObject(objRef);
 				});
 			}
@@ -365,7 +389,7 @@ namespace stackjit {
 	void GarbageCollector::collect(GCRuntimeInformation& runtimeInformation, bool forceGC) {
 		auto basePtr = runtimeInformation.basePtr;
 		auto func = runtimeInformation.function;
-		auto instIndex = runtimeInformation.instIndex;
+		auto instIndex = runtimeInformation.instructionIndex;
 
 		if (beginGC(forceGC)) {
 			std::size_t startStrLength = 0;
@@ -385,8 +409,8 @@ namespace stackjit {
 	//		mNumAllocated = 0;
 
 			//Compact objects
-			compactObjects(runtimeInformation);
-			mNumAllocated = 0;
+			compactObjects(mYoungGeneration, runtimeInformation);
+			mYoungGeneration.collected();
 
 			if (vmState.config.enableDebug && vmState.config.printGCPeriod) {
 				printTimes('-', (int)startStrLength / 2 - 3);

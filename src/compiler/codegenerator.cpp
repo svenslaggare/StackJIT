@@ -94,15 +94,15 @@ namespace stackjit {
 	#endif
 	}
 
-	void CodeGenerator::generateCall(CodeGen& generatedCode, unsigned char* funcPtr, IntRegister addrReg, bool shadowSpaceNeeded) {
+	void CodeGenerator::generateCall(CodeGen& generatedCode, BytePtr funcPtr, IntRegister addressRegister, bool shadowSpaceNeeded) {
 		Amd64Assembler assembler(generatedCode);
 
 		if (shadowSpaceNeeded) {
 			assembler.sub(Registers::SP, mCallingConvention.calculateShadowStackSize());
 		}
 
-		assembler.moveLong(addrReg, (PtrValue)funcPtr);
-		assembler.call(addrReg);
+		assembler.moveLong(addressRegister, (PtrValue)funcPtr);
+		assembler.call(addressRegister);
 
 		if (shadowSpaceNeeded) {
 			assembler.add(Registers::SP, mCallingConvention.calculateShadowStackSize());
@@ -114,7 +114,7 @@ namespace stackjit {
 		assembler.move(RegisterCallArguments::Arg0, Registers::BP); //BP as the first argument
 		assembler.moveLong(RegisterCallArguments::Arg1,	(PtrValue)&function); //Address of the function as second argument
 		assembler.moveInt(RegisterCallArguments::Arg2, instIndex); //Current inst index as third argument
-		generateCall(generatedCode, (unsigned char*)&Runtime::garbageCollect);
+		generateCall(generatedCode, (BytePtr)&Runtime::garbageCollect);
 	}
 
 	void CodeGenerator::initializeFunction(FunctionCompilationData& functionData) {
@@ -159,7 +159,7 @@ namespace stackjit {
 		Amd64Assembler assembler(functionData.function.generatedCode());
 
 		//Get the top pointer
-		auto topPtr = (unsigned char*)vmState.engine().callStack().topPtr();
+		auto topPtr = (BytePtr)vmState.engine().callStack().topPtr();
 		assembler.move(Registers::AX, topPtr);
 		assembler.add(Registers::AX, sizeof(CallStackEntry));
 
@@ -182,7 +182,7 @@ namespace stackjit {
 		Amd64Assembler assembler(generatedCode);
 
 		//Get the top pointer
-		auto topPtr = (unsigned char*)vmState.engine().callStack().topPtr();
+		auto topPtr = (BytePtr)vmState.engine().callStack().topPtr();
 		assembler.move(Registers::AX, topPtr);
 		assembler.add(Registers::AX, -(int)sizeof(CallStackEntry));
 
@@ -459,13 +459,13 @@ namespace stackjit {
 					}
 
 					//Get the address of the function to call
-					unsigned char* funcAddress = nullptr;
+					BytePtr funcAddress = nullptr;
 
 					//Handle virtual calls
 					if (funcToCall.isManaged() && funcToCall.isVirtual()) {
 						assembler.move(RegisterCallArguments::Arg0, firstArgOffset);
 						assembler.moveInt(RegisterCallArguments::Arg1, funcToCall.classType()->metadata()->getVirtualFunctionIndex(funcToCall));
-						generateCall(generatedCode, (unsigned char*)&Runtime::getVirtualFunctionAddress);
+						generateCall(generatedCode, (BytePtr)&Runtime::getVirtualFunctionAddress);
 						assembler.move(ExtendedRegisters::R12, RegisterCallArguments::ReturnValue);
 					}
 
@@ -547,7 +547,7 @@ namespace stackjit {
 				if (vmState.config.enableDebug && vmState.config.printStackFrame) {
 					assembler.move(RegisterCallArguments::Arg0, Registers::BP);
 					assembler.moveLong(RegisterCallArguments::Arg1, (PtrValue)&function);
-					generateCall(generatedCode, (unsigned char*)&Runtime::printStackFrame);
+					generateCall(generatedCode, (BytePtr)&Runtime::printStackFrame);
 				}
 
 				mCallingConvention.makeReturnValue(functionData);
@@ -657,7 +657,7 @@ namespace stackjit {
 				mExceptionHandling.addArrayCreationCheck(functionData);
 
 				//Call the newArray runtime function
-				generateCall(generatedCode, (unsigned char*)&Runtime::newArray);
+				generateCall(generatedCode, (BytePtr)&Runtime::newArray);
 
 				//Push the returned pointer
 				operandStack.pushReg(Registers::AX);
@@ -772,7 +772,7 @@ namespace stackjit {
 
 				//Call the newClass runtime function
 				assembler.moveLong(RegisterCallArguments::Arg0, (PtrValue)classType); //The pointer to the type
-				generateCall(generatedCode, (unsigned char*)&Runtime::newClass);
+				generateCall(generatedCode, (BytePtr)&Runtime::newClass);
 
 				//Save the reference
 				assembler.move(ExtendedRegisters::R10, Registers::AX);
@@ -900,7 +900,7 @@ namespace stackjit {
 				assembler.moveInt(RegisterCallArguments::Arg1, (int)inst.strValue.length());
 
 				//Call the newString runtime function
-				generateCall(generatedCode, (unsigned char*)&Runtime::newString);
+				generateCall(generatedCode, (BytePtr)&Runtime::newString);
 
 				//Push the returned pointer
 				operandStack.pushReg(Registers::AX);

@@ -18,9 +18,33 @@ namespace stackjit {
 	struct GCRuntimeInformation {
 		RegisterValue* basePtr;
 		ManagedFunction* function;
-		int instIndex;
+		int instructionIndex;
 
-		GCRuntimeInformation(RegisterValue* basePtr, ManagedFunction* function, int instIndex);
+		GCRuntimeInformation(RegisterValue* basePtr, ManagedFunction* function, int instructionIndex);
+	};
+
+	//Represents a generation for the garbage collector
+	class CollectorGeneration {
+	private:
+		ManagedHeap mHeap;
+
+		std::size_t mNumAllocated = 0;
+		std::size_t mAllocatedBeforeCollection = 0;
+	public:
+		//Creates a new generation
+		CollectorGeneration(std::size_t size, std::size_t allocatedBeforeCollection);
+
+		//Returns the heap
+		ManagedHeap& heap();
+
+		//Indicates if the generation requires a collection
+		bool needsToCollect() const;
+
+		//Allocates an object of the given size
+		BytePtr allocate(std::size_t size);
+
+		//Marks that the generation has been collected
+		void collected();
 	};
 
 	//Represents the garbage collector
@@ -31,17 +55,14 @@ namespace stackjit {
 	private:
 		VMState& vmState;
 
-		ManagedHeap mHeap;
-
-		std::size_t mNumAllocated = 0;
-		std::size_t mAllocatedBeforeCollection = 0;
+		CollectorGeneration mYoungGeneration;
 		std::chrono::time_point<std::chrono::high_resolution_clock> mGCStart;
 
 		//Allocate an object of given type and size in the given heap
-		RawObjectRef allocateObject(ManagedHeap& heap, const Type* type, std::size_t size);
+		RawObjectRef allocateObject(CollectorGeneration& generation, const Type* type, std::size_t size);
 
 		//Deletes the given object
-		void deleteObject(ManagedHeap& heap, ObjectRef objRef);
+		void deleteObject(CollectorGeneration& generation, ObjectRef objRef);
 
 		//Prints the given object
 		void printObject(ObjectRef objRef);
@@ -66,21 +87,21 @@ namespace stackjit {
 		void markAllObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex);
 
 		//Deletes unreachable objects.
-		void sweepObjects();
+		void sweepObjects(CollectorGeneration& generation);
 
-		using ForwardingTable = std::unordered_map<unsigned char*, unsigned char*>;
+		using ForwardingTable = std::unordered_map<BytePtr, BytePtr>;
 
 		//Computes the new locations of the objects
-		unsigned char* computeLocations(ForwardingTable& forwardingAddress);
+		BytePtr computeLocations(CollectorGeneration& generation, ForwardingTable& forwardingAddress);
 
 		//Updates the references
-		void updateReferences(GCRuntimeInformation& runtimeInformation, ForwardingTable& forwardingAddress);
+		void updateReferences(CollectorGeneration& generation, GCRuntimeInformation& runtimeInformation, ForwardingTable& forwardingAddress);
 
 		//Moves the objects
-		int moveObjects(ForwardingTable& forwardingAddress);
+		int moveObjects(CollectorGeneration& generation, ForwardingTable& forwardingAddress);
 
 		//Compacts the objects
-		void compactObjects(GCRuntimeInformation& runtimeInformation);
+		void compactObjects(CollectorGeneration& generation, GCRuntimeInformation& runtimeInformation);
 
 		//Begins the garbage collection. Return true if started.
 		bool beginGC(bool forceGC);

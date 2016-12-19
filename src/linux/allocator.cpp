@@ -19,12 +19,12 @@ namespace stackjit {
 		}
 	}
 
-	void Allocator::deallocate(void* mem, std::size_t size) {
-		munmap(mem, size);
+	void Allocator::deallocate(void* memory, std::size_t size) {
+		munmap(memory, size);
 	}
 
-	bool Allocator::makeExecutable(void* mem, std::size_t size) {
-		return mprotect(mem, size, PROT_EXEC | PROT_READ) == 0;
+	bool Allocator::makeExecutable(void* memory, std::size_t size) {
+		return mprotect(memory, size, PROT_EXEC | PROT_READ) == 0;
 	}
 }
 #endif

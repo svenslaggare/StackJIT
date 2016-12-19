@@ -13,9 +13,9 @@ namespace stackjit {
 		void* allocate(std::size_t size);
 
 		//Deallocate the given memory block
-		void deallocate(void* mem, std::size_t size);
+		void deallocate(void* memory, std::size_t size);
 
 		//Makes the given memory executable
-		bool makeExecutable(void* mem, std::size_t size);
+		bool makeExecutable(void* memory, std::size_t size);
 	}
 }

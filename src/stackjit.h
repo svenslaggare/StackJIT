@@ -9,6 +9,9 @@ namespace stackjit {
 	//Holds a register value
 	using RegisterValue = std::int64_t;
 
+	//Byte pointer
+	using BytePtr = unsigned char*;
+
 	//The size of the length of an array
 	const int ARRAY_LENGTH_SIZE = 4;
 

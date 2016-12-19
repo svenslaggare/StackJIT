@@ -10,10 +10,10 @@ namespace stackjit {
 	//Handles exceptions
 	class ExceptionHandling {
 	private:
-		unsigned char* mNullCheckHandler;
-		unsigned char* mArrayBoundsCheckHandler;
-		unsigned char* mArrayCreationCheckHandler;
-		unsigned char* mStackOverflowCheckHandler;
+		BytePtr mNullCheckHandler;
+		BytePtr mArrayBoundsCheckHandler;
+		BytePtr mArrayCreationCheckHandler;
+		BytePtr mStackOverflowCheckHandler;
 
 		//Creates a call to the given handler
 		std::size_t createHandlerCall(std::vector<unsigned char>& handlerCode, CallingConvention& callingConvention, PtrValue handlerPtr);

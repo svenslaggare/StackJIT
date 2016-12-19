@@ -11,12 +11,12 @@ namespace stackjit {
 		    PAGE_EXECUTE_READWRITE);
 	}
 
-	void Allocator::deallocate(void* mem, std::size_t size) {
-		VirtualFree(mem, size, MEM_RELEASE);
+	void Allocator::deallocate(void* memory, std::size_t size) {
+		VirtualFree(memory, size, MEM_RELEASE);
 	}
 
-	bool Allocator::makeExecutable(void* mem, std::size_t size) {
-		return VirtualProtect(mem, size, PAGE_EXECUTE_READ, nullptr) == 0;
+	bool Allocator::makeExecutable(void* memory, std::size_t size) {
+		return VirtualProtect(memory, size, PAGE_EXECUTE_READ, nullptr) == 0;
 	}
 }
 #endif

@@ -10,11 +10,11 @@ namespace stackjit {
 		delete[] mData;
 	}
 
-	unsigned char* ManagedHeap::data() const {
+	BytePtr ManagedHeap::data() const {
 		return mData;
 	}
 
-	unsigned char* ManagedHeap::allocate(std::size_t size) {
+	BytePtr ManagedHeap::allocate(std::size_t size) {
 		auto nextAllocation = mNextAllocation + size;
 
 		if (nextAllocation < mData + mSize) {
@@ -26,7 +26,7 @@ namespace stackjit {
 		}
 	}
 
-	void ManagedHeap::setNextAllocation(unsigned char* nextAllocation) {
+	void ManagedHeap::setNextAllocation(BytePtr nextAllocation) {
 		if (nextAllocation >= mData && nextAllocation < mData + mSize) {
 			mNextAllocation = nextAllocation;
 		} else {

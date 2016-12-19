@@ -43,7 +43,7 @@ namespace stackjit {
 		void compileFunction(ManagedFunction* callee, int callOffset, int checkStart, int checkEnd, FunctionDefinition* funcToCall);
 
 		//Returns the exact address of the given virtual function
-		unsigned char* getVirtualFunctionAddress(RawClassRef rawClassRef, int index);
+		BytePtr getVirtualFunctionAddress(RawClassRef rawClassRef, int index);
 
 		//Tries to collect garbage
 		void garbageCollect(RegisterValue* basePtr, ManagedFunction* func, int instIndex);
