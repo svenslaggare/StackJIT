@@ -7,13 +7,13 @@ The runtime library consists of three parts:
 * Native functions exposed to programs.
 * Managed functions loaded by the VM.
 
-### Runtime functions
+## Runtime functions
 The runtime functions are functions such as invoking the garbage collector, creating objects, arrays and other low level functions. These functions can not be called by user programs.
 
-### Native functions
+## Native functions
 The native functions are implemented in the VM and are exposed as normal functions.
 
-### Managed functions
+## Managed functions
 The managed functions either wraps runtime functions or provide implementation in managed code for runtime functions.
 
 ## List of functions
@@ -38,6 +38,7 @@ The managed functions either wraps runtime functions or provide implementation i
 
 ### System
 * `std.gc.collect() Void`: Invokes the garbage collector.
+* `std.gc.collectOld() Void`: Invokes the garbage collector on the old generation.
 
 ## List of classes
 

@@ -1,6 +1,6 @@
 Types
 =====
-The VM supports the following types:
+The following types are supported:
 
 ### Primitive types
 * `Int`: 32 bits integer.

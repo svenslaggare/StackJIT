@@ -9,6 +9,7 @@
 #include <iostream>
 #include <sstream>
 #include <string.h>
+#include <cstring>
 
 namespace stackjit {
 	namespace {
@@ -97,7 +98,7 @@ namespace stackjit {
 		auto fullSize = stackjit::OBJECT_HEADER_SIZE + size;
 		auto objPtr = generation.allocate(fullSize);
 
-		memset(objPtr, 0, fullSize);
+		std::memset(objPtr, 0, fullSize);
 
 		//Set the header
 		Helpers::setValue<std::size_t>(objPtr, 0, (PtrValue)type);
@@ -385,7 +386,7 @@ namespace stackjit {
 				objRef.unmark();
 				objRef.increaseSurvivalCount();
 				auto dest = forwardingAddress[objRef.fullPtr()];
-				memmove(dest, objRef.fullPtr(), objRef.fullSize());
+				std::memmove(dest, objRef.fullPtr(), objRef.fullSize());
 			} else {
 				numDeallocatedObjects++;
 
@@ -404,7 +405,7 @@ namespace stackjit {
 			ObjectRef objRef(oldObjPtr + stackjit::OBJECT_HEADER_SIZE);
 
 			auto newObjPtr = generation.allocate(objRef.fullSize());
-			memmove(newObjPtr, objRef.fullPtr(), objRef.fullSize());
+			std::memmove(newObjPtr, objRef.fullPtr(), objRef.fullSize());
 			forwardingAddress.insert({ oldObjPtr, newObjPtr });
 
 			ObjectRef newObjRef(newObjPtr + stackjit::OBJECT_HEADER_SIZE);

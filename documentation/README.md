@@ -8,5 +8,5 @@ This folder contains documentation about the VM.
 * [Objects](objects.md)
 * [Attributes](attributes.md)
 * [Runtime library](rtlib.md)
-* [Garbage Collector](gc.md)
 * [Object Layout](objectlayout.md)
+* [Garbage Collector](gc.md)

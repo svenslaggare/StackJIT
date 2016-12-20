@@ -1,6 +1,6 @@
 Instruction set
 ===============
-Defines the instruction set used by the VM.
+The following instructions are supported:
 
 ### Basic
 * `POP`: Pops the top value from the evaluation stack.
