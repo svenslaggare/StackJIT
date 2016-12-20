@@ -1,36 +1,22 @@
-Current Garbage Collector Design
+Garbage Collector
 ================================
-The current GC uses a mark-and-compact collector using the Lisp 2 algorithm.
+The garbage collector uses a mark-and-compact collector using the Lisp 2 algorithm, and divides the heap into an young and old generation.
 
-## Collection happens
+## When collection happens
 A collection happens when 1000 objects (or supplied via a command line argument) has been allocated. This needs to be changed so that collections when the GC needs more free space.
 
 ## Allocator
 The allocator is implemented using the "bump the pointer" technique. This works by when a new object needs to be allocated, the current next pointer is returned as the location of the new object, and is incremented after.
 
-## Heap
-The heap is of fixed size (10 MB), and will not grow if the heap runs out of space.
+## Heap size
+The heap size is fixed, and will not grow if the heap runs out of space. The size of the different generations are:
+* Young: 4 MB
+* Old: 8 MB
 
-New Garbage Collector Design
-============================
-To design a new garbage collector.
+## Generations
+There exists two generations: young and old. If an object has survived 5 collections, it will be promoted to the old generation. To track references between generation, the card marking algorithm is used. The size of a card is 1024 bytes.
 
-Design goals:
-* Generational (young and old generation).
-* Compacting.
-* Growing.
-* Change when collection happens
+## GC Info
+The format for the GC info is the following:
 
-## Generational
-The new garbage collector will have two generations: young and old. The generations will represented by a partition of the heap. The young generation will be placed before the old generation.
-
-### Young Generation
-The newly allocated objects will be placed in the young generation. If an object survives `x` number of collections, it will be promoted to the old generation.
-The roots will be the same as in existing code + the old objects that has references into the young generation.
-From the start, this generation will use a compacting collector. In the future, this generation may be changed to using a copying collector.
-
-### Old Generation
-Will use a compacting collector.
-
-### Intergenerational references
-Will use the card marking algorithm.
+![](images/GCInfo.png "GC info format")
