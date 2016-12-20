@@ -26,6 +26,9 @@ namespace stackjit {
 		//Returns the end of the heap
 		BytePtr end() const;
 
+		//Indicates if the given pointer is inside the heap
+		bool inside(BytePtr ptr) const;
+
 		//Allocates a memory block of the given size. Returns nullptr if not allocated
 		BytePtr allocate(std::size_t size);
 

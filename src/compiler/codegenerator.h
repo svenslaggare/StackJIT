@@ -62,6 +62,9 @@ namespace stackjit {
 
 		//Pops a function from the call stack
 		void popFunc(const VMState& vmState, CodeGen& generatedCode);
+
+		//Adds card marking
+		void addCardMarking(const VMState& vmState, CodeGen& generatedCode, Amd64Assembler& assembler, Registers objectRegister);
 	public:
 		//Creates a new code generator
 		CodeGenerator(const CallingConvention& callingConvention, const ExceptionHandling& exceptionHandling);

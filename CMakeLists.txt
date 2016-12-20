@@ -82,7 +82,7 @@ set(SOURCE_FILES
         src/compiler/amd64assembler.cpp
         src/compiler/amd64assembler.h
         src/runtime/native/stringref.cpp
-        src/runtime/native/stringref.h)
+        src/runtime/native/stringref.h src/runtime/gcgeneration.cpp src/runtime/gcgeneration.h)
 
 add_executable(stackjit ${SOURCE_FILES} src/stackjit.cpp)
 

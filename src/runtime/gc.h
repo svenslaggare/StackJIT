@@ -1,8 +1,8 @@
 #pragma once
 #include "../type/objectref.h"
 #include "../stackjit.h"
-#include "managedheap.h"
 #include "stackframe.h"
+#include "gcgeneration.h"
 #include <unordered_map>
 #include <vector>
 #include <chrono>
@@ -23,47 +23,6 @@ namespace stackjit {
 		GCRuntimeInformation(RegisterValue* basePtr, ManagedFunction* function, int instructionIndex);
 	};
 
-	//Represents a generation for the garbage collector
-	class CollectorGeneration {
-	private:
-		ManagedHeap mHeap;
-
-		std::size_t mNumAllocated = 0;
-		std::size_t mAllocatedBeforeCollection = 0;
-		int mSurvivedCollectionsBeforePromote = 0;
-
-		BytePtr mCardTable;
-	public:
-		static const std::size_t CARD_SIZE = 1024; //The size of a card in the table
-
-		//Creates a new generation
-		CollectorGeneration(std::size_t size, std::size_t allocatedBeforeCollection, int survivedCollectionsBeforePromote = -1);
-		~CollectorGeneration();
-
-		//Prevent the generation from being copied
-		CollectorGeneration(const CollectorGeneration&) = delete;
-		CollectorGeneration& operator=(const CollectorGeneration&) = delete;
-
-		//Returns the heap
-		ManagedHeap& heap();
-		const ManagedHeap& heap() const;
-
-		//Returns the card table
-		BytePtr cardTable() const;
-
-		//Indicates if the generation requires a collection
-		bool needsToCollect() const;
-
-		//Indicates if the given object needs to be promoted to an older generation
-		bool needsToPromote(int survivalCount) const;
-
-		//Allocates an object of the given size
-		BytePtr allocate(std::size_t size);
-
-		//Marks that the generation has been collected
-		void collected();
-	};
-
 	//Represents the garbage collector
 	class GarbageCollector {
 	public:
@@ -75,6 +34,12 @@ namespace stackjit {
 		CollectorGeneration mYoungGeneration;
 		CollectorGeneration mOldGeneration;
 		std::chrono::time_point<std::chrono::high_resolution_clock> mGCStart;
+
+		//Indicates if the given generation is the young
+		bool isYoung(const CollectorGeneration& generation) const;
+
+		//Indicates if the given generation is the old
+		bool isOld(const CollectorGeneration& generation) const;
 
 		//Allocate an object of given type and size in the given heap
 		RawObjectRef allocateObject(CollectorGeneration& generation, const Type* type, std::size_t size);
@@ -99,13 +64,13 @@ namespace stackjit {
 									 VisitFrameFn frameFn = {});
 
 		//Marks the given object
-		void markObject(ObjectRef objRef);
+		void markObject(CollectorGeneration& generation, ObjectRef objRef);
 
 		//Marks the value of the given type
-		void markValue(RegisterValue value, const Type* type);
+		void markValue(CollectorGeneration& generation, RegisterValue value, const Type* type);
 
 		//Marks the objects in all stack frames, starting at the given frame
-		void markAllObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex);
+		void markAllObjects(CollectorGeneration& generation, RegisterValue* basePtr, ManagedFunction* func, int instIndex);
 
 		//Deletes unreachable objects.
 		void sweepObjects(CollectorGeneration& generation);
@@ -124,9 +89,6 @@ namespace stackjit {
 
 		//Updates the references stored in the stack
 		void updateStackReferences(GCRuntimeInformation& runtimeInformation, ForwardingTable& forwardingAddress);
-
-		//Updates the references
-		void updateReferences(CollectorGeneration& generation, GCRuntimeInformation& runtimeInformation, ForwardingTable& forwardingAddress);
 
 		//Moves the objects
 		int moveObjects(CollectorGeneration& generation, ForwardingTable& forwardingAddress);

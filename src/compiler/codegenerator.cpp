@@ -191,6 +191,32 @@ namespace stackjit {
 		assembler.move(topPtr, Registers::AX);
 	}
 
+	void CodeGenerator::addCardMarking(const VMState& vmState, CodeGen& generatedCode, Amd64Assembler& assembler, Registers objectRegister) {
+		//First check if the object is inside the correct generation
+		BytePtr heapStart = vmState.gc().oldGeneration().heap().start();
+		BytePtr heapEnd = vmState.gc().oldGeneration().heap().end();
+
+		//heapStart <= AX
+		assembler.moveLong(Registers::CX, (std::int64_t)heapStart);
+		assembler.compare(Registers::CX, objectRegister);
+		std::size_t firstJump = generatedCode.size();
+		assembler.jump(JumpCondition::GreaterThan, 0, true);
+
+		//heapEnd >= AX
+		assembler.moveLong(Registers::CX, (std::int64_t)heapEnd);
+		assembler.compare(Registers::CX, objectRegister);
+		std::size_t secondJump = generatedCode.size();
+		assembler.jump(JumpCondition::LessThan, 0, true);
+
+		//Inside generation, mark
+		assembler.move(RegisterCallArguments::Arg0, objectRegister);
+		generateCall(generatedCode, (BytePtr)&Runtime::markObject);
+
+		//Set the jump targets
+		Helpers::setValue(generatedCode, firstJump + 2, (int)(generatedCode.size() - firstJump - 6));
+		Helpers::setValue(generatedCode, secondJump + 2, (int)(generatedCode.size() - secondJump - 6));
+	}
+
 	void CodeGenerator::generateInstruction(const VMState& vmState,
 											FunctionCompilationData& functionData,
 											const Instruction& inst,
@@ -665,7 +691,7 @@ namespace stackjit {
 				break;
 			}
 			case OpCodes::STORE_ELEMENT: {
-				auto elemType = vmState.typeProvider().getType(inst.strValue);
+				auto elementType = vmState.typeProvider().getType(inst.strValue);
 
 				//Pop the operands
 				operandStack.popReg(Registers::DX); //The value to store
@@ -677,16 +703,16 @@ namespace stackjit {
 				mExceptionHandling.addArrayBoundsCheck(functionData);
 
 				//Compute the address of the element
-				assembler.mult(ExtendedRegisters::R10, (int)TypeSystem::sizeOfType(elemType));
+				assembler.mult(ExtendedRegisters::R10, (int)TypeSystem::sizeOfType(elementType));
 				assembler.add(Registers::AX, ExtendedRegisters::R10);
 				assembler.add(Registers::AX, stackjit::ARRAY_LENGTH_SIZE);
 
 				//Store the element
-				auto elemSize = TypeSystem::sizeOfType(elemType);
+				auto elementSize = TypeSystem::sizeOfType(elementType);
 				DataSize dataSize = DataSize::Size64;
-				if (elemSize == 4) {
+				if (elementSize == 4) {
 					dataSize = DataSize::Size32;
-				} else if (elemSize == 1) {
+				} else if (elementSize == 1) {
 					dataSize = DataSize::Size8;
 				}
 
@@ -696,10 +722,14 @@ namespace stackjit {
 				} else {
 					assembler.move(elementOffset, Register8Bits::DL);
 				}
+
+				if (elementType->isReference()) {
+					addCardMarking(vmState, generatedCode, assembler, Registers::AX);
+				}
 				break;
 			}
 			case OpCodes::LOAD_ELEMENT: {
-				auto elemType = vmState.typeProvider().getType(inst.strValue);
+				auto elementType = vmState.typeProvider().getType(inst.strValue);
 
 				//Pop the operands
 				operandStack.popReg(ExtendedRegisters::R10); //The index of the element
@@ -710,16 +740,16 @@ namespace stackjit {
 				mExceptionHandling.addArrayBoundsCheck(functionData);
 
 				//Compute the address of the element
-				assembler.mult(ExtendedRegisters::R10, (int)TypeSystem::sizeOfType(elemType));
+				assembler.mult(ExtendedRegisters::R10, (int)TypeSystem::sizeOfType(elementType));
 				assembler.add(Registers::AX, ExtendedRegisters::R10);
 				assembler.add(Registers::AX, stackjit::ARRAY_LENGTH_SIZE);
 
 				//Load the element
-				auto elemSize = TypeSystem::sizeOfType(elemType);
+				auto elementSize = TypeSystem::sizeOfType(elementType);
 				DataSize dataSize = DataSize::Size64;
-				if (elemSize == 4) {
+				if (elementSize == 4) {
 					dataSize = DataSize::Size32;
-				} else if (elemSize == 1) {
+				} else if (elementSize == 1) {
 					dataSize = DataSize::Size8;
 				}
 
@@ -889,29 +919,7 @@ namespace stackjit {
 
 					//Card marking
 					if (field.type()->isReference()) {
-						//First check if the object is inside the correct generation
-						BytePtr heapStart = vmState.gc().oldGeneration().heap().start();
-						BytePtr heapEnd = vmState.gc().oldGeneration().heap().end();
-
-						//heapStart <= AX
-						assembler.moveLong(Registers::CX, (std::int64_t)heapStart);
-						assembler.compare(Registers::CX, Registers::AX);
-						std::size_t firstJump = generatedCode.size();
-						assembler.jump(JumpCondition::GreaterThan, 0, true);
-
-						//heapEnd >= AX
-						assembler.moveLong(Registers::CX, (std::int64_t)heapEnd);
-						assembler.compare(Registers::CX, Registers::AX);
-						std::size_t secondJump = generatedCode.size();
-						assembler.jump(JumpCondition::LessThan, 0, true);
-
-						//Inside generation, mark
-						assembler.move(RegisterCallArguments::Arg0, Registers::AX);
-						generateCall(generatedCode, (BytePtr)&Runtime::markObject);
-
-						//Set the jump targets
-						Helpers::setValue(generatedCode, firstJump + 2, (int)(generatedCode.size() - firstJump - 6));
-						Helpers::setValue(generatedCode, secondJump + 2, (int)(generatedCode.size() - secondJump - 6));
+						addCardMarking(vmState, generatedCode, assembler, Registers::AX);
 					}
 				}
 				break;

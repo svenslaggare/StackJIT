@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <stdexcept>
+#include "../stackjit.h"
 
 namespace stackjit {
 	class ClassMetadata;
@@ -18,7 +19,7 @@ namespace stackjit {
 	//Represents an object reference
 	class ObjectRef {
 	private:
-		unsigned char* mPtr;
+		BytePtr mPtr;
 		const Type* mType;
 		std::size_t mSize;
 
@@ -38,10 +39,10 @@ namespace stackjit {
 		}
 
 		//Returns a pointer to the header
-		unsigned char* fullPtr() const;
+		BytePtr fullPtr() const;
 
 		//Returns a pointer to the data
-		unsigned char* dataPtr() const;
+		BytePtr dataPtr() const;
 
 		//Returns the size of the object
 		std::size_t size() const;

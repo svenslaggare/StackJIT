@@ -1,0 +1,48 @@
+class Point
+{
+	x Int
+	y Int
+}
+
+member Point::.constructor() Void
+{
+   RET
+}
+
+func promote() Void
+{
+    CALL std.gc.collect()
+    CALL std.gc.collect()
+    CALL std.gc.collect()
+    CALL std.gc.collect()
+    CALL std.gc.collect()
+    CALL std.gc.collect()
+    RET
+}
+
+func main() Int
+{
+	.locals 1
+	.local 0 Ref.Array[Ref.Point]
+
+	LDINT 2
+	NEWARR Ref.Point
+    STLOC 0
+
+    CALL promote()
+
+    LDLOC 0
+    LDINT 0
+    NEWOBJ Point::.constructor()
+    STELEM Ref.Point
+
+    LDLOC 0
+    LDINT 1
+    NEWOBJ Point::.constructor()
+    STELEM Ref.Point
+
+    CALL std.gc.collect()
+
+    LDINT 0
+    RET
+}

@@ -26,10 +26,14 @@ namespace stackjit {
 		return mData + mSize;
 	}
 
+	bool ManagedHeap::inside(BytePtr ptr) const {
+		return ptr >= start() && ptr <= end();
+	}
+
 	BytePtr ManagedHeap::allocate(std::size_t size) {
 		auto nextAllocation = mNextAllocation + size;
 
-		if (nextAllocation < mData + mSize) {
+		if (nextAllocation < end()) {
 			auto allocation = mNextAllocation;
 			mNextAllocation = nextAllocation;
 			return allocation;
@@ -39,7 +43,7 @@ namespace stackjit {
 	}
 
 	void ManagedHeap::setNextAllocation(BytePtr nextAllocation) {
-		if (nextAllocation >= mData && nextAllocation < mData + mSize) {
+		if (nextAllocation >= mData && nextAllocation < end()) {
 			mNextAllocation = nextAllocation;
 		} else {
 			throw std::runtime_error("The pointer is outside the heap.");

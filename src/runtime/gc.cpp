@@ -30,61 +30,10 @@ namespace stackjit {
 
 	}
 
-	CollectorGeneration::CollectorGeneration(std::size_t size, std::size_t allocatedBeforeCollection, int survivedCollectionsBeforePromote)
-			: mHeap(size),
-			  mAllocatedBeforeCollection(allocatedBeforeCollection),
-			  mSurvivedCollectionsBeforePromote(survivedCollectionsBeforePromote),
-			  mCardTable(new unsigned char[size / CARD_SIZE] { 0 }) {
-
-	}
-
-	CollectorGeneration::~CollectorGeneration() {
-		delete[] mCardTable;
-	}
-
-	ManagedHeap& CollectorGeneration::heap() {
-		return mHeap;
-	}
-
-	const ManagedHeap& CollectorGeneration::heap() const {
-		return mHeap;
-	}
-
-	BytePtr CollectorGeneration::cardTable() const {
-		return mCardTable;
-	}
-
-	bool CollectorGeneration::needsToCollect() const {
-		return mNumAllocated >= mAllocatedBeforeCollection;
-	}
-
-	bool CollectorGeneration::needsToPromote(int survivalCount) const {
-		if (mSurvivedCollectionsBeforePromote == -1) {
-			return false;
-		}
-
-		return survivalCount >= mSurvivedCollectionsBeforePromote;
-	}
-
-	BytePtr CollectorGeneration::allocate(std::size_t size) {
-		auto objPtr = mHeap.allocate(size);
-		if (objPtr != nullptr) {
-			mNumAllocated++;
-		} else {
-			throw std::runtime_error("Could not allocate object.");
-		}
-
-		return objPtr;
-	}
-
-	void CollectorGeneration::collected() {
-		mNumAllocated = 0;
-	}
-
 	GarbageCollector::GarbageCollector(VMState& vmState)
 			: vmState(vmState),
 			  mYoungGeneration(4 * 1024 * 1024, (std::size_t)vmState.config.allocationsBeforeGC, 5),
-			  mOldGeneration(8 * 1024 * 1024, (std::size_t)vmState.config.allocationsBeforeGC) {
+			  mOldGeneration(8 * 1024 * 1024, (std::size_t)vmState.config.allocationsBeforeGC, -1, 1024) {
 
 	}
 
@@ -112,7 +61,6 @@ namespace stackjit {
 				return mOldGeneration;
 			default:
 				throw std::runtime_error("The given generation does not exist.");
-				break;
 		}
 	}
 
@@ -124,7 +72,6 @@ namespace stackjit {
 				return mOldGeneration;
 			default:
 				throw std::runtime_error("The given generation does not exist.");
-				break;
 		}
 	}
 
@@ -136,6 +83,14 @@ namespace stackjit {
 			<< ", survival: " << objRef.survivalCount()
 			<< " }"
 			<< std::endl;
+	}
+
+	bool GarbageCollector::isYoung(const CollectorGeneration& generation) const {
+		return &mYoungGeneration == &generation;
+	}
+
+	bool GarbageCollector::isOld(const CollectorGeneration& generation) const {
+		return &mOldGeneration == &generation;
 	}
 
 	RawObjectRef GarbageCollector::allocateObject(CollectorGeneration& generation, const Type* type, std::size_t size) {
@@ -260,18 +215,22 @@ namespace stackjit {
 		}
 	}
 
-	void GarbageCollector::markObject(ObjectRef objRef) {
+	void GarbageCollector::markObject(CollectorGeneration& generation, ObjectRef objRef) {
+		//Don't mark objects in the old generation
+		if (isYoung(generation) && !generation.heap().inside(objRef.fullPtr())) {
+			return;
+		}
+
 		if (!objRef.isMarked()) {
 			if (objRef.type()->isArray()) {
 				objRef.mark();
 
-				auto arrayType = static_cast<const ArrayType*>(objRef.type());
-
 				//Mark ref elements
+				auto arrayType = static_cast<const ArrayType*>(objRef.type());
 				if (arrayType->elementType()->isReference()) {
 					ArrayRef<PtrValue> arrayRef(objRef.dataPtr());
 					for (int i = 0; i < arrayRef.length(); i++) {
-						markValue(arrayRef.getElement(i), arrayType->elementType());
+						markValue(generation, arrayRef.getElement(i), arrayType->elementType());
 					}
 				}
 			} else if (objRef.type()->isClass()) {
@@ -284,14 +243,14 @@ namespace stackjit {
 
 					if (field.type()->isReference()) {
 						RegisterValue fieldValue = *(PtrValue*)(objRef.dataPtr() + field.offset());
-						markValue(fieldValue, field.type());
+						markValue(generation, fieldValue, field.type());
 					}
 				}
 			}
 		}
 	}
 
-	void GarbageCollector::markValue(RegisterValue value, const Type* type) {
+	void GarbageCollector::markValue(CollectorGeneration& generation, RegisterValue value, const Type* type) {
 		if (type->isReference()) {
 			auto objPtr = (BytePtr)value;
 
@@ -300,23 +259,33 @@ namespace stackjit {
 				return;
 			}
 
-			markObject(ObjectRef((RawObjectRef)value));
+			markObject(generation, ObjectRef((RawObjectRef)value));
 		}
 	}
 
-	void GarbageCollector::markAllObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex) {
+	void GarbageCollector::markAllObjects(CollectorGeneration& generation, RegisterValue* basePtr, ManagedFunction* func, int instIndex) {
 		if (vmState.config.enableDebug && vmState.config.printGCStackTrace) {
 			std::cout << "Stack trace: " << std::endl;
 		}
 
-		visitAllFrameReferences(basePtr, func, instIndex, [this](StackFrameEntry frameEntry) {
-			markObject(ObjectRef((RawObjectRef)frameEntry.value()));
+		visitAllFrameReferences(basePtr, func, instIndex, [this, &generation](StackFrameEntry frameEntry) {
+			markObject(generation, ObjectRef((RawObjectRef)frameEntry.value()));
 		}, [this](RegisterValue* frameBasePtr, ManagedFunction* frameFunc, int frameCallPoint) {
 			if (vmState.config.enableDebug && vmState.config.printGCStackTrace) {
 				std::cout << frameFunc->def().name() << " (" << frameCallPoint << ")" << std::endl;
 				Runtime::Internal::printAliveObjects(frameBasePtr, frameFunc, frameCallPoint, "\t");
 			}
 		});
+
+		//Old objects with references to young objects are also root
+		if (isYoung(generation)) {
+			mOldGeneration.heap().visitObjects([this](ObjectRef objRef) {
+				if (mOldGeneration.cardTable()[mOldGeneration.getCardNumber(objRef.dataPtr())]) {
+					markObject(mOldGeneration, objRef);
+//					std::cout << "old object " << ptrToString(objRef.dataPtr()) << std::endl;
+				}
+			});
+		}
 	}
 
 	void GarbageCollector::sweepObjects(CollectorGeneration& generation) {
@@ -355,6 +324,7 @@ namespace stackjit {
 				}
 			}
 		});
+
 		return free;
 	}
 
@@ -406,11 +376,6 @@ namespace stackjit {
 			[&](StackFrameEntry frameEntry) {
 				updateReference(forwardingAddress, (PtrValue*)frameEntry.valuePtr());
 			});
-	}
-
-	void GarbageCollector::updateReferences(CollectorGeneration& generation, GCRuntimeInformation& runtimeInformation, ForwardingTable& forwardingAddress) {
-		updateStackReferences(runtimeInformation, forwardingAddress);
-		updateHeapReferences(generation, forwardingAddress);
 	}
 
 	int GarbageCollector::moveObjects(CollectorGeneration& generation, ForwardingTable& forwardingAddress) {
@@ -471,7 +436,9 @@ namespace stackjit {
 		}
 
 		//Update the references
-		updateReferences(generation, runtimeInformation, forwardingAddress);
+		updateStackReferences(runtimeInformation, forwardingAddress);
+		updateHeapReferences(generation, forwardingAddress);
+
 		if (!promotedObjects.empty()) {
 			updateHeapReferences(*nextGeneration, forwardingAddress);
 		}
@@ -526,7 +493,7 @@ namespace stackjit {
 			}
 
 			//Mark all objects
-			markAllObjects(basePtr, func, instIndex);
+			markAllObjects(generation, basePtr, func, instIndex);
 
 	//		//Sweep objects
 	//		sweepObjects();

@@ -14,7 +14,7 @@
 #include "../src/helpers.h"
 
 //Contains info about an GC
-struct GC {
+struct GCCollection {
 	std::string funcName;
 	int instructionIndex;
 	std::vector<std::size_t> deallocatedObjects;
@@ -34,7 +34,17 @@ struct GC {
 //Holds all data for a GC test
 struct GCTest {
 	std::vector<std::size_t> allocatedObjects;
-	std::vector<GC> collections;
+	std::vector<GCCollection> collections;
+
+	std::size_t numDeallocatedObjects() {
+		std::size_t count = 0;
+
+		for (auto& collection : collections) {
+			count += collection.deallocatedObjects.size();
+		}
+
+		return count;
+	}
 };
 
 //Parses the GC data
@@ -43,7 +53,7 @@ std::string parseGCData(std::string data, GCTest& gcTest) {
 
 	//Split into lines
 	auto lines = stackjit::Helpers::splitString(data, "\n");
-	GC currentGC;
+	GCCollection currentGC;
 	bool hasFound = false;
 
 	std::regex gcStartRegex("Start GC \\((0|1)\\) in function (.*) \\((.*)\\)", std::regex_constants::ECMAScript);
@@ -291,5 +301,30 @@ public:
 		TS_ASSERT_EQUALS(gcTest.collections.at(6).deallocatedObjects.size(), 0);
 		TS_ASSERT_EQUALS(gcTest.collections.at(7).deallocatedObjects.size(), 1);
 		TS_ASSERT_EQUALS(gcTest.collections.at(7).hasDeallocated(gcTest.collections.at(5).promotedObjects[0].second), true);
+
+		TS_ASSERT_EQUALS(
+			parseGCData(invokeVM("gc/generation3", options), gcTest),
+			"0\n");
+
+		TS_ASSERT_EQUALS(gcTest.allocatedObjects.size(), 2);
+		TS_ASSERT_EQUALS(gcTest.collections.size(), 7);
+		TS_ASSERT_EQUALS(gcTest.numDeallocatedObjects(), 0);
+
+		TS_ASSERT_EQUALS(
+			parseGCData(invokeVM("gc/generation4", options), gcTest),
+			"0\n");
+
+		TS_ASSERT_EQUALS(gcTest.allocatedObjects.size(), 3);
+		TS_ASSERT_EQUALS(gcTest.collections.size(), 7);
+		TS_ASSERT_EQUALS(gcTest.numDeallocatedObjects(), 0);
+
+		TS_ASSERT_EQUALS(
+			parseGCData(invokeVM("gc/generation5", options), gcTest),
+			"0\n");
+
+		TS_ASSERT_EQUALS(gcTest.allocatedObjects.size(), 2);
+		TS_ASSERT_EQUALS(gcTest.collections.size(), 8);
+		TS_ASSERT_EQUALS(gcTest.collections.at(7).hasDeallocated(gcTest.allocatedObjects.at(1)), true);
+		TS_ASSERT_EQUALS(gcTest.numDeallocatedObjects(), 1);
 	}
 };

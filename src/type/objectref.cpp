@@ -14,11 +14,12 @@ namespace stackjit {
 			mSize = static_cast<const ClassType*>(type())->metadata()->size();
 		}
 	}
-	unsigned char* ObjectRef::fullPtr() const {
+
+	BytePtr ObjectRef::fullPtr() const {
 		return mPtr;
 	}
 
-	unsigned char* ObjectRef::dataPtr() const {
+	BytePtr ObjectRef::dataPtr() const {
 		return mPtr + sizeof(PtrValue) + 1;
 	}
 
@@ -36,12 +37,10 @@ namespace stackjit {
 	}
 
 	void ObjectRef::setMarked(bool isMarked) {
-//		mPtr[sizeof(PtrValue)] = (unsigned char)isMarked;
 		setGCInfo(isMarked, survivalCount());
 	}
 
 	bool ObjectRef::isMarked() const {
-//		return (bool)(mPtr[sizeof(PtrValue)]);
 		return (bool)(mPtr[sizeof(PtrValue)] & 0x1);
 	}
 
