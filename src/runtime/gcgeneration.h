@@ -2,7 +2,7 @@
 #include "managedheap.h"
 
 namespace stackjit {
-//Represents a generation for the garbage collector
+	//Represents a generation for the garbage collector
 	class CollectorGeneration {
 	private:
 		ManagedHeap mHeap;
