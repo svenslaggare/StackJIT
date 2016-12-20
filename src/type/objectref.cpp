@@ -30,12 +30,19 @@ namespace stackjit {
 		return size() + stackjit::OBJECT_HEADER_SIZE;
 	}
 
+	void ObjectRef::setGCInfo(bool isMarked, int count) {
+		int gcInfo = isMarked | (count << 1);
+		mPtr[sizeof(PtrValue)] = (unsigned char)gcInfo;
+	}
+
 	void ObjectRef::setMarked(bool isMarked) {
-		mPtr[sizeof(PtrValue)] = (unsigned char)isMarked;
+//		mPtr[sizeof(PtrValue)] = (unsigned char)isMarked;
+		setGCInfo(isMarked, survivalCount());
 	}
 
 	bool ObjectRef::isMarked() const {
-		return (bool)mPtr[sizeof(PtrValue)];
+//		return (bool)(mPtr[sizeof(PtrValue)]);
+		return (bool)(mPtr[sizeof(PtrValue)] & 0x1);
 	}
 
 	void ObjectRef::mark() {
@@ -44,6 +51,23 @@ namespace stackjit {
 
 	void ObjectRef::unmark() {
 		setMarked(false);
+	}
+
+	int ObjectRef::survivalCount() const {
+		return ((mPtr[sizeof(PtrValue)] >> 1) & 0x7f);
+	}
+
+	void ObjectRef::increaseSurvivalCount() {
+		int nextCount = survivalCount() + 1;
+		if (nextCount > 127) {
+			nextCount = 127;
+		}
+
+		setGCInfo(isMarked(), nextCount);
+	}
+
+	void ObjectRef::resetSurvivalCount() {
+		setGCInfo(isMarked(), 0);
 	}
 
 	//Class ref

@@ -1,0 +1,30 @@
+class Point
+{
+	x Int
+	y Int
+}
+
+member Point::.constructor() Void
+{
+   RET
+}
+
+func main() Int
+{
+	.locals 1
+	.local 0 Ref.Point
+
+	NEWOBJ Point::.constructor()
+	STLOC 0
+
+	CALL std.gc.collect()
+	CALL std.gc.collect()
+	CALL std.gc.collect()
+	CALL std.gc.collect()
+	CALL std.gc.collect()
+	CALL std.gc.collect()
+	CALL std.gc.collect()
+
+	LDINT 0
+	RET
+}

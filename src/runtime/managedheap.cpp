@@ -14,6 +14,18 @@ namespace stackjit {
 		return mData;
 	}
 
+	std::size_t ManagedHeap::size() const {
+		return mSize;
+	}
+
+	BytePtr ManagedHeap::start() const {
+		return mData;
+	}
+
+	BytePtr ManagedHeap::end() const {
+		return mData + mSize;
+	}
+
 	BytePtr ManagedHeap::allocate(std::size_t size) {
 		auto nextAllocation = mNextAllocation + size;
 

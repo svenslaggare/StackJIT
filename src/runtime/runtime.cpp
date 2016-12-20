@@ -215,6 +215,13 @@ namespace stackjit {
 		return strPr;
 	}
 
+	void Runtime::markObject(RawObjectRef rawObjectRef) {
+		auto& generation = vmState()->gc().oldGeneration();
+		std::size_t cardIndex = (std::size_t)(rawObjectRef - generation.heap().start()) / CollectorGeneration::CARD_SIZE;
+		std::cout << "Marked card: " << cardIndex << std::endl;
+		generation.cardTable()[cardIndex] = 1;
+	}
+
 	void Runtime::runtimeError(std::string errorMessage) {
 		std::cout << "Error: " << errorMessage << std::endl;
 		exit(0);

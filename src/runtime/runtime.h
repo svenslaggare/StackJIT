@@ -57,6 +57,9 @@ namespace stackjit {
 		//Creates a new string of the given length
 		RawClassRef newString(const char* string, int length);
 
+		//Marks the given object
+		void markObject(RawObjectRef rawObjectRef);
+
 		//Stops the execution
 		void runtimeError(std::string errorMessage);
 

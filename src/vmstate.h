@@ -66,6 +66,9 @@ namespace stackjit {
 		//Indicates if a deallocation is printed
 		bool printDeallocation = false;
 
+		//Indicates if a GC promotion is printed
+		bool printGCPromotion = false;
+
 		//Indicates if the v-table layout is printed
 		bool printVirtualFunctionTableLayout = false;
 	};
@@ -107,5 +110,6 @@ namespace stackjit {
 
 		//Returns the GC
 		GarbageCollector& gc();
+		const GarbageCollector& gc() const;
 	};
 }

@@ -79,6 +79,9 @@ namespace stackjit {
 		void initializeFunction(FunctionCompilationData& functionData);
 
 		//Generates native instructions for the given VM instruction
-		void generateInstruction(FunctionCompilationData& functionData, const VMState& vmState, const Instruction& inst, int instIndex);
+		void generateInstruction(const VMState& vmState,
+								 FunctionCompilationData& functionData,
+								 const Instruction& inst,
+								 int instIndex);
 	};
 }

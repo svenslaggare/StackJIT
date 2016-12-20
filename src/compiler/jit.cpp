@@ -53,7 +53,7 @@ namespace stackjit {
 		//Generate the native instructions for the program
 		int i = 0;
 		for (auto& current : function->instructions()) {
-			mCodeGen.generateInstruction(functionData, mVMState, current, i);
+			mCodeGen.generateInstruction(mVMState, functionData, current, i);
 			i++;
 		}
 

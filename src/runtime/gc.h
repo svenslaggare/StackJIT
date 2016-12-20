@@ -30,15 +30,32 @@ namespace stackjit {
 
 		std::size_t mNumAllocated = 0;
 		std::size_t mAllocatedBeforeCollection = 0;
+		int mSurvivedCollectionsBeforePromote = 0;
+
+		BytePtr mCardTable;
 	public:
+		static const std::size_t CARD_SIZE = 1024; //The size of a card in the table
+
 		//Creates a new generation
-		CollectorGeneration(std::size_t size, std::size_t allocatedBeforeCollection);
+		CollectorGeneration(std::size_t size, std::size_t allocatedBeforeCollection, int survivedCollectionsBeforePromote = -1);
+		~CollectorGeneration();
+
+		//Prevent the generation from being copied
+		CollectorGeneration(const CollectorGeneration&) = delete;
+		CollectorGeneration& operator=(const CollectorGeneration&) = delete;
 
 		//Returns the heap
 		ManagedHeap& heap();
+		const ManagedHeap& heap() const;
+
+		//Returns the card table
+		BytePtr cardTable() const;
 
 		//Indicates if the generation requires a collection
 		bool needsToCollect() const;
+
+		//Indicates if the given object needs to be promoted to an older generation
+		bool needsToPromote(int survivalCount) const;
 
 		//Allocates an object of the given size
 		BytePtr allocate(std::size_t size);
@@ -56,13 +73,14 @@ namespace stackjit {
 		VMState& vmState;
 
 		CollectorGeneration mYoungGeneration;
+		CollectorGeneration mOldGeneration;
 		std::chrono::time_point<std::chrono::high_resolution_clock> mGCStart;
 
 		//Allocate an object of given type and size in the given heap
 		RawObjectRef allocateObject(CollectorGeneration& generation, const Type* type, std::size_t size);
 
 		//Deletes the given object
-		void deleteObject(CollectorGeneration& generation, ObjectRef objRef);
+		void deleteObject(ObjectRef objRef);
 
 		//Prints the given object
 		void printObject(ObjectRef objRef);
@@ -74,8 +92,11 @@ namespace stackjit {
 		void visitFrameReferences(RegisterValue* basePtr, ManagedFunction* func, int instIndex, VisitReferenceFn fn);
 
 		//Visits all the references in all stack frames, starting at the given frame
-		void visitAllFrameReferences(RegisterValue* basePtr, ManagedFunction* func, int instIndex,
-									 VisitReferenceFn fn, VisitFrameFn frameFn = {});
+		void visitAllFrameReferences(RegisterValue* basePtr,
+									 ManagedFunction* func,
+									 int instIndex,
+									 VisitReferenceFn fn,
+									 VisitFrameFn frameFn = {});
 
 		//Marks the given object
 		void markObject(ObjectRef objRef);
@@ -90,9 +111,19 @@ namespace stackjit {
 		void sweepObjects(CollectorGeneration& generation);
 
 		using ForwardingTable = std::unordered_map<BytePtr, BytePtr>;
+		using PromotedObjects = std::vector<BytePtr>;
 
 		//Computes the new locations of the objects
-		BytePtr computeLocations(CollectorGeneration& generation, ForwardingTable& forwardingAddress);
+		BytePtr computeNewLocations(CollectorGeneration& generation, ForwardingTable& forwardingAddress, PromotedObjects& promotedObjects);
+
+		//Updates the given object reference
+		void updateReference(ForwardingTable& forwardingAddress, PtrValue* objRef);
+
+		//Updates the references stored in the given heap
+		void updateHeapReferences(CollectorGeneration& generation, ForwardingTable& forwardingAddress);
+
+		//Updates the references stored in the stack
+		void updateStackReferences(GCRuntimeInformation& runtimeInformation, ForwardingTable& forwardingAddress);
 
 		//Updates the references
 		void updateReferences(CollectorGeneration& generation, GCRuntimeInformation& runtimeInformation, ForwardingTable& forwardingAddress);
@@ -100,8 +131,11 @@ namespace stackjit {
 		//Moves the objects
 		int moveObjects(CollectorGeneration& generation, ForwardingTable& forwardingAddress);
 
+		//Promotes the object to the given generation
+		void promoteObjects(CollectorGeneration& generation, PromotedObjects& promotedObjects, ForwardingTable& forwardingAddress);
+
 		//Compacts the objects
-		void compactObjects(CollectorGeneration& generation, GCRuntimeInformation& runtimeInformation);
+		void compactObjects(CollectorGeneration& generation, CollectorGeneration* nextGeneration, GCRuntimeInformation& runtimeInformations);
 
 		//Begins the garbage collection. Return true if started.
 		bool beginGC(bool forceGC);
@@ -112,6 +146,14 @@ namespace stackjit {
 		//Prevent the GC from being copied
 		GarbageCollector(const GarbageCollector&) = delete;
 		GarbageCollector& operator=(const GarbageCollector&) = delete;
+
+		//Returns the young generation
+		CollectorGeneration& youngGeneration();
+		const CollectorGeneration& youngGeneration() const;
+
+		//Returns the old generation
+		CollectorGeneration& oldGeneration();
+		const CollectorGeneration& oldGeneration() const;
 
 		//Allocates a new array of the given type and length.
 		RawArrayRef newArray(const ArrayType* arrayType, int length);

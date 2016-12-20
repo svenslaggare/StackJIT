@@ -44,4 +44,8 @@ namespace stackjit {
 	GarbageCollector& VMState::gc() {
 	    return mGC;
 	}
+
+	const GarbageCollector& VMState::gc() const {
+		return mGC;
+	}
 }

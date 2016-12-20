@@ -137,6 +137,22 @@ OptionsResult handleOptions(int argc, char* argv[]) {
 			continue;
 		}
 
+		if (switchStr == "--print-gc-promotion") {
+			result.config.printGCPromotion = true;
+			continue;
+		}
+
+		if (switchStr == "--print-all-gc") {
+			result.config.printGCPeriod = true;
+			result.config.printGCStats = true;
+			result.config.printAliveObjects = true;
+			result.config.printGCStackTrace = true;
+			result.config.printAllocation = true;
+			result.config.printDeallocation = true;
+			result.config.printGCPromotion = true;
+			continue;
+		}
+
 		if (switchStr == "--print-vtable") {
 			result.config.printVirtualFunctionTableLayout = true;
 			continue;

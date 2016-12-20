@@ -22,6 +22,9 @@ namespace stackjit {
 		const Type* mType;
 		std::size_t mSize;
 
+		//Sets the GC information
+		void setGCInfo(bool isMarked, int count);
+
 		//Sets the mark status
 		void setMarked(bool isMarked);
 	public:
@@ -54,6 +57,15 @@ namespace stackjit {
 
 		//Unmarks the current object
 		void unmark();
+
+		//Returns the number of survived collections. Note this value is bounded, max value is 127.
+		int survivalCount() const;
+
+		//Increases the number of survived collections
+		void increaseSurvivalCount();
+
+		//Resets the survival count
+		void resetSurvivalCount();
 	};
 
 	//Represents a field reference

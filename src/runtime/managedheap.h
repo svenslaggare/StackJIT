@@ -17,6 +17,15 @@ namespace stackjit {
 		//Returns a pointer to the data in the heap.
 		BytePtr data() const;
 
+		//Returns the size of the heap
+		std::size_t size() const;
+
+		//Returns the start of the heap
+		BytePtr start() const;
+
+		//Returns the end of the heap
+		BytePtr end() const;
+
 		//Allocates a memory block of the given size. Returns nullptr if not allocated
 		BytePtr allocate(std::size_t size);
 
