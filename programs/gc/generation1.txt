@@ -23,7 +23,11 @@ func main() Int
 	CALL std.gc.collect()
 	CALL std.gc.collect()
 	CALL std.gc.collect()
-	CALL std.gc.collect()
+	CALL std.gc.collectOld()
+
+	#LDNULL
+	#STLOC 0
+    #CALL std.gc.collectOld()
 
 	LDINT 0
 	RET

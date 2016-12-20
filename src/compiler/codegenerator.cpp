@@ -109,11 +109,12 @@ namespace stackjit {
 		}
 	}
 
-	void CodeGenerator::generateGCCall(CodeGen& generatedCode, ManagedFunction& function, int instIndex) {
+	void CodeGenerator::generateGCCall(CodeGen& generatedCode, ManagedFunction& function, int instIndex, int generation) {
 		Amd64Assembler assembler(generatedCode);
 		assembler.move(RegisterCallArguments::Arg0, Registers::BP); //BP as the first argument
 		assembler.moveLong(RegisterCallArguments::Arg1,	(PtrValue)&function); //Address of the function as second argument
 		assembler.moveInt(RegisterCallArguments::Arg2, instIndex); //Current inst index as third argument
+		assembler.moveInt(RegisterCallArguments::Arg3, generation); //Generation as fourth argument
 		generateCall(generatedCode, (BytePtr)&Runtime::garbageCollect);
 	}
 

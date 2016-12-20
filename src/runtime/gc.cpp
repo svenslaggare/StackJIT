@@ -104,6 +104,30 @@ namespace stackjit {
 		return mOldGeneration;
 	}
 
+	CollectorGeneration& GarbageCollector::getGeneration(int generationNumber) {
+		switch (generationNumber) {
+			case 0:
+				return mYoungGeneration;
+			case 1:
+				return mOldGeneration;
+			default:
+				throw std::runtime_error("The given generation does not exist.");
+				break;
+		}
+	}
+
+	const CollectorGeneration& GarbageCollector::getGeneration(int generationNumber) const {
+		switch (generationNumber) {
+			case 0:
+				return mYoungGeneration;
+			case 1:
+				return mOldGeneration;
+			default:
+				throw std::runtime_error("The given generation does not exist.");
+				break;
+		}
+	}
+
 	void GarbageCollector::printObject(ObjectRef objRef) {
 		std::cout
 			<< ptrToString(objRef.dataPtr())
@@ -204,8 +228,11 @@ namespace stackjit {
 		}
 	}
 
-	void GarbageCollector::visitAllFrameReferences(RegisterValue* basePtr, ManagedFunction* func, int instIndex,
-												   VisitReferenceFn fn, VisitFrameFn frameFn) {
+	void GarbageCollector::visitAllFrameReferences(RegisterValue* basePtr,
+												   ManagedFunction* func,
+												   int instIndex,
+												   VisitReferenceFn fn,
+												   VisitFrameFn frameFn) {
 		if (frameFn) {
 			frameFn(basePtr, func, instIndex);
 		}
@@ -333,8 +360,13 @@ namespace stackjit {
 
 	void GarbageCollector::updateReference(ForwardingTable& forwardingAddress, PtrValue* objRef) {
 		if (*objRef != 0) {
-			auto newLocation = forwardingAddress[((BytePtr)*objRef) - stackjit::OBJECT_HEADER_SIZE];
-			*objRef = (PtrValue)(newLocation + stackjit::OBJECT_HEADER_SIZE);
+			auto oldAddress = ((BytePtr)*objRef) - stackjit::OBJECT_HEADER_SIZE;
+
+			//It might be that there exists no forwarding, since the object is in another generation
+			if (forwardingAddress.count(oldAddress) > 0) {
+				auto newAddress = forwardingAddress[oldAddress];
+				*objRef = (PtrValue)(newAddress + stackjit::OBJECT_HEADER_SIZE);
+			}
 		}
 	}
 
@@ -454,8 +486,8 @@ namespace stackjit {
 		}
 	}
 
-	bool GarbageCollector::beginGC(bool forceGC) {
-		if (mYoungGeneration.needsToCollect() || forceGC) {
+	bool GarbageCollector::beginGC(int generationNumber, bool forceGC) {
+		if (getGeneration(generationNumber).needsToCollect() || forceGC) {
 			if (vmState.config.enableDebug && vmState.config.printGCStats) {
 				mGCStart = std::chrono::high_resolution_clock::now();
 			}
@@ -466,17 +498,18 @@ namespace stackjit {
 		}
 	}
 
-	void GarbageCollector::collect(GCRuntimeInformation& runtimeInformation, bool forceGC) {
+	void GarbageCollector::collect(GCRuntimeInformation& runtimeInformation, int generationNumber, bool forceGC) {
 		auto basePtr = runtimeInformation.basePtr;
 		auto func = runtimeInformation.function;
 		auto instIndex = runtimeInformation.instructionIndex;
+		auto& generation = getGeneration(generationNumber);
 
-		if (beginGC(forceGC)) {
+		if (beginGC(generationNumber, forceGC)) {
 			std::size_t startStrLength = 0;
 
 			if (vmState.config.enableDebug && vmState.config.printGCPeriod) {
 				std::string lines = "------------------------";
-				auto startStr = lines + "Start GC in func "
+				auto startStr = lines + "Start GC (" + std::to_string(generationNumber) + ") in function "
 								+ func->def().name() + " (" + std::to_string(instIndex) + ")"
 								+ lines;
 				std::cout << startStr << std::endl;
@@ -486,7 +519,7 @@ namespace stackjit {
 			if (vmState.config.enableDebug && vmState.config.printAliveObjects) {
 				std::cout << "Alive objects: " << std::endl;
 
-				mYoungGeneration.heap().visitObjects([this](ObjectRef objRef) {
+				generation.heap().visitObjects([this](ObjectRef objRef) {
 					printObject(objRef);
 				});
 				std::cout << std::endl;
@@ -500,8 +533,8 @@ namespace stackjit {
 	//		mNumAllocated = 0;
 
 			//Compact objects
-			compactObjects(mYoungGeneration, &mOldGeneration, runtimeInformation);
-			mYoungGeneration.collected();
+			compactObjects(generation, &mOldGeneration, runtimeInformation);
+			generation.collected();
 
 			if (vmState.config.enableDebug && vmState.config.printGCPeriod) {
 				printTimes('-', (int)startStrLength / 2 - 3);

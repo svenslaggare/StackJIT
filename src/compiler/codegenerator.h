@@ -73,7 +73,7 @@ namespace stackjit {
 		void generateCall(CodeGen& generatedCode, BytePtr funcPtr, IntRegister addressRegister = Registers::AX, bool shadowSpaceNeeded = true);
 
 		//Generates a call to the garbage collect runtime function
-		void generateGCCall(CodeGen& generatedCode, ManagedFunction& function, int instIndex);
+		void generateGCCall(CodeGen& generatedCode, ManagedFunction& function, int instIndex, int generation = 0);
 
 		//Initializes the given function
 		void initializeFunction(FunctionCompilationData& functionData);

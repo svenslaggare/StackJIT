@@ -25,11 +25,20 @@ namespace stackjit {
 	void JITCompiler::createMacros() {
 		auto& binder = mVMState.binder();
 		auto voidType = mVMState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Void));
-		FunctionDefinition gcDef("std.gc.collect", {}, voidType);
-		if (binder.define(gcDef)) {
-			mCodeGen.defineMacro(gcDef, [this](MacroFunctionContext context) {
+
+		FunctionDefinition collectDef("std.gc.collect", {}, voidType);
+		if (binder.define(collectDef)) {
+			mCodeGen.defineMacro(collectDef, [this](MacroFunctionContext context) {
 				auto& function = context.functionData.function;
 				mCodeGen.generateGCCall(function.generatedCode(), function, context.instIndex);
+			});
+		}
+
+		FunctionDefinition collectGenerationDef("std.gc.collectOld", {}, voidType);
+		if (binder.define(collectGenerationDef)) {
+			mCodeGen.defineMacro(collectGenerationDef, [this](MacroFunctionContext context) {
+				auto& function = context.functionData.function;
+				mCodeGen.generateGCCall(function.generatedCode(), function, context.instIndex, 1);
 			});
 		}
 	}

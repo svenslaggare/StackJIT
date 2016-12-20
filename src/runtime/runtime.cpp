@@ -185,9 +185,9 @@ namespace stackjit {
 		return findBasePtr((RegisterValue*)*currentBasePtr, currentIndex + 1, targetIndex);
 	}
 
-	void Runtime::garbageCollect(RegisterValue* basePtr, ManagedFunction* func, int instIndex) {
+	void Runtime::garbageCollect(RegisterValue* basePtr, ManagedFunction* func, int instIndex, int generation) {
 		GCRuntimeInformation runtimeInformation(basePtr, func, instIndex);
-		vmState()->gc().collect(runtimeInformation);
+		vmState()->gc().collect(runtimeInformation, generation);
 	}
 
 	RawArrayRef Runtime::newArray(const ArrayType* arrayType, int length) {

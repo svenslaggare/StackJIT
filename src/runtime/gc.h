@@ -138,7 +138,7 @@ namespace stackjit {
 		void compactObjects(CollectorGeneration& generation, CollectorGeneration* nextGeneration, GCRuntimeInformation& runtimeInformations);
 
 		//Begins the garbage collection. Return true if started.
-		bool beginGC(bool forceGC);
+		bool beginGC(int generationNumber, bool forceGC);
 	public:
 		//Creates a new GC
 		GarbageCollector(VMState& vmState);
@@ -155,6 +155,10 @@ namespace stackjit {
 		CollectorGeneration& oldGeneration();
 		const CollectorGeneration& oldGeneration() const;
 
+		//Returns the given generation
+		CollectorGeneration& getGeneration(int generationNumber);
+		const CollectorGeneration& getGeneration(int generationNumber) const;
+
 		//Allocates a new array of the given type and length.
 		RawArrayRef newArray(const ArrayType* arrayType, int length);
 
@@ -162,7 +166,7 @@ namespace stackjit {
 		RawClassRef newClass(const ClassType* classType);
 
 		//Begins a collection using the given runtime information
-		void collect(GCRuntimeInformation& runtimeInformation, bool forceGC = false);
+		void collect(GCRuntimeInformation& runtimeInformation, int generationNumber, bool forceGC = false);
 
 		//Returns a reference to the given class
 		inline ClassRef getClassRef(RawClassRef classRef) {

@@ -44,7 +44,7 @@ std::string parseGCData(std::string data, GCTest& gcTest) {
 	GC currentGC;
 	bool hasFound = false;
 
-	std::regex gcStartRegex("Start GC in func (.*) \\((.*)\\)", std::regex_constants::ECMAScript);
+	std::regex gcStartRegex("Start GC \\((0|1)\\) in function (.*) \\((.*)\\)", std::regex_constants::ECMAScript);
 	std::regex gcEndRegex("End GC", std::regex_constants::ECMAScript);
 	std::regex allocatedObjectRegex("Allocated ((object)|(array)) \\(.*\\) at (.*)", std::regex_constants::ECMAScript);
 	std::regex deallocatedObjectRegex("Deleted object: (.*):", std::regex_constants::ECMAScript);
@@ -61,8 +61,8 @@ std::string parseGCData(std::string data, GCTest& gcTest) {
 		std::smatch match;
 		if (std::regex_search(line, match, gcStartRegex)) {
 			currentGC = {};
-			currentGC.funcName = match[1];
-			currentGC.instructionIndex = std::stoi(match[2]);
+			currentGC.funcName = match[2];
+			currentGC.instructionIndex = std::stoi(match[3]);
 			hasFound = true;
 		} else if (std::regex_search(line, gcEndRegex)) {
 			gcTest.collections.push_back(currentGC);

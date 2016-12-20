@@ -46,7 +46,7 @@ namespace stackjit {
 		BytePtr getVirtualFunctionAddress(RawClassRef rawClassRef, int index);
 
 		//Tries to collect garbage
-		void garbageCollect(RegisterValue* basePtr, ManagedFunction* func, int instIndex);
+		void garbageCollect(RegisterValue* basePtr, ManagedFunction* func, int instIndex, int generation);
 
 		//Creates a new array of the given type and length
 		RawArrayRef newArray(const ArrayType* arrayType, int length);
