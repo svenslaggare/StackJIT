@@ -186,6 +186,9 @@ namespace stackjit {
 		//Creates a new assembler using the underlying vector
 		Amd64Assembler(std::vector<unsigned char>& data);
 
+		//Returns the underlying data
+		std::vector<unsigned char>& data();
+
 		//Adds the second register to the first
 		void add(IntRegister destination, IntRegister source, bool is32Bits = DEFAULT_IS_32_BITS);
 		void add(FloatRegisters destination, FloatRegisters source);
@@ -207,8 +210,8 @@ namespace stackjit {
 		//Multiplies the given register by the given the given constant
 		void mult(IntRegister destination, int value, bool is32Bits = DEFAULT_IS_32_BITS);
 
-		//Divides the AX register by the first. This instruction also modifies the rdx register.
-		void div(IntRegister source, bool is32Bits = DEFAULT_IS_32_BITS);
+		//Divides the AX register by the first. This instruction also modifies the DX register.
+		void div(IntRegister source, bool is32Bits = DEFAULT_IS_32_BITS, bool isUnsigned = false);
 
 		//Divides the first register by the second
 		void div(FloatRegisters destination, FloatRegisters source);

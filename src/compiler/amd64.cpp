@@ -1095,6 +1095,25 @@ namespace stackjit {
 		codeGen.push_back(0xf8 | (Byte)src | ((Byte)dest << 3));
 	}
 
+	void Amd64Backend::divRegFromRegUnsigned(CodeGen& codeGen, Registers dest, Registers src, bool is32bits) {
+		assert(dest == Registers::AX && "Only the AX register is supported as dest.");
+
+		if (!is32bits) {
+			codeGen.push_back(0x48);
+		}
+
+		codeGen.push_back(0xf7);
+		codeGen.push_back(0xf0 | (Byte)src);
+	}
+
+	void Amd64Backend::divRegFromRegUnsigned(CodeGen& codeGen, Registers dest, ExtendedRegisters src) {
+		assert(dest == Registers::AX && "Only the AX register is supported as dest.");
+
+		codeGen.push_back(0x49);
+		codeGen.push_back(0xf7);
+		codeGen.push_back(0xf0 | (Byte)src);
+	}
+
 	void Amd64Backend::andRegToReg(CodeGen& codeGen, Registers dest, Registers src, bool is32bits) {
 	    if (!is32bits) {
 	        codeGen.push_back(0x48);

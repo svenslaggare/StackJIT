@@ -191,7 +191,30 @@ namespace stackjit {
 		assembler.move(topPtr, Registers::AX);
 	}
 
-	void CodeGenerator::addCardMarking(const VMState& vmState, CodeGen& generatedCode, Amd64Assembler& assembler, Registers objectRegister) {
+	void CodeGenerator::printRegister(Amd64Assembler& assembler, IntRegister reg) {
+		//Save registers
+		assembler.push(Registers::AX);
+		assembler.push(Registers::CX);
+		assembler.push(Registers::DX);
+		assembler.push(ExtendedRegisters::R8);
+		assembler.push(ExtendedRegisters::R9);
+		assembler.push(ExtendedRegisters::R10);
+		assembler.push(ExtendedRegisters::R11);
+
+		assembler.move(RegisterCallArguments::Arg0, reg);
+		generateCall(assembler.data(), (BytePtr)&Runtime::printRegister);
+
+		//Restore registers
+		assembler.pop(ExtendedRegisters::R11);
+		assembler.pop(ExtendedRegisters::R10);
+		assembler.pop(ExtendedRegisters::R9);
+		assembler.pop(ExtendedRegisters::R8);
+		assembler.pop(Registers::DX);
+		assembler.pop(Registers::CX);
+		assembler.pop(Registers::AX);
+	}
+
+	void CodeGenerator::addCardMarking(const VMState& vmState, Amd64Assembler& assembler, Registers objectRegister) {
 		auto& generation = vmState.gc().oldGeneration();
 
 		if (generation.numCards() > 0) {
@@ -200,24 +223,37 @@ namespace stackjit {
 			BytePtr heapEnd = generation.heap().end();
 
 			//heapStart <= AX
-			assembler.moveLong(Registers::CX, (std::int64_t) heapStart);
+			assembler.moveLong(Registers::CX, (std::int64_t)heapStart);
 			assembler.compare(Registers::CX, objectRegister);
-			std::size_t firstJump = generatedCode.size();
+			std::size_t firstJump = assembler.data().size();
 			assembler.jump(JumpCondition::GreaterThan, 0, true);
 
 			//heapEnd >= AX
-			assembler.moveLong(Registers::CX, (std::int64_t) heapEnd);
+			assembler.moveLong(Registers::CX, (std::int64_t)heapEnd);
 			assembler.compare(Registers::CX, objectRegister);
-			std::size_t secondJump = generatedCode.size();
+			std::size_t secondJump = assembler.data().size();
 			assembler.jump(JumpCondition::LessThan, 0, true);
 
 			//Inside generation, mark
-			assembler.move(RegisterCallArguments::Arg0, objectRegister);
-			generateCall(generatedCode, (BytePtr) &Runtime::markObject);
+//			assembler.move(RegisterCallArguments::Arg0, objectRegister);
+//			generateCall(generatedCode, (BytePtr)&Runtime::markObject);
+
+			//First, calculate the card number: AX = (AX - heapStart) / cardSize
+			assembler.moveLong(Registers::CX, (std::int64_t)heapStart);
+			assembler.sub(Registers::AX, Registers::CX);
+			assembler.moveInt(Registers::CX, (std::int32_t)generation.cardSize());
+
+			assembler.signExtend(Registers::CX, DataSize::Size64);
+			assembler.div(Registers::CX, false, true);
+
+			//Mark the card: generation.cardTable()[AX] = 1;
+			assembler.moveLong(Registers::CX, (std::int64_t)generation.cardTable());
+			assembler.add(Registers::AX, Registers::CX);
+			assembler.move(MemoryOperand(Registers::AX), 1);
 
 			//Set the jump targets
-			Helpers::setValue(generatedCode, firstJump + 2, (int) (generatedCode.size() - firstJump - 6));
-			Helpers::setValue(generatedCode, secondJump + 2, (int) (generatedCode.size() - secondJump - 6));
+			Helpers::setValue(assembler.data(), firstJump + 2, (int) (assembler.data().size() - firstJump - 6));
+			Helpers::setValue(assembler.data(), secondJump + 2, (int) (assembler.data().size() - secondJump - 6));
 		}
 	}
 
@@ -728,7 +764,7 @@ namespace stackjit {
 				}
 
 				if (elementType->isReference()) {
-					addCardMarking(vmState, generatedCode, assembler, Registers::AX);
+					addCardMarking(vmState, assembler, Registers::AX);
 				}
 				break;
 			}
@@ -923,7 +959,7 @@ namespace stackjit {
 
 					//Card marking
 					if (field.type()->isReference()) {
-						addCardMarking(vmState, generatedCode, assembler, Registers::AX);
+						addCardMarking(vmState, assembler, Registers::AX);
 					}
 				}
 				break;

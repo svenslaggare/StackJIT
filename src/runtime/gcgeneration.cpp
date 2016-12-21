@@ -30,6 +30,10 @@ namespace stackjit {
 		return mNumCards;
 	}
 
+	std::size_t CollectorGeneration::cardSize() const {
+		return mCardSize;
+	}
+
 	BytePtr CollectorGeneration::cardTable() const {
 		return mCardTable;
 	}

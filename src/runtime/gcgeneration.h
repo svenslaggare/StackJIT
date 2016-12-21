@@ -33,6 +33,9 @@ namespace stackjit {
 		//Returns the number of cards
 		std::size_t numCards() const;
 
+		//Returns the size of a card
+		std::size_t cardSize() const;
+
 		//Returns the card table
 		BytePtr cardTable() const;
 

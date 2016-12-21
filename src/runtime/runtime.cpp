@@ -57,6 +57,10 @@ namespace stackjit {
 		std::cout << "----End StackFrame----" << std::endl;
 	}
 
+	void Runtime::printRegister(RegisterValue value) {
+		std::cout << "Register: " << value << std::endl;
+	}
+
 	void Runtime::compileFunction(ManagedFunction* callee, int callOffset, int checkStart, int checkEnd, FunctionDefinition* funcToCall) {
 		auto toCallSignature = FunctionSignature::from(*funcToCall).str();
 

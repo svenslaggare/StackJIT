@@ -27,6 +27,9 @@ namespace stackjit {
 		//Prints the given stack frame
 		void printStackFrame(RegisterValue* basePtr, ManagedFunction* func);
 
+		//Prints the given register value
+		void printRegister(RegisterValue value);
+
 		//Functions not intended to be called from outside the runtime.
 		namespace Internal {
 			//Prints the given value

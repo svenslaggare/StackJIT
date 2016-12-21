@@ -253,6 +253,10 @@ namespace stackjit {
 		void divRegFromReg(CodeGen& codeGen, Registers dest, ExtendedRegisters src);
 		void divRegFromReg(CodeGen& codeGen, FloatRegisters dest, FloatRegisters src);
 
+		//Divides the second register from the first, unsigned
+		void divRegFromRegUnsigned(CodeGen& codeGen, Registers dest, Registers src, bool is32bits = false);
+		void divRegFromRegUnsigned(CodeGen& codeGen, Registers dest, ExtendedRegisters src);
+
 		//AND's the second register to the first
 		void andRegToReg(CodeGen& codeGen, Registers dest, Registers src, bool is32bits = false);
 		void andRegToReg(CodeGen& codeGen, ExtendedRegisters dest, ExtendedRegisters src);

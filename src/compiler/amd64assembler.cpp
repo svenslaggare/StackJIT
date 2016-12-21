@@ -140,6 +140,10 @@ namespace stackjit {
 
 	}
 
+	std::vector<unsigned char>& Amd64Assembler::data() {
+		return mData;
+	}
+
 	void Amd64Assembler::generateTwoRegistersInstruction(
 		IntRegister op1,
 		IntRegister op2,
@@ -271,11 +275,19 @@ namespace stackjit {
 			[&](CodeGen& codeGen, ExtendedRegisters x, int y) { Amd64Backend::multConstantToReg(codeGen, x, y); });
 	}
 
-	void Amd64Assembler::div(IntRegister source, bool is32Bits) {
+	void Amd64Assembler::div(IntRegister source, bool is32Bits, bool isUnsigned) {
 		if (source.isBase()) {
-			Amd64Backend::divRegFromReg(mData, Registers::AX, source.baseRegister(), is32Bits);
+			if (!isUnsigned) {
+				Amd64Backend::divRegFromReg(mData, Registers::AX, source.baseRegister(), is32Bits);
+			} else {
+				Amd64Backend::divRegFromRegUnsigned(mData, Registers::AX, source.baseRegister(), is32Bits);
+			}
 		} else {
-			Amd64Backend::divRegFromReg(mData, Registers::AX, source.extendedRegister());
+			if (!isUnsigned) {
+				Amd64Backend::divRegFromReg(mData, Registers::AX, source.extendedRegister());
+			} else {
+				Amd64Backend::divRegFromRegUnsigned(mData, Registers::AX, source.extendedRegister());
+			}
 		}
 	}
 
