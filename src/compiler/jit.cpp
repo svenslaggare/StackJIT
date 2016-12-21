@@ -10,6 +10,7 @@
 #include <string.h>
 #include <iostream>
 #include <fstream>
+#include <cstring>
 
 namespace stackjit {
 	JITCompiler::JITCompiler(VMState& vmState)
@@ -70,14 +71,14 @@ namespace stackjit {
 		resolveBranches(functionData);
 
 		//Get a pointer & size of the generated instructions
-		auto code = function->generatedCode().data();
-		auto length = function->generatedCode().size();
+		auto codePtr = function->generatedCode().data();
+		auto size = function->generatedCode().size();
 
 		if (mVMState.config.enableDebug && mVMState.config.printFunctionGeneration) {
 			auto funcSignature = FunctionSignature::from(function->def()).str();
 			std::cout
 				<< "Generated function '" << funcSignature << " " << function->def().returnType()->name()
-				<< "' of size " << length << " bytes."
+				<< "' of size " << size << " bytes."
 				<< std::endl;
 		}
 
@@ -86,16 +87,16 @@ namespace stackjit {
 			std::ofstream asmFile(function->def().name() + ".jit", std::ios::binary);
 
 			if (asmFile.is_open()) {
-				asmFile.write((char*)code, length);
+				asmFile.write((char*)codePtr, size);
 				asmFile.close();
 			}
 		}
 
 		//Allocate writable and readable memory
-		auto memory = mMemoryManager.allocateMemory(length);
+		auto memory = mMemoryManager.allocateMemory(size);
 
 		//Copy the instructions
-		memcpy(memory, code, length);
+		std::memcpy(memory, codePtr, size);
 
 		//Return the generated instructions as a function pointer
 		return (JitFunction)memory;
