@@ -25,11 +25,8 @@ namespace stackjit {
 
 	//Represents the garbage collector
 	class GarbageCollector {
-	public:
-		using VisitReferenceFn = std::function<void (StackFrameEntry)>;
-		using VisitFrameFn = std::function<void (RegisterValue* basePtr, ManagedFunction* func, int instIndex)>;
 	private:
-		VMState& vmState;
+		VMState& mVMState;
 
 		CollectorGeneration mYoungGeneration;
 		CollectorGeneration mOldGeneration;
@@ -41,27 +38,14 @@ namespace stackjit {
 		//Indicates if the given generation is the old
 		bool isOld(const CollectorGeneration& generation) const;
 
+		//Prints the given object
+		void printObject(ObjectRef objRef);
+
 		//Allocate an object of given type and size in the given heap
 		RawObjectRef allocateObject(CollectorGeneration& generation, const Type* type, std::size_t size);
 
 		//Deletes the given object
 		void deleteObject(ObjectRef objRef);
-
-		//Prints the given object
-		void printObject(ObjectRef objRef);
-
-		//Visits the given frame entry if reference
-		void visitFrameReference(StackFrameEntry frameEntry, VisitReferenceFn fn);
-
-		//Visits all the references in the given stack frame
-		void visitFrameReferences(RegisterValue* basePtr, ManagedFunction* func, int instIndex, VisitReferenceFn fn);
-
-		//Visits all the references in all stack frames, starting at the given frame
-		void visitAllFrameReferences(RegisterValue* basePtr,
-									 ManagedFunction* func,
-									 int instIndex,
-									 VisitReferenceFn fn,
-									 VisitFrameFn frameFn = {});
 
 		//Marks the given object
 		void markObject(CollectorGeneration& generation, ObjectRef objRef);

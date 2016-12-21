@@ -32,7 +32,7 @@ namespace stackjit {
 	}
 
 	GarbageCollector::GarbageCollector(VMState& vmState)
-			: vmState(vmState),
+			: mVMState(vmState),
 			  mYoungGeneration(4 * 1024 * 1024, (std::size_t)vmState.config.allocationsBeforeGC, 5),
 			  mOldGeneration(8 * 1024 * 1024, (std::size_t)vmState.config.allocationsBeforeGC, -1, 1024) {
 
@@ -123,7 +123,7 @@ namespace stackjit {
 	    //Set the length of the array
 		Helpers::setValue(arrayPtr, 0, length);
 
-	    if (vmState.config.enableDebug && vmState.config.printAllocation) {
+	    if (mVMState.config.enableDebug && mVMState.config.printAllocation) {
 	        std::cout
 	            << "Allocated array ("
 	            << "size: " << objectSize << " bytes, "
@@ -139,7 +139,7 @@ namespace stackjit {
 	    std::size_t objectSize = classType->metadata()->size();
 	    auto classPtr = allocateObject(mYoungGeneration, classType, objectSize);
 
-	    if (vmState.config.enableDebug && vmState.config.printAllocation) {
+	    if (mVMState.config.enableDebug && mVMState.config.printAllocation) {
 	        std::cout
 	            << "Allocated object (size: " << objectSize << " bytes, type: " <<  classType->name()
 	            << ") at " << ptrToString(classPtr)
@@ -147,73 +147,6 @@ namespace stackjit {
 	    }
 
 	    return classPtr;
-	}
-
-	void GarbageCollector::visitFrameReference(StackFrameEntry frameEntry, VisitReferenceFn fn) {
-		if (frameEntry.type()->isReference()) {
-			auto objPtr = (BytePtr)frameEntry.value();
-
-			//Don't visit nulls
-			if (objPtr == nullptr) {
-				return;
-			}
-
-			fn(frameEntry);
-		}
-	}
-
-	void GarbageCollector::visitFrameReferences(RegisterValue* basePtr, ManagedFunction* func, int instIndex, VisitReferenceFn fn) {
-		StackFrame stackFrame(basePtr, func, instIndex);
-		auto numArgs = func->def().numParams();
-		auto numLocals = func->numLocals();
-		auto stackSize = stackFrame.operandStackSize();
-
-		for (std::size_t i = 0; i < numArgs; i++) {
-			auto arg = stackFrame.getArgument(i);
-			visitFrameReference(arg, fn);
-		}
-
-		for (std::size_t i = 0; i < numLocals; i++) {
-			auto local = stackFrame.getLocal(i);
-			visitFrameReference(local, fn);
-		}
-
-		for (std::size_t i = 0; i < stackSize; i++) {
-			auto operand = stackFrame.getStackOperand(i);
-			visitFrameReference(operand, fn);
-		}
-	}
-
-	void GarbageCollector::visitAllFrameReferences(RegisterValue* basePtr,
-												   ManagedFunction* func,
-												   int instIndex,
-												   VisitReferenceFn fn,
-												   VisitFrameFn frameFn) {
-		if (frameFn) {
-			frameFn(basePtr, func, instIndex);
-		}
-
-		//Visit the calling stack frame
-		visitFrameReferences(basePtr, func, instIndex, fn);
-
-		//Then all other stack frames
-		auto topEntryPtr = vmState.engine().callStack().top();
-		int topFuncIndex = 0;
-		while (topEntryPtr > vmState.engine().callStack().start()) {
-			auto callEntry = *topEntryPtr;
-			auto topFunc = callEntry.function;
-			auto callPoint = callEntry.callPoint;
-			auto callBasePtr = Runtime::Internal::findBasePtr(basePtr, 0, topFuncIndex);
-
-			if (frameFn) {
-				frameFn(callBasePtr, topFunc, callPoint);
-			}
-
-			visitFrameReferences(callBasePtr, topFunc, callPoint, fn);
-
-			topEntryPtr--;
-			topFuncIndex++;
-		}
 	}
 
 	void GarbageCollector::markObject(CollectorGeneration& generation, ObjectRef objRef) {
@@ -265,14 +198,15 @@ namespace stackjit {
 	}
 
 	void GarbageCollector::markAllObjects(CollectorGeneration& generation, RegisterValue* basePtr, ManagedFunction* func, int instIndex) {
-		if (vmState.config.enableDebug && vmState.config.printGCStackTrace) {
+		if (mVMState.config.enableDebug && mVMState.config.printGCStackTrace) {
 			std::cout << "Stack trace: " << std::endl;
 		}
 
-		visitAllFrameReferences(basePtr, func, instIndex, [this, &generation](StackFrameEntry frameEntry) {
-			markObject(generation, ObjectRef((RawObjectRef)frameEntry.value()));
+		StackWalker stackWalker(mVMState);
+		stackWalker.visitReferences(basePtr, func, instIndex, [this, &generation](StackFrameEntry frameEntry) {
+			markObject(generation, ObjectRef((RawObjectRef) frameEntry.value()));
 		}, [this](RegisterValue* frameBasePtr, ManagedFunction* frameFunc, int frameCallPoint) {
-			if (vmState.config.enableDebug && vmState.config.printGCStackTrace) {
+			if (mVMState.config.enableDebug && mVMState.config.printGCStackTrace) {
 				std::cout << frameFunc->def().name() << " (" << frameCallPoint << ")" << std::endl;
 				Runtime::Internal::printAliveObjects(frameBasePtr, frameFunc, frameCallPoint, "\t");
 			}
@@ -296,7 +230,7 @@ namespace stackjit {
 			if (!objRef.isMarked()) {
 				numDeallocatedObjects++;
 
-				if (vmState.config.enableDebug && vmState.config.printDeallocation) {
+				if (mVMState.config.enableDebug && mVMState.config.printDeallocation) {
 					std::cout << "Deleted object: ";
 					printObject(objRef);
 				}
@@ -307,7 +241,7 @@ namespace stackjit {
 			}
 		});
 
-		if (vmState.config.enableDebug && vmState.config.printGCStats) {
+		if (mVMState.config.enableDebug && mVMState.config.printGCStats) {
 			std::cout << "Deallocated: " << numDeallocatedObjects << " objects." << std::endl;
 			std::cout << "GC time: " << Helpers::getDuration(mGCStart) << " ms." << std::endl;
 		}
@@ -370,13 +304,14 @@ namespace stackjit {
 	}
 
 	void GarbageCollector::updateStackReferences(GCRuntimeInformation& runtimeInformation, ForwardingTable& forwardingAddress) {
-		visitAllFrameReferences(
-			runtimeInformation.basePtr,
-			runtimeInformation.function,
-			runtimeInformation.instructionIndex,
-			[&](StackFrameEntry frameEntry) {
-				updateReference(forwardingAddress, (PtrValue*)frameEntry.valuePtr());
-			});
+		StackWalker stackWalker(mVMState);
+		stackWalker.visitReferences(
+				runtimeInformation.basePtr,
+				runtimeInformation.function,
+				runtimeInformation.instructionIndex,
+				[&](StackFrameEntry frameEntry) {
+					updateReference(forwardingAddress, (PtrValue*) frameEntry.valuePtr());
+				});
 	}
 
 	int GarbageCollector::moveObjects(CollectorGeneration& generation, ForwardingTable& forwardingAddress) {
@@ -390,7 +325,7 @@ namespace stackjit {
 			} else {
 				numDeallocatedObjects++;
 
-				if (vmState.config.enableDebug && vmState.config.printDeallocation) {
+				if (mVMState.config.enableDebug && mVMState.config.printDeallocation) {
 					std::cout << "Deleted object: ";
 					printObject(objRef);
 				}
@@ -412,7 +347,7 @@ namespace stackjit {
 			newObjRef.resetSurvivalCount();
 			newObjRef.unmark();
 
-			if (vmState.config.enableDebug && vmState.config.printGCPromotion) {
+			if (mVMState.config.enableDebug && mVMState.config.printGCPromotion) {
 				std::cout
 					<< "Promoted object " << ptrToString(objRef.dataPtr()) << " (" << objRef.type()->name() << ")"
 					<< " to an older generation, new address: "
@@ -448,7 +383,7 @@ namespace stackjit {
 		int numDeallocatedObjects = moveObjects(generation, forwardingAddress);
 		generation.heap().setNextAllocation(free);
 
-		if (vmState.config.enableDebug && vmState.config.printGCStats) {
+		if (mVMState.config.enableDebug && mVMState.config.printGCStats) {
 			std::cout << "Deallocated: " << numDeallocatedObjects << " objects." << std::endl;
 			std::cout << "GC time: " << Helpers::getDuration(mGCStart) << " ms." << std::endl;
 		}
@@ -456,7 +391,7 @@ namespace stackjit {
 
 	bool GarbageCollector::beginGC(int generationNumber, bool forceGC) {
 		if (getGeneration(generationNumber).needsToCollect() || forceGC) {
-			if (vmState.config.enableDebug && vmState.config.printGCStats) {
+			if (mVMState.config.enableDebug && mVMState.config.printGCStats) {
 				mGCStart = std::chrono::high_resolution_clock::now();
 			}
 
@@ -475,7 +410,7 @@ namespace stackjit {
 		if (beginGC(generationNumber, forceGC)) {
 			std::size_t startStrLength = 0;
 
-			if (vmState.config.enableDebug && vmState.config.printGCPeriod) {
+			if (mVMState.config.enableDebug && mVMState.config.printGCPeriod) {
 				std::string lines = "------------------------";
 				auto startStr = lines + "Start GC (" + std::to_string(generationNumber) + ") in function "
 								+ func->def().name() + " (" + std::to_string(instIndex) + ")"
@@ -484,7 +419,7 @@ namespace stackjit {
 				startStrLength = startStr.length();
 			}
 
-			if (vmState.config.enableDebug && vmState.config.printAliveObjects) {
+			if (mVMState.config.enableDebug && mVMState.config.printAliveObjects) {
 				std::cout << "Alive objects: " << std::endl;
 
 				generation.heap().visitObjects([this](ObjectRef objRef) {
@@ -504,7 +439,7 @@ namespace stackjit {
 			compactObjects(generation, &mOldGeneration, runtimeInformation);
 			generation.collected();
 
-			if (vmState.config.enableDebug && vmState.config.printGCPeriod) {
+			if (mVMState.config.enableDebug && mVMState.config.printGCPeriod) {
 				printTimes('-', (int)startStrLength / 2 - 3);
 				std::cout << "End GC";
 				printTimes('-', ((int)startStrLength + 1) / 2 - 3);

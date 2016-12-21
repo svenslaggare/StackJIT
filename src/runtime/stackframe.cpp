@@ -1,5 +1,6 @@
 #include "stackframe.h"
 #include "../core/function.h"
+#include "runtime.h"
 
 namespace stackjit {
 	//Stack frame entry
@@ -44,5 +45,81 @@ namespace stackjit {
 
 	std::size_t StackFrame::operandStackSize() const {
 		return mOperandTypes.size();
+	}
+
+	//Stack walker
+	StackWalker::StackWalker(VMState& vmState)
+		: mVMState(vmState) {
+
+	}
+
+	void StackWalker::visitReference(StackFrameEntry frameEntry, VisitReferenceFn fn) {
+		if (frameEntry.type()->isReference()) {
+			auto objPtr = (BytePtr)frameEntry.value();
+
+			//Don't visit nulls
+			if (objPtr == nullptr) {
+				return;
+			}
+
+			fn(frameEntry);
+		}
+	}
+
+	void StackWalker::visitReferencesInFrame(RegisterValue* basePtr,
+											 ManagedFunction* func,
+											 int instIndex,
+											 VisitReferenceFn fn) {
+		StackFrame stackFrame(basePtr, func, instIndex);
+		auto numArgs = func->def().numParams();
+		auto numLocals = func->numLocals();
+		auto stackSize = stackFrame.operandStackSize();
+
+		for (std::size_t i = 0; i < numArgs; i++) {
+			auto arg = stackFrame.getArgument(i);
+			visitReference(arg, fn);
+		}
+
+		for (std::size_t i = 0; i < numLocals; i++) {
+			auto local = stackFrame.getLocal(i);
+			visitReference(local, fn);
+		}
+
+		for (std::size_t i = 0; i < stackSize; i++) {
+			auto operand = stackFrame.getStackOperand(i);
+			visitReference(operand, fn);
+		}
+	}
+
+	void StackWalker::visitReferences(RegisterValue* basePtr,
+									  ManagedFunction* func,
+									  int instIndex,
+									  VisitReferenceFn fn,
+									  VisitFrameFn frameFn) {
+		if (frameFn) {
+			frameFn(basePtr, func, instIndex);
+		}
+
+		//Visit the calling stack frame
+		visitReferencesInFrame(basePtr, func, instIndex, fn);
+
+		//Then all other stack frames
+		auto topEntryPtr = mVMState.engine().callStack().top();
+		int topFuncIndex = 0;
+		while (topEntryPtr > mVMState.engine().callStack().start()) {
+			auto callEntry = *topEntryPtr;
+			auto topFunc = callEntry.function;
+			auto callPoint = callEntry.callPoint;
+			auto callBasePtr = Runtime::Internal::findBasePtr(basePtr, 0, topFuncIndex);
+
+			if (frameFn) {
+				frameFn(callBasePtr, topFunc, callPoint);
+			}
+
+			visitReferencesInFrame(callBasePtr, topFunc, callPoint, fn);
+
+			topEntryPtr--;
+			topFuncIndex++;
+		}
 	}
 }

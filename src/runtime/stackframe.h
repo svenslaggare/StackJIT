@@ -6,6 +6,7 @@
 namespace stackjit {
 	class ManagedFunction;
 	class Type;
+	class VMState;
 
 	//Represents a stack frame entry (argument, local, operand)
 	class StackFrameEntry {
@@ -48,5 +49,30 @@ namespace stackjit {
 
 		//Returns the size of the operand stack at the current instruction
 		std::size_t operandStackSize() const;
+	};
+
+	//Represents a stack walker
+	class StackWalker {
+	public:
+		using VisitReferenceFn = std::function<void (StackFrameEntry)>;
+		using VisitFrameFn = std::function<void (RegisterValue* basePtr, ManagedFunction* func, int instIndex)>;
+	private:
+		VMState& mVMState;
+
+		//Visits the given frame entry if reference
+		void visitReference(StackFrameEntry frameEntry, VisitReferenceFn fn);
+
+		//Visits all the references in the given stack frame
+		void visitReferencesInFrame(RegisterValue* basePtr, ManagedFunction* func, int instIndex, VisitReferenceFn fn);
+	public:
+		//Creates a new stack walker
+		StackWalker(VMState& vmState);
+
+		//Visits all the references in all stack frames, starting at the given frame
+		void visitReferences(RegisterValue* basePtr,
+							 ManagedFunction* func,
+							 int instIndex,
+							 VisitReferenceFn fn,
+							 VisitFrameFn frameFn = {});
 	};
 }

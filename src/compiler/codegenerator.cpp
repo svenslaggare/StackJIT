@@ -192,29 +192,33 @@ namespace stackjit {
 	}
 
 	void CodeGenerator::addCardMarking(const VMState& vmState, CodeGen& generatedCode, Amd64Assembler& assembler, Registers objectRegister) {
-		//First check if the object is inside the correct generation
-		BytePtr heapStart = vmState.gc().oldGeneration().heap().start();
-		BytePtr heapEnd = vmState.gc().oldGeneration().heap().end();
+		auto& generation = vmState.gc().oldGeneration();
 
-		//heapStart <= AX
-		assembler.moveLong(Registers::CX, (std::int64_t)heapStart);
-		assembler.compare(Registers::CX, objectRegister);
-		std::size_t firstJump = generatedCode.size();
-		assembler.jump(JumpCondition::GreaterThan, 0, true);
+		if (generation.numCards() > 0) {
+			//First check if the object is inside the correct generation
+			BytePtr heapStart = generation.heap().start();
+			BytePtr heapEnd = generation.heap().end();
 
-		//heapEnd >= AX
-		assembler.moveLong(Registers::CX, (std::int64_t)heapEnd);
-		assembler.compare(Registers::CX, objectRegister);
-		std::size_t secondJump = generatedCode.size();
-		assembler.jump(JumpCondition::LessThan, 0, true);
+			//heapStart <= AX
+			assembler.moveLong(Registers::CX, (std::int64_t) heapStart);
+			assembler.compare(Registers::CX, objectRegister);
+			std::size_t firstJump = generatedCode.size();
+			assembler.jump(JumpCondition::GreaterThan, 0, true);
 
-		//Inside generation, mark
-		assembler.move(RegisterCallArguments::Arg0, objectRegister);
-		generateCall(generatedCode, (BytePtr)&Runtime::markObject);
+			//heapEnd >= AX
+			assembler.moveLong(Registers::CX, (std::int64_t) heapEnd);
+			assembler.compare(Registers::CX, objectRegister);
+			std::size_t secondJump = generatedCode.size();
+			assembler.jump(JumpCondition::LessThan, 0, true);
 
-		//Set the jump targets
-		Helpers::setValue(generatedCode, firstJump + 2, (int)(generatedCode.size() - firstJump - 6));
-		Helpers::setValue(generatedCode, secondJump + 2, (int)(generatedCode.size() - secondJump - 6));
+			//Inside generation, mark
+			assembler.move(RegisterCallArguments::Arg0, objectRegister);
+			generateCall(generatedCode, (BytePtr) &Runtime::markObject);
+
+			//Set the jump targets
+			Helpers::setValue(generatedCode, firstJump + 2, (int) (generatedCode.size() - firstJump - 6));
+			Helpers::setValue(generatedCode, secondJump + 2, (int) (generatedCode.size() - secondJump - 6));
+		}
 	}
 
 	void CodeGenerator::generateInstruction(const VMState& vmState,
@@ -225,7 +229,7 @@ namespace stackjit {
 		auto& operandStack = functionData.operandStack;
 		auto& generatedCode = function.generatedCode();
 		Amd64Assembler assembler(generatedCode);
-		int stackOffset = 1; //The offset for variables allocated on the stack
+		const int stackOffset = 1; //The offset for variables allocated on the stack
 
 		//Make the mapping
 		functionData.instructionNumMapping.push_back((int)generatedCode.size());
