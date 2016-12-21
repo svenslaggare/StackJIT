@@ -52,16 +52,19 @@ namespace stackjit {
 		bool compileAtRuntime(const VMState& vmState, const FunctionDefinition& funcToCall, std::string funcSignature);
 
 		//Generates a compile call for the given function
-		std::size_t generateCompileCall(CodeGen& generatedCode, ManagedFunction& function, const FunctionDefinition& funcToCall);
+		std::size_t generateCompileCall(Amd64Assembler& assembler, ManagedFunction& function, const FunctionDefinition& funcToCall);
+
+		//Generates a call to the given function
+		void generateCall(Amd64Assembler& assembler, BytePtr funcPtr, IntRegister addressRegister = Registers::AX, bool shadowSpaceNeeded = true);
 
 		//Zeroes the locals
-		void zeroLocals(FunctionCompilationData& functionData);
+		void zeroLocals(ManagedFunction& function, Amd64Assembler& assembler);
 
 		//Pushes a function to the call stack
-		void pushFunc(const VMState& vmState, FunctionCompilationData& functionData, int instIndex);
+		void pushFunc(const VMState& vmState, FunctionCompilationData& functionData, int instIndex, Amd64Assembler& assembler);
 
 		//Pops a function from the call stack
-		void popFunc(const VMState& vmState, CodeGen& generatedCode);
+		void popFunc(const VMState& vmState, Amd64Assembler& assembler);
 
 		//Prints the given register
 		void printRegister(Amd64Assembler& assembler, IntRegister reg);
@@ -74,9 +77,6 @@ namespace stackjit {
 
 		//Defines the given macro function
 		void defineMacro(const FunctionDefinition& function, MacroFunction macroFunction);
-
-		//Generates a call to the given function
-		void generateCall(CodeGen& generatedCode, BytePtr funcPtr, IntRegister addressRegister = Registers::AX, bool shadowSpaceNeeded = true);
 
 		//Generates a call to the garbage collect runtime function
 		void generateGCCall(CodeGen& generatedCode, ManagedFunction& function, int instIndex, int generation = 0);

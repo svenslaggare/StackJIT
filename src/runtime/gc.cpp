@@ -101,7 +101,7 @@ namespace stackjit {
 		std::memset(objPtr, 0, fullSize);
 
 		//Set the header
-		Helpers::setValue<std::size_t>(objPtr, 0, (PtrValue)type);
+		Helpers::setValue<std::size_t>(objPtr, 0, (PtrValue)type); //Type
 		Helpers::setValue<unsigned char>(objPtr, sizeof(PtrValue), 0); //GC info
 
 		//The returned ptr is to the data

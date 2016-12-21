@@ -46,10 +46,9 @@ namespace stackjit {
 			   && !vmState.engine().jitCompiler().hasCompiled(funcSignature);
 	}
 
-	std::size_t CodeGenerator::generateCompileCall(CodeGen& generatedCode,
+	std::size_t CodeGenerator::generateCompileCall(Amd64Assembler& assembler,
 												   ManagedFunction& function,
 												   const FunctionDefinition& funcToCall) {
-		Amd64Assembler assembler(generatedCode);
 	#if defined(_WIN64) || defined(__MINGW32__)
 		char shadowStackSize = (char)mCallingConvention.calculateShadowStackSize();
 		std::size_t callIndex;
@@ -57,10 +56,10 @@ namespace stackjit {
 
 		assembler.moveLong(RegisterCallArguments::Arg0, (PtrValue)&function); //The current function
 		assembler.moveInt(RegisterCallArguments::Arg1, 0); //Offset of the call
-		callIndex = generatedCode.size() - sizeof(int);
-		assembler.moveInt(RegisterCallArguments::Arg2, (int)generatedCode.size()); //The offset for this check
+		callIndex = assembler.data().size() - sizeof(int);
+		assembler.moveInt(RegisterCallArguments::Arg2, (int)assembler.data().size()); //The offset for this check
 		assembler.moveInt(RegisterCallArguments::Arg3, 0); //The end of the this check
-		checkEndIndex = generatedCode.size() - sizeof(int);
+		checkEndIndex = assembler.data().size() - sizeof(int);
 
 		//The function to compile
 		assembler.sub(Registers::SP, 8); //Alignment
@@ -72,7 +71,7 @@ namespace stackjit {
 		assembler.call(Registers::AX);
 		assembler.add(Registers::SP, 16 + shadowStackSize); //Used stack
 
-		Helpers::setValue(generatedCode, checkEndIndex, (int)generatedCode.size());
+		Helpers::setValue(assembler.data(), checkEndIndex, (int)assembler.data().size());
 		return callIndex;
 	#else
 		std::size_t callIndex;
@@ -80,23 +79,21 @@ namespace stackjit {
 
 		assembler.moveLong(RegisterCallArguments::Arg0, (PtrValue)&function);  //The current function
 		assembler.moveInt(RegisterCallArguments::Arg1, 0); //Offset of the call
-		callIndex = generatedCode.size() - sizeof(int);
-		assembler.moveInt(RegisterCallArguments::Arg2, (int)generatedCode.size()); //The offset for this check
+		callIndex = assembler.data().size() - sizeof(int);
+		assembler.moveInt(RegisterCallArguments::Arg2, (int)assembler.data().size()); //The offset for this check
 		assembler.moveInt(RegisterCallArguments::Arg3, 0); //The end of the this check
-		checkEndIndex = generatedCode.size() - sizeof(int);
+		checkEndIndex = assembler.data().size() - sizeof(int);
 		assembler.moveLong(RegisterCallArguments::Arg4,	(PtrValue)(&funcToCall)); //The function to compile
 
 		assembler.moveLong(Registers::AX, (PtrValue)&Runtime::compileFunction);
 		assembler.call(Registers::AX);
 
-		Helpers::setValue(generatedCode, checkEndIndex, (int)generatedCode.size());
+		Helpers::setValue(assembler.data(), checkEndIndex, (int)assembler.data().size());
 		return callIndex;
 	#endif
 	}
 
-	void CodeGenerator::generateCall(CodeGen& generatedCode, BytePtr funcPtr, IntRegister addressRegister, bool shadowSpaceNeeded) {
-		Amd64Assembler assembler(generatedCode);
-
+	void CodeGenerator::generateCall(Amd64Assembler& assembler, BytePtr funcPtr, IntRegister addressRegister, bool shadowSpaceNeeded) {
 		if (shadowSpaceNeeded) {
 			assembler.sub(Registers::SP, mCallingConvention.calculateShadowStackSize());
 		}
@@ -115,7 +112,7 @@ namespace stackjit {
 		assembler.moveLong(RegisterCallArguments::Arg1,	(PtrValue)&function); //Address of the function as second argument
 		assembler.moveInt(RegisterCallArguments::Arg2, instIndex); //Current inst index as third argument
 		assembler.moveInt(RegisterCallArguments::Arg3, generation); //Generation as fourth argument
-		generateCall(generatedCode, (BytePtr)&Runtime::garbageCollect);
+		generateCall(assembler, (BytePtr)&Runtime::garbageCollect);
 	}
 
 	void CodeGenerator::initializeFunction(FunctionCompilationData& functionData) {
@@ -137,13 +134,10 @@ namespace stackjit {
 		}
 
 		mCallingConvention.moveArgsToStack(functionData);
-		zeroLocals(functionData);
+		zeroLocals(functionData.function, assembler);
 	}
 
-	void CodeGenerator::zeroLocals(FunctionCompilationData& functionData) {
-		auto& function = functionData.function;
-		Amd64Assembler assembler(functionData.function.generatedCode());
-
+	void CodeGenerator::zeroLocals(ManagedFunction& function, Amd64Assembler& assembler) {
 		//Zero the locals
 		if (function.numLocals() > 0) {
 			assembler.bitwiseXor(Registers::AX, Registers::AX);	//Zero rax
@@ -155,9 +149,8 @@ namespace stackjit {
 		}
 	}
 
-	void CodeGenerator::pushFunc(const VMState& vmState, FunctionCompilationData& functionData, int instIndex) {
+	void CodeGenerator::pushFunc(const VMState& vmState, FunctionCompilationData& functionData, int instIndex, Amd64Assembler& assembler) {
 		auto& function = functionData.function;
-		Amd64Assembler assembler(functionData.function.generatedCode());
 
 		//Get the top pointer
 		auto topPtr = (BytePtr)vmState.engine().callStack().topPtr();
@@ -179,9 +172,7 @@ namespace stackjit {
 		assembler.move(topPtr, Registers::AX);
 	}
 
-	void CodeGenerator::popFunc(const VMState& vmState, CodeGen& generatedCode) {
-		Amd64Assembler assembler(generatedCode);
-
+	void CodeGenerator::popFunc(const VMState& vmState, Amd64Assembler& assembler) {
 		//Get the top pointer
 		auto topPtr = (BytePtr)vmState.engine().callStack().topPtr();
 		assembler.move(Registers::AX, topPtr);
@@ -202,7 +193,7 @@ namespace stackjit {
 		assembler.push(ExtendedRegisters::R11);
 
 		assembler.move(RegisterCallArguments::Arg0, reg);
-		generateCall(assembler.data(), (BytePtr)&Runtime::printRegister);
+		generateCall(assembler, (BytePtr)&Runtime::printRegister);
 
 		//Restore registers
 		assembler.pop(ExtendedRegisters::R11);
@@ -509,11 +500,11 @@ namespace stackjit {
 
 					//Check if the called function needs to be compiled
 					if (needsToCompile && !funcToCall.isVirtual()) {
-						callIndex = generateCompileCall(generatedCode, function, funcToCall);
+						callIndex = generateCompileCall(assembler, function, funcToCall);
 					}
 
 					//Push the call
-					pushFunc(vmState, functionData, instIndex);
+					pushFunc(vmState, functionData, instIndex, assembler);
 
 					MemoryOperand firstArgOffset(
 						Registers::BP,
@@ -532,7 +523,7 @@ namespace stackjit {
 					if (funcToCall.isManaged() && funcToCall.isVirtual()) {
 						assembler.move(RegisterCallArguments::Arg0, firstArgOffset);
 						assembler.moveInt(RegisterCallArguments::Arg1, funcToCall.classType()->metadata()->getVirtualFunctionIndex(funcToCall));
-						generateCall(generatedCode, (BytePtr)&Runtime::getVirtualFunctionAddress);
+						generateCall(assembler, (BytePtr)&Runtime::getVirtualFunctionAddress);
 						assembler.move(ExtendedRegisters::R12, RegisterCallArguments::ReturnValue);
 					}
 
@@ -583,7 +574,7 @@ namespace stackjit {
 						}
 
 						//Make the call
-						generateCall(generatedCode, funcAddress, Registers::AX, false);
+						generateCall(assembler, funcAddress, Registers::AX, false);
 					}
 
 					//Unalign the stack
@@ -595,7 +586,7 @@ namespace stackjit {
 					mCallingConvention.handleReturnValue(functionData, funcToCall);
 
 					//Pop the call
-					popFunc(vmState, generatedCode);
+					popFunc(vmState, assembler);
 				} else {
 					//Invoke the macro function
 					mMacros[calledSignature]({
@@ -614,7 +605,7 @@ namespace stackjit {
 				if (vmState.config.enableDebug && vmState.config.printStackFrame) {
 					assembler.move(RegisterCallArguments::Arg0, Registers::BP);
 					assembler.moveLong(RegisterCallArguments::Arg1, (PtrValue)&function);
-					generateCall(generatedCode, (BytePtr)&Runtime::printStackFrame);
+					generateCall(assembler, (BytePtr)&Runtime::printStackFrame);
 				}
 
 				mCallingConvention.makeReturnValue(functionData);
@@ -724,7 +715,7 @@ namespace stackjit {
 				mExceptionHandling.addArrayCreationCheck(functionData);
 
 				//Call the newArray runtime function
-				generateCall(generatedCode, (BytePtr)&Runtime::newArray);
+				generateCall(assembler, (BytePtr)&Runtime::newArray);
 
 				//Push the returned pointer
 				operandStack.pushReg(Registers::AX);
@@ -825,7 +816,7 @@ namespace stackjit {
 				}
 
 				//Push the call
-				pushFunc(vmState, functionData, instIndex);
+				pushFunc(vmState, functionData, instIndex, assembler);
 
 				//Check if the constructor needs to be compiled
 				auto calledSignature = FunctionSignature::memberFunction(
@@ -838,12 +829,12 @@ namespace stackjit {
 				bool needsToCompile = compileAtRuntime(vmState, constructorToCall, calledSignature);
 				std::size_t callIndex = 0;
 				if (needsToCompile) {
-					callIndex = generateCompileCall(generatedCode, function, constructorToCall);
+					callIndex = generateCompileCall(assembler, function, constructorToCall);
 				}
 
 				//Call the newClass runtime function
 				assembler.moveLong(RegisterCallArguments::Arg0, (PtrValue)classType); //The pointer to the type
-				generateCall(generatedCode, (BytePtr)&Runtime::newClass);
+				generateCall(assembler, (BytePtr)&Runtime::newClass);
 
 				//Save the reference
 				assembler.move(ExtendedRegisters::R10, Registers::AX);
@@ -899,7 +890,7 @@ namespace stackjit {
 				mCallingConvention.handleReturnValue(functionData, constructorToCall);
 
 				//Pop the call
-				popFunc(vmState, generatedCode);
+				popFunc(vmState, assembler);
 				break;
 			}
 			case OpCodes::LOAD_FIELD:
@@ -976,7 +967,7 @@ namespace stackjit {
 				assembler.moveInt(RegisterCallArguments::Arg1, (int)inst.strValue.length());
 
 				//Call the newString runtime function
-				generateCall(generatedCode, (BytePtr)&Runtime::newString);
+				generateCall(assembler, (BytePtr)&Runtime::newString);
 
 				//Push the returned pointer
 				operandStack.pushReg(Registers::AX);

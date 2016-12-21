@@ -184,7 +184,7 @@ namespace stackjit {
 			std::function<void (CodeGen&, ExtendedRegisters, int, T)> inst2);
 	public:
 		//Creates a new assembler using the underlying vector
-		Amd64Assembler(std::vector<unsigned char>& data);
+		explicit Amd64Assembler(std::vector<unsigned char>& data);
 
 		//Returns the underlying data
 		std::vector<unsigned char>& data();
@@ -207,7 +207,7 @@ namespace stackjit {
 		void mult(IntRegister destination, IntRegister source, bool is32Bits = DEFAULT_IS_32_BITS);
 		void mult(FloatRegisters destination, FloatRegisters source);
 
-		//Multiplies the given register by the given the given constant
+		//Multiplies the given register by the given constant
 		void mult(IntRegister destination, int value, bool is32Bits = DEFAULT_IS_32_BITS);
 
 		//Divides the AX register by the first. This instruction also modifies the DX register.
