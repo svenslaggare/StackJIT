@@ -10,6 +10,7 @@
 #include "native/stringref.h"
 #include "../core/functionsignature.h"
 #include <iostream>
+#include <sstream>
 
 namespace stackjit {
 	namespace Runtime {
@@ -115,22 +116,24 @@ namespace stackjit {
 		}
 	}
 
-	void Runtime::Internal::printValue(RegisterValue value, const Type* type) {
+	std::string Runtime::Internal::valueToString(RegisterValue value, const Type* type) {
+		std::stringstream stringstream;
 		if (type->isReference()) {
 			if (value == 0) {
-				std::cout << "nullref";
+				stringstream<< "nullref";
 			} else {
-				std::cout << "0x" << std::hex << value << std::dec;
+				stringstream << "0x" << std::hex << value << std::dec;
 			}
 		} else if (type->name() == TypeSystem::toString(PrimitiveTypes::Float)) {
 			int floatPattern = (int)value;
 			float floatValue = *(reinterpret_cast<float*>(&floatPattern));
-			std::cout << floatValue;
+			stringstream << floatValue;
 		} else {
-			std::cout << value;
+			stringstream << value;
 		}
 
-		std::cout << " (" + type->name() + ")";
+		stringstream << " (" + type->name() + ")";
+		return stringstream.str();
 	}
 
 	void Runtime::Internal::printAliveObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex,	std::string indentation) {
@@ -145,8 +148,7 @@ namespace stackjit {
 			for (std::size_t i = 0; i < numArgs; i++) {
 				std::cout << indentation << i << ": ";
 				auto arg = stackFrame.getArgument(i);
-				printValue(arg.value(), arg.type());
-				std::cout << std::endl;
+				std::cout << valueToString(arg.value(), arg.type()) << std::endl;
 			}
 
 			std::cout << std::endl;
@@ -158,8 +160,7 @@ namespace stackjit {
 			for (std::size_t i = 0; i < numLocals; i++) {
 				std::cout << indentation << i << ": ";
 				auto local = stackFrame.getLocal(i);
-				printValue(local.value(), local.type());
-				std::cout << std::endl;
+				std::cout << valueToString(local.value(), local.type()) << std::endl;
 			}
 
 			std::cout << std::endl;
@@ -171,22 +172,9 @@ namespace stackjit {
 			for (std::size_t i = 0; i < stackSize; i++) {
 				std::cout << indentation << i << ": ";
 				auto operand = stackFrame.getStackOperand(i);
-				printValue(operand.value(), operand.type());
-				std::cout << std::endl;
+				std::cout << valueToString(operand.value(), operand.type()) << std::endl;
 			}
 		}
-	}
-
-	RegisterValue* Runtime::Internal::findBasePtr(RegisterValue* currentBasePtr, int currentIndex, int targetIndex) {
-		if (currentBasePtr == nullptr) {
-			return nullptr;
-		}
-
-		if (currentIndex == targetIndex) {
-			return (RegisterValue*)*currentBasePtr;
-		}
-
-		return findBasePtr((RegisterValue*)*currentBasePtr, currentIndex + 1, targetIndex);
 	}
 
 	void Runtime::garbageCollect(RegisterValue* basePtr, ManagedFunction* func, int instIndex, int generation) {
@@ -219,7 +207,7 @@ namespace stackjit {
 		return strPr;
 	}
 
-	void Runtime::markObject(RawObjectRef rawObjectRef) {
+	void Runtime::markObjectCard(RawObjectRef rawObjectRef) {
 		auto& generation = vmState()->gc().oldGeneration();
 		std::size_t cardNumber = generation.getCardNumber(rawObjectRef);
 //		std::cout << "Marked card: " << cardNumber << std::endl;

@@ -16,7 +16,7 @@ namespace stackjit {
 	//Manages the call stack
 	class CallStack {
 	private:
-		std::size_t mSize;
+		const std::size_t mSize;
 		CallStackEntry* mStart;
 		CallStackEntry* mTop;
 	public:
@@ -40,7 +40,7 @@ namespace stackjit {
 		//Returns top of the stack
 		CallStackEntry* top();
 
-		//Pointer to the top variable
-		CallStackEntry* const * const topPtr() const;
+		//Returns a pointer to the top variable
+		CallStackEntry** topPtr();
 	};
 }

@@ -303,7 +303,7 @@ namespace stackjit {
 		});
 	}
 
-	void GarbageCollector::updateStackReferences(GCRuntimeInformation& runtimeInformation, ForwardingTable& forwardingAddress) {
+	void GarbageCollector::updateStackReferences(const GCRuntimeInformation& runtimeInformation, ForwardingTable& forwardingAddress) {
 		StackWalker stackWalker(mVMState);
 		stackWalker.visitReferences(
 				runtimeInformation.basePtr,
@@ -359,7 +359,7 @@ namespace stackjit {
 		}
 	}
 
-	void GarbageCollector::compactObjects(CollectorGeneration& generation, CollectorGeneration* nextGeneration, GCRuntimeInformation& runtimeInformation) {
+	void GarbageCollector::compactObjects(CollectorGeneration& generation, CollectorGeneration* nextGeneration, const GCRuntimeInformation& runtimeInformation) {
 		ForwardingTable forwardingAddress;
 		PromotedObjects promotedObjects;
 
@@ -401,7 +401,7 @@ namespace stackjit {
 		}
 	}
 
-	void GarbageCollector::collect(GCRuntimeInformation& runtimeInformation, int generationNumber, bool forceGC) {
+	void GarbageCollector::collect(const GCRuntimeInformation& runtimeInformation, int generationNumber, bool forceGC) {
 		auto basePtr = runtimeInformation.basePtr;
 		auto func = runtimeInformation.function;
 		auto instIndex = runtimeInformation.instructionIndex;

@@ -32,14 +32,11 @@ namespace stackjit {
 
 		//Functions not intended to be called from outside the runtime.
 		namespace Internal {
-			//Prints the given value
-			void printValue(RegisterValue value, const Type* type);
+			//Converts the given value to a string
+			std::string valueToString(RegisterValue value, const Type* type);
 
 			//Prints the alive objects
 			void printAliveObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex, std::string indentation = "");
-
-			//Finds the base ptr for the function at the given index
-			RegisterValue* findBasePtr(RegisterValue* currentBasePtr, int currentIndex, int targetIndex);
 		};
 
 		//Compiles the given function
@@ -60,8 +57,8 @@ namespace stackjit {
 		//Creates a new string of the given length
 		RawClassRef newString(const char* string, int length);
 
-		//Marks the given object
-		void markObject(RawObjectRef rawObjectRef);
+		//Marks the given object card
+		void markObjectCard(RawObjectRef rawObjectRef);
 
 		//Stops the execution
 		void runtimeError(std::string errorMessage);

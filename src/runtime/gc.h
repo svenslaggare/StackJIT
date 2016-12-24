@@ -16,9 +16,9 @@ namespace stackjit {
 
 	//Holds information needed to perform the collection provided by the runtime
 	struct GCRuntimeInformation {
-		RegisterValue* basePtr;
-		ManagedFunction* function;
-		int instructionIndex;
+		RegisterValue* const basePtr;
+		ManagedFunction* const function;
+		const int instructionIndex;
 
 		GCRuntimeInformation(RegisterValue* basePtr, ManagedFunction* function, int instructionIndex);
 	};
@@ -72,7 +72,7 @@ namespace stackjit {
 		void updateHeapReferences(CollectorGeneration& generation, ForwardingTable& forwardingAddress);
 
 		//Updates the references stored in the stack
-		void updateStackReferences(GCRuntimeInformation& runtimeInformation, ForwardingTable& forwardingAddress);
+		void updateStackReferences(const GCRuntimeInformation& runtimeInformation, ForwardingTable& forwardingAddress);
 
 		//Moves the objects
 		int moveObjects(CollectorGeneration& generation, ForwardingTable& forwardingAddress);
@@ -81,7 +81,7 @@ namespace stackjit {
 		void promoteObjects(CollectorGeneration& generation, PromotedObjects& promotedObjects, ForwardingTable& forwardingAddress);
 
 		//Compacts the objects
-		void compactObjects(CollectorGeneration& generation, CollectorGeneration* nextGeneration, GCRuntimeInformation& runtimeInformations);
+		void compactObjects(CollectorGeneration& generation, CollectorGeneration* nextGeneration, const GCRuntimeInformation& runtimeInformations);
 
 		//Begins the garbage collection. Return true if started.
 		bool beginGC(int generationNumber, bool forceGC);
@@ -112,7 +112,7 @@ namespace stackjit {
 		RawClassRef newClass(const ClassType* classType);
 
 		//Begins a collection using the given runtime information
-		void collect(GCRuntimeInformation& runtimeInformation, int generationNumber, bool forceGC = false);
+		void collect(const GCRuntimeInformation& runtimeInformation, int generationNumber, bool forceGC = false);
 
 		//Returns a reference to the given class
 		inline ClassRef getClassRef(RawClassRef classRef) {

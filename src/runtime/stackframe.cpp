@@ -53,6 +53,18 @@ namespace stackjit {
 
 	}
 
+	RegisterValue* StackWalker::findBasePtr(RegisterValue* currentBasePtr, int currentIndex, int targetIndex) {
+		if (currentBasePtr == nullptr) {
+			return nullptr;
+		}
+
+		if (currentIndex == targetIndex) {
+			return (RegisterValue*)*currentBasePtr;
+		}
+
+		return findBasePtr((RegisterValue*)*currentBasePtr, currentIndex + 1, targetIndex);
+	}
+
 	void StackWalker::visitReference(StackFrameEntry frameEntry, VisitReferenceFn fn) {
 		if (frameEntry.type()->isReference()) {
 			auto objPtr = (BytePtr)frameEntry.value();
@@ -110,7 +122,7 @@ namespace stackjit {
 			auto callEntry = *topEntryPtr;
 			auto topFunc = callEntry.function;
 			auto callPoint = callEntry.callPoint;
-			auto callBasePtr = Runtime::Internal::findBasePtr(basePtr, 0, topFuncIndex);
+			auto callBasePtr = findBasePtr(basePtr, 0, topFuncIndex);
 
 			if (frameFn) {
 				frameFn(callBasePtr, topFunc, callPoint);

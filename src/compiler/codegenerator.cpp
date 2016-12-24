@@ -13,24 +13,23 @@
 #include <iostream>
 
 namespace stackjit {
-	MacroFunctionContext::MacroFunctionContext(
-		const VMState& vmState,
-		const CallingConvention& callingConvention,
-		const ExceptionHandling& exceptionHandling,
-		FunctionCompilationData& functionData,
-		const Instruction& inst,
-		const int instIndex)
-		: vmState(vmState),
-		  callingConvention(callingConvention),
-		  exceptionHandling(exceptionHandling),
-		  functionData(functionData),
-		  inst(inst),
-		  instIndex(instIndex) {
+	MacroFunctionContext::MacroFunctionContext(const VMState& vmState,
+											   const CallingConvention& callingConvention,
+											   const ExceptionHandling& exceptionHandling,
+											   FunctionCompilationData& functionData,
+											   const Instruction& instruction,
+											   const int instructionIndex)
+			: vmState(vmState),
+			  callingConvention(callingConvention),
+			  exceptionHandling(exceptionHandling),
+			  functionData(functionData),
+			  instruction(instruction),
+			  instructionIndex(instructionIndex) {
 
 	}
 
 	CodeGenerator::CodeGenerator(const CallingConvention& callingConvention, const ExceptionHandling& exceptionHandling)
-		: mCallingConvention(callingConvention), mExceptionHandling(exceptionHandling) {
+			: mCallingConvention(callingConvention), mExceptionHandling(exceptionHandling) {
 
 	}
 
@@ -149,7 +148,7 @@ namespace stackjit {
 		}
 	}
 
-	void CodeGenerator::pushFunc(const VMState& vmState, FunctionCompilationData& functionData, int instIndex, Amd64Assembler& assembler) {
+	void CodeGenerator::pushFunc(VMState& vmState, FunctionCompilationData& functionData, int instIndex, Amd64Assembler& assembler) {
 		auto& function = functionData.function;
 
 		//Get the top pointer
@@ -172,7 +171,7 @@ namespace stackjit {
 		assembler.move(topPtr, Registers::AX);
 	}
 
-	void CodeGenerator::popFunc(const VMState& vmState, Amd64Assembler& assembler) {
+	void CodeGenerator::popFunc(VMState& vmState, Amd64Assembler& assembler) {
 		//Get the top pointer
 		auto topPtr = (BytePtr)vmState.engine().callStack().topPtr();
 		assembler.move(Registers::AX, topPtr);
@@ -227,7 +226,7 @@ namespace stackjit {
 
 			//Inside generation, mark
 //			assembler.move(RegisterCallArguments::Arg0, objectRegister);
-//			generateCall(generatedCode, (BytePtr)&Runtime::markObject);
+//			generateCall(generatedCode, (BytePtr)&Runtime::markObjectCard);
 
 			//First, calculate the card number: AX = (AX - heapStart) / cardSize
 			assembler.moveLong(Registers::CX, (std::int64_t)heapStart);
@@ -248,10 +247,10 @@ namespace stackjit {
 		}
 	}
 
-	void CodeGenerator::generateInstruction(const VMState& vmState,
+	void CodeGenerator::generateInstruction(VMState& vmState,
 											FunctionCompilationData& functionData,
-											const Instruction& inst,
-											int instIndex) {
+											const Instruction& instruction,
+											int instructionIndex) {
 		auto& function = functionData.function;
 		auto& operandStack = functionData.operandStack;
 		auto& generatedCode = function.generatedCode();
@@ -261,7 +260,7 @@ namespace stackjit {
 		//Make the mapping
 		functionData.instructionNumMapping.push_back((int)generatedCode.size());
 
-		switch (inst.opCode()) {
+		switch (instruction.opCode()) {
 			case OpCodes::NOP:
 				generatedCode.push_back(0x90); //nop
 				break;
@@ -272,22 +271,22 @@ namespace stackjit {
 				operandStack.duplicate();
 				break;
 			case OpCodes::LOAD_INT:
-				operandStack.pushInt(inst.intValue);
+				operandStack.pushInt(instruction.intValue);
 				break;
 			case OpCodes::LOAD_FLOAT: {
 				//Extract the byte pattern for the float
-				auto floatData = reinterpret_cast<const int*>(&inst.floatValue);
+				auto floatData = reinterpret_cast<const int*>(&instruction.floatValue);
 				operandStack.pushInt(*floatData);
 				break;
 			}
 			case OpCodes::LOAD_CHAR:
-				operandStack.pushInt(inst.charValue);
+				operandStack.pushInt(instruction.charValue);
 				break;
 			case OpCodes::ADD:
 			case OpCodes::SUB:
 			case OpCodes::MUL:
 			case OpCodes::DIV: {
-				auto opType = inst.operandTypes()[0];
+				auto opType = instruction.operandTypes()[0];
 				bool intOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Integer);
 				bool floatOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Float);
 				bool is32bits = true;
@@ -302,7 +301,7 @@ namespace stackjit {
 				}
 
 				//Apply the operator
-				switch (inst.opCode()) {
+				switch (instruction.opCode()) {
 					case OpCodes::ADD:
 						if (intOp) {
 							assembler.add(Registers::AX, Registers::CX, is32bits);
@@ -358,7 +357,7 @@ namespace stackjit {
 				bool is32bits = false;
 
 				//Apply the operator
-				switch (inst.opCode()) {
+				switch (instruction.opCode()) {
 					case OpCodes::AND:
 						assembler.bitwiseAnd(Registers::AX, Registers::CX, is32bits);
 						break;
@@ -395,7 +394,7 @@ namespace stackjit {
 			case OpCodes::COMPARE_GREATER_THAN_OR_EQUAL:
 			case OpCodes::COMPARE_LESS_THAN:
 			case OpCodes::COMPARE_LESS_THAN_OR_EQUAL: {
-				auto opType = inst.operandTypes()[0];
+				auto opType = instruction.operandTypes()[0];
 				bool floatOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Float);
 				bool intBasedType = !floatOp;
 				bool unsignedComparison = false;
@@ -420,7 +419,7 @@ namespace stackjit {
 
 				int target = 0;
 				JumpCondition condition = JumpCondition::Always;
-				switch (inst.opCode()) {
+				switch (instruction.opCode()) {
 					case OpCodes::COMPARE_EQUAL:
 						condition = JumpCondition::Equal;
 						break;
@@ -465,9 +464,9 @@ namespace stackjit {
 			}
 			case OpCodes::LOAD_LOCAL:
 			case OpCodes::STORE_LOCAL: {
-				int localOffset = (stackOffset + inst.intValue + (int)function.def().numParams())
+				int localOffset = (stackOffset + instruction.intValue + (int)function.def().numParams())
 								  * -Amd64Backend::REGISTER_SIZE;
-				if (inst.opCode() == OpCodes::LOAD_LOCAL) {
+				if (instruction.opCode() == OpCodes::LOAD_LOCAL) {
 					assembler.move(Registers::AX, { Registers::BP, localOffset });
 					operandStack.pushReg(Registers::AX);
 				} else {
@@ -481,15 +480,15 @@ namespace stackjit {
 			case OpCodes::CALL_VIRTUAL: {
 				std::string calledSignature = "";
 
-				if (!inst.isCallInstance()) {
+				if (!instruction.isCallInstance()) {
 					calledSignature = FunctionSignature::function(
-						inst.strValue,
-						inst.parameters).str();
+						instruction.strValue,
+						instruction.parameters).str();
 				} else {
 					calledSignature = FunctionSignature::memberFunction(
-						inst.classType,
-						inst.strValue,
-						inst.parameters).str();
+						instruction.classType,
+						instruction.strValue,
+						instruction.parameters).str();
 				}
 
 				const auto& funcToCall = vmState.binder().getFunction(calledSignature);
@@ -504,14 +503,14 @@ namespace stackjit {
 					}
 
 					//Push the call
-					pushFunc(vmState, functionData, instIndex, assembler);
+					pushFunc(vmState, functionData, instructionIndex, assembler);
 
 					MemoryOperand firstArgOffset(
 						Registers::BP,
 						operandStack.getStackOperandOffset(operandStack.topIndex() - (int)funcToCall.numParams() + 1));
 
 					//Add null check
-					if (inst.isCallInstance()) {
+					if (instruction.isCallInstance()) {
 						assembler.move(Registers::AX, firstArgOffset);
 						mExceptionHandling.addNullCheck(functionData, Registers::AX);
 					}
@@ -594,8 +593,8 @@ namespace stackjit {
 						mCallingConvention,
 						mExceptionHandling,
 						functionData,
-						inst,
-						instIndex
+						instruction,
+						instructionIndex
 					});
 				}
 				break;
@@ -620,7 +619,7 @@ namespace stackjit {
 			}
 			case OpCodes::LOAD_ARG: {
 				//Load rax with the argument
-				int argOffset = (inst.intValue + stackOffset) * -Amd64Backend::REGISTER_SIZE;
+				int argOffset = (instruction.intValue + stackOffset) * -Amd64Backend::REGISTER_SIZE;
 				assembler.move(Registers::AX, { Registers::BP, argOffset });
 
 				//Push the loaded value
@@ -633,7 +632,7 @@ namespace stackjit {
 				//As the exact target in native instructions isn't known, defer to later.
 				functionData.unresolvedBranches.insert({
 					generatedCode.size() - 5,
-					BranchTarget((unsigned int)inst.intValue, 5)
+					BranchTarget((unsigned int)instruction.intValue, 5)
 				 });
 				break;
 			}
@@ -643,7 +642,7 @@ namespace stackjit {
 			case OpCodes::BRANCH_GREATER_THAN_OR_EQUAL:
 			case OpCodes::BRANCH_LESS_THAN:
 			case OpCodes::BRANCH_LESS_THAN_OR_EQUAL: {
-				auto opType = inst.operandTypes()[0];
+				auto opType = instruction.operandTypes()[0];
 				bool floatOp = TypeSystem::isPrimitiveType(opType, PrimitiveTypes::Float);
 				bool intBasedType = !floatOp;
 				bool unsignedComparison = false;
@@ -661,7 +660,7 @@ namespace stackjit {
 				}
 
 				JumpCondition condition = JumpCondition::Always;
-				switch (inst.opCode()) {
+				switch (instruction.opCode()) {
 					case OpCodes::BRANCH_EQUAL:
 						condition = JumpCondition::Equal;
 						break;
@@ -689,7 +688,7 @@ namespace stackjit {
 				//As the exact target in native instructions isn't known, defer to later.
 				functionData.unresolvedBranches.insert({
 					generatedCode.size() - 6,
-					BranchTarget((unsigned int)inst.intValue, 6)
+					BranchTarget((unsigned int)instruction.intValue, 6)
 				});
 				break;
 			}
@@ -697,12 +696,12 @@ namespace stackjit {
 				operandStack.pushInt(0);
 				break;
 			case OpCodes::NEW_ARRAY: {
-				auto elemType = vmState.typeProvider().getType(inst.strValue);
+				auto elemType = vmState.typeProvider().getType(instruction.strValue);
 				auto arrayType = static_cast<const ArrayType*>(
 						vmState.typeProvider().getType(TypeSystem::arrayTypeName(elemType)));
 
 				if (!vmState.config.disableGC) {
-					generateGCCall(generatedCode, function, instIndex);
+					generateGCCall(generatedCode, function, instructionIndex);
 				}
 
 				//The pointer to the type as the first arg
@@ -722,7 +721,7 @@ namespace stackjit {
 				break;
 			}
 			case OpCodes::STORE_ELEMENT: {
-				auto elementType = vmState.typeProvider().getType(inst.strValue);
+				auto elementType = vmState.typeProvider().getType(instruction.strValue);
 
 				//Pop the operands
 				operandStack.popReg(Registers::DX); //The value to store
@@ -760,7 +759,7 @@ namespace stackjit {
 				break;
 			}
 			case OpCodes::LOAD_ELEMENT: {
-				auto elementType = vmState.typeProvider().getType(inst.strValue);
+				auto elementType = vmState.typeProvider().getType(instruction.strValue);
 
 				//Pop the operands
 				operandStack.popReg(ExtendedRegisters::R10); //The index of the element
@@ -808,21 +807,21 @@ namespace stackjit {
 				operandStack.pushReg(Registers::AX);
 				break;
 			case OpCodes::NEW_OBJECT: {
-				auto classType = inst.classType;
+				auto classType = instruction.classType;
 
 				//Call the garbageCollect runtime function
 				if (!vmState.config.disableGC) {
-					generateGCCall(generatedCode, function, instIndex);
+					generateGCCall(generatedCode, function, instructionIndex);
 				}
 
 				//Push the call
-				pushFunc(vmState, functionData, instIndex, assembler);
+				pushFunc(vmState, functionData, instructionIndex, assembler);
 
 				//Check if the constructor needs to be compiled
 				auto calledSignature = FunctionSignature::memberFunction(
-					inst.classType,
-					inst.strValue,
-					inst.parameters).str();
+					instruction.classType,
+					instruction.strValue,
+					instruction.parameters).str();
 
 				const auto& constructorToCall = vmState.binder().getFunction(calledSignature);
 
@@ -853,7 +852,7 @@ namespace stackjit {
 					mCallingConvention.callFunctionArgument(
 						functionData,
 						i + 1,
-						inst.parameters.at((std::size_t)i),
+						instruction.parameters.at((std::size_t)i),
 						constructorToCall);
 				}
 
@@ -898,7 +897,7 @@ namespace stackjit {
 				//Get the field
 				std::string className;
 				std::string fieldName;
-				TypeSystem::getClassAndFieldName(inst.strValue, className, fieldName);
+				TypeSystem::getClassAndFieldName(instruction.strValue, className, fieldName);
 
 				auto& classMetadata = vmState.classProvider().getMetadata(className);
 				auto& field = classMetadata.fields().at(fieldName);
@@ -913,7 +912,7 @@ namespace stackjit {
 					dataSize = DataSize::Size8;
 				}
 
-				if (inst.opCode() == OpCodes::LOAD_FIELD) {
+				if (instruction.opCode() == OpCodes::LOAD_FIELD) {
 					//Pop the operand
 					operandStack.popReg(Registers::AX); //The address of the object
 
@@ -957,14 +956,14 @@ namespace stackjit {
 			}
 			case OpCodes::LOAD_STRING: {
 				if (!vmState.config.disableGC) {
-					generateGCCall(generatedCode, function, instIndex);
+					generateGCCall(generatedCode, function, instructionIndex);
 				}
 
 				//The pointer to the string as the first arg
-				assembler.moveLong(RegisterCallArguments::Arg0, (PtrValue)inst.strValue.data());
+				assembler.moveLong(RegisterCallArguments::Arg0, (PtrValue)instruction.strValue.data());
 
 				//The length of the string as the second arg
-				assembler.moveInt(RegisterCallArguments::Arg1, (int)inst.strValue.length());
+				assembler.moveInt(RegisterCallArguments::Arg1, (int)instruction.strValue.length());
 
 				//Call the newString runtime function
 				generateCall(assembler, (BytePtr)&Runtime::newString);

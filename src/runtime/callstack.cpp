@@ -56,7 +56,7 @@ namespace stackjit {
 		return mTop;
 	}
 
-	CallStackEntry* const * const CallStack::topPtr() const {
+	CallStackEntry** CallStack::topPtr() {
 		return &mTop;
 	}
 }

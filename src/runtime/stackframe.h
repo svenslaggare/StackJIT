@@ -13,7 +13,6 @@ namespace stackjit {
 	private:
 		RegisterValue* mValue;
 		const Type* mType;
-
 	public:
 		//Creates a new stack frame entry
 		StackFrameEntry(RegisterValue* value, const Type* type);
@@ -58,6 +57,9 @@ namespace stackjit {
 		using VisitFrameFn = std::function<void (RegisterValue* basePtr, ManagedFunction* func, int instIndex)>;
 	private:
 		VMState& mVMState;
+
+		//Finds the base ptr for the function at the given index
+		RegisterValue* findBasePtr(RegisterValue* currentBasePtr, int currentIndex, int targetIndex);
 
 		//Visits the given frame entry if reference
 		void visitReference(StackFrameEntry frameEntry, VisitReferenceFn fn);

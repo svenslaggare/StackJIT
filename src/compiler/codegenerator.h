@@ -26,16 +26,15 @@ namespace stackjit {
 
 		FunctionCompilationData& functionData;
 
-		const Instruction& inst;
-		const int instIndex;
+		const Instruction& instruction;
+		const int instructionIndex;
 
-		MacroFunctionContext(
-				const VMState& vmState,
-				const CallingConvention& callingConvention,
-				const ExceptionHandling& exceptionHandling,
-				FunctionCompilationData& functionData,
-				const Instruction& inst,
-				const int instIndex);
+		MacroFunctionContext(const VMState& vmState,
+							 const CallingConvention& callingConvention,
+							 const ExceptionHandling& exceptionHandling,
+							 FunctionCompilationData& functionData,
+							 const Instruction& instruction,
+							 const int instructionIndex);
 	};
 
 	//Represents a macro function
@@ -61,10 +60,10 @@ namespace stackjit {
 		void zeroLocals(ManagedFunction& function, Amd64Assembler& assembler);
 
 		//Pushes a function to the call stack
-		void pushFunc(const VMState& vmState, FunctionCompilationData& functionData, int instIndex, Amd64Assembler& assembler);
+		void pushFunc(VMState& vmState, FunctionCompilationData& functionData, int instIndex, Amd64Assembler& assembler);
 
 		//Pops a function from the call stack
-		void popFunc(const VMState& vmState, Amd64Assembler& assembler);
+		void popFunc(VMState& vmState, Amd64Assembler& assembler);
 
 		//Prints the given register
 		void printRegister(Amd64Assembler& assembler, IntRegister reg);
@@ -85,9 +84,9 @@ namespace stackjit {
 		void initializeFunction(FunctionCompilationData& functionData);
 
 		//Generates native instructions for the given VM instruction
-		void generateInstruction(const VMState& vmState,
+		void generateInstruction(VMState& vmState,
 								 FunctionCompilationData& functionData,
-								 const Instruction& inst,
-								 int instIndex);
+								 const Instruction& instruction,
+								 int instructionIndex);
 	};
 }

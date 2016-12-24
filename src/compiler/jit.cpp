@@ -31,7 +31,7 @@ namespace stackjit {
 		if (binder.define(collectDef)) {
 			mCodeGen.defineMacro(collectDef, [this](MacroFunctionContext context) {
 				auto& function = context.functionData.function;
-				mCodeGen.generateGCCall(function.generatedCode(), function, context.instIndex);
+				mCodeGen.generateGCCall(function.generatedCode(), function, context.instructionIndex);
 			});
 		}
 
@@ -39,7 +39,7 @@ namespace stackjit {
 		if (binder.define(collectGenerationDef)) {
 			mCodeGen.defineMacro(collectGenerationDef, [this](MacroFunctionContext context) {
 				auto& function = context.functionData.function;
-				mCodeGen.generateGCCall(function.generatedCode(), function, context.instIndex, 1);
+				mCodeGen.generateGCCall(function.generatedCode(), function, context.instructionIndex, 1);
 			});
 		}
 	}

@@ -8,11 +8,11 @@ namespace stackjit {
 		ManagedHeap mHeap;
 
 		std::size_t mNumAllocated = 0;
-		std::size_t mAllocatedBeforeCollection = 0;
-		int mSurvivedCollectionsBeforePromote = 0;
+		const std::size_t mAllocatedBeforeCollection = 0;
+		const int mSurvivedCollectionsBeforePromote = 0;
 
-		std::size_t mCardSize;
-		std::size_t mNumCards;
+		const std::size_t mCardSize;
+		const std::size_t mNumCards;
 		BytePtr mCardTable;
 	public:
 		//Creates a new generation

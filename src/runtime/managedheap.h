@@ -23,7 +23,7 @@ namespace stackjit {
 		//Returns the start of the heap
 		BytePtr start() const;
 
-		//Returns the end of the heap
+		//Returns the end of the heap (address of last element)
 		BytePtr end() const;
 
 		//Indicates if the given pointer is inside the heap
