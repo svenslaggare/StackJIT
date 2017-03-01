@@ -6,7 +6,7 @@ The garbage collector uses a mark-and-compact collector using the Lisp 2 algorit
 A collection happens when 1000 objects (or supplied via a command line argument) has been allocated. This needs to be changed so that collections when the GC needs more free space.
 
 ## Allocator
-The allocator is implemented using the "bump the pointer" technique. This works by when a new object needs to be allocated, the current next pointer is returned as the location of the new object, and is incremented after.
+The allocator is implemented using the "bump the pointer" technique. This works by when a new object needs to be allocated, the current next pointer is returned as the location of the new object, and is incremented after to prepare for the next object. The advatange of this approach is that the allocator is very simple and fast, as most of the work is done by the collector which compacts the heap.
 
 ## Heap size
 The heap size is fixed, and will not grow if the heap runs out of space. The size of the different generations are:
