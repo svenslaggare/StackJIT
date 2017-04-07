@@ -13,8 +13,8 @@ set(SOURCE_FILES
         src/compiler/binder.cpp
         src/compiler/binder.h
         src/compiler/callingconvention.h
-        src/compiler/oscodegenerator.cpp
-        src/compiler/oscodegenerator.h
+        src/compiler/codegenerator.cpp
+        src/compiler/codegenerator.h
         src/executionengine.cpp
         src/executionengine.h
         src/core/function.cpp
