@@ -13,8 +13,8 @@ set(SOURCE_FILES
         src/compiler/binder.cpp
         src/compiler/binder.h
         src/compiler/callingconvention.h
-        src/compiler/codegenerator.cpp
-        src/compiler/codegenerator.h
+        src/compiler/oscodegenerator.cpp
+        src/compiler/oscodegenerator.h
         src/executionengine.cpp
         src/executionengine.h
         src/core/function.cpp
@@ -82,7 +82,14 @@ set(SOURCE_FILES
         src/compiler/amd64assembler.cpp
         src/compiler/amd64assembler.h
         src/runtime/native/stringref.cpp
-        src/runtime/native/stringref.h src/runtime/gcgeneration.cpp src/runtime/gcgeneration.h)
+        src/runtime/native/stringref.h
+        src/runtime/gcgeneration.cpp
+        src/runtime/gcgeneration.h
+        src/compiler/oscodegenerator.h
+        src/linux/codegenerator.cpp
+        src/windows/codegenerator.cpp
+        src/linux/runtime.cpp
+        src/windows/runtime.cpp)
 
 add_executable(stackjit ${SOURCE_FILES} src/stackjit.cpp)
 

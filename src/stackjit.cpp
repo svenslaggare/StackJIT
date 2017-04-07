@@ -7,12 +7,6 @@
 #include <fstream>
 #include <chrono>
 
-#if defined(_WIN64) || defined(__MINGW32__)
-#include <Windows.h>
-#else
-#include <unistd.h>
-#endif
-
 using namespace stackjit;
 
 //The results of parsing the options
@@ -188,32 +182,6 @@ OptionsResult handleOptions(int argc, char* argv[]) {
 	return result;
 }
 
-//Returns the directory of the executing VM
-std::string getExecutableDir() {
-#if defined(_WIN64) || defined(__MINGW32__)
-	char buffer[MAX_PATH];
-	int bytes = GetModuleFileNameA(nullptr, buffer, MAX_PATH);
-
-	//Remove the name
-	buffer[bytes - 12] = '\0';
-	return std::string(buffer);
-#else
-	const int bufferSize = 512;
-	char buffer[bufferSize];
-	char temp[32];
-	sprintf(temp, "/proc/%d/exe", getpid());
-	int bytes = std::min((int)readlink(temp, buffer, bufferSize), bufferSize - 1);
-
-	if (bytes >= 0) {
-		buffer[bytes] = '\0';
-	}
-
-	//Remove the name
-	buffer[bytes - 8] = '\0';
-	return std::string(buffer);
-#endif
-}
-
 int main(int argc, char* argv[]) {
 	try {
 		//Handle options
@@ -225,7 +193,7 @@ int main(int argc, char* argv[]) {
 		auto start = std::chrono::high_resolution_clock::now();
 		auto& engine = vmState.engine();
 
-		engine.setBaseDir(getExecutableDir());
+		engine.setBaseDir(Runtime::getExecutableDir());
 
 		//Load the libraries
 		for (auto& lib : options.libraries) {

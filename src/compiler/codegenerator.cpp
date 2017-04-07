@@ -1,4 +1,4 @@
-#include "codegenerator.h"
+#include "oscodegenerator.h"
 #include "../type/type.h"
 #include "../vmstate.h"
 #include "../runtime/runtime.h"
@@ -9,6 +9,7 @@
 #include "callingconvention.h"
 #include "../core/functionsignature.h"
 #include "amd64assembler.h"
+#include "oscodegenerator.h"
 #include <string.h>
 #include <iostream>
 
@@ -48,48 +49,7 @@ namespace stackjit {
 	std::size_t CodeGenerator::generateCompileCall(Amd64Assembler& assembler,
 												   ManagedFunction& function,
 												   const FunctionDefinition& funcToCall) {
-	#if defined(_WIN64) || defined(__MINGW32__)
-		char shadowStackSize = (char)mCallingConvention.calculateShadowStackSize();
-		std::size_t callIndex;
-		std::size_t checkEndIndex;
-
-		assembler.moveLong(RegisterCallArguments::Arg0, (PtrValue)&function); //The current function
-		assembler.moveInt(RegisterCallArguments::Arg1, 0); //Offset of the call
-		callIndex = assembler.data().size() - sizeof(int);
-		assembler.moveInt(RegisterCallArguments::Arg2, (int)assembler.data().size()); //The offset for this check
-		assembler.moveInt(RegisterCallArguments::Arg3, 0); //The end of the this check
-		checkEndIndex = assembler.data().size() - sizeof(int);
-
-		//The function to compile
-		assembler.sub(Registers::SP, 8); //Alignment
-		assembler.moveLong(ExtendedRegisters::R10, (PtrValue)(&funcToCall));
-		assembler.push(ExtendedRegisters::R10);
-		assembler.sub(Registers::SP, shadowStackSize); //Shadow space
-
-		assembler.moveLong(Registers::AX, (PtrValue)&Runtime::compileFunction);
-		assembler.call(Registers::AX);
-		assembler.add(Registers::SP, 16 + shadowStackSize); //Used stack
-
-		Helpers::setValue(assembler.data(), checkEndIndex, (int)assembler.data().size());
-		return callIndex;
-	#else
-		std::size_t callIndex;
-		std::size_t checkEndIndex;
-
-		assembler.moveLong(RegisterCallArguments::Arg0, (PtrValue)&function);  //The current function
-		assembler.moveInt(RegisterCallArguments::Arg1, 0); //Offset of the call
-		callIndex = assembler.data().size() - sizeof(int);
-		assembler.moveInt(RegisterCallArguments::Arg2, (int)assembler.data().size()); //The offset for this check
-		assembler.moveInt(RegisterCallArguments::Arg3, 0); //The end of the this check
-		checkEndIndex = assembler.data().size() - sizeof(int);
-		assembler.moveLong(RegisterCallArguments::Arg4,	(PtrValue)(&funcToCall)); //The function to compile
-
-		assembler.moveLong(Registers::AX, (PtrValue)&Runtime::compileFunction);
-		assembler.call(Registers::AX);
-
-		Helpers::setValue(assembler.data(), checkEndIndex, (int)assembler.data().size());
-		return callIndex;
-	#endif
+		return OSCodeGenerator::generateCompileCall(mCallingConvention, assembler, function, funcToCall);
 	}
 
 	void CodeGenerator::generateCall(Amd64Assembler& assembler, BytePtr funcPtr, IntRegister addressRegister, bool shadowSpaceNeeded) {
@@ -228,7 +188,7 @@ namespace stackjit {
 //			assembler.move(RegisterCallArguments::Arg0, objectRegister);
 //			generateCall(generatedCode, (BytePtr)&Runtime::markObjectCard);
 
-			//First, calculate the card number: AX = (AX - heapStart) / cardSize
+			//Calculate the card number: AX = (AX - heapStart) / cardSize
 			assembler.moveLong(Registers::CX, (std::int64_t)heapStart);
 			assembler.sub(Registers::AX, Registers::CX);
 			assembler.moveInt(Registers::CX, (std::int32_t)generation.cardSize());

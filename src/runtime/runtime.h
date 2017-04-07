@@ -24,6 +24,9 @@ namespace stackjit {
 		//Sets the standard output stream
 		void setStandardOutputStream(std::ostream& standardOutputStream);
 
+		//Returns the directory of the executing VM
+		std::string getExecutableDir();
+
 		//Prints the given stack frame
 		void printStackFrame(RegisterValue* basePtr, ManagedFunction* func);
 
