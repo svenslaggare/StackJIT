@@ -1,2 +1,0 @@
-cd ..\
-postbuild.cmd

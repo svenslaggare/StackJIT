@@ -46,6 +46,8 @@ namespace stackjit {
 				return "private";
 			case AccessModifier::Public:
 				return "public";
+			default:
+				return "";
 		}
 	}
 
