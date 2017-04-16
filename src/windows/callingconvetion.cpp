@@ -142,7 +142,7 @@ namespace stackjit {
 			//Arguments of index >= 4 are passed via the stack.
 			int relativeIndex = getFloatArgIndex(funcToCall.parameters(), argIndex);
 
-			if (relativeIndex >= 4) {
+			if (relativeIndex >= NUM_FLOAT_ARGUMENT_REGISTERS) {
 				//Move from the operand stack to the normal stack
 				operandStack.popReg(Registers::AX);
 				assembler.push(Registers::AX);
@@ -153,7 +153,7 @@ namespace stackjit {
 			//Arguments of index >= 4 are passed via the stack
 			int relativeIndex = getNoneFloatArgIndex(funcToCall.parameters(), argIndex);
 
-			if (relativeIndex >= 4) {
+			if (relativeIndex >= NUM_NONE_FLOAT_ARGUMENT_REGISTERS) {
 				//Move from the operand stack to the normal stack
 				operandStack.popReg(Registers::AX);
 				assembler.push(Registers::AX);

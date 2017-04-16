@@ -12,6 +12,7 @@ namespace stackjit {
 		//The maximum number of register for argument passing
 		const int NUM_NONE_FLOAT_ARGUMENT_REGISTERS = 6;
 		const int NUM_FLOAT_ARGUMENT_REGISTERS = 8;
+
 		const std::vector<IntRegister> INT_CALL_ARGUMENTS = {
 			RegisterCallArguments::Arg0,
 			RegisterCallArguments::Arg1,
@@ -128,7 +129,7 @@ namespace stackjit {
 
 			int argStackOffset = -(1 + argIndex) * Amd64Backend::REGISTER_SIZE;
 
-			if (relativeArgIndex >= 6) {
+			if (relativeArgIndex >= NUM_NONE_FLOAT_ARGUMENT_REGISTERS) {
 				int stackArgIndex = getStackArgumentIndex(functionData, argIndex);
 				assembler.move(Registers::AX, { Registers::BP, Amd64Backend::REGISTER_SIZE * (stackArgIndex + 2) });
 				assembler.move({ Registers::BP, argStackOffset }, Registers::AX);
@@ -144,7 +145,7 @@ namespace stackjit {
 
 			int argStackOffset = -(1 + argIndex) * Amd64Backend::REGISTER_SIZE;
 
-			if (relativeArgIndex >= 8) {
+			if (relativeArgIndex >= NUM_FLOAT_ARGUMENT_REGISTERS) {
 				int stackArgIndex = getStackArgumentIndex(functionData, argIndex);
 				assembler.move(Registers::AX, { Registers::BP, Amd64Backend::REGISTER_SIZE * (stackArgIndex + 2) });
 				assembler.move({ Registers::BP, argStackOffset }, Registers::AX);
@@ -179,7 +180,7 @@ namespace stackjit {
 			//Arguments of index >= 8 are passed via the stack.
 			int relativeIndex = getFloatArgIndex(funcToCall.parameters(), argIndex);
 
-			if (relativeIndex >= 8) {
+			if (relativeIndex >= NUM_FLOAT_ARGUMENT_REGISTERS) {
 				//Move from the operand stack to the normal stack
 				operandStack.popReg(Registers::AX);
 				assembler.push(Registers::AX);
@@ -190,7 +191,7 @@ namespace stackjit {
 			//Arguments of index >= 6 are passed via the stack
 			int relativeIndex = getNoneFloatArgIndex(funcToCall.parameters(), argIndex);
 
-			if (relativeIndex >= 6) {
+			if (relativeIndex >= NUM_NONE_FLOAT_ARGUMENT_REGISTERS) {
 				//Move from the operand stack to the normal stack
 				operandStack.popReg(Registers::AX);
 				assembler.push(Registers::AX);
