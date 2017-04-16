@@ -141,11 +141,7 @@ namespace stackjit {
 			std::vector<std::string> mTokens;
 			std::size_t mTokenIndex;
 
-			bool mIsFunction = false;
-			bool mIsFunctionBody = false;
 			bool mLocalsSet = false;
-			bool mIsClass = false;
-			bool mIsClassBody = false;
 
 			//Returns the current token
 			std::string currentToken() const;
@@ -159,8 +155,11 @@ namespace stackjit {
 			//Returns the next token without advancing to it
 			std::string peekNextToken();
 
+			//Advances to the next token inside an end of body token
+			void nextTokenEndOfBody();
+
 			//Parses a function definition
-			void parseFunctionDef(AssemblyParser::Function& function);
+			void parseFunctionDefinition(AssemblyParser::Function& function);
 
 			//Reads the call parameters
 			void readCallParameters(std::vector<std::string>& parameters);
@@ -168,11 +167,14 @@ namespace stackjit {
 			//Parses an attribute
 			void parseAttribute(AssemblyParser::AttributeContainer& container);
 
+			//Parses an instruction
+			void parseInstruction(AssemblyParser::Function& currentFunction);
+
 			//Parses a function body
-			bool parseFunctionBody(AssemblyParser::Function& currentFunction);
+			void parseFunctionBody(AssemblyParser::Assembly& assembly, AssemblyParser::Function& currentFunction);
 
 			//Parses a class body
-			bool parseClassBody(AssemblyParser::Class& currentClass, AssemblyParser::Field*& currentField);
+			void parseClassBody(AssemblyParser::Assembly& assembly, AssemblyParser::Class& currentClass);
 		public:
 			//Creates a new byte code parser using the given tokens
 			ByteCodeParser(std::vector<std::string> tokens);

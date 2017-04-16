@@ -13,6 +13,6 @@ public:
 
 	//Tests in classes
 	void testClass() {
-		TS_ASSERT_EQUALS(invokeVM("attributes/struct1"), "0\n");
+		TS_ASSERT_EQUALS(invokeVM("attributes/class1"), "0\n");
 	}
 };

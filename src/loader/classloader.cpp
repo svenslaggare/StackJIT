@@ -63,8 +63,7 @@ namespace stackjit {
 						std::swap(parentName, thisName);
 					}
 
-					throw std::runtime_error(
-							"Mutual inheritance is not allowed (" + parentName + ", " + thisName + ").");
+					throw std::runtime_error("Mutual inheritance is not allowed (" + parentName + ", " + thisName + ").");
 				}
 			}
 		}

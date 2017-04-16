@@ -4,7 +4,7 @@
 #include "../loader/parser.h"
 
 namespace stackjit {
-	//Generates StackByteCode from the assembler parser structure
+	//Generates byte code from the assembler parser structure
 	namespace ByteCodeGenerator {
 		//Returns an escaped version of the given string
 		std::string escapedString(std::string str);
