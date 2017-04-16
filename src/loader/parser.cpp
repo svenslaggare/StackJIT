@@ -295,7 +295,7 @@ namespace stackjit {
 		}
 	}
 
-	void AssemblyParser::ByteCodeParser::nextTokenEndOfBody() {
+	void AssemblyParser::ByteCodeParser::nextTokenAtEnd() {
 		if (mTokenIndex != mTokens.size() - 1) {
 			nextToken();
 		} else {
@@ -560,7 +560,7 @@ namespace stackjit {
 		while (true) {
 			if (currentToken() == "}") {
 				assembly.functions.push_back(currentFunction);
-				nextTokenEndOfBody();
+				nextTokenAtEnd();
 				break;
 			} else {
 				parseInstruction(currentFunction);
@@ -581,7 +581,7 @@ namespace stackjit {
 		while (true) {
 			if (currentToken() == "}") {
 				assembly.classes.push_back(currentClass);
-				nextTokenEndOfBody();
+				nextTokenAtEnd();
 				break;
 			} else {
 				auto current = currentToken();
@@ -639,6 +639,7 @@ namespace stackjit {
 				parseFunctionDefinition(currentFunction);
 				currentFunction.isExternal = true;
 				assembly.functions.push_back(currentFunction);
+				nextTokenAtEnd();
 			} else if (topLevelCurrent == "member") {
 				Function currentFunction;
 				parseFunctionDefinition(currentFunction);

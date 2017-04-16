@@ -155,8 +155,8 @@ namespace stackjit {
 			//Returns the next token without advancing to it
 			std::string peekNextToken();
 
-			//Advances to the next token inside an end of body token
-			void nextTokenEndOfBody();
+			//Advances to the next token at a token that can be at the end
+			void nextTokenAtEnd();
 
 			//Parses a function definition
 			void parseFunctionDefinition(AssemblyParser::Function& function);
