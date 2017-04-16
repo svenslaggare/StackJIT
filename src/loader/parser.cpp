@@ -168,309 +168,6 @@ namespace stackjit {
 			{ "stfield", OpCodes::STORE_FIELD },
 			{ "ldfield", OpCodes::LOAD_FIELD }
 		};
-
-		std::string nextToken(const std::vector<std::string>& tokens, std::size_t& index) {
-			if (tokens.size() >= (index + 1)) {
-				return tokens[++index];
-			} else {
-				throw std::runtime_error("Reached end of tokens.");
-			}
-		}
-
-		std::string peekNextToken(const std::vector<std::string>& tokens, std::size_t index) {
-			if (tokens.size() >= (index + 1)) {
-				return tokens[index + 1];
-			} else {
-				throw std::runtime_error("Reached end of tokens.");
-			}
-		}
-
-		void parseFunctionDef(const std::vector<std::string>& tokens, std::size_t& tokenIndex, AssemblyParser::Function& func) {
-			func.name = nextToken(tokens, tokenIndex);
-
-			if (nextToken(tokens, tokenIndex) != "(") {
-				throw std::runtime_error("Expected '(' after function name.");
-			}
-
-			while (true) {
-				std::string param = nextToken(tokens, tokenIndex);
-
-				if (param == ")") {
-					break;
-				}
-
-				func.parameters.push_back(param);
-			}
-
-			func.returnType = nextToken(tokens, tokenIndex);
-		}
-
-		void readCallParameters(const std::vector<std::string>& tokens, std::size_t& tokenIndex, std::vector<std::string>& parameters) {
-			while (true) {
-				auto param = nextToken(tokens, tokenIndex);
-
-				if (param == ")") {
-					break;
-				}
-
-				parameters.push_back(param);
-			}
-		}
-
-		void parseAttribute(const std::vector<std::string>& tokens, std::size_t& tokenIndex, AssemblyParser::AttributeContainer& container) {
-			auto attributeName = nextToken(tokens, tokenIndex);
-
-			if (nextToken(tokens, tokenIndex) != "(") {
-				throw std::runtime_error("Expected '(' after attribute name");
-			}
-
-			if (container.count(attributeName) > 0) {
-				throw std::runtime_error("The attribute '" + attributeName + "' is already defined.'");
-			}
-
-			AssemblyParser::Attribute attribute;
-			attribute.name = attributeName;
-
-			while (true) {
-				auto key = nextToken(tokens, tokenIndex);
-
-				if (key == ")") {
-					break;
-				}
-
-				if (nextToken(tokens, tokenIndex) != "=") {
-					throw std::runtime_error("Expected '=' after name in attribute.");
-				}
-
-				auto value = nextToken(tokens, tokenIndex);
-
-				if (attribute.values.count(key) == 0) {
-					attribute.values.insert({ key, value });
-				} else {
-					throw std::runtime_error(
-							"The key '" + key + "' is already defined in the attribute '" + attributeName + "'.");
-				}
-			}
-
-			container.insert({ attributeName, attribute });
-		}
-
-		bool parseFunctionBody(const std::vector<std::string>& tokens,
-							   std::size_t& tokenIndex,
-							   std::string current,
-							   std::string currentToLower,
-							   AssemblyParser::Function& currentFunc,
-							   bool& localsSet) {
-			using namespace AssemblyParser;
-
-			if (currentToLower == "@") {
-				parseAttribute(tokens, tokenIndex, currentFunc.attributes);
-				return true;
-			}
-
-			if (currentToLower == "ldint") {
-				int value = stoi(nextToken(tokens, tokenIndex));
-				currentFunc.instructions.push_back(Instruction::makeWithInt(OpCodes::LOAD_INT, value));
-				return true;
-			}
-
-			if (currentToLower == "ldfloat") {
-				float value = stof(nextToken(tokens, tokenIndex));
-				currentFunc.instructions.push_back(Instruction::makeWithFloat(OpCodes::LOAD_FLOAT, value));
-				return true;
-			}
-
-			if (currentToLower == "ldchar") {
-				char value = (char)stoi(nextToken(tokens, tokenIndex));
-				currentFunc.instructions.push_back(Instruction::makeWithChar(OpCodes::LOAD_CHAR, value));
-				return true;
-			}
-
-			if (noOperandsInstructions.count(currentToLower) > 0) {
-				currentFunc.instructions.push_back(Instruction::make(noOperandsInstructions.at(currentToLower)));
-				return true;
-			}
-
-			if (stringOperandInstructions.count(currentToLower) > 0) {
-				std::string value = nextToken(tokens, tokenIndex);
-				currentFunc.instructions.push_back(Instruction::makeWithString(stringOperandInstructions.at(currentToLower), value));
-				return true;
-			}
-
-			if (currentToLower == ".locals") {
-				if (!localsSet) {
-					int localsCount = stoi(nextToken(tokens, tokenIndex));
-
-					if (localsCount >= 0) {
-						localsSet = true;
-						currentFunc.setNumLocals(localsCount);
-					} else {
-						throw std::runtime_error("The number of locals must be >= 0.");
-					}
-
-					return true;
-				} else {
-					throw std::runtime_error("The locals has already been set.");
-				}
-			}
-
-			if (currentToLower == ".local") {
-				if (localsSet) {
-					int localIndex = stoi(nextToken(tokens, tokenIndex));
-					auto localType = nextToken(tokens, tokenIndex);
-
-					if (localIndex >= 0 && localIndex < (int)currentFunc.numLocals()) {
-						currentFunc.localTypes.at((std::size_t)localIndex) = localType;
-					} else {
-						throw std::runtime_error("Invalid local index.");
-					}
-
-					return true;
-				} else {
-					throw std::runtime_error("The locals must been set.");
-				}
-			}
-
-			if (currentToLower == "ldloc" || currentToLower == "stloc") {
-				if (!localsSet) {
-					throw std::runtime_error("The locals must be set.");
-				}
-
-				int local = stoi(nextToken(tokens, tokenIndex));
-				auto opCode = currentToLower == "ldloc" ? OpCodes::LOAD_LOCAL : OpCodes::STORE_LOCAL;
-
-				if (local >= 0 && local < (int)currentFunc.numLocals()) {
-					currentFunc.instructions.push_back(Instruction::makeWithInt(opCode, local));
-					return true;
-				} else {
-					throw std::runtime_error("The local index is out of range.");
-				}
-			}
-
-			if (currentToLower == "call" || currentToLower == "callinst" || currentToLower == "callvirt") {
-				bool isInstance = currentToLower == "callinst" || currentToLower == "callvirt";
-				bool isVirtual = currentToLower == "callvirt";
-
-				std::string funcName = nextToken(tokens, tokenIndex);
-				std::string classType = "";
-
-				if (isInstance) {
-					auto classNamePos = funcName.find("::");
-
-					if (classNamePos != std::string::npos) {
-						classType = funcName.substr(0, classNamePos);
-					} else {
-						throw std::runtime_error("Expected '::' in called member function.");
-					}
-
-					funcName = funcName.substr(classNamePos + 2);
-				}
-
-				if (nextToken(tokens, tokenIndex) != "(") {
-					throw std::runtime_error("Expected '(' after called function.");
-				}
-
-				std::vector<std::string> parameters;
-				readCallParameters(tokens, tokenIndex, parameters);
-
-				if (isInstance) {
-					if (!isVirtual) {
-						currentFunc.instructions.push_back(Instruction::makeCallInstance(classType, funcName, parameters));
-					} else {
-						currentFunc.instructions.push_back(Instruction::makeCallVirtual(classType, funcName, parameters));
-					}
-				} else {
-					currentFunc.instructions.push_back(Instruction::makeCall(funcName, parameters));
-				}
-
-				return true;
-			}
-
-			if (currentToLower == "ldarg") {
-				int argNum = stoi(nextToken(tokens, tokenIndex));
-				currentFunc.instructions.push_back(Instruction::makeWithInt(OpCodes::LOAD_ARG, argNum));
-				return true;
-			}
-
-			if (currentToLower == "newobj") {
-				std::string funcName = nextToken(tokens, tokenIndex);
-				std::string classType = "";
-
-				auto classNamePos = funcName.find("::");
-
-				if (classNamePos != std::string::npos) {
-					classType = funcName.substr(0, classNamePos);
-				} else {
-					throw std::runtime_error("Expected '::' after the type in a new object instruction.");
-				}
-
-				funcName = funcName.substr(classNamePos + 2);
-
-				if (funcName != ".constructor") {
-					throw std::runtime_error("Expected call to constructor.");
-				}
-
-				if (nextToken(tokens, tokenIndex) != "(") {
-					throw std::runtime_error("Expected '(' after called function.");
-				}
-
-				std::vector<std::string> parameters;
-				readCallParameters(tokens, tokenIndex, parameters);
-				currentFunc.instructions.push_back(Instruction::makeNewObject(classType, parameters));
-				return true;
-			}
-
-			if (currentToLower == "br") {
-				int target = stoi(nextToken(tokens, tokenIndex));
-				currentFunc.instructions.push_back(Instruction::makeWithInt(OpCodes::BRANCH, target));
-				return true;
-			}
-
-			if (branchInstructions.count(currentToLower) > 0) {
-				int target = stoi(nextToken(tokens, tokenIndex));
-				currentFunc.instructions.push_back(Instruction::makeWithInt(branchInstructions.at(currentToLower), target));
-				return true;
-			}
-
-			if (currentToLower == "ldstr") {
-				auto str = nextToken(tokens, tokenIndex);
-				currentFunc.instructions.push_back(Instruction::makeWithStringConstant(OpCodes::LOAD_STRING, str));
-				return true;
-			}
-
-			throw std::runtime_error("'" + current + "' is not a valid instruction.");
-			return false;
-		}
-
-		bool parseClassBody(const std::vector<std::string>& tokens,
-							std::size_t& tokenIndex,
-							std::string current,
-							std::string currentToLower,
-							AssemblyParser::Class& currentClass,
-							AssemblyParser::Field*& currentField,
-							bool& isClass,
-							bool& isClassBody) {
-			if (currentToLower == "@") {
-				if (currentField == nullptr) {
-					//Class attribute
-					parseAttribute(tokens, tokenIndex, currentClass.attributes);
-				} else {
-					//Field attribute
-					parseAttribute(tokens, tokenIndex, currentField->attributes);
-				}
-
-				return true;
-			}
-
-			AssemblyParser::Field field;
-			field.name = current;
-			field.type = nextToken(tokens, tokenIndex);
-
-			currentClass.fields.push_back(field);
-			currentField = &currentClass.fields.back();
-
-			return false;
-		}
 	}
 
 	std::string AssemblyParser::getSignature(const AssemblyParser::Function& function) {
@@ -563,47 +260,348 @@ namespace stackjit {
 		return tokens;
 	}
 
-	void AssemblyParser::parseTokens(const std::vector<std::string>& tokens, AssemblyParser::Assembly& assembly) {
-		bool isFunc = false;
-		bool isFuncBody = false;
-		bool localsSet = false;
+	void AssemblyParser::load(std::istream& stream, AssemblyParser::Assembly& assembly) {
+		ByteCodeParser byteCodeParser(AssemblyParser::tokenize(stream));
+		byteCodeParser.parse(assembly);
+	}
 
+	AssemblyParser::ByteCodeParser::ByteCodeParser(std::vector<std::string> tokens)
+		: mTokens(tokens) {
+
+	}
+
+	std::string AssemblyParser::ByteCodeParser::currentToken() const {
+		return mTokens[mTokenIndex];
+	}
+
+	std::string AssemblyParser::ByteCodeParser::currentTokenToLower() const {
+		return toLower(currentToken());
+	}
+
+	std::string AssemblyParser::ByteCodeParser::nextToken() {
+		mTokenIndex++;
+		if (mTokenIndex >= mTokens.size()) {
+			throw std::runtime_error("Reached end of tokens");
+		}
+
+		return mTokens[mTokenIndex];
+	}
+
+	std::string AssemblyParser::ByteCodeParser::peekNextToken() {
+		if (mTokens.size() >= mTokenIndex + 1) {
+			return mTokens[mTokenIndex + 1];
+		} else {
+			throw std::runtime_error("Reached end of tokens.");
+		}
+	}
+
+	void AssemblyParser::ByteCodeParser::parseFunctionDef(AssemblyParser::Function& function) {
+		function.name = nextToken();
+
+		if (nextToken() != "(") {
+			throw std::runtime_error("Expected '(' after function name.");
+		}
+
+		while (true) {
+			std::string param = nextToken();
+
+			if (param == ")") {
+				break;
+			}
+
+			function.parameters.push_back(param);
+		}
+
+		function.returnType = nextToken();
+	}
+
+	void AssemblyParser::ByteCodeParser::readCallParameters(std::vector<std::string>& parameters) {
+		while (true) {
+			auto param = nextToken();
+
+			if (param == ")") {
+				break;
+			}
+
+			parameters.push_back(param);
+		}
+	}
+
+	void AssemblyParser::ByteCodeParser::parseAttribute(AssemblyParser::AttributeContainer& container) {
+		auto attributeName = nextToken();
+
+		if (nextToken() != "(") {
+			throw std::runtime_error("Expected '(' after attribute name");
+		}
+
+		if (container.count(attributeName) > 0) {
+			throw std::runtime_error("The attribute '" + attributeName + "' is already defined.'");
+		}
+
+		AssemblyParser::Attribute attribute;
+		attribute.name = attributeName;
+
+		while (true) {
+			auto key = nextToken();
+
+			if (key == ")") {
+				break;
+			}
+
+			if (nextToken() != "=") {
+				throw std::runtime_error("Expected '=' after name in attribute.");
+			}
+
+			auto value = nextToken();
+
+			if (attribute.values.count(key) == 0) {
+				attribute.values.insert({ key, value });
+			} else {
+				throw std::runtime_error("The key '" + key + "' is already defined in the attribute '" + attributeName + "'.");
+			}
+		}
+
+		container.insert({ attributeName, attribute });
+	}
+
+	bool AssemblyParser::ByteCodeParser::parseFunctionBody(AssemblyParser::Function& currentFunction) {
+		using namespace AssemblyParser;
+		auto currentToLower = currentTokenToLower();
+
+		if (currentToLower == "@") {
+			parseAttribute(currentFunction.attributes);
+			return true;
+		}
+
+		if (currentToLower == "ldint") {
+			int value = stoi(nextToken());
+			currentFunction.instructions.push_back(Instruction::makeWithInt(OpCodes::LOAD_INT, value));
+			return true;
+		}
+
+		if (currentToLower == "ldfloat") {
+			float value = stof(nextToken());
+			currentFunction.instructions.push_back(Instruction::makeWithFloat(OpCodes::LOAD_FLOAT, value));
+			return true;
+		}
+
+		if (currentToLower == "ldchar") {
+			char value = (char)stoi(nextToken());
+			currentFunction.instructions.push_back(Instruction::makeWithChar(OpCodes::LOAD_CHAR, value));
+			return true;
+		}
+
+		if (noOperandsInstructions.count(currentToLower) > 0) {
+			currentFunction.instructions.push_back(Instruction::make(noOperandsInstructions.at(currentToLower)));
+			return true;
+		}
+
+		if (stringOperandInstructions.count(currentToLower) > 0) {
+			std::string value = nextToken();
+			currentFunction.instructions.push_back(Instruction::makeWithString(stringOperandInstructions.at(currentToLower), value));
+			return true;
+		}
+
+		if (currentToLower == ".locals") {
+			if (!mLocalsSet) {
+				int localsCount = stoi(nextToken());
+
+				if (localsCount >= 0) {
+					mLocalsSet = true;
+					currentFunction.setNumLocals(localsCount);
+				} else {
+					throw std::runtime_error("The number of locals must be >= 0.");
+				}
+
+				return true;
+			} else {
+				throw std::runtime_error("The locals has already been set.");
+			}
+		}
+
+		if (currentToLower == ".local") {
+			if (mLocalsSet) {
+				int localIndex = stoi(nextToken());
+				auto localType = nextToken();
+
+				if (localIndex >= 0 && localIndex < (int)currentFunction.numLocals()) {
+					currentFunction.localTypes.at((std::size_t)localIndex) = localType;
+				} else {
+					throw std::runtime_error("Invalid local index.");
+				}
+
+				return true;
+			} else {
+				throw std::runtime_error("The locals must been set.");
+			}
+		}
+
+		if (currentToLower == "ldloc" || currentToLower == "stloc") {
+			if (!mLocalsSet) {
+				throw std::runtime_error("The locals must be set.");
+			}
+
+			int local = stoi(nextToken());
+			auto opCode = currentToLower == "ldloc" ? OpCodes::LOAD_LOCAL : OpCodes::STORE_LOCAL;
+
+			if (local >= 0 && local < (int)currentFunction.numLocals()) {
+				currentFunction.instructions.push_back(Instruction::makeWithInt(opCode, local));
+				return true;
+			} else {
+				throw std::runtime_error("The local index is out of range.");
+			}
+		}
+
+		if (currentToLower == "call" || currentToLower == "callinst" || currentToLower == "callvirt") {
+			bool isInstance = currentToLower == "callinst" || currentToLower == "callvirt";
+			bool isVirtual = currentToLower == "callvirt";
+
+			std::string funcName = nextToken();
+			std::string classType = "";
+
+			if (isInstance) {
+				auto classNamePos = funcName.find("::");
+
+				if (classNamePos != std::string::npos) {
+					classType = funcName.substr(0, classNamePos);
+				} else {
+					throw std::runtime_error("Expected '::' in called member function.");
+				}
+
+				funcName = funcName.substr(classNamePos + 2);
+			}
+
+			if (nextToken() != "(") {
+				throw std::runtime_error("Expected '(' after called function.");
+			}
+
+			std::vector<std::string> parameters;
+			readCallParameters(parameters);
+
+			if (isInstance) {
+				if (!isVirtual) {
+					currentFunction.instructions.push_back(Instruction::makeCallInstance(classType, funcName, parameters));
+				} else {
+					currentFunction.instructions.push_back(Instruction::makeCallVirtual(classType, funcName, parameters));
+				}
+			} else {
+				currentFunction.instructions.push_back(Instruction::makeCall(funcName, parameters));
+			}
+
+			return true;
+		}
+
+		if (currentToLower == "ldarg") {
+			int argNum = stoi(nextToken());
+			currentFunction.instructions.push_back(Instruction::makeWithInt(OpCodes::LOAD_ARG, argNum));
+			return true;
+		}
+
+		if (currentToLower == "newobj") {
+			std::string funcName = nextToken();
+			std::string classType = "";
+
+			auto classNamePos = funcName.find("::");
+
+			if (classNamePos != std::string::npos) {
+				classType = funcName.substr(0, classNamePos);
+			} else {
+				throw std::runtime_error("Expected '::' after the type in a new object instruction.");
+			}
+
+			funcName = funcName.substr(classNamePos + 2);
+
+			if (funcName != ".constructor") {
+				throw std::runtime_error("Expected call to constructor.");
+			}
+
+			if (nextToken() != "(") {
+				throw std::runtime_error("Expected '(' after called function.");
+			}
+
+			std::vector<std::string> parameters;
+			readCallParameters(parameters);
+			currentFunction.instructions.push_back(Instruction::makeNewObject(classType, parameters));
+			return true;
+		}
+
+		if (currentToLower == "br") {
+			int target = stoi(nextToken());
+			currentFunction.instructions.push_back(Instruction::makeWithInt(OpCodes::BRANCH, target));
+			return true;
+		}
+
+		if (branchInstructions.count(currentToLower) > 0) {
+			int target = stoi(nextToken());
+			currentFunction.instructions.push_back(Instruction::makeWithInt(branchInstructions.at(currentToLower), target));
+			return true;
+		}
+
+		if (currentToLower == "ldstr") {
+			auto str = nextToken();
+			currentFunction.instructions.push_back(Instruction::makeWithStringConstant(OpCodes::LOAD_STRING, str));
+			return true;
+		}
+
+		throw std::runtime_error("'" + currentToken() + "' is not a valid instruction.");
+	}
+
+	bool AssemblyParser::ByteCodeParser::parseClassBody(AssemblyParser::Class& currentClass, AssemblyParser::Field*& currentField) {
+		auto current = currentToken();
+		auto currentToLower = currentTokenToLower();
+
+		if (currentToLower == "@") {
+			if (currentField == nullptr) {
+				parseAttribute(currentClass.attributes); //Class attribute
+			} else {
+				parseAttribute(currentField->attributes); //Field attribute
+			}
+
+			return true;
+		}
+
+		AssemblyParser::Field field;
+		field.name = current;
+		field.type = nextToken();
+
+		currentClass.fields.push_back(field);
+		currentField = &currentClass.fields.back();
+		return false;
+	}
+
+	void AssemblyParser::ByteCodeParser::parse(AssemblyParser::Assembly& assembly) {
 		Function currentFunc;
-
-		bool isClass = false;
-		bool isClassBody = false;
-
 		Class currentClass;
 		Field* currentField = nullptr;
 
-		for (std::size_t i = 0; i < tokens.size(); i++) {
-			std::string current = tokens[i];
-			std::string currentToLower = toLower(current);
+		for (mTokenIndex = 0; mTokenIndex < mTokens.size(); mTokenIndex++) {
+			auto current = currentToken();
+			auto currentToLower = toLower(current);
 
 			//Bodies
-			if (isFuncBody) {
+			if (mIsFunctionBody) {
 				if (currentToLower == "}") {
-					isFuncBody = false;
-					isFunc = false;
+					mIsFunctionBody = false;
+					mIsFunction = false;
 					assembly.functions.push_back(currentFunc);
 					continue;
 				}
 
-				if (parseFunctionBody(tokens, i, current, currentToLower, currentFunc, localsSet)) {
+				if (parseFunctionBody(currentFunc)) {
 					continue;
 				}
 			}
 
-			if (isClassBody) {
+			if (mIsClassBody) {
 				if (currentToLower == "}") {
 					assembly.classes.push_back(currentClass);
-					isClass = false;
-					isClassBody = false;
+					mIsClass = false;
+					mIsClassBody = false;
 					currentField = nullptr;
 					continue;
 				}
 
-				if (parseClassBody(tokens, i, current, currentToLower, currentClass, currentField, isClass,	isClassBody)) {
+				if (parseClassBody(currentClass, currentField)) {
 					continue;
 				}
 			}
@@ -613,20 +611,20 @@ namespace stackjit {
 			bool isExternFunc = false;
 			bool isMemberDef = false;
 
-			if (!isFunc && !isClass && !isExternFunc) {
+			if (!mIsFunction && !mIsClass && !isExternFunc) {
 				if (currentToLower == "func") {
 					isFuncDef = true;
-					isFunc = true;
+					mIsFunction = true;
 				} else if (currentToLower == "class") {
 					currentClass = {};
-					currentClass.name = nextToken(tokens, i);
+					currentClass.name = nextToken();
 
-					if (peekNextToken(tokens, i) == "extends") {
-						nextToken(tokens, i);
-						currentClass.parentClassName = nextToken(tokens, i);
+					if (peekNextToken() == "extends") {
+						nextToken();
+						currentClass.parentClassName = nextToken();
 					}
 
-					isClass = true;
+					mIsClass = true;
 				} else if (currentToLower == "extern") {
 					isExternFunc = true;
 				} else if (currentToLower == "member") {
@@ -636,64 +634,57 @@ namespace stackjit {
 				}
 			}
 
-			if (isFunc && !isFuncDef && currentToLower == "{") {
-				isFuncBody = true;
+			if (mIsFunction && !isFuncDef && currentToLower == "{") {
+				mIsFunctionBody = true;
 			}
 
-			if (isClass && currentToLower == "{") {
-				isClassBody = true;
+			if (mIsClass && currentToLower == "{") {
+				mIsClassBody = true;
 			}
 
 			//Parse function definition
 			if (isFuncDef) {
 				currentFunc = {};
-				parseFunctionDef(tokens, i, currentFunc);
+				parseFunctionDef(currentFunc);
 
 				if (currentFunc.name.find("::") != std::string::npos) {
 					throw std::runtime_error("'::' is only allowed in member functions.");
 				}
 
-				localsSet = false;
+				mLocalsSet = false;
 			}
 
 			//Parse external function
-	        if (isExternFunc) {
-	            currentFunc = {};
-	            parseFunctionDef(tokens, i, currentFunc);
-	            currentFunc.isExternal = true;
+			if (isExternFunc) {
+				currentFunc = {};
+				parseFunctionDef(currentFunc);
+				currentFunc.isExternal = true;
+				assembly.functions.push_back(currentFunc);
+			}
 
-	            assembly.functions.push_back(currentFunc);
-	        }
+			//Parse member function
+			if (isMemberDef) {
+				currentFunc = {};
+				parseFunctionDef(currentFunc);
 
-	        //Parse member function
-	        if (isMemberDef) {
-	            currentFunc = {};
-	            parseFunctionDef(tokens, i, currentFunc);
+				auto funcName = currentFunc.name;
 
-	            auto funcName = currentFunc.name;
+				//Get the class name
+				auto classNamePosition = funcName.find("::");
+				if (classNamePosition == std::string::npos) {
+					throw std::runtime_error("Expected '::' in member function name.");
+				}
 
-	            //Get the class name
-	            auto classNamePos = funcName.find("::");
-
-	            if (classNamePos == std::string::npos) {
-	                throw std::runtime_error("Expected '::' in member function name.");
-	            }
-
-	            auto classTypeName = funcName.substr(0, classNamePos);
-	            auto memberFunctionName = funcName.substr(classNamePos + 2);
+				auto classTypeName = funcName.substr(0, classNamePosition);
+				auto memberFunctionName = funcName.substr(classNamePosition + 2);
 
 				currentFunc.className = classTypeName;
 				currentFunc.memberFunctionName = memberFunctionName;
 				currentFunc.isMemberFunction = true;
 
-	            localsSet = false;
-	            isFunc = true;
-	        }
+				mLocalsSet = false;
+				mIsFunction = true;
+			}
 		}
-	}
-
-	void AssemblyParser::load(std::istream& stream, AssemblyParser::Assembly& assembly) {
-		auto tokens = AssemblyParser::tokenize(stream);
-		AssemblyParser::parseTokens(tokens, assembly);
 	}
 }

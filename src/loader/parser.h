@@ -135,14 +135,57 @@ namespace stackjit {
 			std::vector<Class> classes;
 		};
 
+		//Represents a byte code parser
+		class ByteCodeParser {
+		private:
+			std::vector<std::string> mTokens;
+			std::size_t mTokenIndex;
+
+			bool mIsFunction = false;
+			bool mIsFunctionBody = false;
+			bool mLocalsSet = false;
+			bool mIsClass = false;
+			bool mIsClassBody = false;
+
+			//Returns the current token
+			std::string currentToken() const;
+
+			//Returns a lower case version of the current token
+			std::string currentTokenToLower() const;
+
+			//Advances to the next token and returns the next
+			std::string nextToken();
+
+			//Returns the next token without advancing to it
+			std::string peekNextToken();
+
+			//Parses a function definition
+			void parseFunctionDef(AssemblyParser::Function& function);
+
+			//Reads the call parameters
+			void readCallParameters(std::vector<std::string>& parameters);
+
+			//Parses an attribute
+			void parseAttribute(AssemblyParser::AttributeContainer& container);
+
+			//Parses a function body
+			bool parseFunctionBody(AssemblyParser::Function& currentFunction);
+
+			//Parses a class body
+			bool parseClassBody(AssemblyParser::Class& currentClass, AssemblyParser::Field*& currentField);
+		public:
+			//Creates a new byte code parser using the given tokens
+			ByteCodeParser(std::vector<std::string> tokens);
+
+			//Parses the loaded tokens into the given assembly
+			void parse(AssemblyParser::Assembly& assembly);
+		};
+
 		//Returns the signature for the given function
 		std::string getSignature(const AssemblyParser::Function& function);
 
 		//Tokenizes from the given stream
 		std::vector<std::string> tokenize(std::istream& stream);
-
-		//Parses the given tokens into the given assembly
-		void parseTokens(const std::vector<std::string>& tokens, AssemblyParser::Assembly& assembly);
 
 		//Loads an assembly from the given stream
 		void load(std::istream& stream, AssemblyParser::Assembly& assembly);

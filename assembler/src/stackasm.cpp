@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
 					std::ifstream fileStream(file);
 					if (fileStream.is_open()) {
 						stackjit::AssemblyParser::Assembly assembly;
-						stackjit::AssemblyParser::parseTokens(stackjit::AssemblyParser::tokenize(fileStream), assembly);
+						stackjit::AssemblyParser::load(fileStream, assembly);
 						assemblies.emplace_back(assembly);
 					} else {
 						std::cerr << "Could not load file '" + file + "'" << std::endl;
