@@ -1,6 +1,7 @@
 #pragma once
 #include "instruction.h"
 #include "../type/classmetadata.h"
+#include "../stackjit.h"
 #include <vector>
 #include <string>
 
@@ -16,7 +17,7 @@ namespace stackjit {
 		std::vector<const Type*> mCallParameters;
 		const Type* mReturnType;
 
-		unsigned char* mEntryPoint;
+		BytePtr mEntryPoint;
 		bool mIsManaged;
 
 		bool mIsMemberFunction;
@@ -41,7 +42,7 @@ namespace stackjit {
 			std::string name,
 			std::vector<const Type*> parameters,
 			const Type* returnType,
-			unsigned char* entryPoint,
+			BytePtr entryPoint,
 			const ClassType* classType = nullptr,
 			AccessModifier accessModifier = DEFAULT_ACCESS_MODIFIER,
 			bool isConstructor = false);
@@ -91,10 +92,10 @@ namespace stackjit {
 		bool isVirtual() const;
 
 		//Sets the entry point
-		void setEntryPoint(unsigned char* entryPoint);
+		void setEntryPoint(BytePtr entryPoint);
 
 		//The entry point
-		unsigned char* entryPoint() const;
+		BytePtr entryPoint() const;
 	};
 
 	//Represents a function defined in managed code

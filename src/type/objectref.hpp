@@ -5,7 +5,7 @@
 namespace stackjit {
 	//Field ref
 	template<typename T>
-	FieldRef<T>::FieldRef(unsigned char* fieldPtr)
+	FieldRef<T>::FieldRef(BytePtr fieldPtr)
 		: mFieldPtr((T*)fieldPtr) {
 
 	}

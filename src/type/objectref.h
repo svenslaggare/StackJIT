@@ -8,13 +8,13 @@ namespace stackjit {
 	class Type;
 
 	//Represents a raw object reference
-	using RawObjectRef = unsigned char*;
+	using RawObjectRef = BytePtr;
 
 	//Represents a raw class reference
-	using RawClassRef = unsigned char*;
+	using RawClassRef = BytePtr;
 
 	//Represents a raw array reference
-	using RawArrayRef = unsigned char*;
+	using RawArrayRef = BytePtr;
 
 	//Represents an object reference
 	class ObjectRef {
@@ -76,7 +76,7 @@ namespace stackjit {
 		T* mFieldPtr;
 
 		//Creates a new reference to the given field
-		FieldRef(unsigned char* fieldPtr);
+		FieldRef(BytePtr fieldPtr);
 		friend class ClassRef;
 	public:
 		//Returns a pointer to the field

@@ -25,8 +25,6 @@ set(SOURCE_FILES
         src/core/instruction.h
         src/compiler/jit.cpp
         src/compiler/jit.h
-        src/loader/loader.cpp
-        src/loader/loader.h
         src/compiler/memory.h
         src/compiler/memory.cpp
         src/runtime/native.cpp
@@ -89,7 +87,7 @@ set(SOURCE_FILES
         src/linux/codegenerator.cpp
         src/windows/codegenerator.cpp
         src/linux/runtime.cpp
-        src/windows/runtime.cpp)
+        src/windows/runtime.cpp src/loader/classloader.cpp src/loader/classloader.h src/loader/functionloader.cpp src/loader/functionloader.h src/loader/loaderhelpers.cpp src/loader/loaderhelpers.h)
 
 add_executable(stackjit ${SOURCE_FILES} src/stackjit.cpp)
 

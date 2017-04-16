@@ -442,12 +442,12 @@ namespace stackjit {
 
 				if (!instruction.isCallInstance()) {
 					calledSignature = FunctionSignature::function(
-						instruction.strValue,
+						instruction.stringValue,
 						instruction.parameters).str();
 				} else {
 					calledSignature = FunctionSignature::memberFunction(
 						instruction.classType,
-						instruction.strValue,
+						instruction.stringValue,
 						instruction.parameters).str();
 				}
 
@@ -656,7 +656,7 @@ namespace stackjit {
 				operandStack.pushInt(0);
 				break;
 			case OpCodes::NEW_ARRAY: {
-				auto elemType = vmState.typeProvider().getType(instruction.strValue);
+				auto elemType = vmState.typeProvider().getType(instruction.stringValue);
 				auto arrayType = static_cast<const ArrayType*>(
 						vmState.typeProvider().getType(TypeSystem::arrayTypeName(elemType)));
 
@@ -681,7 +681,7 @@ namespace stackjit {
 				break;
 			}
 			case OpCodes::STORE_ELEMENT: {
-				auto elementType = vmState.typeProvider().getType(instruction.strValue);
+				auto elementType = vmState.typeProvider().getType(instruction.stringValue);
 
 				//Pop the operands
 				operandStack.popReg(Registers::DX); //The value to store
@@ -719,7 +719,7 @@ namespace stackjit {
 				break;
 			}
 			case OpCodes::LOAD_ELEMENT: {
-				auto elementType = vmState.typeProvider().getType(instruction.strValue);
+				auto elementType = vmState.typeProvider().getType(instruction.stringValue);
 
 				//Pop the operands
 				operandStack.popReg(ExtendedRegisters::R10); //The index of the element
@@ -780,7 +780,7 @@ namespace stackjit {
 				//Check if the constructor needs to be compiled
 				auto calledSignature = FunctionSignature::memberFunction(
 					instruction.classType,
-					instruction.strValue,
+					instruction.stringValue,
 					instruction.parameters).str();
 
 				const auto& constructorToCall = vmState.binder().getFunction(calledSignature);
@@ -857,7 +857,7 @@ namespace stackjit {
 				//Get the field
 				std::string className;
 				std::string fieldName;
-				TypeSystem::getClassAndFieldName(instruction.strValue, className, fieldName);
+				TypeSystem::getClassAndFieldName(instruction.stringValue, className, fieldName);
 
 				auto& classMetadata = vmState.classProvider().getMetadata(className);
 				auto& field = classMetadata.fields().at(fieldName);
@@ -920,10 +920,10 @@ namespace stackjit {
 				}
 
 				//The pointer to the string as the first arg
-				assembler.moveLong(RegisterCallArguments::Arg0, (PtrValue)instruction.strValue.data());
+				assembler.moveLong(RegisterCallArguments::Arg0, (PtrValue)instruction.stringValue.data());
 
 				//The length of the string as the second arg
-				assembler.moveInt(RegisterCallArguments::Arg1, (int)instruction.strValue.length());
+				assembler.moveInt(RegisterCallArguments::Arg1, (int)instruction.stringValue.length());
 
 				//Call the newString runtime function
 				generateCall(assembler, (BytePtr)&Runtime::newString);

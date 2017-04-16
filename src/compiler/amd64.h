@@ -6,23 +6,23 @@
 namespace stackjit {
 	//Converts between primitive types and unsigned char arrays
 	union ShortToBytes {
-	    short shortValue;
-	    unsigned char byteValues[sizeof(short)];
+		short shortValue;
+		Byte byteValues[sizeof(short)];
 	};
 
 	union IntToBytes {
-	    int intValue;
-	    unsigned char byteValues[sizeof(int)];
+		int intValue;
+		Byte byteValues[sizeof(int)];
 	};
 
 	union LongToBytes {
 		std::int64_t longValue;
-	    unsigned char byteValues[sizeof(std::int64_t)];
+		Byte byteValues[sizeof(std::int64_t)];
 	};
 
 	union PtrToBytes {
-		unsigned char* ptrValue;
-	    unsigned char byteValues[sizeof(unsigned char*)];
+		BytePtr ptrValue;
+		Byte byteValues[sizeof(BytePtr)];
 	};
 
 	//The registers
@@ -78,7 +78,7 @@ namespace stackjit {
 	std::ostream& operator<<(std::ostream& os, const Register8Bits& reg);
 	std::ostream& operator<<(std::ostream& os, const FloatRegisters& reg);
 
-	using CodeGen = std::vector<unsigned char>;
+	using CodeGen = std::vector<Byte>;
 
 	//Backend for AMD64
 	namespace Amd64Backend {
@@ -111,10 +111,10 @@ namespace stackjit {
 		void moveRegToReg(CodeGen& codeGen, Registers dest, ExtendedRegisters src);
 
 		//Moves the content from the register to the memory address
-		void moveRegToMemory(CodeGen& codeGen, unsigned char* destAddr, Registers srcReg);
+		void moveRegToMemory(CodeGen& codeGen, BytePtr destAddr, Registers srcReg);
 
 		//Moves the content from given memory address to the register
-		void moveMemoryToReg(CodeGen& codeGen, Registers destReg, unsigned char* srcAddr);
+		void moveMemoryToReg(CodeGen& codeGen, Registers destReg, BytePtr srcAddr);
 
 		//Moves the content from memory where the address is in the second register to the first register
 		void moveMemoryByRegToReg(CodeGen& codeGen, Registers dest, Registers srcMemReg, bool is32bits = false);

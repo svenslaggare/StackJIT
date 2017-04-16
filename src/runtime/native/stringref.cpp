@@ -10,7 +10,7 @@ namespace stackjit {
 			Runtime::nullReferenceError();
 		}
 
-		ArrayRef<char> charsArray((unsigned char*)(chars));
+		ArrayRef<char> charsArray((BytePtr)(chars));
 		mChars = charsArray.elementsPtr();
 		mLength = charsArray.length();
 	}

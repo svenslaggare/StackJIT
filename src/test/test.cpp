@@ -35,11 +35,11 @@ namespace stackjit {
 		auto intType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Integer));
 		auto voidType = vmState.typeProvider().makeType(TypeSystem::toString(PrimitiveTypes::Void));
 
-		binder.define(FunctionDefinition("rt.test.fib", { intType }, intType, (unsigned char*)(&fibonacci)));
+		binder.define(FunctionDefinition("rt.test.fib", { intType }, intType, (BytePtr)(&fibonacci)));
 
 		auto pointType = vmState.typeProvider().makeType("Ref.Point");
 		if (pointType != nullptr) {
-			binder.define(FunctionDefinition("rt.test.println", { pointType }, voidType, (unsigned char*)(&printPoint)));
+			binder.define(FunctionDefinition("rt.test.println", { pointType }, voidType, (BytePtr)(&printPoint)));
 		}
 	}
 }

@@ -510,13 +510,13 @@ namespace stackjit {
 
 				if (!isInstance) {
 					signature = FunctionSignature::function(
-						inst.strValue,
+						inst.stringValue,
 						inst.parameters).str();
 				} else {
 					signature = findInheritedMemberFunction(
 						mVMState,
 						inst.classType,
-						inst.strValue,
+						inst.stringValue,
 						inst.parameters);
 				}
 
@@ -729,17 +729,17 @@ namespace stackjit {
 					typeError(functionSignature, index, error);
 				}
 
-				auto elemType = mVMState.typeProvider().makeType(inst.strValue);
+				auto elemType = mVMState.typeProvider().makeType(inst.stringValue);
 
 				if (elemType == nullptr) {
-					typeError(functionSignature, index, "'" + inst.strValue + "' is not a valid type.");
+					typeError(functionSignature, index, "'" + inst.stringValue + "' is not a valid type.");
 				}
 
 				if (*elemType == *voidType()) {
 					typeError(functionSignature, index, "Arrays of type '" + sVoidTypeName + "' is not allowed.");
 				}
 
-				operandStack.push(mVMState.typeProvider().makeType("Ref.Array[" + inst.strValue + "]"));
+				operandStack.push(mVMState.typeProvider().makeType("Ref.Array[" + inst.stringValue + "]"));
 				break;
 			}
 			case OpCodes::STORE_ELEMENT: {
@@ -765,10 +765,10 @@ namespace stackjit {
 						"Expected second operand to be of type " + sIntTypeName + " but got type: " + indexType->name() + ".");
 				}
 
-				auto elemType = mVMState.typeProvider().makeType(inst.strValue);
+				auto elemType = mVMState.typeProvider().makeType(inst.stringValue);
 
 				if (elemType == nullptr) {
-					typeError(functionSignature, index, "There exists no type called '" + inst.strValue + "'.");
+					typeError(functionSignature, index, "There exists no type called '" + inst.stringValue + "'.");
 				}
 
 				assertNotVoidType(functionSignature, index, elemType);
@@ -810,10 +810,10 @@ namespace stackjit {
 						"Expected second operand to be of type " + sIntTypeName + " but got type: " + indexType->name() + ".");
 				}
 
-				auto elemType = mVMState.typeProvider().makeType(inst.strValue);
+				auto elemType = mVMState.typeProvider().makeType(inst.stringValue);
 
 				if (elemType == nullptr) {
-					typeError(functionSignature, index, "There exists no type called '" + inst.strValue + "'.");
+					typeError(functionSignature, index, "There exists no type called '" + inst.stringValue + "'.");
 				}
 
 				assertNotVoidType(functionSignature, index, elemType);
@@ -844,7 +844,7 @@ namespace stackjit {
 			case OpCodes::NEW_OBJECT: {
 				auto signature = FunctionSignature::memberFunction(
 					inst.classType,
-					inst.strValue,
+					inst.stringValue,
 					inst.parameters).str();
 
 				if (!mVMState.binder().isDefined(signature)) {
@@ -885,7 +885,7 @@ namespace stackjit {
 				std::string className;
 				std::string fieldName;
 
-				if (TypeSystem::getClassAndFieldName(inst.strValue, className, fieldName)) {
+				if (TypeSystem::getClassAndFieldName(inst.stringValue, className, fieldName)) {
 					if (!mVMState.classProvider().isDefined(className)) {
 						typeError(functionSignature, index, "'" + className + "' is not a class type.");
 					}
@@ -945,7 +945,7 @@ namespace stackjit {
 				std::string className;
 				std::string fieldName;
 
-				if (TypeSystem::getClassAndFieldName(inst.strValue, className, fieldName)) {
+				if (TypeSystem::getClassAndFieldName(inst.stringValue, className, fieldName)) {
 					if (!mVMState.classProvider().isDefined(className)) {
 						typeError(functionSignature, index, "'" + className + "' is not a class type.");
 					}

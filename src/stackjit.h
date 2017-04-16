@@ -12,6 +12,9 @@ namespace stackjit {
 	//Byte pointer
 	using BytePtr = unsigned char*;
 
+	//Represents a byte
+	using Byte = unsigned char;
+
 	//The size of the length of an array
 	const int ARRAY_LENGTH_SIZE = 4;
 

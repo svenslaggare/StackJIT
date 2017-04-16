@@ -228,7 +228,7 @@ namespace stackjit {
 		if (fromString(typeName, primitiveType)) {
 			return sizeOfType(primitiveType);
 		} else if (type->isReference()) {
-			return sizeof(unsigned char*);
+			return sizeof(BytePtr);
 		}
 
 		return 0;

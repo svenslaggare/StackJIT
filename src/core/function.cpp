@@ -82,7 +82,7 @@ namespace stackjit {
 		std::string name,
 		std::vector<const Type*> parameters,
 		const Type* returnType,
-		unsigned char* entryPoint,
+		BytePtr entryPoint,
 		const ClassType* classType,
 		AccessModifier accessModifier,
 		bool isConstructor)
@@ -178,13 +178,13 @@ namespace stackjit {
 		return mIsVirtual;
 	}
 
-	void FunctionDefinition::setEntryPoint(unsigned char* entryPoint) {
+	void FunctionDefinition::setEntryPoint(BytePtr entryPoint) {
 	    if (mIsManaged) {
 	        mEntryPoint = entryPoint;
 	    }
 	}
 
-	unsigned char* FunctionDefinition::entryPoint() const {
+	BytePtr FunctionDefinition::entryPoint() const {
 	    return mEntryPoint;
 	}
 }

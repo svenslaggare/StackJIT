@@ -146,7 +146,7 @@ namespace stackjit {
 		return mVirtualFunctionMapping[index];
 	}
 
-	void ClassMetadata::bindVirtualFunction(const FunctionDefinition& funcDef, unsigned char* funcPtr) {
+	void ClassMetadata::bindVirtualFunction(const FunctionDefinition& funcDef, BytePtr funcPtr) {
 		if (mVirtualFunctionTable == nullptr) {
 			throw std::runtime_error("Virtual function table not created.");
 		}
@@ -155,7 +155,7 @@ namespace stackjit {
 		mVirtualFunctionTable[index] = funcPtr;
 	}
 
-	unsigned char** ClassMetadata::virtualFunctionTable() const {
+	BytePtr* ClassMetadata::virtualFunctionTable() const {
 		return mVirtualFunctionTable;
 	}
 
@@ -214,7 +214,7 @@ namespace stackjit {
 			}
 
 			//Create the actual table. Note that these functions are bound when compiled.
-			mVirtualFunctionTable = new unsigned char*[mIndexToVirtualFunction.size()];
+			mVirtualFunctionTable = new BytePtr[mIndexToVirtualFunction.size()];
 			for (std::size_t i = 0; i < mIndexToVirtualFunction.size(); i++) {
 				mVirtualFunctionTable[i] = nullptr;
 			}

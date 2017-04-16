@@ -17,7 +17,7 @@ namespace stackjit {
 	    float floatValue;
 	    int intValue;
 	    char charValue;
-	    std::string strValue;
+	    std::string stringValue;
 
 	    //Used by call instructions
 	    std::vector<const Type*> parameters;

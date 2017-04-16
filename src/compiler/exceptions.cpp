@@ -6,7 +6,7 @@
 #include <string.h>
 
 namespace stackjit {
-	std::size_t ExceptionHandling::createHandlerCall(std::vector<unsigned char>& handlerCode, CallingConvention& callingConvention, PtrValue handlerPtr) {
+	std::size_t ExceptionHandling::createHandlerCall(CodeGen& handlerCode, CallingConvention& callingConvention, PtrValue handlerPtr) {
 		Amd64Assembler assembler(handlerCode);
 		auto handlerOffset = handlerCode.size();
 
@@ -26,7 +26,7 @@ namespace stackjit {
 	}
 
 	void ExceptionHandling::generateHandlers(MemoryManager& memoryManger, CallingConvention& callingConvention) {
-		std::vector<unsigned char> handlerCode;
+		CodeGen handlerCode;
 
 		//Create handler calls
 		auto nullHandlerOffset = createHandlerCall(handlerCode, callingConvention, (PtrValue)&Runtime::nullReferenceError);
@@ -39,10 +39,10 @@ namespace stackjit {
 		memcpy(handlerMemory, handlerCode.data(), handlerCode.size());
 
 		//Set the pointers to the handlers
-		mNullCheckHandler = (unsigned char*)handlerMemory + nullHandlerOffset;
-		mArrayBoundsCheckHandler = (unsigned char*)handlerMemory + arrayBoundsHandlerOffset;
-		mArrayCreationCheckHandler = (unsigned char*)handlerMemory + arrayCreationHandler;
-		mStackOverflowCheckHandler = (unsigned char*)handlerMemory + stackOverflowHandler;
+		mNullCheckHandler = (BytePtr)handlerMemory + nullHandlerOffset;
+		mArrayBoundsCheckHandler = (BytePtr)handlerMemory + arrayBoundsHandlerOffset;
+		mArrayCreationCheckHandler = (BytePtr)handlerMemory + arrayCreationHandler;
+		mStackOverflowCheckHandler = (BytePtr)handlerMemory + stackOverflowHandler;
 	}
 
 	void ExceptionHandling::addNullCheck(FunctionCompilationData& function, Registers refReg, ExtendedRegisters cmpReg) const {

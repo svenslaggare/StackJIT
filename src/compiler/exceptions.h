@@ -16,7 +16,7 @@ namespace stackjit {
 		BytePtr mStackOverflowCheckHandler;
 
 		//Creates a call to the given handler
-		std::size_t createHandlerCall(std::vector<unsigned char>& handlerCode, CallingConvention& callingConvention, PtrValue handlerPtr);
+		std::size_t createHandlerCall(CodeGen& handlerCode, CallingConvention& callingConvention, PtrValue handlerPtr);
 	public:
 		//Generates the exception handlers
 		void generateHandlers(MemoryManager& memoryManger, CallingConvention& callingConvention);

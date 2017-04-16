@@ -457,7 +457,7 @@ namespace stackjit {
 			});
 	}
 
-	void Amd64Assembler::move(IntRegister destination, unsigned char* source) {
+	void Amd64Assembler::move(IntRegister destination, BytePtr source) {
 		if (!destination.isBase()) {
 			throw std::runtime_error("Extended registers not supported");
 		}
@@ -543,7 +543,7 @@ namespace stackjit {
 			[&](CodeGen& codeGen, ExtendedRegisters dest, int offset, std::int32_t x) { Amd64Backend::moveIntToMemoryRegWithIntOffset(codeGen, dest, offset, x); });
 	}
 
-	void Amd64Assembler::move(unsigned char* destination, IntRegister source) {
+	void Amd64Assembler::move(BytePtr destination, IntRegister source) {
 		if (!source.isBase()) {
 			throw std::runtime_error("Extended registers not supported");
 		}

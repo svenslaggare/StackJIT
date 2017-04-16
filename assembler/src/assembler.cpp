@@ -75,13 +75,13 @@ void Assembler::generateFunctionBody(BinaryData& data, stackjit::AssemblyParser:
 				addData(data, inst.charValue);
 				break;
 			case stackjit::AssemblyParser::InstructionFormats::StringData:
-				addString(data, inst.strValue);
+				addString(data, inst.stringValue);
 				break;
 			case stackjit::AssemblyParser::InstructionFormats::StringConstantData:
-				addString(data, inst.strValue);
+				addString(data, inst.stringValue);
 				break;
 			case stackjit::AssemblyParser::InstructionFormats::Call:
-				addString(data, inst.strValue);
+				addString(data, inst.stringValue);
 				addData(data, inst.parameters.size());
 
 				for (auto& param : inst.parameters) {
@@ -89,7 +89,7 @@ void Assembler::generateFunctionBody(BinaryData& data, stackjit::AssemblyParser:
 				}
 				break;
 			case stackjit::AssemblyParser::InstructionFormats::CallInstance:
-				addString(data, inst.strValue);
+				addString(data, inst.stringValue);
 				addString(data, inst.calledClassType);
 				addData(data, inst.parameters.size());
 

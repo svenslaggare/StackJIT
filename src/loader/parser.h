@@ -31,7 +31,7 @@ namespace stackjit {
 		    float floatValue;
 		    int intValue;
 		    char charValue;
-		    std::string strValue;
+		    std::string stringValue;
 
 		    //Used by call instructions
 		    std::vector<std::string> parameters;
@@ -143,5 +143,8 @@ namespace stackjit {
 
 		//Parses the given tokens into the given assembly
 		void parseTokens(const std::vector<std::string>& tokens, AssemblyParser::Assembly& assembly);
+
+		//Loads an assembly from the given stream
+		void load(std::istream& stream, AssemblyParser::Assembly& assembly);
 	}
 }

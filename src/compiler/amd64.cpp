@@ -4,10 +4,6 @@
 #include <assert.h>
 
 namespace stackjit {
-	namespace {
-		using Byte = unsigned char;
-	}
-
 	using Helpers::validCharValue;
 
 	std::ostream& operator<<(std::ostream& os, const Registers& reg) {
@@ -198,7 +194,7 @@ namespace stackjit {
 		codeGen.push_back(0xc0 | (Byte)dest | ((Byte)src << 3));
 	}
 
-	void Amd64Backend::moveRegToMemory(CodeGen& codeGen, unsigned char* destAddr, Registers srcReg) {
+	void Amd64Backend::moveRegToMemory(CodeGen& codeGen, BytePtr destAddr, Registers srcReg) {
 		assert(srcReg == Registers::AX && "Only the AX register is supported.");
 		codeGen.push_back(0x48);
 		codeGen.push_back(0xa3);
@@ -206,12 +202,12 @@ namespace stackjit {
 		PtrToBytes converter;
 		converter.ptrValue = destAddr;
 
-		for (std::size_t i = 0; i < sizeof(unsigned char*); i++) {
+		for (std::size_t i = 0; i < sizeof(BytePtr); i++) {
 			codeGen.push_back(converter.byteValues[i]);
 		}
 	}
 
-	void Amd64Backend::moveMemoryToReg(CodeGen& codeGen, Registers destReg, unsigned char* srcAddr) {
+	void Amd64Backend::moveMemoryToReg(CodeGen& codeGen, Registers destReg, BytePtr srcAddr) {
 		assert(destReg == Registers::AX && "Only the AX register is supported.");
 		codeGen.push_back(0x48);
 		codeGen.push_back(0xa1);
@@ -219,7 +215,7 @@ namespace stackjit {
 		PtrToBytes converter;
 		converter.ptrValue = srcAddr;
 
-		for (std::size_t i = 0; i < sizeof(unsigned char*); i++) {
+		for (std::size_t i = 0; i < sizeof(BytePtr); i++) {
 			codeGen.push_back(converter.byteValues[i]);
 		}
 	}

@@ -135,13 +135,13 @@ namespace stackjit {
 						stream << " " << (int)inst.charValue;
 						break;
 					case AssemblyParser::InstructionFormats::StringData:
-						stream << " " << inst.strValue;
+						stream << " " << inst.stringValue;
 						break;
 					case AssemblyParser::InstructionFormats::StringConstantData:
-						stream << " " << escapedString(inst.strValue);
+						stream << " " << escapedString(inst.stringValue);
 						break;
 					case AssemblyParser::InstructionFormats::Call: {
-						stream << " " << inst.strValue;
+						stream << " " << inst.stringValue;
 						stream << "(";
 						bool isFirst = true;
 
@@ -159,7 +159,7 @@ namespace stackjit {
 						break;
 					}
 					case AssemblyParser::InstructionFormats::CallInstance: {
-						stream << " " << inst.calledClassType << "::" << inst.strValue;
+						stream << " " << inst.calledClassType << "::" << inst.stringValue;
 						stream << "(";
 						bool isFirst = true;
 

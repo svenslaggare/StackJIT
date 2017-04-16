@@ -2,7 +2,8 @@
 #include "vmstate.h"
 #include "core/function.h"
 #include "type/type.h"
-#include "loader/loader.h"
+#include "loader/functionloader.h"
+#include "loader/classloader.h"
 #include "runtime/native.h"
 #include "test/test.h"
 #include "core/functionsignature.h"
@@ -111,7 +112,7 @@ namespace stackjit {
 			loadImage(fileStream, assemblyType);
 		} else {
 			AssemblyParser::Assembly assembly;
-			Loader::load(fileStream, mVMState, assembly);
+			AssemblyParser::load(fileStream, assembly);
 			loadAssembly(assembly, assemblyType);
 		}
 
@@ -137,7 +138,7 @@ namespace stackjit {
 		}
 
 		//Load classes
-		Loader::loadClasses(mVMState, mImageContainer);
+		ClassLoader::loadClasses(mVMState, mImageContainer);
 
 		if (!mHasMainInit) {
 			//Load native functions
@@ -166,14 +167,14 @@ namespace stackjit {
 				}
 
 				if (!currentFunc.isExternal) {
-					Loader::generateDefinition(mVMState, currentFunc, funcDef);
+					FunctionLoader::generateDefinition(mVMState, currentFunc, funcDef);
 
 					auto signature = FunctionSignature::from(funcDef).str();
 					if (binder.isDefined(signature)) {
 						throw std::runtime_error("The function '" + signature + "' is already defined.");
 					}
 				} else {
-					Loader::loadExternalFunction(mVMState, currentFunc, funcDef);
+					FunctionLoader::loadExternal(mVMState, currentFunc, funcDef);
 				}
 
 				binder.define(funcDef);
@@ -208,7 +209,7 @@ namespace stackjit {
 		auto signature = FunctionSignature::from(function->def()).str();
 
 		//Set the entry point & size for the function
-		mVMState.binder().getFunction(signature).setEntryPoint((unsigned char*)funcPtr);
+		mVMState.binder().getFunction(signature).setEntryPoint((BytePtr)funcPtr);
 
 		//Fix unresolved symbols
 		if (resolveSymbols) {
@@ -219,7 +220,7 @@ namespace stackjit {
 		if (function->def().isVirtual()) {
 			function->def().classType()->metadata()->bindVirtualFunction(
 				function->def(),
-				(unsigned char*)funcPtr);
+				(BytePtr)funcPtr);
 		}
 
 		return funcPtr;
@@ -233,7 +234,7 @@ namespace stackjit {
 
 			//Load the function
 			mImageContainer.loadFunctionBody(signature);
-			auto func = Loader::loadManagedFunction(mVMState, *funcImage, funcDef);
+			auto func = FunctionLoader::loadManaged(mVMState, *funcImage, funcDef);
 			mLoadedFunctions.insert({ FunctionSignature::from(func->def()).str(), func });
 
 			//Compile it
@@ -256,7 +257,7 @@ namespace stackjit {
 				if (!currentFunc.second.isExternal) {
 					auto& funcDef = mVMState.binder().getFunction(currentFunc.first);
 					auto funcImage = mImageContainer.getFunction(currentFunc.first);
-					auto func = Loader::loadManagedFunction(mVMState, *funcImage, funcDef);
+					auto func = FunctionLoader::loadManaged(mVMState, *funcImage, funcDef);
 					mLoadedFunctions.insert({ FunctionSignature::from(func->def()).str(), func });
 					compileFunction(func, false);
 				}

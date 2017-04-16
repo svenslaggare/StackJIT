@@ -118,7 +118,7 @@ namespace stackjit {
 		const static bool DEFAULT_IS_32_BITS = false;
 		const static DataSize DEFAULT_MEMORY_DATA_SIZE = DataSize::Size64;
 
-		std::vector<unsigned char>& mData;
+		std::vector<Byte>& mData;
 
 		//Generates an instruction that takes two int registers
 		void generateTwoRegistersInstruction(
@@ -246,7 +246,7 @@ namespace stackjit {
 		void move(FloatRegisters destination, MemoryOperand source);
 
 		//Moves the memory at the given address to the register. Only the RAX register is supported.
-		void move(IntRegister destination, unsigned char* source);
+		void move(IntRegister destination, BytePtr source);
 
 		//Moves the register to the memory operand
 		void move(MemoryOperand destination, IntRegister source, DataSize dataSize = DEFAULT_MEMORY_DATA_SIZE);
@@ -257,7 +257,7 @@ namespace stackjit {
 		void move(MemoryOperand destination, std::int32_t value);
 
 		//Moves the given register to the given address. Only the RAX register is supported.
-		void move(unsigned char* destination, IntRegister source);
+		void move(BytePtr destination, IntRegister source);
 
 		//Pushes the given int register
 		void push(IntRegister intRegister);

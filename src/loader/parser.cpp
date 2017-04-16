@@ -45,7 +45,7 @@ namespace stackjit {
 
 	AssemblyParser::Instruction AssemblyParser::Instruction::makeWithString(OpCodes opCode, std::string value) {
 		AssemblyParser::Instruction inst;
-		inst.strValue = value;
+		inst.stringValue = value;
 		inst.opCode = opCode;
 		inst.format = InstructionFormats::StringData;
 		return inst;
@@ -53,7 +53,7 @@ namespace stackjit {
 
 	AssemblyParser::Instruction AssemblyParser::Instruction::makeWithStringConstant(OpCodes opCode, std::string value) {
 		AssemblyParser::Instruction inst;
-		inst.strValue = value;
+		inst.stringValue = value;
 		inst.opCode = opCode;
 		inst.format = InstructionFormats::StringConstantData;
 		return inst;
@@ -61,7 +61,7 @@ namespace stackjit {
 
 	AssemblyParser::Instruction AssemblyParser::Instruction::makeCall(std::string funcName, std::vector<std::string> parameters) {
 		AssemblyParser::Instruction inst;
-		inst.strValue = funcName;
+		inst.stringValue = funcName;
 		inst.parameters = parameters;
 		inst.opCode = OpCodes::CALL;
 		inst.format = InstructionFormats::Call;
@@ -71,7 +71,7 @@ namespace stackjit {
 	AssemblyParser::Instruction AssemblyParser::Instruction::makeCallInstance(std::string classType, std::string funcName, std::vector<std::string> parameters) {
 		AssemblyParser::Instruction inst;
 		inst.calledClassType = classType;
-		inst.strValue = funcName;
+		inst.stringValue = funcName;
 		inst.parameters = parameters;
 		inst.opCode = OpCodes::CALL_INSTANCE;
 		inst.format = InstructionFormats::CallInstance;
@@ -81,7 +81,7 @@ namespace stackjit {
 	AssemblyParser::Instruction AssemblyParser::Instruction::makeCallVirtual(std::string classType, std::string funcName, std::vector<std::string> parameters) {
 		AssemblyParser::Instruction inst;
 		inst.calledClassType = classType;
-		inst.strValue = funcName;
+		inst.stringValue = funcName;
 		inst.parameters = parameters;
 		inst.opCode = OpCodes::CALL_VIRTUAL;
 		inst.format = InstructionFormats::CallInstance;
@@ -91,7 +91,7 @@ namespace stackjit {
 	AssemblyParser::Instruction AssemblyParser::Instruction::makeNewObject(std::string classType, std::vector<std::string> parameters) {
 		AssemblyParser::Instruction inst;
 		inst.calledClassType = classType;
-		inst.strValue = ".constructor";
+		inst.stringValue = ".constructor";
 		inst.parameters = parameters;
 		inst.opCode = OpCodes::NEW_OBJECT;
 		inst.format = InstructionFormats::CallInstance;
@@ -659,5 +659,10 @@ namespace stackjit {
 	            isFunc = true;
 	        }
 		}
+	}
+
+	void AssemblyParser::load(std::istream& stream, AssemblyParser::Assembly& assembly) {
+		auto tokens = AssemblyParser::tokenize(stream);
+		AssemblyParser::parseTokens(tokens, assembly);
 	}
 }

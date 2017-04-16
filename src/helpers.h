@@ -9,7 +9,7 @@ namespace stackjit {
 	namespace Helpers {
 		//Sets the value in the given byte vector starting at the given index
 		template<typename T>
-		void setValue(unsigned char* source, std::size_t startIndex, T value);
+		void setValue(BytePtr source, std::size_t startIndex, T value);
 
 		//Sets the value in the given byte vector starting at the given index
 		template<typename T>
@@ -48,8 +48,8 @@ namespace stackjit {
 	}
 
 	template<typename T>
-	void Helpers::setValue(unsigned char* source, std::size_t startIndex, T value) {
-		auto bytePtr = reinterpret_cast<unsigned char*>(&value);
+	void Helpers::setValue(BytePtr source, std::size_t startIndex, T value) {
+		auto bytePtr = reinterpret_cast<BytePtr>(&value);
 		for (std::size_t i = 0; i < sizeof(T); i++) {
 			source[startIndex + i] = bytePtr[i];
 		}

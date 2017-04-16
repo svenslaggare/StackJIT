@@ -1,4 +1,3 @@
-#include "loader/loader.h"
 #include "vmstate.h"
 #include "executionengine.h"
 #include "helpers.h"
@@ -204,7 +203,7 @@ int main(int argc, char* argv[]) {
 		switch (vmState.config.programLoadMode) {
 			case ProgramLoadMode::Stdin: {
 				AssemblyParser::Assembly program;
-				Loader::load(std::cin, vmState, program);
+				AssemblyParser::load(std::cin, program);
 				engine.loadAssembly(program, AssemblyType::Program);
 				break;
 			}
@@ -215,7 +214,7 @@ int main(int argc, char* argv[]) {
 				std::ifstream file(options.program);
 				if (file.is_open()) {
 					AssemblyParser::Assembly program;
-					Loader::load(file, vmState, program);
+					AssemblyParser::load(file, program);
 					engine.loadAssembly(program, AssemblyType::Program);
 				} else {
 					throw std::runtime_error("Could not load the program.");

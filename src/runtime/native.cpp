@@ -114,28 +114,28 @@ namespace stackjit {
 		void(*printlnChar)(char) = &NativeLibrary::println;
 		void(*printlnCharArray)(RawArrayRef) = &NativeLibrary::println;
 
-		binder.define(FunctionDefinition("std.print", { intType }, voidType, (unsigned char*)(printInt)));
-		binder.define(FunctionDefinition("std.print", { floatType }, voidType, (unsigned char*)(printFloat)));
-		binder.define(FunctionDefinition("std.print", { boolType }, voidType, (unsigned char*)(printBool)));
-		binder.define(FunctionDefinition("std.print", { charType }, voidType, (unsigned char*)(printChar)));
+		binder.define(FunctionDefinition("std.print", { intType }, voidType, (BytePtr)(printInt)));
+		binder.define(FunctionDefinition("std.print", { floatType }, voidType, (BytePtr)(printFloat)));
+		binder.define(FunctionDefinition("std.print", { boolType }, voidType, (BytePtr)(printBool)));
+		binder.define(FunctionDefinition("std.print", { charType }, voidType, (BytePtr)(printChar)));
 
-		binder.define(FunctionDefinition("std.println", { intType }, voidType, (unsigned char*)(printlnInt)));
-		binder.define(FunctionDefinition("std.println", { floatType }, voidType, (unsigned char*)(printlnFloat)));
-		binder.define(FunctionDefinition("std.println", { boolType }, voidType, (unsigned char*)(printlnBool)));
-		binder.define(FunctionDefinition("std.println", { charType }, voidType, (unsigned char*)(printlnChar)));
-		binder.define(FunctionDefinition("std.println", { charArrayType }, voidType, (unsigned char*)(printlnCharArray)));
+		binder.define(FunctionDefinition("std.println", { intType }, voidType, (BytePtr)(printlnInt)));
+		binder.define(FunctionDefinition("std.println", { floatType }, voidType, (BytePtr)(printlnFloat)));
+		binder.define(FunctionDefinition("std.println", { boolType }, voidType, (BytePtr)(printlnBool)));
+		binder.define(FunctionDefinition("std.println", { charType }, voidType, (BytePtr)(printlnChar)));
+		binder.define(FunctionDefinition("std.println", { charArrayType }, voidType, (BytePtr)(printlnCharArray)));
 
 		//Math
-		binder.define(FunctionDefinition("std.math.abs", { intType }, intType, (unsigned char*)(&abs)));
-		binder.define(FunctionDefinition("std.math.sqrt", { floatType }, floatType, (unsigned char*)(&sqrtf)));
-		binder.define(FunctionDefinition("std.math.sin", { floatType }, floatType, (unsigned char*)(&sinf)));
-		binder.define(FunctionDefinition("std.math.cos", { floatType }, floatType, (unsigned char*)(&cosf)));
+		binder.define(FunctionDefinition("std.math.abs", { intType }, intType, (BytePtr)(&abs)));
+		binder.define(FunctionDefinition("std.math.sqrt", { floatType }, floatType, (BytePtr)(&sqrtf)));
+		binder.define(FunctionDefinition("std.math.sin", { floatType }, floatType, (BytePtr)(&sinf)));
+		binder.define(FunctionDefinition("std.math.cos", { floatType }, floatType, (BytePtr)(&cosf)));
 
 		//String
 		auto stringType = vmState.typeProvider().makeType(TypeSystem::stringTypeName);
 		if (stringType != nullptr) {
 			StringRef::initialize(vmState);
-			binder.define(FunctionDefinition("std.equals", { stringType, stringType }, boolType, (unsigned char*)(&stringEquals)));
+			binder.define(FunctionDefinition("std.equals", { stringType, stringType }, boolType, (BytePtr)(&stringEquals)));
 		}
 	}
 }

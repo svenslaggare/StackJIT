@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include "type.h"
+#include "../stackjit.h"
 
 namespace stackjit {
 	class Type;
@@ -78,7 +79,7 @@ namespace stackjit {
 		std::unordered_map<std::string, int> mVirtualFunctionToIndex;
 		std::map<int, std::string> mIndexToVirtualFunction;
 		std::vector<std::string> mVirtualFunctionMapping;
-		unsigned char** mVirtualFunctionTable;
+		BytePtr* mVirtualFunctionTable;
 
 		//Inserts the given field
 		void insertField(std::string name, const Field& field);
@@ -135,10 +136,10 @@ namespace stackjit {
 		std::string getVirtualFunctionSignature(int index) const;
 
 		//Binds the given virtual function
-		void bindVirtualFunction(const FunctionDefinition& funcDef, unsigned char* funcPtr);
+		void bindVirtualFunction(const FunctionDefinition& funcDef, BytePtr funcPtr);
 
 		//Returns the virtual function table
-		unsigned char** virtualFunctionTable() const;
+		BytePtr* virtualFunctionTable() const;
 
 		//Creates the virtual function table
 		bool makeVirtualFunctionTable();
