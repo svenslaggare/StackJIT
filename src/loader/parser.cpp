@@ -127,7 +127,7 @@ namespace stackjit {
 			return newStr;
 		}
 
-		std::unordered_map<std::string, OpCodes> noOperandsInstructions	{
+		const std::unordered_map<std::string, OpCodes> noOperandsInstructions	{
 			{ "nop", OpCodes::NOP },
 			{ "pop", OpCodes::POP },
 			{ "dup", OpCodes::DUPLICATE },
@@ -153,7 +153,7 @@ namespace stackjit {
 			{ "ret", OpCodes::RET }
 		};
 
-		std::unordered_map<std::string, OpCodes> branchInstructions	{
+		const std::unordered_map<std::string, OpCodes> branchInstructions	{
 			{ "beq", OpCodes::BRANCH_EQUAL },
 			{ "bne", OpCodes::BRANCH_NOT_EQUAL },
 			{ "bgt", OpCodes::BRANCH_GREATER_THAN },
@@ -162,7 +162,7 @@ namespace stackjit {
 			{ "ble", OpCodes::BRANCH_LESS_THAN_OR_EQUAL }
 		};
 
-		std::unordered_map<std::string, OpCodes> strOperandInstructions	{
+		const std::unordered_map<std::string, OpCodes> stringOperandInstructions	{
 			{ "newarr", OpCodes::NEW_ARRAY },
 			{ "stelem", OpCodes::STORE_ELEMENT },
 			{ "ldelem", OpCodes::LOAD_ELEMENT },
@@ -397,14 +397,14 @@ namespace stackjit {
 				}
 
 				if (noOperandsInstructions.count(currentToLower) > 0) {
-					currentFunc.instructions.push_back(Instruction::make(noOperandsInstructions[currentToLower]));
+					currentFunc.instructions.push_back(Instruction::make(noOperandsInstructions.at(currentToLower)));
 					continue;
 				}
 
-				if (strOperandInstructions.count(currentToLower) > 0) {
+				if (stringOperandInstructions.count(currentToLower) > 0) {
 					std::string value = nextToken(tokens, i);
 					currentFunc.instructions.push_back(
-						Instruction::makeWithString(strOperandInstructions[currentToLower], value));
+						Instruction::makeWithString(stringOperandInstructions.at(currentToLower), value));
 					continue;
 				}
 
@@ -536,7 +536,7 @@ namespace stackjit {
 
 				if (branchInstructions.count(currentToLower) > 0) {
 					int target = stoi(nextToken(tokens, i));
-					currentFunc.instructions.push_back(Instruction::makeWithInt(branchInstructions[currentToLower], target));
+					currentFunc.instructions.push_back(Instruction::makeWithInt(branchInstructions.at(currentToLower), target));
 					continue;
 				}
 
@@ -641,7 +641,7 @@ namespace stackjit {
 
 	            auto funcName = currentFunc.name;
 
-	            //Get the struct name
+	            //Get the class name
 	            auto classNamePos = funcName.find("::");
 
 	            if (classNamePos == std::string::npos) {

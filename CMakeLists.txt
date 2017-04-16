@@ -87,7 +87,13 @@ set(SOURCE_FILES
         src/linux/codegenerator.cpp
         src/windows/codegenerator.cpp
         src/linux/runtime.cpp
-        src/windows/runtime.cpp src/loader/classloader.cpp src/loader/classloader.h src/loader/functionloader.cpp src/loader/functionloader.h src/loader/loaderhelpers.cpp src/loader/loaderhelpers.h)
+        src/windows/runtime.cpp
+        src/loader/classloader.cpp
+        src/loader/classloader.h
+        src/loader/functionloader.cpp
+        src/loader/functionloader.h
+        src/loader/loaderhelpers.cpp
+        src/loader/loaderhelpers.h)
 
 add_executable(stackjit ${SOURCE_FILES} src/stackjit.cpp)
 
