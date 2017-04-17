@@ -36,7 +36,8 @@ namespace Helpers {
 
 	#if defined(_WIN64) || defined(__MINGW32__)
 	const std::string executable = "Debug\\stackjit.exe";
-	const std::string baseDir = "../";
+//	const std::string baseDir = "../";
+	const std::string baseDir = "";
 	const std::string programsPath = baseDir + "programs";
 	#else
 	const std::string executable = "./stackjit";
