@@ -36,21 +36,12 @@ namespace Helpers {
 
 	#if defined(_WIN64) || defined(__MINGW32__)
 	const std::string executable = "Debug\\stackjit.exe";
-//	const std::string baseDir = "../";
-	const std::string baseDir = "";
-	const std::string programsPath = baseDir + "programs";
 	#else
 	const std::string executable = "./stackjit";
-
-	#if defined(USE_CMAKE)
-//	const std::string baseDir = "../";
-	const std::string baseDir = "";
-	#else
-	const std::string baseDir = "";
 	#endif
 
-	const std::string programsPath = baseDir + "programs";
-	#endif
+	const std::string programsPath = "programs";
+
 
 	//Invokes the VM with the given program
 	std::string invokeVM(std::string programName, std::string options = "--no-rtlib --allocs-before-gc 0") {
