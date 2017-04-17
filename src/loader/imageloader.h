@@ -6,7 +6,7 @@
 namespace stackjit {
 	using BinaryData = std::vector<char>;
 
-	//Represents an assembly image
+	//Represents an image of an assembly
 	class AssemblyImage {
 	private:
 		BinaryData mImageData;

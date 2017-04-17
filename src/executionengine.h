@@ -42,7 +42,7 @@ namespace stackjit {
 
 		ImageContainer mImageContainer;
 		std::unordered_map<std::string, ManagedFunction*> mLoadedFunctions;
-		bool mHasMainInit = false;
+		bool mHasMainInitialized = false;
 
 		//Generates code for loaded functions
 		void generateCode();

@@ -46,7 +46,7 @@ namespace stackjit {
 	    }
 	}
 
-	//Returns the function with the given name
+	//Returns the function with the given name inside the given image
 	const AssemblyParser::Function* getFunction(AssemblyImage& image, std::string funcName) {
 		for (auto& current : image.functions()) {
 			auto& func = current.second;
@@ -132,7 +132,7 @@ namespace stackjit {
 	void ExecutionEngine::load(bool loadBody) {
 		auto& binder = mVMState.binder();
 
-		if (!mHasMainInit) {
+		if (!mHasMainInitialized) {
 			//Load runtime library
 			loadRuntimeLibrary();
 		}
@@ -140,7 +140,7 @@ namespace stackjit {
 		//Load classes
 		ClassLoader::loadClasses(mVMState, mImageContainer);
 
-		if (!mHasMainInit) {
+		if (!mHasMainInitialized) {
 			//Load native functions
 			NativeLibrary::add(mVMState);
 
@@ -149,7 +149,7 @@ namespace stackjit {
 				TestLibrary::add(mVMState);
 			}
 
-			mHasMainInit = true; //Mark that the main initialization has been made
+			mHasMainInitialized = true; //Mark that the main initialization has been made
 		}
 
 		//Load functions

@@ -55,8 +55,7 @@ namespace stackjit {
 
 				current.first->setParentClass(parentClass);
 
-				if (TypeSystem::isSubtypeOf(parentClass, thisClass)
-					&& TypeSystem::isSubtypeOf(thisClass, parentClass)) {
+				if (TypeSystem::isSubtypeOf(parentClass, thisClass)	&& TypeSystem::isSubtypeOf(thisClass, parentClass)) {
 					auto parentName = parentClass->className();
 					auto thisName = thisClass->className();
 					if (parentName > thisName) {
