@@ -61,7 +61,8 @@ namespace stackjit {
 		};
 	}
 
-	std::vector<std::string> Loader::tokenize(std::istream& stream) {
+	//Tokenizes the given stream
+	std::vector<std::string> tokenize(std::istream& stream) {
 		std::vector<std::string> tokens;
 		std::string token;
 		bool isComment = false;
@@ -147,13 +148,13 @@ namespace stackjit {
 		return tokens;
 	}
 
-	void Loader::load(std::istream& stream, Loader::Assembly& assembly) {
-		ByteCodeParser byteCodeParser(Loader::tokenize(stream));
-		byteCodeParser.parse(assembly);
-	}
-
 	ByteCodeParser::ByteCodeParser(std::vector<std::string> tokens)
 			: mTokens(tokens) {
+
+	}
+
+	ByteCodeParser::ByteCodeParser(std::istream& stream)
+		: mTokens(tokenize(stream)) {
 
 	}
 
@@ -231,8 +232,7 @@ namespace stackjit {
 			throw std::runtime_error("The attribute '" + attributeName + "' is already defined.'");
 		}
 
-		Loader::Attribute attribute;
-		attribute.name = attributeName;
+		Loader::Attribute attribute(attributeName);
 
 		while (true) {
 			auto key = nextToken();
@@ -489,9 +489,9 @@ namespace stackjit {
 				}
 
 				//Parse field
-				Loader::Field field;
-				field.name = current;
-				field.type = nextToken();
+				auto fieldName = current;
+				auto fieldType = nextToken();
+				Loader::Field field(fieldName, fieldType);
 
 				currentClass.fields.push_back(field);
 				currentField = &currentClass.fields.back();
@@ -518,8 +518,7 @@ namespace stackjit {
 
 				parseFunctionBody(assembly, currentFunction);
 			} else if (topLevelCurrent == "class") {
-				Class currentClass;
-				currentClass.name = nextToken();
+				Class currentClass(nextToken());
 
 				if (peekNextToken() == "extends") {
 					nextToken();
@@ -557,5 +556,10 @@ namespace stackjit {
 				throw std::runtime_error("Invalid identifier '" + topLevelCurrent + "'");
 			}
 		}
+	}
+
+	void Loader::load(std::istream& stream, Loader::Assembly& assembly) {
+		ByteCodeParser byteCodeParser(stream);
+		byteCodeParser.parse(assembly);
 	}
 }

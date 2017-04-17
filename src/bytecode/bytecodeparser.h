@@ -12,6 +12,9 @@ namespace stackjit {
 
 		bool mLocalsSet = false;
 
+		//Creates a new byte code parser using the given tokens
+		ByteCodeParser(std::vector<std::string> tokens);
+
 		//Returns the current token
 		std::string currentToken() const;
 
@@ -45,18 +48,14 @@ namespace stackjit {
 		//Parses a class body
 		void parseClassBody(Loader::Assembly& assembly, Loader::Class& currentClass);
 	public:
-		//Creates a new byte code parser using the given tokens
-		ByteCodeParser(std::vector<std::string> tokens);
+		//Parses the byte code in the given stream
+		ByteCodeParser(std::istream& stream);
 
 		//Parses the loaded tokens into the given assembly
 		void parse(Loader::Assembly& assembly);
 	};
 
-	//The assembly parser
 	namespace Loader {
-		//Tokenizes from the given stream
-		std::vector<std::string> tokenize(std::istream& stream);
-
 		//Loads an assembly from the given stream
 		void load(std::istream& stream, Loader::Assembly& assembly);
 	}

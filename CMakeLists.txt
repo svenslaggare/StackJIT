@@ -119,7 +119,9 @@ set(STACK_ASSEMBLER_SOURCE_FILES
         assembler/src/imageloader.cpp
         assembler/src/imageloader.h
         assembler/src/parser.cpp
-        assembler/src/parser.h assembler/src/bytecodeparser.cpp assembler/src/bytecodeparser.h)
+        assembler/src/parser.h
+        assembler/src/bytecodeparser.cpp
+        assembler/src/bytecodeparser.h)
 
 add_executable(stackasm ${STACK_ASSEMBLER_SOURCE_FILES} assembler/src/stackasm.cpp)
 

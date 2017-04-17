@@ -74,8 +74,11 @@ namespace stackjit {
 
 		//Represents an attribute
 		struct Attribute {
-			std::string name;
+			const std::string name;
 			std::unordered_map<std::string, std::string> values;
+
+			//Creates a new attribute with the given name
+			Attribute(std::string name);
 		};
 
 		//Represents an attributes container
@@ -110,21 +113,25 @@ namespace stackjit {
 
 		//Represents a field in a class
 		struct Field {
-			std::string name;
-			std::string type;
+			const std::string name;
+			const std::string type;
 
 			AttributeContainer attributes;
+
+			//Creates a new field
+			Field(std::string name, std::string type);
 		};
 
 		//Represents a class
 		struct Class {
-			std::string name;
+			const std::string name;
 			std::vector<Field> fields;
 			std::string parentClassName;
 
 			AttributeContainer attributes;
 
-			//Creates a new class
+			//Creates a new class of the given name
+			Class(std::string name);
 			Class();
 		};
 

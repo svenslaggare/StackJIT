@@ -93,6 +93,11 @@ namespace stackjit {
 		return inst;
 	}
 
+	Loader::Attribute::Attribute(std::string name)
+		: name(name) {
+
+	}
+
 	Loader::Function::Function()
 		: isMemberFunction(false), isExternal(false) {
 
@@ -104,6 +109,16 @@ namespace stackjit {
 
 	std::size_t Loader::Function::numLocals() const {
 		return localTypes.size();
+	}
+
+	Loader::Field::Field(std::string name, std::string type)
+		: name(name), type(type) {
+
+	}
+
+	Loader::Class::Class(std::string name)
+		: name(name) {
+
 	}
 
 	Loader::Class::Class() {

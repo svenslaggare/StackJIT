@@ -175,10 +175,11 @@ namespace stackjit {
 
 			auto numFields = loadData<std::size_t>(mImageData, bodyOffset);
 			for (std::size_t i = 0; i < numFields; i++) {
-				Loader::Field field;
-				field.attributes = AssemblyImageLoader::loadAttributes(mImageData, bodyOffset);
-				field.name = loadString(mImageData, bodyOffset);
-				field.type = loadString(mImageData, bodyOffset);
+				auto attributes = AssemblyImageLoader::loadAttributes(mImageData, bodyOffset);
+				auto fieldName = loadString(mImageData, bodyOffset);
+				auto fieldType = loadString(mImageData, bodyOffset);
+				Loader::Field field(fieldName, fieldType);
+				field.attributes = attributes;
 				classDef.fields.emplace_back(field);
 			}
 
@@ -201,8 +202,7 @@ namespace stackjit {
 		Loader::AttributeContainer attributes;
 		std::size_t numAttributes = loadData<std::size_t>(data, index);
 		for (std::size_t i = 0; i < numAttributes; i++) {
-			Loader::Attribute attribute;
-			attribute.name = loadString(data, index);
+			Loader::Attribute attribute(loadString(data, index));
 
 			std::size_t numValues = loadData<std::size_t>(data, index);
 			for (std::size_t j = 0; j < numValues; j++) {
@@ -243,8 +243,7 @@ namespace stackjit {
 	}
 
 	Loader::Class AssemblyImageLoader::loadClassDefinition(BinaryData& data, std::size_t& index) {
-		Loader::Class classDef;
-		classDef.name = loadString(data, index);
+		Loader::Class classDef(loadString(data, index));
 		return classDef;
 	}
 
