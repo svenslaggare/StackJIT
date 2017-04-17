@@ -189,6 +189,9 @@ namespace stackjit {
 		//Returns the underlying data
 		std::vector<unsigned char>& data();
 
+		//Returns the amount of assembled code
+		std::size_t size() const;
+
 		//Adds the second register to the first
 		void add(IntRegister destination, IntRegister source, bool is32Bits = DEFAULT_IS_32_BITS);
 		void add(FloatRegisters destination, FloatRegisters source);

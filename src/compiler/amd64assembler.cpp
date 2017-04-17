@@ -144,6 +144,10 @@ namespace stackjit {
 		return mData;
 	}
 
+	std::size_t Amd64Assembler::size() const {
+		return mData.size();
+	}
+
 	void Amd64Assembler::generateTwoRegistersInstruction(
 		IntRegister op1,
 		IntRegister op2,

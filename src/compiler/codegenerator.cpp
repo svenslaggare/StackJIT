@@ -202,8 +202,8 @@ namespace stackjit {
 			assembler.move(MemoryOperand(Registers::AX), 1);
 
 			//Set the jump targets
-			Helpers::setValue(assembler.data(), firstJump + 2, (int) (assembler.data().size() - firstJump - 6));
-			Helpers::setValue(assembler.data(), secondJump + 2, (int) (assembler.data().size() - secondJump - 6));
+			Helpers::setValue(assembler.data(), firstJump + 2, (int)(assembler.data().size() - firstJump - 6));
+			Helpers::setValue(assembler.data(), secondJump + 2, (int)(assembler.data().size() - secondJump - 6));
 		}
 	}
 
@@ -213,16 +213,15 @@ namespace stackjit {
 											int instructionIndex) {
 		auto& function = functionData.function;
 		auto& operandStack = functionData.operandStack;
-		auto& generatedCode = function.generatedCode();
-		Amd64Assembler assembler(generatedCode);
+		auto& assembler = functionData.assembler;
 		const int stackOffset = 1; //The offset for variables allocated on the stack
 
 		//Make the mapping
-		functionData.instructionNumMapping.push_back((int)generatedCode.size());
+		functionData.instructionNumMapping.push_back((int)assembler.size());
 
 		switch (instruction.opCode()) {
 			case OpCodes::NOP:
-				generatedCode.push_back(0x90); //nop
+				assembler.data().push_back(0x90); //nop
 				break;
 			case OpCodes::POP:
 				operandStack.popReg(Registers::AX);
@@ -372,7 +371,7 @@ namespace stackjit {
 				}
 
 				//Jump
-				std::size_t compareJump = generatedCode.size();
+				std::size_t compareJump = assembler.size();
 				std::size_t jump = 0;
 				std::size_t trueBranchStart = 0;
 				std::size_t falseBranchStart = 0;
@@ -408,18 +407,18 @@ namespace stackjit {
 				operandStack.reserveSpace();
 
 				//False branch
-				falseBranchStart = generatedCode.size();
+				falseBranchStart = assembler.size();
 				operandStack.pushInt(0, false);
-				jump = generatedCode.size();
+				jump = assembler.size();
 				assembler.jump(JumpCondition::Always, 0);
 
 				//True branch
-				trueBranchStart = generatedCode.size();
+				trueBranchStart = assembler.size();
 				operandStack.pushInt(1, false);
 
 				//Set the jump targets
-				Helpers::setValue(generatedCode, jump + 1, (int)(generatedCode.size() - trueBranchStart));
-				Helpers::setValue(generatedCode, compareJump + 2, (int)(trueBranchStart - falseBranchStart));
+				Helpers::setValue(assembler.data(), jump + 1, (int)(assembler.size() - trueBranchStart));
+				Helpers::setValue(assembler.data(), compareJump + 2, (int)(trueBranchStart - falseBranchStart));
 				break;
 			}
 			case OpCodes::LOAD_LOCAL:
@@ -507,10 +506,10 @@ namespace stackjit {
 							functionData.unresolvedCalls.push_back(
 								UnresolvedFunctionCall(
 									FunctionCallType::Relative,
-									generatedCode.size(),
+									assembler.size(),
 									funcToCall));
 						} else {
-							Helpers::setValue(generatedCode, callIndex, (int)generatedCode.size());
+							Helpers::setValue(assembler.data(), callIndex, (int)assembler.size());
 						}
 
 						//Make the call
@@ -528,7 +527,7 @@ namespace stackjit {
 							functionData.unresolvedCalls.push_back(
 								UnresolvedFunctionCall(
 									FunctionCallType::Absolute,
-									generatedCode.size(),
+									assembler.size(),
 									funcToCall));
 						}
 
@@ -591,7 +590,7 @@ namespace stackjit {
 
 				//As the exact target in native instructions isn't known, defer to later.
 				functionData.unresolvedBranches.insert({
-					generatedCode.size() - 5,
+					assembler.size() - 5,
 					BranchTarget((unsigned int)instruction.intValue, 5)
 				 });
 				break;
@@ -647,7 +646,7 @@ namespace stackjit {
 
 				//As the exact target in native instructions isn't known, defer to later.
 				functionData.unresolvedBranches.insert({
-					generatedCode.size() - 6,
+					assembler.size() - 6,
 					BranchTarget((unsigned int)instruction.intValue, 6)
 				});
 				break;
@@ -661,7 +660,7 @@ namespace stackjit {
 						vmState.typeProvider().getType(TypeSystem::arrayTypeName(elemType)));
 
 				if (!vmState.config.disableGC) {
-					generateGCCall(generatedCode, function, instructionIndex);
+					generateGCCall(assembler.data(), function, instructionIndex);
 				}
 
 				//The pointer to the type as the first arg
@@ -771,7 +770,7 @@ namespace stackjit {
 
 				//Call the garbageCollect runtime function
 				if (!vmState.config.disableGC) {
-					generateGCCall(generatedCode, function, instructionIndex);
+					generateGCCall(assembler.data(), function, instructionIndex);
 				}
 
 				//Push the call
@@ -831,10 +830,10 @@ namespace stackjit {
 					functionData.unresolvedCalls.push_back(
 						UnresolvedFunctionCall(
 							FunctionCallType::Relative,
-							generatedCode.size(),
+							assembler.size(),
 							constructorToCall));
 				} else {
-					Helpers::setValue(generatedCode, callIndex, (int)generatedCode.size());
+					Helpers::setValue(assembler.data(), callIndex, (int)assembler.size());
 				}
 
 				//Call the constructor
@@ -916,7 +915,7 @@ namespace stackjit {
 			}
 			case OpCodes::LOAD_STRING: {
 				if (!vmState.config.disableGC) {
-					generateGCCall(generatedCode, function, instructionIndex);
+					generateGCCall(assembler.data(), function, instructionIndex);
 				}
 
 				//The pointer to the string as the first arg

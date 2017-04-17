@@ -76,6 +76,7 @@ namespace stackjit {
 	struct FunctionCompilationData {
 		ManagedFunction& function;
 		OperandStack operandStack;
+		Amd64Assembler assembler;
 
 		//Unresolved branches
 		std::unordered_map<std::size_t, BranchTarget> unresolvedBranches;

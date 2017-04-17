@@ -16,7 +16,7 @@ namespace stackjit {
 	}
 
 	FunctionCompilationData::FunctionCompilationData(ManagedFunction& function)
-		: function(function), operandStack(function) {
+		: function(function), operandStack(function), assembler(function.generatedCode()) {
 
 	}
 
