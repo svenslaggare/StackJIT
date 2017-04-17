@@ -157,6 +157,14 @@ add_dependencies(stackjit BuildRuntimeLibrary)
 # Tests
 set(TESTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
+# Move tests files to build dir
+file(GLOB_RECURSE TEST_FILES programs/*.txt)
+
+foreach (_currentFile ${TEST_FILES})
+    file(RELATIVE_PATH relativePath ${CMAKE_CURRENT_SOURCE_DIR} ${_currentFile})
+    configure_file(${_currentFile} ${CMAKE_CURRENT_BINARY_DIR}/${relativePath} COPYONLY)
+endforeach()
+
 find_package(CxxTest)
 if(CXXTEST_FOUND)
     add_custom_target(

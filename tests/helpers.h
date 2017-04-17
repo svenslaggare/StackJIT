@@ -42,7 +42,8 @@ namespace Helpers {
 	const std::string executable = "./stackjit";
 
 	#if defined(USE_CMAKE)
-	const std::string baseDir = "../";
+//	const std::string baseDir = "../";
+	const std::string baseDir = "";
 	#else
 	const std::string baseDir = "";
 	#endif
