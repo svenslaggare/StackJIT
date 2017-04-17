@@ -25,7 +25,7 @@ namespace stackjit {
 		}
 	}
 
-	void ClassLoader::loadClasses(VMState& vmState,	const std::vector<stackjit::AssemblyParser::Class>& classes) {
+	void ClassLoader::defineClasses(VMState& vmState, const std::vector<AssemblyParser::Class>& classes) {
 		//First, create the classes
 		std::vector<std::pair<ClassMetadata*, std::string>> inheritingClasses;
 		for (auto& classDef : classes) {
@@ -67,8 +67,9 @@ namespace stackjit {
 				}
 			}
 		}
+	}
 
-		//Then add the fields definitions
+	void ClassLoader::defineFields(VMState& vmState, const std::vector<AssemblyParser::Class>& classes) {
 		for (auto& classDef : classes) {
 			auto& classMetadata = vmState.classProvider().getMetadata(classDef.name);
 
@@ -77,12 +78,19 @@ namespace stackjit {
 				classMetadata.addField(field.name, LoaderHelpers::getType(vmState, field.type), accessModifier);
 			}
 		}
+	}
 
-		//Finally, create the actual fields
+	void ClassLoader::createFields(VMState& vmState, const std::vector<AssemblyParser::Class>& classes) {
 		for (auto& classDef : classes) {
 			auto& classMetadata = vmState.classProvider().getMetadata(classDef.name);
 			classMetadata.makeFields();
 		}
+	}
+
+	void ClassLoader::loadClasses(VMState& vmState,	const std::vector<stackjit::AssemblyParser::Class>& classes) {
+		defineClasses(vmState, classes);
+		defineFields(vmState, classes);
+		createFields(vmState, classes);
 	}
 
 	void ClassLoader::loadClasses(VMState& vmState, ImageContainer& imageContainer) {

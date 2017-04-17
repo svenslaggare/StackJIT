@@ -9,6 +9,15 @@ namespace stackjit {
 
 	//Represents a class loader
 	namespace ClassLoader {
+		//Defines the given classes (not the fields)
+		void defineClasses(VMState& vmState, const std::vector<AssemblyParser::Class>& classes);
+
+		//Defines the fields for the given classes, assuming they have already been defined
+		void defineFields(VMState& vmState, const std::vector<AssemblyParser::Class>& classes);
+
+		//Create the fields assuming that they have already been defined
+		void createFields(VMState& vmState, const std::vector<AssemblyParser::Class>& classes);
+
 		//Loads the given classes
 		void loadClasses(VMState& vmState, const std::vector<AssemblyParser::Class>& classes);
 
