@@ -8,7 +8,7 @@
 
 int main(int argc, char* argv[]) {
 	try {
-		std::vector<stackjit::AssemblyParser::Assembly> assemblies;
+		std::vector<stackjit::Loader::Assembly> assemblies;
 		std::string outputFile = "library.simg";
 
 		bool disassemble = false;
@@ -32,8 +32,8 @@ int main(int argc, char* argv[]) {
 				if (!disassemble) {
 					std::ifstream fileStream(file);
 					if (fileStream.is_open()) {
-						stackjit::AssemblyParser::Assembly assembly;
-						stackjit::AssemblyParser::load(fileStream, assembly);
+						stackjit::Loader::Assembly assembly;
+						stackjit::Loader::load(fileStream, assembly);
 						assemblies.emplace_back(assembly);
 					} else {
 						std::cerr << "Could not load file '" + file + "'" << std::endl;

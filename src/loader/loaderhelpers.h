@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include "../type/classmetadata.h"
-#include "parser.h"
+#include "loader.h"
 
 namespace stackjit {
 	class VMState;
@@ -17,9 +17,9 @@ namespace stackjit {
 		const ClassType* getClassType(VMState& vmState, std::string typeName);
 
 		//Returns the access modifier or the default modifier
-		AccessModifier getAccessModifier(const AssemblyParser::AttributeContainer& attributeContainer);
+		AccessModifier getAccessModifier(const Loader::AttributeContainer& attributeContainer);
 
 		//Indicates if the given function is virtual
-		bool getIsVirtual(const AssemblyParser::AttributeContainer& attributeContainer);
+		bool getIsVirtual(const Loader::AttributeContainer& attributeContainer);
 	}
 }

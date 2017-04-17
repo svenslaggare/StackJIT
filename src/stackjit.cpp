@@ -203,8 +203,8 @@ int main(int argc, char* argv[]) {
 		//Load the program
 		switch (vmState.config.programLoadMode) {
 			case ProgramLoadMode::Stdin: {
-				AssemblyParser::Assembly program;
-				AssemblyParser::load(std::cin, program);
+				Loader::Assembly program;
+				Loader::load(std::cin, program);
 				engine.loadAssembly(program, AssemblyType::Program);
 				break;
 			}
@@ -214,8 +214,8 @@ int main(int argc, char* argv[]) {
 			case ProgramLoadMode::File: {
 				std::ifstream file(options.program);
 				if (file.is_open()) {
-					AssemblyParser::Assembly program;
-					AssemblyParser::load(file, program);
+					Loader::Assembly program;
+					Loader::load(file, program);
 					engine.loadAssembly(program, AssemblyType::Program);
 				} else {
 					throw std::runtime_error("Could not load the program.");

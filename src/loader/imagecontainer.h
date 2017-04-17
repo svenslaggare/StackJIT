@@ -4,7 +4,7 @@
 #include <unordered_map>
 
 namespace stackjit {
-	namespace AssemblyParser {
+	namespace Loader {
 		struct Function;
 	}
 
@@ -28,7 +28,7 @@ namespace stackjit {
 		void addImage(AssemblyImage* image);
 
 		//Returns the given function
-		const AssemblyParser::Function* getFunction(std::string function) const;
+		const Loader::Function* getFunction(std::string function) const;
 
 		//Loads the body given function if not already loaded
 		void loadFunctionBody(std::string function);

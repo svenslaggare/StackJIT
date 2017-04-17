@@ -1,2 +1,2 @@
 #include "parser.h"
-#include "../../src/loader/parser.cpp"
+#include "../../src/loader/loader.cpp"

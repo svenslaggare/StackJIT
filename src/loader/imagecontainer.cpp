@@ -28,7 +28,7 @@ namespace stackjit {
 		}
 	}
 
-	const AssemblyParser::Function* ImageContainer::getFunction(std::string function) const {
+	const Loader::Function* ImageContainer::getFunction(std::string function) const {
 		if (mFuncToImage.count(function) > 0) {
 			return &mFuncToImage.at(function)->functions().at(function);
 		}

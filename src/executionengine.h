@@ -1,7 +1,7 @@
 #pragma once
 #include "compiler/binder.h"
 #include "compiler/jit.h"
-#include "loader/parser.h"
+#include "loader/loader.h"
 #include "loader/verifier.h"
 #include "runtime/callstack.h"
 #include "loader/imageloader.h"
@@ -14,7 +14,7 @@ namespace stackjit {
 	class Assembly;
 	class ManagedFunction;
 
-	namespace AssemblyParser {
+	namespace Loader {
 		struct Assembly;
 	}
 
@@ -81,7 +81,7 @@ namespace stackjit {
 		bool loadAssembly(std::string filePath, AssemblyType assemblyType = AssemblyType::Library);
 
 		//Loads the given assembly
-		void loadAssembly(AssemblyParser::Assembly& assembly, AssemblyType assemblyType);
+		void loadAssembly(Loader::Assembly& assembly, AssemblyType assemblyType);
 
 		//Loads the assemblies
 		void load(bool loadBody = false);

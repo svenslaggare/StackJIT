@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "parser.h"
+#include "loader.h"
 
 namespace stackjit {
 	class VMState;
@@ -13,17 +13,17 @@ namespace stackjit {
 	namespace FunctionLoader {
 		//Generates a definition for the given function
 		void generateDefinition(VMState& vmState,
-								const AssemblyParser::Function& function,
+								const Loader::Function& function,
 								FunctionDefinition& definition);
 
 		//Loads the given external function
 		void loadExternal(VMState& vmState,
-						  const AssemblyParser::Function& function,
+						  const Loader::Function& function,
 						  FunctionDefinition& loadedFunction);
 
 		//Loads the given managed function
 		ManagedFunction* loadManaged(VMState& vmState,
-									 const AssemblyParser::Function& function,
+									 const Loader::Function& function,
 									 const FunctionDefinition& functionDefinition);
 	}
 }

@@ -11,7 +11,7 @@
 namespace stackjit {
 	namespace {
 		//Loads the given instruction
-		Instruction loadInstruction(VMState& vmState, const AssemblyParser::Instruction& instruction) {
+		Instruction loadInstruction(VMState& vmState, const Loader::Instruction& instruction) {
 			Instruction newInst(instruction.opCode);
 
 			newInst.intValue = instruction.intValue;
@@ -34,7 +34,7 @@ namespace stackjit {
 	}
 
 	void FunctionLoader::generateDefinition(VMState& vmState,
-											const AssemblyParser::Function& function,
+											const Loader::Function& function,
 											FunctionDefinition& definition) {
 		auto returnType = LoaderHelpers::getType(vmState, function.returnType);
 
@@ -68,7 +68,7 @@ namespace stackjit {
 	}
 
 	void FunctionLoader::loadExternal(VMState& vmState,
-									  const AssemblyParser::Function& function,
+									  const Loader::Function& function,
 									  FunctionDefinition& loadedFunction) {
 		if (!function.isExternal) {
 			throw std::runtime_error("Expected an external function");
@@ -84,7 +84,7 @@ namespace stackjit {
 	}
 
 	ManagedFunction* FunctionLoader::loadManaged(VMState& vmState,
-												 const AssemblyParser::Function& function,
+												 const Loader::Function& function,
 												 const FunctionDefinition& functionDefinition) {
 		if (function.isExternal) {
 			throw std::runtime_error("Expected a managed function");

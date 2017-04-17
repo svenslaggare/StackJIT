@@ -61,7 +61,7 @@ namespace stackjit {
 		};
 	}
 
-	std::vector<std::string> AssemblyParser::tokenize(std::istream& stream) {
+	std::vector<std::string> Loader::tokenize(std::istream& stream) {
 		std::vector<std::string> tokens;
 		std::string token;
 		bool isComment = false;
@@ -147,8 +147,8 @@ namespace stackjit {
 		return tokens;
 	}
 
-	void AssemblyParser::load(std::istream& stream, AssemblyParser::Assembly& assembly) {
-		ByteCodeParser byteCodeParser(AssemblyParser::tokenize(stream));
+	void Loader::load(std::istream& stream, Loader::Assembly& assembly) {
+		ByteCodeParser byteCodeParser(Loader::tokenize(stream));
 		byteCodeParser.parse(assembly);
 	}
 
@@ -190,7 +190,7 @@ namespace stackjit {
 		}
 	}
 
-	void ByteCodeParser::parseFunctionDefinition(AssemblyParser::Function& function) {
+	void ByteCodeParser::parseFunctionDefinition(Loader::Function& function) {
 		function.name = nextToken();
 
 		if (nextToken() != "(") {
@@ -220,7 +220,7 @@ namespace stackjit {
 		}
 	}
 
-	void ByteCodeParser::parseAttribute(AssemblyParser::AttributeContainer& container) {
+	void ByteCodeParser::parseAttribute(Loader::AttributeContainer& container) {
 		auto attributeName = nextToken();
 
 		if (nextToken() != "(") {
@@ -231,7 +231,7 @@ namespace stackjit {
 			throw std::runtime_error("The attribute '" + attributeName + "' is already defined.'");
 		}
 
-		AssemblyParser::Attribute attribute;
+		Loader::Attribute attribute;
 		attribute.name = attributeName;
 
 		while (true) {
@@ -258,8 +258,8 @@ namespace stackjit {
 		container.insert({attributeName, attribute});
 	}
 
-	void ByteCodeParser::parseInstruction(AssemblyParser::Function& currentFunction) {
-		using namespace AssemblyParser;
+	void ByteCodeParser::parseInstruction(Loader::Function& currentFunction) {
+		using namespace Loader;
 		auto currentToLower = currentTokenToLower();
 
 		if (currentToLower == "@") {
@@ -438,7 +438,7 @@ namespace stackjit {
 		throw std::runtime_error("'" + currentToken() + "' is not a valid instruction.");
 	}
 
-	void ByteCodeParser::parseFunctionBody(AssemblyParser::Assembly& assembly, AssemblyParser::Function& currentFunction) {
+	void ByteCodeParser::parseFunctionBody(Loader::Assembly& assembly, Loader::Function& currentFunction) {
 		nextToken();
 		if (currentToken() != "{") {
 			throw std::runtime_error("Expected '{' after function definition.");
@@ -459,8 +459,8 @@ namespace stackjit {
 		}
 	}
 
-	void ByteCodeParser::parseClassBody(AssemblyParser::Assembly& assembly, AssemblyParser::Class& currentClass) {
-		using namespace AssemblyParser;
+	void ByteCodeParser::parseClassBody(Loader::Assembly& assembly, Loader::Class& currentClass) {
+		using namespace Loader;
 
 		nextToken();
 		if (currentToken() != "{") {
@@ -489,7 +489,7 @@ namespace stackjit {
 				}
 
 				//Parse field
-				AssemblyParser::Field field;
+				Loader::Field field;
 				field.name = current;
 				field.type = nextToken();
 
@@ -501,8 +501,8 @@ namespace stackjit {
 		}
 	}
 
-	void ByteCodeParser::parse(AssemblyParser::Assembly& assembly) {
-		using namespace AssemblyParser;
+	void ByteCodeParser::parse(Loader::Assembly& assembly) {
+		using namespace Loader;
 
 		mTokenIndex = 0;
 		while (mTokenIndex < mTokens.size()) {

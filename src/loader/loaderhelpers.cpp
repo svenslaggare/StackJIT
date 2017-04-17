@@ -20,7 +20,7 @@ namespace stackjit {
 		return (const ClassType*)vmState.typeProvider().makeType("Ref." + typeName);
 	}
 
-	AccessModifier LoaderHelpers::getAccessModifier(const AssemblyParser::AttributeContainer& attributeContainer) {
+	AccessModifier LoaderHelpers::getAccessModifier(const Loader::AttributeContainer& attributeContainer) {
 		AccessModifier accessModifier = DEFAULT_ACCESS_MODIFIER;
 
 		if (attributeContainer.count("AccessModifier") > 0) {
@@ -36,7 +36,7 @@ namespace stackjit {
 		return accessModifier;
 	}
 
-	bool LoaderHelpers::getIsVirtual(const AssemblyParser::AttributeContainer& attributeContainer) {
+	bool LoaderHelpers::getIsVirtual(const Loader::AttributeContainer& attributeContainer) {
 		bool isVirtual = false;
 
 		if (attributeContainer.count("Virtual") > 0) {

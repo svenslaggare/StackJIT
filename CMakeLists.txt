@@ -29,8 +29,8 @@ set(SOURCE_FILES
         src/compiler/memory.cpp
         src/runtime/native.cpp
         src/runtime/native.h
-        src/loader/parser.cpp
-        src/loader/parser.h
+        src/loader/loader.cpp
+        src/loader/loader.h
         src/runtime/runtime.cpp
         src/runtime/runtime.h
         src/stackjit.h

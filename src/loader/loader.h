@@ -5,8 +5,7 @@
 #include <unordered_map>
 
 namespace stackjit {
-	//The assembly parser
-	namespace AssemblyParser {
+	namespace Loader {
 		//The instruction formats
 		enum class InstructionFormats : char {
 			OpCodeOnly,
@@ -136,6 +135,6 @@ namespace stackjit {
 		};
 
 		//Returns the signature for the given function
-		std::string getSignature(const AssemblyParser::Function& function);
+		std::string getSignature(const Loader::Function& function);
 	}
 }

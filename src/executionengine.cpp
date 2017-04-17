@@ -48,7 +48,7 @@ namespace stackjit {
 	}
 
 	//Returns the function with the given name inside the given image
-	const AssemblyParser::Function* getFunction(AssemblyImage& image, std::string funcName) {
+	const Loader::Function* getFunction(AssemblyImage& image, std::string funcName) {
 		for (auto& current : image.functions()) {
 			auto& func = current.second;
 			if (func.name == funcName) {
@@ -91,7 +91,7 @@ namespace stackjit {
 		loadImage(image, assemblyType);
 	}
 
-	void ExecutionEngine::loadAssembly(AssemblyParser::Assembly& assembly, AssemblyType assemblyType) {
+	void ExecutionEngine::loadAssembly(Loader::Assembly& assembly, AssemblyType assemblyType) {
 	    loadImage(new AssemblyImage(assembly), assemblyType);
 	}
 
@@ -112,8 +112,8 @@ namespace stackjit {
 		if (openMode == std::ios::binary) {
 			loadImage(fileStream, assemblyType);
 		} else {
-			AssemblyParser::Assembly assembly;
-			AssemblyParser::load(fileStream, assembly);
+			Loader::Assembly assembly;
+			Loader::load(fileStream, assembly);
 			loadAssembly(assembly, assemblyType);
 		}
 

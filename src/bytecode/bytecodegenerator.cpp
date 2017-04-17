@@ -3,7 +3,7 @@
 
 namespace stackjit {
 	namespace {
-		std::unordered_map<unsigned char, std::string> opCodeTable = {
+		const std::unordered_map<unsigned char, std::string> opCodeTable = {
 			{ (unsigned char)OpCodes::NOP,                           "nop" },
 			{ (unsigned char)OpCodes::POP,                           "pop" },
 			{ (unsigned char)OpCodes::DUPLICATE,                     "dup" },
@@ -68,7 +68,7 @@ namespace stackjit {
 	}
 
 	void ByteCodeGenerator::generateAttributes(std::ostream& stream,
-											   const AssemblyParser::AttributeContainer& attributes) {
+											   const Loader::AttributeContainer& attributes) {
 		for (auto& current : attributes) {
 			auto& attribute = current.second;
 			stream << "\t@" << attribute.name << "(";
@@ -89,9 +89,9 @@ namespace stackjit {
 		}
 	}
 
-	void ByteCodeGenerator::generateFunction(std::ostream& stream, const AssemblyParser::Function& function) {
+	void ByteCodeGenerator::generateFunction(std::ostream& stream, const Loader::Function& function) {
 		if (function.isExternal) {
-			stream << "extern " << AssemblyParser::getSignature(function) << " " << function.returnType << std::endl;
+			stream << "extern " << Loader::getSignature(function) << " " << function.returnType << std::endl;
 		} else {
 			if (function.isMemberFunction) {
 				stream << "member ";
@@ -99,7 +99,7 @@ namespace stackjit {
 				stream << "func ";
 			}
 
-			stream << AssemblyParser::getSignature(function) << " " << function.returnType << std::endl;
+			stream << Loader::getSignature(function) << " " << function.returnType << std::endl;
 
 			stream << "{" << std::endl;
 
@@ -123,24 +123,24 @@ namespace stackjit {
 				stream << "\t" << opCode;
 
 				switch (inst.format) {
-					case AssemblyParser::InstructionFormats::OpCodeOnly:
+					case Loader::InstructionFormats::OpCodeOnly:
 						break;
-					case AssemblyParser::InstructionFormats::IntData:
+					case Loader::InstructionFormats::IntData:
 						stream << " " << inst.intValue;
 						break;
-					case AssemblyParser::InstructionFormats::FloatData:
+					case Loader::InstructionFormats::FloatData:
 						stream << " " << inst.floatValue;
 						break;
-					case AssemblyParser::InstructionFormats::CharData:
+					case Loader::InstructionFormats::CharData:
 						stream << " " << (int)inst.charValue;
 						break;
-					case AssemblyParser::InstructionFormats::StringData:
+					case Loader::InstructionFormats::StringData:
 						stream << " " << inst.stringValue;
 						break;
-					case AssemblyParser::InstructionFormats::StringConstantData:
+					case Loader::InstructionFormats::StringConstantData:
 						stream << " " << escapedString(inst.stringValue);
 						break;
-					case AssemblyParser::InstructionFormats::Call: {
+					case Loader::InstructionFormats::Call: {
 						stream << " " << inst.stringValue;
 						stream << "(";
 						bool isFirst = true;
@@ -158,7 +158,7 @@ namespace stackjit {
 						stream << ")";
 						break;
 					}
-					case AssemblyParser::InstructionFormats::CallInstance: {
+					case Loader::InstructionFormats::CallInstance: {
 						stream << " " << inst.calledClassType << "::" << inst.stringValue;
 						stream << "(";
 						bool isFirst = true;
@@ -185,7 +185,7 @@ namespace stackjit {
 		}
 	}
 
-	void ByteCodeGenerator::generateClass(std::ostream& stream, const AssemblyParser::Class& classDef) {
+	void ByteCodeGenerator::generateClass(std::ostream& stream, const Loader::Class& classDef) {
 		stream << "class " << classDef.name
 			   << (classDef.parentClassName != "" ? (" extends " + classDef.parentClassName) : "")
 			   << std::endl;

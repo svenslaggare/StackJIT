@@ -1,5 +1,5 @@
 #pragma once
-#include "../loader/parser.h"
+#include "../loader/loader.h"
 #include <string>
 #include <vector>
 
@@ -28,36 +28,36 @@ namespace stackjit {
 		void nextTokenAtEnd();
 
 		//Parses a function definition
-		void parseFunctionDefinition(AssemblyParser::Function& function);
+		void parseFunctionDefinition(Loader::Function& function);
 
 		//Reads the call parameters
 		void readCallParameters(std::vector<std::string>& parameters);
 
 		//Parses an attribute
-		void parseAttribute(AssemblyParser::AttributeContainer& container);
+		void parseAttribute(Loader::AttributeContainer& container);
 
 		//Parses an instruction
-		void parseInstruction(AssemblyParser::Function& currentFunction);
+		void parseInstruction(Loader::Function& currentFunction);
 
 		//Parses a function body
-		void parseFunctionBody(AssemblyParser::Assembly& assembly, AssemblyParser::Function& currentFunction);
+		void parseFunctionBody(Loader::Assembly& assembly, Loader::Function& currentFunction);
 
 		//Parses a class body
-		void parseClassBody(AssemblyParser::Assembly& assembly, AssemblyParser::Class& currentClass);
+		void parseClassBody(Loader::Assembly& assembly, Loader::Class& currentClass);
 	public:
 		//Creates a new byte code parser using the given tokens
 		ByteCodeParser(std::vector<std::string> tokens);
 
 		//Parses the loaded tokens into the given assembly
-		void parse(AssemblyParser::Assembly& assembly);
+		void parse(Loader::Assembly& assembly);
 	};
 
 	//The assembly parser
-	namespace AssemblyParser {
+	namespace Loader {
 		//Tokenizes from the given stream
 		std::vector<std::string> tokenize(std::istream& stream);
 
 		//Loads an assembly from the given stream
-		void load(std::istream& stream, AssemblyParser::Assembly& assembly);
+		void load(std::istream& stream, Loader::Assembly& assembly);
 	}
 }
