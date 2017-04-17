@@ -95,7 +95,9 @@ set(SOURCE_FILES
         src/loader/loaderhelpers.cpp
         src/loader/loaderhelpers.h
         src/bytecode/bytecodeparser.cpp
-        src/bytecode/bytecodeparser.h src/loader/imagegenerator.cpp src/loader/imagegenerator.h)
+        src/bytecode/bytecodeparser.h
+        src/loader/imagegenerator.cpp
+        src/loader/imagegenerator.h)
 
 add_executable(stackjit ${SOURCE_FILES} src/stackjit.cpp)
 

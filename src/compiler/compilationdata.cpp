@@ -21,7 +21,7 @@ namespace stackjit {
 	}
 
 	OperandStack::OperandStack(ManagedFunction& function)
-		: mFunction(function) {
+		: mFunction(function), mAssembler(function.generatedCode()) {
 
 	}
 
@@ -47,46 +47,41 @@ namespace stackjit {
 	void OperandStack::duplicate() {
 		assertNotEmpty();
 
-		Amd64Assembler assembler(mFunction.generatedCode());
 		int stackOffset1 = getStackOperandOffset(mTopIndex);
 		int stackOffset2 = getStackOperandOffset(mTopIndex + 1);
-		assembler.move(Registers::AX, { Registers::BP, stackOffset1 });
-		assembler.move({ Registers::BP, stackOffset2 }, Registers::AX);
+		mAssembler.move(Registers::AX, { Registers::BP, stackOffset1 });
+		mAssembler.move({ Registers::BP, stackOffset2 }, Registers::AX);
 		mTopIndex++;
 	}
 
 	void OperandStack::popReg(IntRegister reg) {
 		assertNotEmpty();
 
-		Amd64Assembler assembler(mFunction.generatedCode());
 		int stackOffset = getStackOperandOffset(mTopIndex);
-		assembler.move(reg, { Registers::BP, stackOffset });
+		mAssembler.move(reg, { Registers::BP, stackOffset });
 		mTopIndex--;
 	}
 
 	void OperandStack::popReg(FloatRegisters reg) {
 		assertNotEmpty();
 
-		Amd64Assembler assembler(mFunction.generatedCode());
 		int stackOffset = getStackOperandOffset(mTopIndex);
-		assembler.move(reg, { Registers::BP, stackOffset });
+		mAssembler.move(reg, { Registers::BP, stackOffset });
 		mTopIndex--;
 	}
 
 	void OperandStack::pushReg(IntRegister reg) {
 		mTopIndex++;
 
-		Amd64Assembler assembler(mFunction.generatedCode());
 		int stackOffset = getStackOperandOffset(mTopIndex);
-		assembler.move({ Registers::BP, stackOffset }, reg);
+		mAssembler.move({ Registers::BP, stackOffset }, reg);
 	}
 
 	void OperandStack::pushReg(FloatRegisters reg) {
 		mTopIndex++;
 
-		Amd64Assembler assembler(mFunction.generatedCode());
 		int stackOffset = getStackOperandOffset(mTopIndex);
-		assembler.move({ Registers::BP, stackOffset }, reg);
+		mAssembler.move({ Registers::BP, stackOffset }, reg);
 	}
 
 	void OperandStack::pushInt(int value, bool increaseStack) {
@@ -94,8 +89,7 @@ namespace stackjit {
 			mTopIndex++;
 		}
 
-		Amd64Assembler assembler(mFunction.generatedCode());
 		int stackOffset = getStackOperandOffset(mTopIndex);
-		assembler.move({ Registers::BP, stackOffset }, value);
+		mAssembler.move({ Registers::BP, stackOffset }, value);
 	}
 }

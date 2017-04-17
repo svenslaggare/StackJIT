@@ -39,6 +39,7 @@ namespace stackjit {
 	class OperandStack {
 	private:
 		ManagedFunction& mFunction;
+		Amd64Assembler mAssembler;
 		int mTopIndex = -1;
 
 		//Asserts that the stack is not empty
