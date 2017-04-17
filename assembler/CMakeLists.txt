@@ -5,8 +5,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 set(SOURCE_FILES
         src/stackasm.cpp
-        src/parser.cpp
-        src/parser.h
+        src/loader.cpp
+        src/loader.h
         src/assembler.cpp
         src/assembler.h
         src/bytecodegenerator.cpp

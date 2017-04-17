@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <vector>
 
 //Defines types and assumptions used through out the VM
 namespace stackjit {
@@ -20,4 +21,6 @@ namespace stackjit {
 
 	//The size of the object header
 	const int OBJECT_HEADER_SIZE = 9;
+
+	using BinaryData = std::vector<char>;
 }

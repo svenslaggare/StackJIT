@@ -1,11 +1,10 @@
 #pragma once
+#include "../stackjit.h"
 #include "loader.h"
 #include <iostream>
 #include <unordered_map>
 
 namespace stackjit {
-	using BinaryData = std::vector<char>;
-
 	//Represents an image of an assembly
 	class AssemblyImage {
 	private:

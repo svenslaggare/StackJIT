@@ -1,4 +1,4 @@
-#include "parser.h"
+#include "loader.h"
 #include "assembler.h"
 #include "imageloader.h"
 #include "bytecodeparser.h"
@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
 		std::string outputFile = "library.simg";
 
 		bool disassemble = false;
-		std::vector<BinaryData> images;
+		std::vector<stackjit::BinaryData> images;
 
 		//Parse the input files
 		for (int i = 1; i < argc; i++) {
@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
 						auto size = (std::size_t)fileStream.tellg();
 						fileStream.seekg(0, std::ios::beg);
 
-						BinaryData imageData(size);
+						stackjit::BinaryData imageData(size);
 						if (!fileStream.read(imageData.data(), size)) {
 							throw std::runtime_error("Could not load image.");
 						}
@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
 		if (!disassemble) {
 			//Generate the image
 			std::ofstream imageFile(outputFile, std::ios::binary);
-			Assembler assembler;
+			stackjit::AssemblyImageGenerator assembler;
 			assembler.generateImage(assemblies, imageFile);
 		} else {
 			//Load the image
