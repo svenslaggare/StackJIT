@@ -2,6 +2,7 @@
 #include "executionengine.h"
 #include "helpers.h"
 #include "runtime/runtime.h"
+#include "bytecode/bytecodeparser.h"
 #include <iostream>
 #include <fstream>
 #include <chrono>

@@ -4,6 +4,7 @@
 #include "type/type.h"
 #include "loader/functionloader.h"
 #include "loader/classloader.h"
+#include "bytecode/bytecodeparser.h"
 #include "runtime/native.h"
 #include "test/test.h"
 #include "core/functionsignature.h"

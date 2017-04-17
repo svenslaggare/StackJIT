@@ -93,7 +93,9 @@ set(SOURCE_FILES
         src/loader/functionloader.cpp
         src/loader/functionloader.h
         src/loader/loaderhelpers.cpp
-        src/loader/loaderhelpers.h)
+        src/loader/loaderhelpers.h
+        src/bytecode/bytecodeparser.cpp
+        src/bytecode/bytecodeparser.h)
 
 add_executable(stackjit ${SOURCE_FILES} src/stackjit.cpp)
 
@@ -117,7 +119,7 @@ set(STACK_ASSEMBLER_SOURCE_FILES
         assembler/src/imageloader.cpp
         assembler/src/imageloader.h
         assembler/src/parser.cpp
-        assembler/src/parser.h)
+        assembler/src/parser.h assembler/src/bytecodeparser.cpp assembler/src/bytecodeparser.h)
 
 add_executable(stackasm ${STACK_ASSEMBLER_SOURCE_FILES} assembler/src/stackasm.cpp)
 

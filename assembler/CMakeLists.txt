@@ -11,6 +11,8 @@ set(SOURCE_FILES
         src/assembler.h
         src/bytecodegenerator.cpp
         src/bytecodegenerator.h
+        src/bytecodeparser.cpp
+        src/bytecodeparser.h
         src/imageloader.cpp
         src/imageloader.h)
 add_executable(StackAssembler ${SOURCE_FILES})

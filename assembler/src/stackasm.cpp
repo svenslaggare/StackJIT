@@ -1,6 +1,7 @@
 #include "parser.h"
 #include "assembler.h"
 #include "imageloader.h"
+#include "bytecodeparser.h"
 #include "bytecodegenerator.h"
 #include <fstream>
 #include <chrono>
