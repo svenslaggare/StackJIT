@@ -25,10 +25,10 @@ namespace stackjit {
 		}
 	}
 
-	void ClassLoader::loadClasses(VMState& vmState, ImageContainer& imageContainer) {
+	void ClassLoader::loadClasses(VMState& vmState,	const std::vector<stackjit::AssemblyParser::Class>& classes) {
 		//First, create the classes
 		std::vector<std::pair<ClassMetadata*, std::string>> inheritingClasses;
-		forEachClass(imageContainer, [&](const stackjit::AssemblyParser::Class& classDef) {
+		for (auto& classDef : classes) {
 			if (vmState.classProvider().isDefined(classDef.name)) {
 				throw std::runtime_error("The class '" + classDef.name + "' is already defined.");
 			}
@@ -40,7 +40,7 @@ namespace stackjit {
 						&vmState.classProvider().getMetadata(classDef.name),
 						classDef.parentClassName));
 			}
-		});
+		}
 
 		//Handle inheritance
 		if (inheritingClasses.size() > 0) {
@@ -68,21 +68,30 @@ namespace stackjit {
 			}
 		}
 
-		//Then add the fields defs
-		forEachClass(imageContainer, [&](const stackjit::AssemblyParser::Class& classDef) {
-			imageContainer.loadClassBody(classDef.name);
+		//Then add the fields definitions
+		for (auto& classDef : classes) {
 			auto& classMetadata = vmState.classProvider().getMetadata(classDef.name);
 
 			for (auto& field : classDef.fields) {
 				auto accessModifier = LoaderHelpers::getAccessModifier(field.attributes);
 				classMetadata.addField(field.name, LoaderHelpers::getType(vmState, field.type), accessModifier);
 			}
-		});
+		}
 
 		//Finally, create the actual fields
-		forEachClass(imageContainer, [&](const stackjit::AssemblyParser::Class& classDef) {
+		for (auto& classDef : classes) {
 			auto& classMetadata = vmState.classProvider().getMetadata(classDef.name);
 			classMetadata.makeFields();
+		}
+	}
+
+	void ClassLoader::loadClasses(VMState& vmState, ImageContainer& imageContainer) {
+		std::vector<AssemblyParser::Class> classes;
+		forEachClass(imageContainer, [&](const stackjit::AssemblyParser::Class& classDef) {
+			imageContainer.loadClassBody(classDef.name);
+			classes.push_back(classDef);
 		});
+
+		loadClasses(vmState, classes);
 	}
 }
