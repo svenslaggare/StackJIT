@@ -43,6 +43,12 @@ namespace stackjit {
 
 		//Resolves call targets. This function should only be called after all functions has been compiled.
 		void resolveCallTargets(FunctionCompilationData& functionData);
+
+		//Returns the memory manager
+		MemoryManager& memoryManager();
+
+		//Returns the compiled functions
+		const std::unordered_map<std::string, FunctionCompilationData>& functions() const;
 	public:
 		//Creates a new JIT compiler
 		JITCompiler(VMState& vmState);
@@ -51,14 +57,8 @@ namespace stackjit {
 		JITCompiler(const JITCompiler&) = delete;
 		JITCompiler& operator=(const JITCompiler&) = delete;
 
-		//Returns the memory manager
-		MemoryManager& memoryManager();
-
 		//Indicates if the given function has been compiled
 		bool hasCompiled(std::string signature) const;
-
-		//Returns the compiled functions
-		const std::unordered_map<std::string, FunctionCompilationData>& functions() const;
 
 		//Compiles the given function
 		JitFunction compileFunction(ManagedFunction* function);

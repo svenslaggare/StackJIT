@@ -112,7 +112,7 @@ namespace stackjit {
 		if (openMode == std::ios::binary) {
 			loadImage(fileStream, assemblyType);
 		} else {
-			Loader::Assembly assembly;
+			Loader::Assembly assembly(assemblyType == AssemblyType::Program ? "program": "library");
 			Loader::load(fileStream, assembly);
 			loadAssembly(assembly, assemblyType);
 		}

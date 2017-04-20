@@ -94,8 +94,20 @@ namespace stackjit {
 	}
 
 	Loader::Attribute::Attribute(std::string name)
-		: name(name) {
+		: mName(name) {
 
+	}
+
+	std::string Loader::Attribute::name() const {
+		return mName;
+	}
+
+	const std::unordered_map<std::string, std::string>& Loader::Attribute::values() const {
+		return mValues;
+	}
+
+	std::unordered_map<std::string, std::string>& Loader::Attribute::values() {
+		return mValues;
 	}
 
 	Loader::Function::Function()
@@ -112,17 +124,86 @@ namespace stackjit {
 	}
 
 	Loader::Field::Field(std::string name, std::string type)
-		: name(name), type(type) {
+		: mName(name), mType(type) {
 
 	}
 
+	std::string Loader::Field::name() const {
+		return mName;
+	}
+
+	std::string Loader::Field::type() const {
+		return mType;
+	}
+
+	const Loader::AttributeContainer& Loader::Field::attributes() const {
+		return mAttributes;
+	}
+
+	Loader::AttributeContainer& Loader::Field::attributes() {
+		return mAttributes;
+	}
+
 	Loader::Class::Class(std::string name)
-		: name(name) {
+		: mName(name) {
 
 	}
 
 	Loader::Class::Class() {
 
+	}
+
+	std::string Loader::Class::name() const {
+		return mName;
+	}
+
+	const std::vector<Loader::Field>& Loader::Class::fields() const {
+		return mFields;
+	}
+
+	std::vector<Loader::Field>& Loader::Class::fields() {
+		return mFields;
+	}
+
+	std::string Loader::Class::parentClassName() const {
+		return mParentClassName;
+	}
+
+	std::string& Loader::Class::parentClassName() {
+		return mParentClassName;
+	}
+
+	const Loader::AttributeContainer& Loader::Class::attributes() const {
+		return mAttributes;
+	}
+
+	Loader::AttributeContainer& Loader::Class::attributes() {
+		return mAttributes;
+	}
+
+	Loader::Assembly::Assembly(std::string name)
+		: mName(name) {
+
+	}
+
+	std::string Loader::Assembly::name() const {
+		return mName;
+	}
+
+	const std::vector<Loader::Function>& Loader::Assembly::functions() const {
+		return mFunctions;
+	}
+
+	std::vector<Loader::Function>& Loader::Assembly::functions() {
+		return mFunctions;
+	}
+
+	const std::vector<Loader::Class>& Loader::Assembly::classes() const {
+		return mClasses;
+	}
+
+	std::vector<Loader::Class>& Loader::Assembly::classes() {
+		return mClasses;
 	}
 
 	std::string Loader::getSignature(const Loader::Function& function) {

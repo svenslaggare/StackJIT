@@ -29,16 +29,16 @@ namespace stackjit {
 		//First, create the classes
 		std::vector<std::pair<ClassMetadata*, std::string>> inheritingClasses;
 		for (auto& classDef : classes) {
-			if (vmState.classProvider().isDefined(classDef.name)) {
-				throw std::runtime_error("The class '" + classDef.name + "' is already defined.");
+			if (vmState.classProvider().isDefined(classDef.name())) {
+				throw std::runtime_error("The class '" + classDef.name() + "' is already defined.");
 			}
 
-			vmState.classProvider().add(classDef.name, ClassMetadata(classDef.name));
+			vmState.classProvider().add(classDef.name(), ClassMetadata(classDef.name()));
 
-			if (classDef.parentClassName != "") {
+			if (classDef.parentClassName() != "") {
 				inheritingClasses.push_back(std::make_pair(
-						&vmState.classProvider().getMetadata(classDef.name),
-						classDef.parentClassName));
+						&vmState.classProvider().getMetadata(classDef.name()),
+						classDef.parentClassName()));
 			}
 		}
 
@@ -70,18 +70,18 @@ namespace stackjit {
 
 	void ClassLoader::defineFields(VMState& vmState, const std::vector<Loader::Class>& classes) {
 		for (auto& classDef : classes) {
-			auto& classMetadata = vmState.classProvider().getMetadata(classDef.name);
+			auto& classMetadata = vmState.classProvider().getMetadata(classDef.name());
 
-			for (auto& field : classDef.fields) {
-				auto accessModifier = LoaderHelpers::getAccessModifier(field.attributes);
-				classMetadata.addField(field.name, LoaderHelpers::getType(vmState, field.type), accessModifier);
+			for (auto& field : classDef.fields()) {
+				auto accessModifier = LoaderHelpers::getAccessModifier(field.attributes());
+				classMetadata.addField(field.name(), LoaderHelpers::getType(vmState, field.type()), accessModifier);
 			}
 		}
 	}
 
 	void ClassLoader::createFields(VMState& vmState, const std::vector<Loader::Class>& classes) {
 		for (auto& classDef : classes) {
-			auto& classMetadata = vmState.classProvider().getMetadata(classDef.name);
+			auto& classMetadata = vmState.classProvider().getMetadata(classDef.name());
 			classMetadata.makeFields();
 		}
 	}
@@ -95,7 +95,7 @@ namespace stackjit {
 	void ClassLoader::loadClasses(VMState& vmState, ImageContainer& imageContainer) {
 		std::vector<Loader::Class> classes;
 		forEachClass(imageContainer, [&](const stackjit::Loader::Class& classDef) {
-			imageContainer.loadClassBody(classDef.name);
+			imageContainer.loadClassBody(classDef.name());
 			classes.push_back(classDef);
 		});
 

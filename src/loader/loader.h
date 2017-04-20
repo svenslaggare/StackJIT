@@ -73,12 +73,20 @@ namespace stackjit {
 		};
 
 		//Represents an attribute
-		struct Attribute {
-			const std::string name;
-			std::unordered_map<std::string, std::string> values;
-
+		class Attribute {
+		private:
+			std::string mName;
+			std::unordered_map<std::string, std::string> mValues;
+		public:
 			//Creates a new attribute with the given name
 			Attribute(std::string name);
+
+			//Returns the name of the attribute
+			std::string name() const;
+
+			//Returns the values
+			const std::unordered_map<std::string, std::string>& values() const;
+			std::unordered_map<std::string, std::string>& values();
 		};
 
 		//Represents an attributes container
@@ -112,33 +120,76 @@ namespace stackjit {
 		};
 
 		//Represents a field in a class
-		struct Field {
-			const std::string name;
-			const std::string type;
+		class Field {
+		private:
+			std::string mName;
+			std::string mType;
 
-			AttributeContainer attributes;
-
+			AttributeContainer mAttributes;
+		public:
 			//Creates a new field
 			Field(std::string name, std::string type);
+
+			//Returns the name of the field
+			std::string name() const;
+
+			//Returns the type of the field
+			std::string type() const;
+
+			//Returns the attributes
+			const AttributeContainer& attributes() const;
+			AttributeContainer& attributes();
 		};
 
 		//Represents a class
-		struct Class {
-			const std::string name;
-			std::vector<Field> fields;
-			std::string parentClassName;
+		class Class {
+		private:
+			const std::string mName;
+			std::vector<Field> mFields;
+			std::string mParentClassName;
 
-			AttributeContainer attributes;
-
+			AttributeContainer mAttributes;
+		public:
 			//Creates a new class of the given name
 			Class(std::string name);
 			Class();
+
+			//Returns the name of the class
+			std::string name() const;
+
+			//Returns the fields
+			const std::vector<Field>& fields() const;
+			std::vector<Field>& fields();
+
+			//Returns the name of the parent class
+			std::string parentClassName() const;
+			std::string& parentClassName();
+
+			//Returns the attributes
+			const AttributeContainer& attributes() const;
+			AttributeContainer& attributes();
 		};
 
 		//Represents an assembly
-		struct Assembly {
-			std::vector<Function> functions;
-			std::vector<Class> classes;
+		class Assembly {
+		private:
+			std::string mName;
+			std::vector<Function> mFunctions;
+			std::vector<Class> mClasses;
+		public:
+			//Creates a new assembly with the given name
+			Assembly(std::string name);
+
+			//Returns the name of the assembly
+			std::string name() const;
+
+			//Returns the functions
+			const std::vector<Function>& functions() const;
+			std::vector<Function>& functions();
+
+			//Returns the classes
+			const std::vector<Class>& classes() const;
+			std::vector<Class>& classes();
 		};
 
 		//Returns the signature for the given function

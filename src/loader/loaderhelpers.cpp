@@ -25,8 +25,8 @@ namespace stackjit {
 
 		if (attributeContainer.count("AccessModifier") > 0) {
 			auto& accessModifierAttribute = attributeContainer.at("AccessModifier");
-			if (accessModifierAttribute.values.count("value") > 0) {
-				auto modifierValue = accessModifierAttribute.values.at("value");
+			if (accessModifierAttribute.values().count("value") > 0) {
+				auto modifierValue = accessModifierAttribute.values().at("value");
 				if (!fromString(modifierValue, accessModifier)) {
 					throw std::runtime_error("'" + modifierValue + "' is not a valid access modifier.");
 				}
@@ -41,8 +41,8 @@ namespace stackjit {
 
 		if (attributeContainer.count("Virtual") > 0) {
 			auto& attribute = attributeContainer.at("Virtual");
-			if (attribute.values.count("value") > 0) {
-				auto value = attribute.values.at("value");
+			if (attribute.values().count("value") > 0) {
+				auto value = attribute.values().at("value");
 				if (value == "true") {
 					isVirtual = true;
 				} else if (value == "false") {

@@ -35,10 +35,10 @@ namespace stackjit {
 
 		for (auto& current : attributes) {
 			auto& attribute = current.second;
-			addString(data, attribute.name);
+			addString(data, attribute.name());
 
-			addData(data, attribute.values.size());
-			for (auto keyValue : attribute.values) {
+			addData(data, attribute.values().size());
+			for (auto keyValue : attribute.values()) {
 				addString(data, keyValue.first);
 				addString(data, keyValue.second);
 			}
@@ -122,22 +122,22 @@ namespace stackjit {
 
 	void AssemblyImageGenerator::generateClassBody(BinaryData& data, Loader::Class& classDef) {
 		//Inheritance
-		addString(data, classDef.parentClassName);
+		addString(data, classDef.parentClassName());
 
 		//Class attributes
-		generateAttributes(data, classDef.attributes);
+		generateAttributes(data, classDef.attributes());
 
 		//Fields
-		addData(data, classDef.fields.size());
-		for (auto& field : classDef.fields) {
-			generateAttributes(data, field.attributes);
-			addString(data, field.name);
-			addString(data, field.type);
+		addData(data, classDef.fields().size());
+		for (auto& field : classDef.fields()) {
+			generateAttributes(data, field.attributes());
+			addString(data, field.name());
+			addString(data, field.type());
 		}
 	}
 
 	void AssemblyImageGenerator::generateClassDefinition(BinaryData& data, Loader::Class& classDef) {
-		addString(data, classDef.name);
+		addString(data, classDef.name());
 	}
 
 	void AssemblyImageGenerator::generateImage(std::vector<Loader::Assembly>& assemblies, std::ostream& stream) {
@@ -147,8 +147,8 @@ namespace stackjit {
 		std::size_t numFuncs = 0;
 		std::size_t numClasses = 0;
 		for (auto& assembly : assemblies) {
-			numFuncs += assembly.functions.size();
-			numClasses += assembly.classes.size();
+			numFuncs += assembly.functions().size();
+			numClasses += assembly.classes().size();
 		}
 
 		//Header
@@ -159,7 +159,7 @@ namespace stackjit {
 		std::unordered_map<std::string, std::size_t> funcBodyOffsets;
 
 		for (auto& assembly : assemblies) {
-			for (auto& func : assembly.functions) {
+			for (auto& func : assembly.functions()) {
 				generateFunctionDefinition(data, func);
 				funcBodyOffsets.insert({ Loader::getSignature(func), data.size() });
 				addData<std::size_t>(data, 0);
@@ -170,16 +170,16 @@ namespace stackjit {
 		std::unordered_map<std::string, std::size_t> classBodyOffsets;
 
 		for (auto& assembly : assemblies) {
-			for (auto& classDef : assembly.classes) {
+			for (auto& classDef : assembly.classes()) {
 				generateClassDefinition(data, classDef);
-				classBodyOffsets.insert({ classDef.name, data.size() });
+				classBodyOffsets.insert({ classDef.name(), data.size() });
 				addData<std::size_t>(data, 0);
 			}
 		}
 
 		//Functions bodies
 		for (auto& assembly : assemblies) {
-			for (auto& func : assembly.functions) {
+			for (auto& func : assembly.functions()) {
 				//Patch the offset
 				setData<std::size_t>(data, funcBodyOffsets.at(Loader::getSignature(func)), data.size());
 				generateFunctionBody(data, func);
@@ -188,9 +188,9 @@ namespace stackjit {
 
 		//Class bodies
 		for (auto& assembly : assemblies) {
-			for (auto& classDef : assembly.classes) {
+			for (auto& classDef : assembly.classes()) {
 				//Patch the offset
-				setData<std::size_t>(data, classBodyOffsets.at(classDef.name), data.size());
+				setData<std::size_t>(data, classBodyOffsets.at(classDef.name()), data.size());
 				generateClassBody(data, classDef);
 			}
 		}

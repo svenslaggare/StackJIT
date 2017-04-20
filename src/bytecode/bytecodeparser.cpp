@@ -247,8 +247,8 @@ namespace stackjit {
 
 			auto value = nextToken();
 
-			if (attribute.values.count(key) == 0) {
-				attribute.values.insert({key, value});
+			if (attribute.values().count(key) == 0) {
+				attribute.values().insert({key, value});
 			} else {
 				throw std::runtime_error(
 						"The key '" + key + "' is already defined in the attribute '" + attributeName + "'.");
@@ -447,7 +447,7 @@ namespace stackjit {
 		mLocalsSet = false;
 		while (true) {
 			if (currentToken() == "}") {
-				assembly.functions.push_back(currentFunction);
+				assembly.functions().push_back(currentFunction);
 				nextTokenAtEnd();
 				break;
 			} else {
@@ -470,7 +470,7 @@ namespace stackjit {
 		Field* currentField = nullptr;
 		while (true) {
 			if (currentToken() == "}") {
-				assembly.classes.push_back(currentClass);
+				assembly.classes().push_back(currentClass);
 				nextTokenAtEnd();
 				break;
 			} else {
@@ -478,9 +478,9 @@ namespace stackjit {
 
 				if (current == "@") {
 					if (currentField == nullptr) {
-						parseAttribute(currentClass.attributes); //Class attribute
+						parseAttribute(currentClass.attributes()); //Class attribute
 					} else {
-						parseAttribute(currentField->attributes); //Field attribute
+						parseAttribute(currentField->attributes()); //Field attribute
 					}
 
 					nextToken();
@@ -492,8 +492,8 @@ namespace stackjit {
 				auto fieldType = nextToken();
 				Loader::Field field(fieldName, fieldType);
 
-				currentClass.fields.push_back(field);
-				currentField = &currentClass.fields.back();
+				currentClass.fields().push_back(field);
+				currentField = &currentClass.fields().back();
 			}
 
 			nextToken();
@@ -521,7 +521,7 @@ namespace stackjit {
 
 				if (peekNextToken() == "extends") {
 					nextToken();
-					currentClass.parentClassName = nextToken();
+					currentClass.parentClassName() = nextToken();
 				}
 
 				parseClassBody(assembly, currentClass);
@@ -529,7 +529,7 @@ namespace stackjit {
 				Function currentFunction;
 				parseFunctionDefinition(currentFunction);
 				currentFunction.isExternal = true;
-				assembly.functions.push_back(currentFunction);
+				assembly.functions().push_back(currentFunction);
 				nextTokenAtEnd();
 			} else if (topLevelCurrent == "member") {
 				Function currentFunction;

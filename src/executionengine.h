@@ -15,7 +15,7 @@ namespace stackjit {
 	class ManagedFunction;
 
 	namespace Loader {
-		struct Assembly;
+		class Assembly;
 	}
 
 	//The type of the assembly

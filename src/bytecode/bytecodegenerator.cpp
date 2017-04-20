@@ -71,11 +71,10 @@ namespace stackjit {
 											   const Loader::AttributeContainer& attributes) {
 		for (auto& current : attributes) {
 			auto& attribute = current.second;
-			stream << "\t@" << attribute.name << "(";
+			stream << "\t@" << attribute.name() << "(";
 
 			bool isFirst = true;
-
-			for (auto& keyValue : attribute.values) {
+			for (auto& keyValue : attribute.values()) {
 				if (!isFirst) {
 					stream << " ";
 				} else {
@@ -186,16 +185,16 @@ namespace stackjit {
 	}
 
 	void ByteCodeGenerator::generateClass(std::ostream& stream, const Loader::Class& classDef) {
-		stream << "class " << classDef.name
-			   << (classDef.parentClassName != "" ? (" extends " + classDef.parentClassName) : "")
+		stream << "class " << classDef.name()
+			   << (classDef.parentClassName() != "" ? (" extends " + classDef.parentClassName()) : "")
 			   << std::endl;
 		stream << "{" << std::endl;
 
-		generateAttributes(stream, classDef.attributes);
+		generateAttributes(stream, classDef.attributes());
 
-		for (auto& field : classDef.fields) {
-			stream << "\t" << field.name << " " << field.type << std::endl;
-			generateAttributes(stream, field.attributes);
+		for (auto& field : classDef.fields()) {
+			stream << "\t" << field.name() << " " << field.type() << std::endl;
+			generateAttributes(stream, field.attributes());
 		}
 
 		stream << "}" << std::endl;

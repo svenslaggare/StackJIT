@@ -47,7 +47,7 @@ namespace stackjit {
 	}
 
 	AssemblyImage::AssemblyImage(const Loader::Assembly& assembly) {
-		for (auto func : assembly.functions) {
+		for (auto func : assembly.functions()) {
 			auto signature = Loader::getSignature(func);
 
 			if (mFunctions.count(signature) > 0) {
@@ -57,12 +57,12 @@ namespace stackjit {
 			mFunctions.emplace(signature, func);
 		}
 
-		for (auto classDef : assembly.classes) {
-			if (mClasses.count(classDef.name) > 0) {
-				throw std::runtime_error("The class '" + classDef.name + "' is already defined.");
+		for (auto classDef : assembly.classes()) {
+			if (mClasses.count(classDef.name()) > 0) {
+				throw std::runtime_error("The class '" + classDef.name() + "' is already defined.");
 			}
 
-			mClasses.emplace(classDef.name, classDef);
+			mClasses.emplace(classDef.name(), classDef);
 		}
 	}
 
@@ -170,8 +170,8 @@ namespace stackjit {
 			auto bodyOffset = mClassBodyOffsets[className];
 
 			Loader::Class& classDef = mClasses[className];
-			classDef.parentClassName = loadString(mImageData, bodyOffset);
-			classDef.attributes = AssemblyImageLoader::loadAttributes(mImageData, bodyOffset);
+			classDef.parentClassName() = loadString(mImageData, bodyOffset);
+			classDef.attributes() = AssemblyImageLoader::loadAttributes(mImageData, bodyOffset);
 
 			auto numFields = loadData<std::size_t>(mImageData, bodyOffset);
 			for (std::size_t i = 0; i < numFields; i++) {
@@ -179,8 +179,8 @@ namespace stackjit {
 				auto fieldName = loadString(mImageData, bodyOffset);
 				auto fieldType = loadString(mImageData, bodyOffset);
 				Loader::Field field(fieldName, fieldType);
-				field.attributes = attributes;
-				classDef.fields.emplace_back(field);
+				field.attributes() = attributes;
+				classDef.fields().emplace_back(field);
 			}
 
 			mClassBodyOffsets.erase(className);
@@ -208,10 +208,10 @@ namespace stackjit {
 			for (std::size_t j = 0; j < numValues; j++) {
 				std::string key = loadString(data, index);
 				std::string value = loadString(data, index);
-				attribute.values.emplace(key, value);
+				attribute.values().emplace(key, value);
 			}
 
-			attributes.emplace(attribute.name, attribute);
+			attributes.emplace(attribute.name(), attribute);
 		}
 
 		return attributes;
@@ -277,12 +277,12 @@ namespace stackjit {
 			auto classDef = loadClassDefinition(imageData, index);
 			auto bodyOffset = loadData<std::size_t>(imageData, index);
 
-			if (classes.count(classDef.name) > 0) {
-				throw std::runtime_error("The class '" + classDef.name + "' is already defined.");
+			if (classes.count(classDef.name()) > 0) {
+				throw std::runtime_error("The class '" + classDef.name() + "' is already defined.");
 			}
 
-			classBodyOffsets.emplace(classDef.name, bodyOffset);
-			classes.emplace(classDef.name, classDef);
+			classBodyOffsets.emplace(classDef.name(), bodyOffset);
+			classes.emplace(classDef.name(), classDef);
 		}
 
 		image = AssemblyImage(
