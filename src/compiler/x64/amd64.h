@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <ostream>
-#include "../stackjit.h"
+#include "../../stackjit.h"
 
 namespace stackjit {
 	//Converts between primitive types and unsigned char arrays

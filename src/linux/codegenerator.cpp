@@ -1,6 +1,6 @@
 #ifdef __unix__
-#include "../compiler/oscodegenerator.h"
-#include "../compiler/amd64assembler.h"
+#include "../compiler/x64/oscodegenerator.h"
+#include "../compiler/x64/amd64assembler.h"
 #include "callingconvention.h"
 #include "../helpers.h"
 #include "../runtime/runtime.h"

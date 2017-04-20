@@ -1,7 +1,7 @@
 #pragma once
 #include "amd64.h"
-#include "../core/function.h"
-#include "binder.h"
+#include "../../core/function.h"
+#include "../binder.h"
 #include "amd64assembler.h"
 #include <string>
 #include <functional>
@@ -80,8 +80,8 @@ namespace stackjit {
 		//Generates a call to the garbage collect runtime function
 		void generateGCCall(CodeGen& generatedCode, ManagedFunction& function, int instIndex, int generation = 0);
 
-		//Initializes the given function
-		void initializeFunction(FunctionCompilationData& functionData);
+		//Generates the instructions for initializing the given function
+		void generateInitializeFunction(FunctionCompilationData& functionData);
 
 		//Generates native instructions for the given VM instruction
 		void generateInstruction(VMState& vmState,

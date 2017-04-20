@@ -1,9 +1,9 @@
 #pragma once
 #include "memory.h"
 #include "callingconvention.h"
-#include "codegenerator.h"
+#include "x64/codegenerator.h"
 #include "compilationdata.h"
-#include "exceptions.h"
+#include "x64/exceptions.h"
 #include <unordered_map>
 #include <vector>
 #include <functional>
@@ -29,7 +29,7 @@ namespace stackjit {
 		MemoryManager mMemoryManager;
 		CallingConvention mCallingConvention;
 		ExceptionHandling mExceptionHandling;
-		CodeGenerator mCodeGen;
+		CodeGenerator mCodeGenerator;
 		std::unordered_map<std::string, FunctionCompilationData> mFunctions;
 
 		//Creates macro functions

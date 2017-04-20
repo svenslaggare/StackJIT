@@ -1,8 +1,8 @@
 #include "exceptions.h"
-#include "../runtime/runtime.h"
-#include "../core/function.h"
-#include "jit.h"
-#include "callingconvention.h"
+#include "../../runtime/runtime.h"
+#include "../../core/function.h"
+#include "../jit.h"
+#include "../callingconvention.h"
 #include <string.h>
 
 namespace stackjit {

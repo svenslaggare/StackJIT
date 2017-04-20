@@ -1,5 +1,5 @@
 #include "runtime.h"
-#include "../compiler/amd64.h"
+#include "../compiler/x64/amd64.h"
 #include "../vmstate.h"
 #include "../core/function.h"
 #include "../type/type.h"

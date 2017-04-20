@@ -8,13 +8,13 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 endif()
 
 set(SOURCE_FILES
-        src/compiler/amd64.cpp
-        src/compiler/amd64.h
+        src/compiler/x64/amd64.cpp
+        src/compiler/x64/amd64.h
         src/compiler/binder.cpp
         src/compiler/binder.h
         src/compiler/callingconvention.h
-        src/compiler/codegenerator.cpp
-        src/compiler/codegenerator.h
+        src/compiler/x64/codegenerator.cpp
+        src/compiler/x64/codegenerator.h
         src/executionengine.cpp
         src/executionengine.h
         src/core/function.cpp
@@ -54,8 +54,8 @@ set(SOURCE_FILES
         src/helpers.cpp
         src/test/test.h
         src/test/test.cpp
-        src/compiler/exceptions.h
-        src/compiler/exceptions.cpp
+        src/compiler/x64/exceptions.h
+        src/compiler/x64/exceptions.cpp
         src/runtime/callstack.h
         src/runtime/callstack.cpp
         src/linux/callingconvention.h
@@ -77,13 +77,13 @@ set(SOURCE_FILES
         src/windows/allocator.cpp
         src/runtime/managedheap.cpp
         src/runtime/managedheap.h
-        src/compiler/amd64assembler.cpp
-        src/compiler/amd64assembler.h
+        src/compiler/x64/amd64assembler.cpp
+        src/compiler/x64/amd64assembler.h
         src/runtime/native/stringref.cpp
         src/runtime/native/stringref.h
         src/runtime/gcgeneration.cpp
         src/runtime/gcgeneration.h
-        src/compiler/oscodegenerator.h
+        src/compiler/x64/oscodegenerator.h
         src/linux/codegenerator.cpp
         src/windows/codegenerator.cpp
         src/linux/runtime.cpp
@@ -219,5 +219,5 @@ if(CXXTEST_FOUND)
     CXXTEST_ADD_TEST(tests-vm-gc test-vm-gc-runner.cpp ${TESTS_DIR}/vm-gc-test.h src/helpers.h src/helpers.cpp)
     add_dependencies(tests-vm-gc stackjit)
 
-    CXXTEST_ADD_TEST(tests-amd64 test-amd64-runner.cpp ${TESTS_DIR}/amd64-test.h src/compiler/amd64.cpp src/compiler/amd64.h src/helpers.h src/helpers.cpp)
+    CXXTEST_ADD_TEST(tests-amd64 test-amd64-runner.cpp ${TESTS_DIR}/amd64-test.h src/compiler/x64/amd64.cpp src/compiler/x64/amd64.h src/helpers.h src/helpers.cpp)
 endif()

@@ -1,13 +1,13 @@
 #include "oscodegenerator.h"
-#include "../type/type.h"
-#include "../vmstate.h"
-#include "../runtime/runtime.h"
-#include "../core/instruction.h"
+#include "../../type/type.h"
+#include "../../vmstate.h"
+#include "../../runtime/runtime.h"
+#include "../../core/instruction.h"
 #include "exceptions.h"
-#include "../stackjit.h"
-#include "../helpers.h"
-#include "callingconvention.h"
-#include "../core/functionsignature.h"
+#include "../../stackjit.h"
+#include "../../helpers.h"
+#include "../callingconvention.h"
+#include "../../core/functionsignature.h"
 #include "amd64assembler.h"
 #include "oscodegenerator.h"
 #include <string.h>
@@ -74,7 +74,7 @@ namespace stackjit {
 		generateCall(assembler, (BytePtr)&Runtime::garbageCollect);
 	}
 
-	void CodeGenerator::initializeFunction(FunctionCompilationData& functionData) {
+	void CodeGenerator::generateInitializeFunction(FunctionCompilationData& functionData) {
 		auto& function = functionData.function;
 		Amd64Assembler assembler(functionData.function.generatedCode());
 

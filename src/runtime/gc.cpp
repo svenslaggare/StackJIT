@@ -1,7 +1,7 @@
 #include "gc.h"
 #include "../type/type.h"
 #include "../vmstate.h"
-#include "../compiler/amd64.h"
+#include "../compiler/x64/amd64.h"
 #include "../stackjit.h"
 #include "../helpers.h"
 #include "stackframe.h"

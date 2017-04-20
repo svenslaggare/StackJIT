@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
 				if (!disassemble) {
 					std::ifstream fileStream(file);
 					if (fileStream.is_open()) {
-						stackjit::Loader::Assembly assembly;
+						stackjit::Loader::Assembly assembly("program");
 						stackjit::Loader::load(fileStream, assembly);
 						assemblies.emplace_back(assembly);
 					} else {

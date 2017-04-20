@@ -1,5 +1,5 @@
 #include "jit.h"
-#include "codegenerator.h"
+#include "x64/codegenerator.h"
 #include "../type/type.h"
 #include "../vmstate.h"
 #include "binder.h"
@@ -14,7 +14,7 @@
 
 namespace stackjit {
 	JITCompiler::JITCompiler(VMState& vmState)
-		: mVMState(vmState), mCodeGen(mCallingConvention, mExceptionHandling) {
+		: mVMState(vmState), mCodeGenerator(mCallingConvention, mExceptionHandling) {
 		mExceptionHandling.generateHandlers(mMemoryManager, mCallingConvention);
 		createMacros();
 	}
@@ -29,17 +29,17 @@ namespace stackjit {
 
 		FunctionDefinition collectDef("std.gc.collect", {}, voidType);
 		if (binder.define(collectDef)) {
-			mCodeGen.defineMacro(collectDef, [this](MacroFunctionContext context) {
+			mCodeGenerator.defineMacro(collectDef, [this](MacroFunctionContext context) {
 				auto& function = context.functionData.function;
-				mCodeGen.generateGCCall(function.generatedCode(), function, context.instructionIndex);
+				mCodeGenerator.generateGCCall(function.generatedCode(), function, context.instructionIndex);
 			});
 		}
 
 		FunctionDefinition collectGenerationDef("std.gc.collectOld", {}, voidType);
 		if (binder.define(collectGenerationDef)) {
-			mCodeGen.defineMacro(collectGenerationDef, [this](MacroFunctionContext context) {
+			mCodeGenerator.defineMacro(collectGenerationDef, [this](MacroFunctionContext context) {
 				auto& function = context.functionData.function;
-				mCodeGen.generateGCCall(function.generatedCode(), function, context.instructionIndex, 1);
+				mCodeGenerator.generateGCCall(function.generatedCode(), function, context.instructionIndex, 1);
 			});
 		}
 	}
@@ -58,12 +58,12 @@ namespace stackjit {
 		auto& functionData = mFunctions.at(signature);
 
 		//Initialize the function
-		mCodeGen.initializeFunction(functionData);
+		mCodeGenerator.generateInitializeFunction(functionData);
 
 		//Generate the native instructions for the program
 		int i = 0;
 		for (auto& current : function->instructions()) {
-			mCodeGen.generateInstruction(mVMState, functionData, current, i);
+			mCodeGenerator.generateInstruction(mVMState, functionData, current, i);
 			i++;
 		}
 

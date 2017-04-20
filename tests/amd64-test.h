@@ -1,6 +1,6 @@
 #include <cxxtest/TestSuite.h>
 #include <vector>
-#include "../src/compiler/amd64.h"
+#include "../src/compiler/x64/amd64.h"
 using namespace stackjit;
 
 /**
