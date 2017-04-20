@@ -221,6 +221,8 @@ std::size_t TypeSystem::sizeOfType(PrimitiveTypes primitiveType) {
 		case PrimitiveTypes::Char:
 			return 1;
 		}
+
+		return 0;
 	}
 
 	std::size_t TypeSystem::sizeOfType(const Type* type) {
