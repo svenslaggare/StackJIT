@@ -4,7 +4,7 @@
 #include "../compiler/jit.h"
 #include "../core/function.h"
 #include "../type/type.h"
-#include "../compiler/amd64assembler.h"
+#include "../compiler/x64/amd64assembler.h"
 #include <iostream>
 
 namespace stackjit {

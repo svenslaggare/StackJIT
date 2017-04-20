@@ -1,6 +1,6 @@
 #pragma once
 #if defined(_WIN64) || defined(__MINGW32__)
-#include "../compiler/amd64.h"
+#include "../compiler/x64/amd64.h"
 
 namespace stackjit {
 	//The register for function arguments
