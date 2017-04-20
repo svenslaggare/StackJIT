@@ -1,8 +1,8 @@
 #pragma once
 #include <string>
 #include <unordered_map>
-#include "x64/amd64.h"
-#include "x64/amd64assembler.h"
+#include "amd64.h"
+#include "amd64assembler.h"
 
 namespace stackjit {
 	class FunctionDefinition;

@@ -2,7 +2,7 @@
 #include "memory.h"
 #include "callingconvention.h"
 #include "x64/codegenerator.h"
-#include "compilationdata.h"
+#include "x64/compilationdata.h"
 #include "x64/exceptions.h"
 #include <unordered_map>
 #include <vector>

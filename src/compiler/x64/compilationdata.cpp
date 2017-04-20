@@ -1,6 +1,6 @@
 #include "compilationdata.h"
-#include "../core/function.h"
-#include "../helpers.h"
+#include "../../core/function.h"
+#include "../../helpers.h"
 
 namespace stackjit {
 	BranchTarget::BranchTarget(unsigned int target, unsigned int instructionSize)

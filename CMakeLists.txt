@@ -68,8 +68,8 @@ set(SOURCE_FILES
         src/loader/imageloader.cpp
         src/core/functionsignature.cpp
         src/core/functionsignature.h
-        src/compiler/compilationdata.cpp
-        src/compiler/compilationdata.h
+        src/compiler/x64/compilationdata.cpp
+        src/compiler/x64/compilationdata.h
         src/loader/imagecontainer.cpp
         src/loader/imagecontainer.h
         src/compiler/allocator.h
