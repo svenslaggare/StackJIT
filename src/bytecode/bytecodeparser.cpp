@@ -425,8 +425,7 @@ namespace stackjit {
 
 		if (branchInstructions.count(currentToLower) > 0) {
 			int target = stoi(nextToken());
-			currentFunction.instructions.push_back(
-					Instruction::makeWithInt(branchInstructions.at(currentToLower), target));
+			currentFunction.instructions.push_back(Instruction::makeWithInt(branchInstructions.at(currentToLower), target));
 			return;
 		}
 
