@@ -159,7 +159,7 @@ namespace stackjit {
 		auto& function = functionData.function;
 		auto& parameters = function.def().parameters();
 
-		for (int arg = (int)function.def().numParams() - 1; arg >= 0; arg--) {
+		for (int arg = (int)function.def().numParameters() - 1; arg >= 0; arg--) {
 			if (TypeSystem::isPrimitiveType(function.def().parameters()[arg], PrimitiveTypes::Float)) {
 				moveFloatArgToStack(functionData, arg, getFloatArgIndex(parameters, arg));
 			} else {

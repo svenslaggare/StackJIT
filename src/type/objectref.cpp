@@ -7,9 +7,9 @@ namespace stackjit {
 		if (type()->isArray()) {
 			auto arrayType = static_cast<const ArrayType*>(type());
 			auto elementType = arrayType->elementType();
-			auto elemSize = TypeSystem::sizeOfType(elementType);
+			auto elementSize = TypeSystem::sizeOfType(elementType);
 			auto length = *(int*)dataPtr();
-			mSize = stackjit::ARRAY_LENGTH_SIZE + (length * elemSize);
+			mSize = stackjit::ARRAY_LENGTH_SIZE + (length * elementSize);
 		} else {
 			mSize = static_cast<const ClassType*>(type())->metadata()->size();
 		}

@@ -8,96 +8,97 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 endif()
 
 set(SOURCE_FILES
-        src/compiler/x64/amd64.cpp
-        src/compiler/x64/amd64.h
+        src/bytecode/bytecodegenerator.cpp
+        src/bytecode/bytecodegenerator.h
+        src/bytecode/bytecodeparser.cpp
+        src/bytecode/bytecodeparser.h
+        src/compiler/allocator.h
         src/compiler/binder.cpp
         src/compiler/binder.h
         src/compiler/callingconvention.h
-        src/compiler/x64/codegenerator.cpp
-        src/compiler/x64/codegenerator.h
-        src/executionengine.cpp
-        src/executionengine.h
-        src/core/function.cpp
-        src/core/function.h
-        src/runtime/gc.cpp
-        src/runtime/gc.h
-        src/core/instruction.cpp
-        src/core/instruction.h
         src/compiler/jit.cpp
         src/compiler/jit.h
-        src/compiler/memory.h
         src/compiler/memory.cpp
-        src/runtime/native.cpp
-        src/runtime/native.h
-        src/loader/loader.cpp
-        src/loader/loader.h
-        src/runtime/runtime.cpp
-        src/runtime/runtime.h
-        src/stackjit.h
-        src/type/classmetadata.cpp
-        src/type/classmetadata.h
-        src/type/type.cpp
-        src/type/type.h
-        src/loader/verifier.cpp
-        src/loader/verifier.h
-        src/type/typeprovider.cpp
-        src/type/typeprovider.h
-        src/vmstate.cpp
-        src/vmstate.h
-        src/type/objectref.h
-        src/type/objectref.cpp
-        src/type/objectref.hpp
-        src/runtime/stackframe.h
-        src/runtime/stackframe.cpp
-        src/core/instructionset.h
-        src/helpers.h
-        src/helpers.cpp
-        src/test/test.h
-        src/test/test.cpp
-        src/compiler/x64/exceptions.h
-        src/compiler/x64/exceptions.cpp
-        src/runtime/callstack.h
-        src/runtime/callstack.cpp
-        src/linux/callingconvention.h
-        src/linux/callingconvetion.cpp
-        src/windows/callingconvention.h
-        src/windows/callingconvetion.cpp
-        src/bytecode/bytecodegenerator.h
-        src/bytecode/bytecodegenerator.cpp
-        src/loader/imageloader.h
-        src/loader/imageloader.cpp
-        src/core/functionsignature.cpp
-        src/core/functionsignature.h
-        src/compiler/x64/compilationdata.cpp
-        src/compiler/x64/compilationdata.h
-        src/loader/imagecontainer.cpp
-        src/loader/imagecontainer.h
-        src/compiler/allocator.h
-        src/linux/allocator.cpp
-        src/windows/allocator.cpp
-        src/runtime/managedheap.cpp
-        src/runtime/managedheap.h
+        src/compiler/memory.h
+        src/compiler/x64/amd64.cpp
+        src/compiler/x64/amd64.h
         src/compiler/x64/amd64assembler.cpp
         src/compiler/x64/amd64assembler.h
-        src/runtime/native/stringref.cpp
-        src/runtime/native/stringref.h
-        src/runtime/gcgeneration.cpp
-        src/runtime/gcgeneration.h
+        src/compiler/x64/codegenerator.cpp
+        src/compiler/x64/codegenerator.h
+        src/compiler/x64/compilationdata.cpp
+        src/compiler/x64/compilationdata.h
+        src/compiler/x64/exceptions.cpp
+        src/compiler/x64/exceptions.h
         src/compiler/x64/oscodegenerator.h
+        src/core/function.cpp
+        src/core/function.h
+        src/core/functionsignature.cpp
+        src/core/functionsignature.h
+        src/core/instruction.cpp
+        src/core/instruction.h
+        src/core/instructionset.h
+        src/executionengine.cpp
+        src/executionengine.h
+        src/helpers.cpp
+        src/helpers.h
+        src/linux/allocator.cpp
+        src/linux/callingconvention.h
+        src/linux/callingconvetion.cpp
         src/linux/codegenerator.cpp
-        src/windows/codegenerator.cpp
         src/linux/runtime.cpp
-        src/windows/runtime.cpp
         src/loader/classloader.cpp
         src/loader/classloader.h
         src/loader/functionloader.cpp
         src/loader/functionloader.h
+        src/loader/imagecontainer.cpp
+        src/loader/imagecontainer.h
+        src/loader/imagegenerator.cpp
+        src/loader/imagegenerator.h
+        src/loader/imageloader.cpp
+        src/loader/imageloader.h
+        src/loader/loader.cpp
+        src/loader/loader.h
         src/loader/loaderhelpers.cpp
         src/loader/loaderhelpers.h
-        src/bytecode/bytecodeparser.cpp
-        src/bytecode/bytecodeparser.h
-        src/loader/imagegenerator.cpp
-        src/loader/imagegenerator.h)
+        src/loader/verifier.cpp
+        src/loader/verifier.h
+        src/runtime/callstack.cpp
+        src/runtime/callstack.h
+        src/runtime/gc.cpp
+        src/runtime/gc.h
+        src/runtime/gcgeneration.cpp
+        src/runtime/gcgeneration.h
+        src/runtime/managedheap.cpp
+        src/runtime/managedheap.h
+        src/runtime/native.cpp
+        src/runtime/native.h
+        src/runtime/native/stringref.cpp
+        src/runtime/native/stringref.h
+        src/runtime/runtime.cpp
+        src/runtime/runtime.h
+        src/runtime/stackframe.cpp
+        src/runtime/stackframe.h
+        src/stackjit.h
+        src/test/test.cpp
+        src/test/test.h
+        src/type/classmetadata.cpp
+        src/type/classmetadata.h
+        src/type/objectref.cpp
+        src/type/objectref.h
+        src/type/objectref.hpp
+        src/type/type.cpp
+        src/type/type.h
+        src/type/typeprovider.cpp
+        src/type/typeprovider.h
+        src/vmstate.cpp
+        src/vmstate.h
+        src/windows/allocator.cpp
+        src/windows/callingconvention.h
+        src/windows/callingconvetion.cpp
+        src/windows/codegenerator.cpp
+        src/windows/runtime.cpp
+)
 
 add_executable(stackjit ${SOURCE_FILES} src/stackjit.cpp)
 

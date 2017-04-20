@@ -43,7 +43,7 @@ namespace stackjit {
 	void Runtime::printStackFrame(RegisterValue* basePtr, ManagedFunction* func) {
 		using namespace Runtime::Internal;
 
-		auto numArgs = func->def().numParams();
+		auto numArgs = func->def().numParameters();
 		auto numLocals = func->numLocals();
 
 		std::cout << "----Start StackFrame----" << std::endl;
@@ -138,7 +138,7 @@ namespace stackjit {
 
 	void Runtime::Internal::printAliveObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex,	std::string indentation) {
 		StackFrame stackFrame(basePtr, func, instIndex);
-		auto numArgs = func->def().numParams();
+		auto numArgs = func->def().numParameters();
 		auto numLocals = func->numLocals();
 		auto stackSize = stackFrame.operandStackSize();
 
@@ -200,17 +200,16 @@ namespace stackjit {
 		}
 
 		//Allocate the string object
-		auto strPr = vmState()->gc().newClass(StringRef::stringType());
+		auto stringPr = vmState()->gc().newClass(StringRef::stringType());
 
 		//Set the chars field
-		StringRef::setCharsField(strPr, (char*)charsPtr);
-		return strPr;
+		StringRef::setCharsField(stringPr, (char*)charsPtr);
+		return stringPr;
 	}
 
 	void Runtime::markObjectCard(RawObjectRef rawObjectRef) {
 		auto& generation = vmState()->gc().oldGeneration();
 		std::size_t cardNumber = generation.getCardNumber(rawObjectRef);
-//		std::cout << "Marked card: " << cardNumber << std::endl;
 		generation.cardTable()[cardNumber] = 1;
 	}
 

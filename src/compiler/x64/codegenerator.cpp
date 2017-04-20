@@ -79,7 +79,7 @@ namespace stackjit {
 		Amd64Assembler assembler(functionData.function.generatedCode());
 
 		//Calculate the size of the stack aligned to 16 bytes
-		std::size_t neededStackSize = (function.def().numParams() + function.numLocals() + function.operandStackSize())
+		std::size_t neededStackSize = (function.def().numParameters() + function.numLocals() + function.operandStackSize())
 									  * Amd64Backend::REGISTER_SIZE;
 		std::size_t stackSize = ((neededStackSize + 15) / 16) * 16;
 
@@ -102,7 +102,7 @@ namespace stackjit {
 			assembler.bitwiseXor(Registers::AX, Registers::AX);	//Zero rax
 
 			for (int i = 0; i < function.numLocals(); i++) {
-				int localOffset = (int)((i + function.def().numParams() + 1) * -Amd64Backend::REGISTER_SIZE);
+				int localOffset = (int)((i + function.def().numParameters() + 1) * -Amd64Backend::REGISTER_SIZE);
 				assembler.move({ Registers::BP, localOffset }, Registers::AX);
 			}
 		}
@@ -423,7 +423,7 @@ namespace stackjit {
 			}
 			case OpCodes::LOAD_LOCAL:
 			case OpCodes::STORE_LOCAL: {
-				int localOffset = (stackOffset + instruction.intValue + (int)function.def().numParams())
+				int localOffset = (stackOffset + instruction.intValue + (int)function.def().numParameters())
 								  * -Amd64Backend::REGISTER_SIZE;
 				if (instruction.opCode() == OpCodes::LOAD_LOCAL) {
 					assembler.move(Registers::AX, { Registers::BP, localOffset });
@@ -466,7 +466,7 @@ namespace stackjit {
 
 					MemoryOperand firstArgOffset(
 						Registers::BP,
-						operandStack.getStackOperandOffset(operandStack.topIndex() - (int)funcToCall.numParams() + 1));
+						operandStack.getStackOperandOffset(operandStack.topIndex() - (int)funcToCall.numParameters() + 1));
 
 					//Add null check
 					if (instruction.isCallInstance()) {

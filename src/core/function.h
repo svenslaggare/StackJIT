@@ -68,7 +68,7 @@ namespace stackjit {
 		const std::vector<const Type*>& callParameters() const;
 
 		//The number of parameters
-		std::size_t numParams() const;
+		std::size_t numParameters() const;
 
 		//Indicates if the function is implemented in managed code
 		bool isManaged() const;

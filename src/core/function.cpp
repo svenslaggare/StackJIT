@@ -146,7 +146,7 @@ namespace stackjit {
 		return mCallParameters;
 	}
 
-	std::size_t FunctionDefinition::numParams() const {
+	std::size_t FunctionDefinition::numParameters() const {
 		return mParameters.size();
 	}
 

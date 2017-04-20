@@ -139,6 +139,9 @@ namespace stackjit {
 		//Returns the type name for an array of the given type
 		std::string arrayTypeName(const Type* type);
 
+		//Returns the type name for the given class
+		std::string classTypeName(std::string className);
+
 		//Returns the size (in bytes) for the given primitive type
 		std::size_t sizeOfType(PrimitiveTypes primitiveType);
 

@@ -37,7 +37,7 @@ namespace stackjit {
 
 	int OperandStack::getStackOperandOffset(int operandIndex) {
 		return -(int)(Amd64Backend::REGISTER_SIZE *
-					  (1 + mFunction.def().numParams() + mFunction.numLocals() + operandIndex));
+					  (1 + mFunction.def().numParameters() + mFunction.numLocals() + operandIndex));
 	}
 
 	void OperandStack::reserveSpace() {

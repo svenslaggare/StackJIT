@@ -204,7 +204,11 @@ namespace stackjit {
 		return "Ref.Array[" + type->name() +  "]";
 	}
 
-	std::size_t TypeSystem::sizeOfType(PrimitiveTypes primitiveType) {
+	std::string TypeSystem::classTypeName(std::string className) {
+		return "Ref." + className;
+	}
+
+std::size_t TypeSystem::sizeOfType(PrimitiveTypes primitiveType) {
 		switch (primitiveType) {
 		case PrimitiveTypes::Void:
 			return 0;
@@ -217,8 +221,6 @@ namespace stackjit {
 		case PrimitiveTypes::Char:
 			return 1;
 		}
-
-		return 0;
 	}
 
 	std::size_t TypeSystem::sizeOfType(const Type* type) {

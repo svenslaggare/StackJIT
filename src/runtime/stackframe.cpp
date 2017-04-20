@@ -34,12 +34,12 @@ namespace stackjit {
 	}
 
 	StackFrameEntry StackFrame::getLocal(std::size_t index) {
-		RegisterValue* localsStart = mBasePtr - 1 - mFunction->def().numParams();
+		RegisterValue* localsStart = mBasePtr - 1 - mFunction->def().numParameters();
 		return StackFrameEntry(localsStart - index, mFunction->getLocal(index));
 	}
 
 	StackFrameEntry StackFrame::getStackOperand(std::size_t index) {
-		RegisterValue* stackStart = mBasePtr - 1 - mFunction->def().numParams() - mFunction->numLocals();
+		RegisterValue* stackStart = mBasePtr - 1 - mFunction->def().numParameters() - mFunction->numLocals();
 		return StackFrameEntry(stackStart - index, mOperandTypes[mOperandTypes.size() - 1 - index]);
 	}
 
@@ -83,7 +83,7 @@ namespace stackjit {
 											 int instIndex,
 											 VisitReferenceFn fn) {
 		StackFrame stackFrame(basePtr, func, instIndex);
-		auto numArgs = func->def().numParams();
+		auto numArgs = func->def().numParameters();
 		auto numLocals = func->numLocals();
 		auto stackSize = stackFrame.operandStackSize();
 
