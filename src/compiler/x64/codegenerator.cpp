@@ -1,4 +1,3 @@
-#include "oscodegenerator.h"
 #include "../../type/type.h"
 #include "../../vmstate.h"
 #include "../../runtime/runtime.h"
@@ -9,7 +8,6 @@
 #include "../callingconvention.h"
 #include "../../core/functionsignature.h"
 #include "amd64assembler.h"
-#include "oscodegenerator.h"
 #include <string.h>
 #include <iostream>
 
@@ -46,12 +44,6 @@ namespace stackjit {
 			   && !vmState.engine().jitCompiler().hasCompiled(funcSignature);
 	}
 
-	std::size_t CodeGenerator::generateCompileCall(Amd64Assembler& assembler,
-												   ManagedFunction& function,
-												   const FunctionDefinition& funcToCall) {
-		return OSCodeGenerator::generateCompileCall(mCallingConvention, assembler, function, funcToCall);
-	}
-
 	void CodeGenerator::generateCall(Amd64Assembler& assembler, BytePtr funcPtr, IntRegister addressRegister, bool shadowSpaceNeeded) {
 		if (shadowSpaceNeeded) {
 			assembler.sub(Registers::SP, mCallingConvention.calculateShadowStackSize());
@@ -65,11 +57,11 @@ namespace stackjit {
 		}
 	}
 
-	void CodeGenerator::generateGCCall(CodeGen& generatedCode, ManagedFunction& function, int instIndex, int generation) {
+	void CodeGenerator::generateGCCall(CodeGen& generatedCode, ManagedFunction& function, int instructionIndex, int generation) {
 		Amd64Assembler assembler(generatedCode);
 		assembler.move(RegisterCallArguments::Arg0, Registers::BP); //BP as the first argument
 		assembler.moveLong(RegisterCallArguments::Arg1,	(PtrValue)&function); //Address of the function as second argument
-		assembler.moveInt(RegisterCallArguments::Arg2, instIndex); //Current inst index as third argument
+		assembler.moveInt(RegisterCallArguments::Arg2, instructionIndex); //Current inst index as third argument
 		assembler.moveInt(RegisterCallArguments::Arg3, generation); //Generation as fourth argument
 		generateCall(assembler, (BytePtr)&Runtime::garbageCollect);
 	}

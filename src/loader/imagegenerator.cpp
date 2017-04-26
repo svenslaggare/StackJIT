@@ -58,42 +58,42 @@ namespace stackjit {
 		//Body
 		addData<std::size_t>(data, function.instructions.size());
 
-		for (auto& inst : function.instructions) {
-			addData<char>(data, (char)inst.format);
-			addData<unsigned char>(data, (unsigned char)inst.opCode);
+		for (auto& instruction : function.instructions) {
+			addData<char>(data, (char)instruction.format);
+			addData<unsigned char>(data, (unsigned char)instruction.opCode);
 
-			switch (inst.format) {
+			switch (instruction.format) {
 				case Loader::InstructionFormats::OpCodeOnly:
 					break;
 				case Loader::InstructionFormats::IntData:
-					addData(data, inst.intValue);
+					addData(data, instruction.intValue);
 					break;
 				case Loader::InstructionFormats::FloatData:
-					addData(data, inst.floatValue);
+					addData(data, instruction.floatValue);
 					break;
 				case Loader::InstructionFormats::CharData:
-					addData(data, inst.charValue);
+					addData(data, instruction.charValue);
 					break;
 				case Loader::InstructionFormats::StringData:
-					addString(data, inst.stringValue);
+					addString(data, instruction.stringValue);
 					break;
 				case Loader::InstructionFormats::StringConstantData:
-					addString(data, inst.stringValue);
+					addString(data, instruction.stringValue);
 					break;
 				case Loader::InstructionFormats::Call:
-					addString(data, inst.stringValue);
-					addData(data, inst.parameters.size());
+					addString(data, instruction.stringValue);
+					addData(data, instruction.parameters.size());
 
-					for (auto& param : inst.parameters) {
+					for (auto& param : instruction.parameters) {
 						addString(data, param);
 					}
 					break;
 				case Loader::InstructionFormats::CallInstance:
-					addString(data, inst.stringValue);
-					addString(data, inst.calledClassType);
-					addData(data, inst.parameters.size());
+					addString(data, instruction.stringValue);
+					addString(data, instruction.calledClassType);
+					addData(data, instruction.parameters.size());
 
-					for (auto& param : inst.parameters) {
+					for (auto& param : instruction.parameters) {
 						addString(data, param);
 					}
 					break;

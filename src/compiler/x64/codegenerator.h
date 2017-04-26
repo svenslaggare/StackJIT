@@ -78,7 +78,7 @@ namespace stackjit {
 		void defineMacro(const FunctionDefinition& function, MacroFunction macroFunction);
 
 		//Generates a call to the garbage collect runtime function
-		void generateGCCall(CodeGen& generatedCode, ManagedFunction& function, int instIndex, int generation = 0);
+		void generateGCCall(CodeGen& generatedCode, ManagedFunction& function, int instructionIndex, int generation = 0);
 
 		//Generates the instructions for initializing the given function
 		void generateInitializeFunction(FunctionCompilationData& functionData);

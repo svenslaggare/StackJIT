@@ -1,16 +1,15 @@
 #if defined(_WIN64) || defined(__MINGW32__)
-#include "../compiler/x64/oscodegenerator.h"
+#include "../compiler/x64/codegenerator.h"
 #include "../compiler/x64/amd64assembler.h"
 #include "callingconvention.h"
 #include "../helpers.h"
 #include "../runtime/runtime.h"
 
 namespace stackjit {
-	std::size_t OSCodeGenerator::generateCompileCall(const CallingConvention& callingConvention,
-													 Amd64Assembler& assembler,
-													 ManagedFunction& function,
-													 const FunctionDefinition& funcToCall) {
-		char shadowStackSize = (char)callingConvention.calculateShadowStackSize();
+	std::size_t CodeGenerator::generateCompileCall(Amd64Assembler& assembler,
+												   ManagedFunction& function,
+												   const FunctionDefinition& funcToCall) {
+		char shadowStackSize = (char)mCallingConvention.calculateShadowStackSize();
 		std::size_t callIndex;
 		std::size_t checkEndIndex;
 

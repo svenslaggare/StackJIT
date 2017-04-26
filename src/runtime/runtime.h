@@ -39,7 +39,7 @@ namespace stackjit {
 			std::string valueToString(RegisterValue value, const Type* type);
 
 			//Prints the alive objects
-			void printAliveObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex, std::string indentation = "");
+			void printAliveObjects(RegisterValue* basePtr, ManagedFunction* func, int instructionIndex, std::string indentation = "");
 		};
 
 		//Compiles the given function
@@ -49,7 +49,7 @@ namespace stackjit {
 		BytePtr getVirtualFunctionAddress(RawClassRef rawClassRef, int index);
 
 		//Tries to collect garbage
-		void garbageCollect(RegisterValue* basePtr, ManagedFunction* func, int instIndex, int generation);
+		void garbageCollect(RegisterValue* basePtr, ManagedFunction* func, int instructionIndex, int generation);
 
 		//Creates a new array of the given type and length
 		RawArrayRef newArray(const ArrayType* arrayType, int length);

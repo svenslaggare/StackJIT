@@ -136,8 +136,8 @@ namespace stackjit {
 		return stringstream.str();
 	}
 
-	void Runtime::Internal::printAliveObjects(RegisterValue* basePtr, ManagedFunction* func, int instIndex,	std::string indentation) {
-		StackFrame stackFrame(basePtr, func, instIndex);
+	void Runtime::Internal::printAliveObjects(RegisterValue* basePtr, ManagedFunction* func, int instructionIndex,	std::string indentation) {
+		StackFrame stackFrame(basePtr, func, instructionIndex);
 		auto numArgs = func->def().numParameters();
 		auto numLocals = func->numLocals();
 		auto stackSize = stackFrame.operandStackSize();
@@ -177,8 +177,8 @@ namespace stackjit {
 		}
 	}
 
-	void Runtime::garbageCollect(RegisterValue* basePtr, ManagedFunction* func, int instIndex, int generation) {
-		GCRuntimeInformation runtimeInformation(basePtr, func, instIndex);
+	void Runtime::garbageCollect(RegisterValue* basePtr, ManagedFunction* func, int instructionIndex, int generation) {
+		GCRuntimeInformation runtimeInformation(basePtr, func, instructionIndex);
 		vmState()->gc().collect(runtimeInformation, generation);
 	}
 

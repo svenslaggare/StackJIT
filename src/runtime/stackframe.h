@@ -35,7 +35,7 @@ namespace stackjit {
 		const std::vector<const Type*>& mOperandTypes;
 	public:
 		//Creates a new stack frame
-		StackFrame(RegisterValue* basePtr, const ManagedFunction* function, const int instIndex);
+		StackFrame(RegisterValue* basePtr, const ManagedFunction* function, const int instructionIndex);
 
 		//Returns the given function argument
 		StackFrameEntry getArgument(std::size_t index);
@@ -54,7 +54,7 @@ namespace stackjit {
 	class StackWalker {
 	public:
 		using VisitReferenceFn = std::function<void (StackFrameEntry)>;
-		using VisitFrameFn = std::function<void (RegisterValue* basePtr, ManagedFunction* func, int instIndex)>;
+		using VisitFrameFn = std::function<void (RegisterValue* basePtr, ManagedFunction* func, int instructionIndex)>;
 	private:
 		VMState& mVMState;
 
@@ -65,7 +65,7 @@ namespace stackjit {
 		void visitReference(StackFrameEntry frameEntry, VisitReferenceFn fn);
 
 		//Visits all the references in the given stack frame
-		void visitReferencesInFrame(RegisterValue* basePtr, ManagedFunction* func, int instIndex, VisitReferenceFn fn);
+		void visitReferencesInFrame(RegisterValue* basePtr, ManagedFunction* func, int instructionIndex, VisitReferenceFn fn);
 	public:
 		//Creates a new stack walker
 		StackWalker(VMState& vmState);
@@ -73,7 +73,7 @@ namespace stackjit {
 		//Visits all the references in all stack frames, starting at the given frame
 		void visitReferences(RegisterValue* basePtr,
 							 ManagedFunction* func,
-							 int instIndex,
+							 int instructionIndex,
 							 VisitReferenceFn fn,
 							 VisitFrameFn frameFn = {});
 	};

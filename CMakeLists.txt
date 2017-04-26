@@ -30,7 +30,6 @@ set(SOURCE_FILES
         src/compiler/x64/compilationdata.h
         src/compiler/x64/exceptions.cpp
         src/compiler/x64/exceptions.h
-        src/compiler/x64/oscodegenerator.h
         src/core/function.cpp
         src/core/function.h
         src/core/functionsignature.cpp
