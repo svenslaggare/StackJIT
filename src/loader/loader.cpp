@@ -110,7 +110,7 @@ namespace stackjit {
 
 	}
 
-	std::string Loader::Attribute::name() const {
+	const std::string& Loader::Attribute::name() const {
 		return mName;
 	}
 
@@ -231,11 +231,11 @@ namespace stackjit {
 
 	}
 
-	std::string Loader::Field::name() const {
+	const std::string& Loader::Field::name() const {
 		return mName;
 	}
 
-	std::string Loader::Field::type() const {
+	const std::string& Loader::Field::type() const {
 		return mType;
 	}
 
@@ -256,7 +256,7 @@ namespace stackjit {
 
 	}
 
-	std::string Loader::Class::name() const {
+	const std::string& Loader::Class::name() const {
 		return mName;
 	}
 
@@ -289,7 +289,7 @@ namespace stackjit {
 
 	}
 
-	std::string Loader::Assembly::name() const {
+	const std::string& Loader::Assembly::name() const {
 		return mName;
 	}
 

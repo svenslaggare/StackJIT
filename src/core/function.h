@@ -50,7 +50,7 @@ namespace stackjit {
 		FunctionDefinition();
 
 		//Returns the name
-		std::string name() const;
+		const std::string& name() const;
 
 		//Returns the namespace and the name of the function
 		std::pair<std::string, std::string> namespaceAndName() const;
@@ -80,7 +80,7 @@ namespace stackjit {
 		const ClassType* classType() const;
 
 		//Returns the name of the function is member
-		std::string memberName() const;
+		const std::string& memberName() const;
 
 		//Returns the access modifier
 		AccessModifier accessModifier() const;

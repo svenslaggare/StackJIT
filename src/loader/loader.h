@@ -107,7 +107,7 @@ namespace stackjit {
 			Attribute(std::string name);
 
 			//Returns the name of the attribute
-			std::string name() const;
+			const std::string& name() const;
 
 			//Returns the values
 			const std::unordered_map<std::string, std::string>& values() const;
@@ -196,10 +196,10 @@ namespace stackjit {
 			Field(std::string name, std::string type);
 
 			//Returns the name of the field
-			std::string name() const;
+			const std::string& name() const;
 
 			//Returns the type of the field
-			std::string type() const;
+			const std::string& type() const;
 
 			//Returns the attributes
 			const AttributeContainer& attributes() const;
@@ -220,7 +220,7 @@ namespace stackjit {
 			Class();
 
 			//Returns the name of the class
-			std::string name() const;
+			const std::string& name() const;
 
 			//Returns the fields
 			const std::vector<Field>& fields() const;
@@ -246,7 +246,7 @@ namespace stackjit {
 			Assembly(std::string name);
 
 			//Returns the name of the assembly
-			std::string name() const;
+			const std::string& name() const;
 
 			//Returns the functions
 			const std::vector<Function>& functions() const;

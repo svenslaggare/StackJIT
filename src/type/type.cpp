@@ -16,7 +16,7 @@ namespace stackjit {
 
 	}
 
-	std::string Type::name() const {
+	const std::string& Type::name() const {
 		return mName;
 	}
 
@@ -103,7 +103,7 @@ namespace stackjit {
 
 	}
 
-	std::string ClassType::className() const {
+	const std::string& ClassType::className() const {
 		return mClassName;
 	}
 

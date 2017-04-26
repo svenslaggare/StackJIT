@@ -3,7 +3,7 @@
 #include "function.h"
 
 namespace stackjit {
-	std::string FunctionSignature::str() const {
+	const std::string& FunctionSignature::str() const {
 		return mSignature;
 	}
 

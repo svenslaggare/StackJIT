@@ -110,7 +110,7 @@ namespace stackjit {
 
 	}
 
-	std::string FunctionDefinition::name() const {
+	const std::string& FunctionDefinition::name() const {
 	    return mName;
 	}
 
@@ -162,7 +162,7 @@ namespace stackjit {
 		return mClassType;
 	}
 
-	std::string FunctionDefinition::memberName() const {
+	const std::string& FunctionDefinition::memberName() const {
 		return mMemberName;
 	}
 

@@ -27,7 +27,7 @@ namespace stackjit {
 		Type& operator=(const Type&) = delete;
 
 		//Returns the name of the type
-		std::string name() const;
+		const std::string& name() const;
 
 		//Indicates if the current type is a reference type
 		virtual bool isReference() const = 0;
@@ -99,7 +99,7 @@ namespace stackjit {
 		ClassType(std::string name, ClassMetadata* metadata);
 
 		//Returns the name of the class
-		std::string className() const;
+		const std::string& className() const;
 
 		//Returns the metadata for the class
 		ClassMetadata* metadata() const;

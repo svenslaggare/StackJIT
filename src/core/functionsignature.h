@@ -32,7 +32,7 @@ namespace stackjit {
 		static FunctionSignature from(const FunctionDefinition& function);
 
 		//Returns a string representation of the current signature
-		std::string str() const;
+		const std::string& str() const;
 
 		bool operator==(const FunctionSignature& rhs) const;
 		bool operator!=(const FunctionSignature& rhs) const;

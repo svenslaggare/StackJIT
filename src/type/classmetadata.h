@@ -100,7 +100,7 @@ namespace stackjit {
 		ClassMetadata& operator=(const ClassMetadata&) = delete;
 
 		//Returns the name of the class
-		std::string name() const;
+		const std::string& name() const;
 
 		//Returns the size of the class
 		std::size_t size() const;

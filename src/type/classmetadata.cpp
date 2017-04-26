@@ -66,7 +66,7 @@ namespace stackjit {
 		}
 	}
 
-	std::string ClassMetadata::name() const {
+	const std::string& ClassMetadata::name() const {
 		return mName;
 	}
 
