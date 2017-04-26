@@ -292,13 +292,13 @@ namespace stackjit {
 
 	void Verifier::verifyInstruction(ManagedFunction& function,
 									 std::string functionSignature,
-									 Instruction& inst,
+									 Instruction& instruction,
 									 std::size_t index,
 									 InstructionTypes& operandStack,
 									 std::vector<BranchCheck>& branches) {
 		const auto numInstructions = function.instructions().size();
 
-		switch (inst.opCode()) {
+		switch (instruction.opCode()) {
 			case OpCodes::NOP:
 				break;
 			case OpCodes::LOAD_INT:
@@ -400,7 +400,7 @@ namespace stackjit {
 				auto op1 = popType(operandStack);
 				auto op2 = popType(operandStack);
 
-				if (inst.opCode() == OpCodes::COMPARE_EQUAL || inst.opCode() == OpCodes::COMPARE_NOT_EQUAL) {
+				if (instruction.opCode() == OpCodes::COMPARE_EQUAL || instruction.opCode() == OpCodes::COMPARE_NOT_EQUAL) {
 					if (*op1 == *intType()) {
 						if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
 							operandStack.push(boolType());
@@ -464,12 +464,12 @@ namespace stackjit {
 				break;
 			}
 			case OpCodes::LOAD_LOCAL: {
-				auto localType = function.getLocal((std::size_t)inst.intValue);
+				auto localType = function.getLocal((std::size_t)instruction.intValue);
 
 				if (localType != nullptr) {
 					operandStack.push(localType);
 				} else {
-					typeError(functionSignature, index, "Cannot load untyped local (" + std::to_string(inst.intValue) + ").");
+					typeError(functionSignature, index, "Cannot load untyped local (" + std::to_string(instruction.intValue) + ").");
 				}
 
 				break;
@@ -477,7 +477,7 @@ namespace stackjit {
 			case OpCodes::STORE_LOCAL: {
 				assertOperandCount(functionSignature, index, operandStack, 1);
 
-				auto localIndex = (std::size_t)inst.intValue;
+				auto localIndex = (std::size_t)instruction.intValue;
 				auto valueType = popType(operandStack);
 				auto localType = function.getLocal(localIndex);
 				bool setType = false;
@@ -503,21 +503,21 @@ namespace stackjit {
 			case OpCodes::CALL:
 			case OpCodes::CALL_INSTANCE:
 			case OpCodes::CALL_VIRTUAL: {
-				bool isInstance = inst.isCallInstance();
-				bool isVirtual = inst.opCode() == OpCodes::CALL_VIRTUAL;
+				bool isInstance = instruction.isCallInstance();
+				bool isVirtual = instruction.opCode() == OpCodes::CALL_VIRTUAL;
 
 				std::string signature = "";
 
 				if (!isInstance) {
 					signature = FunctionSignature::function(
-						inst.stringValue,
-						inst.parameters).str();
+						instruction.stringValue,
+						instruction.parameters).str();
 				} else {
 					signature = findInheritedMemberFunction(
 						mVMState,
-						inst.classType,
-						inst.stringValue,
-						inst.parameters);
+						instruction.classType,
+						instruction.stringValue,
+						instruction.parameters);
 				}
 
 				if (!mVMState.binder().isDefined(signature)) {
@@ -528,7 +528,7 @@ namespace stackjit {
 
 				//Rebind the call, since we might call an inherited function
 				if (isInstance) {
-					inst.classType = funcToCall.classType();
+					instruction.classType = funcToCall.classType();
 				}
 
 				if (!isInstance && funcToCall.isMemberFunction()) {
@@ -611,7 +611,7 @@ namespace stackjit {
 				break;
 			}
 			case OpCodes::LOAD_ARG: {
-				int argNum = inst.intValue;
+				int argNum = instruction.intValue;
 
 				if (argNum >= 0 && argNum < (int)function.def().parameters().size()) {
 					operandStack.push(function.def().parameters()[argNum]);
@@ -625,8 +625,8 @@ namespace stackjit {
 				assertOperandCount(functionSignature, index, operandStack, 2);
 
 				//Check if valid target
-				if (!(inst.intValue >= 0 && inst.intValue < (int)numInstructions)) {
-					typeError(functionSignature, index, "Invalid jump target (" + std::to_string(inst.intValue) + ").");
+				if (!(instruction.intValue >= 0 && instruction.intValue < (int)numInstructions)) {
+					typeError(functionSignature, index, "Invalid jump target (" + std::to_string(instruction.intValue) + ").");
 				}
 
 				auto op1 = popType(operandStack);
@@ -634,30 +634,30 @@ namespace stackjit {
 
 				if (*op1 == *intType()) {
 					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
-						branches.push_back({index, (std::size_t)inst.intValue, operandStack});
+						branches.push_back({index, (std::size_t)instruction.intValue, operandStack});
 					} else {
 						typeError(functionSignature, index, "Expected 2 operands of type " + sIntTypeName + " on the stack.");
 					}
 				} else if (*op1 == *boolType()) {
 					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Bool)) {
-						branches.push_back({index, (std::size_t)inst.intValue, operandStack});
+						branches.push_back({index, (std::size_t)instruction.intValue, operandStack});
 					} else {
 						typeError(functionSignature, index, "Expected 2 operands of type " + sBoolTypeName + " on the stack.");
 					}
 				} else if (*op1 == *floatType()) {
 					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Float)) {
-						branches.push_back({index, (std::size_t)inst.intValue, operandStack});
+						branches.push_back({index, (std::size_t)instruction.intValue, operandStack});
 					} else {
 						typeError(functionSignature, index, "Expected 2 operands of type " + sFloatTypeName + " on the stack.");
 					}
 				} else if (*op1 == *charType()) {
 					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Char)) {
-						branches.push_back({index, (std::size_t)inst.intValue, operandStack});
+						branches.push_back({index, (std::size_t)instruction.intValue, operandStack});
 					} else {
 						typeError(functionSignature, index, "Expected 2 operands of type " + sCharTypeName + " on the stack.");
 					}
 				} else if (sameType(op1, op2)) {
-					branches.push_back({index, (std::size_t)inst.intValue, operandStack});
+					branches.push_back({index, (std::size_t)instruction.intValue, operandStack});
 				} else {
 					typeError(functionSignature, index, "Expected 2 operands of comparable type on the stack.");
 				}
@@ -671,8 +671,8 @@ namespace stackjit {
 				assertOperandCount(functionSignature, index, operandStack, 2);
 
 				//Check if valid target
-				if (!(inst.intValue >= 0 && inst.intValue < (int)numInstructions)) {
-					typeError(functionSignature, index, "Invalid jump target (" + std::to_string(inst.intValue) + ").");
+				if (!(instruction.intValue >= 0 && instruction.intValue < (int)numInstructions)) {
+					typeError(functionSignature, index, "Invalid jump target (" + std::to_string(instruction.intValue) + ").");
 				}
 
 				auto op1 = popType(operandStack);
@@ -680,25 +680,25 @@ namespace stackjit {
 
 				if (*op1 == *intType()) {
 					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Integer)) {
-						branches.push_back({index, (std::size_t)inst.intValue, operandStack});
+						branches.push_back({index, (std::size_t)instruction.intValue, operandStack});
 					} else {
 						typeError(functionSignature, index, "Expected 2 operands of type " + sIntTypeName + " on the stack.");
 					}
 				} else if (*op1 == *boolType()) {
 					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Bool)) {
-						branches.push_back({index, (std::size_t)inst.intValue, operandStack});
+						branches.push_back({index, (std::size_t)instruction.intValue, operandStack});
 					} else {
 						typeError(functionSignature, index, "Expected 2 operands of type " + sBoolTypeName + " on the stack.");
 					}
 				} else if (*op1 == *floatType()) {
 					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Float)) {
-						branches.push_back({index, (std::size_t)inst.intValue, operandStack});
+						branches.push_back({index, (std::size_t)instruction.intValue, operandStack});
 					} else {
 						typeError(functionSignature, index, "Expected 2 operands of type " + sFloatTypeName + " on the stack.");
 					}
 				} else if (*op1 == *charType()) {
 					if (TypeSystem::isPrimitiveType(op2, PrimitiveTypes::Char)) {
-						branches.push_back({index, (std::size_t)inst.intValue, operandStack});
+						branches.push_back({index, (std::size_t)instruction.intValue, operandStack});
 					} else {
 						typeError(functionSignature, index, "Expected 2 operands of type " + sCharTypeName + " on the stack.");
 					}
@@ -710,11 +710,11 @@ namespace stackjit {
 			}
 			case OpCodes::BRANCH:
 				//Check if valid target
-				if (!(inst.intValue >= 0 && inst.intValue < (int)numInstructions)) {
-					typeError(functionSignature, index, "Invalid jump target (" + std::to_string(inst.intValue) + ").");
+				if (!(instruction.intValue >= 0 && instruction.intValue < (int)numInstructions)) {
+					typeError(functionSignature, index, "Invalid jump target (" + std::to_string(instruction.intValue) + ").");
 				}
 
-				branches.push_back({index, (std::size_t)inst.intValue, operandStack});
+				branches.push_back({index, (std::size_t)instruction.intValue, operandStack});
 				break;
 			case OpCodes::LOAD_NULL: {
 				operandStack.push(nullType());
@@ -729,17 +729,17 @@ namespace stackjit {
 					typeError(functionSignature, index, error);
 				}
 
-				auto elemType = mVMState.typeProvider().makeType(inst.stringValue);
+				auto elemType = mVMState.typeProvider().makeType(instruction.stringValue);
 
 				if (elemType == nullptr) {
-					typeError(functionSignature, index, "'" + inst.stringValue + "' is not a valid type.");
+					typeError(functionSignature, index, "'" + instruction.stringValue + "' is not a valid type.");
 				}
 
 				if (*elemType == *voidType()) {
 					typeError(functionSignature, index, "Arrays of type '" + sVoidTypeName + "' is not allowed.");
 				}
 
-				operandStack.push(mVMState.typeProvider().makeType("Ref.Array[" + inst.stringValue + "]"));
+				operandStack.push(mVMState.typeProvider().makeType("Ref.Array[" + instruction.stringValue + "]"));
 				break;
 			}
 			case OpCodes::STORE_ELEMENT: {
@@ -765,10 +765,10 @@ namespace stackjit {
 						"Expected second operand to be of type " + sIntTypeName + " but got type: " + indexType->name() + ".");
 				}
 
-				auto elemType = mVMState.typeProvider().makeType(inst.stringValue);
+				auto elemType = mVMState.typeProvider().makeType(instruction.stringValue);
 
 				if (elemType == nullptr) {
-					typeError(functionSignature, index, "There exists no type called '" + inst.stringValue + "'.");
+					typeError(functionSignature, index, "There exists no type called '" + instruction.stringValue + "'.");
 				}
 
 				assertNotVoidType(functionSignature, index, elemType);
@@ -810,10 +810,10 @@ namespace stackjit {
 						"Expected second operand to be of type " + sIntTypeName + " but got type: " + indexType->name() + ".");
 				}
 
-				auto elemType = mVMState.typeProvider().makeType(inst.stringValue);
+				auto elemType = mVMState.typeProvider().makeType(instruction.stringValue);
 
 				if (elemType == nullptr) {
-					typeError(functionSignature, index, "There exists no type called '" + inst.stringValue + "'.");
+					typeError(functionSignature, index, "There exists no type called '" + instruction.stringValue + "'.");
 				}
 
 				assertNotVoidType(functionSignature, index, elemType);
@@ -843,9 +843,9 @@ namespace stackjit {
 			}
 			case OpCodes::NEW_OBJECT: {
 				auto signature = FunctionSignature::memberFunction(
-					inst.classType,
-					inst.stringValue,
-					inst.parameters).str();
+					instruction.classType,
+					instruction.stringValue,
+					instruction.parameters).str();
 
 				if (!mVMState.binder().isDefined(signature)) {
 					typeError(functionSignature, index, "The constructor '" + signature + "' is not defined.");
@@ -866,7 +866,7 @@ namespace stackjit {
 					}
 				}
 
-				operandStack.push(inst.classType);
+				operandStack.push(instruction.classType);
 				break;
 			}
 			case OpCodes::LOAD_FIELD: {
@@ -885,7 +885,7 @@ namespace stackjit {
 				std::string className;
 				std::string fieldName;
 
-				if (TypeSystem::getClassAndFieldName(inst.stringValue, className, fieldName)) {
+				if (TypeSystem::getClassAndFieldName(instruction.stringValue, className, fieldName)) {
 					if (!mVMState.classProvider().isDefined(className)) {
 						typeError(functionSignature, index, "'" + className + "' is not a class type.");
 					}
@@ -945,7 +945,7 @@ namespace stackjit {
 				std::string className;
 				std::string fieldName;
 
-				if (TypeSystem::getClassAndFieldName(inst.stringValue, className, fieldName)) {
+				if (TypeSystem::getClassAndFieldName(instruction.stringValue, className, fieldName)) {
 					if (!mVMState.classProvider().isDefined(className)) {
 						typeError(functionSignature, index, "'" + className + "' is not a class type.");
 					}

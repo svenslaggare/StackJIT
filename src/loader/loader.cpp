@@ -111,16 +111,107 @@ namespace stackjit {
 	}
 
 	Loader::Function::Function()
-		: isMemberFunction(false), isExternal(false) {
+			: mIsMemberFunction(false),
+			  mIsExternal(false) {
 
+	}
+
+	Loader::Function::Function(std::string name, std::string returnType, const std::vector<std::string>& parameters, bool isExternal)
+			: mName(name),
+			  mReturnType(returnType),
+			  mParameters(parameters),
+			  mIsMemberFunction(false),
+			  mIsExternal(isExternal) {
+
+	}
+
+	std::string Loader::Function::name() const {
+		return mName;
+	}
+
+	std::string Loader::Function::returnType() const {
+		return mReturnType;
+	}
+
+	const std::vector<std::string>& Loader::Function::parameters() const {
+		return mParameters;
+	}
+
+	bool Loader::Function::isExternal() const {
+		return mIsExternal;
+	}
+
+	bool Loader::Function::isMemberFunction() const {
+		return mIsMemberFunction;
+	}
+
+	bool& Loader::Function::isMemberFunction() {
+		return mIsMemberFunction;
+	}
+
+	std::string Loader::Function::className() const {
+		return mClassName;
+	}
+
+	std::string& Loader::Function::className() {
+		return mClassName;
+	}
+
+	std::string Loader::Function::memberFunctionName() const {
+		return mMemberFunctionName;
+	}
+
+	std::string& Loader::Function::memberFunctionName() {
+		return mMemberFunctionName;
+	}
+
+	const std::vector<Loader::Instruction>& Loader::Function::instructions() const {
+		return mInstructions;
+	}
+
+	std::vector<Loader::Instruction>& Loader::Function::instructions() {
+		return mInstructions;
+	}
+
+	const std::vector<std::string>& Loader::Function::localTypes() const {
+		return mLocalTypes;
+	}
+
+	std::vector<std::string>& Loader::Function::localTypes() {
+		return mLocalTypes;
+	}
+
+	const Loader::AttributeContainer& Loader::Function::attributes() const {
+		return mAttributes;
+	}
+
+	Loader::AttributeContainer& Loader::Function::attributes() {
+		return mAttributes;
 	}
 
 	void Loader::Function::setNumLocals(int num) {
-		localTypes.resize((std::size_t)num);
+		mLocalTypes.resize((std::size_t)num);
 	}
 
 	std::size_t Loader::Function::numLocals() const {
-		return localTypes.size();
+		return mLocalTypes.size();
+	}
+
+	std::string Loader::Function::toString() const {
+		std::string parametersString = "";
+		bool isFirst = true;
+
+		for (auto parameter : mParameters) {
+			if (isFirst) {
+				isFirst = false;
+			} else {
+				parametersString += " ";
+			}
+
+			parametersString += parameter;
+		}
+
+		return mName + "(" + parametersString + ") " + mReturnType;
 	}
 
 	Loader::Field::Field(std::string name, std::string type)
@@ -207,6 +298,6 @@ namespace stackjit {
 	}
 
 	std::string Loader::getSignature(const Loader::Function& function) {
-		return FunctionSignature::createSignature<std::string>(function.name, function.parameters, [](std::string str) { return str; });
+		return FunctionSignature::createSignature<std::string>(function.name(), function.parameters(), [](std::string str) { return str; });
 	}
 }

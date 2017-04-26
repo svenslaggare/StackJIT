@@ -47,18 +47,18 @@ namespace stackjit {
 
 	void AssemblyImageGenerator::generateFunctionBody(BinaryData& data, Loader::Function& function) {
 		//Attributes
-		generateAttributes(data, function.attributes);
+		generateAttributes(data, function.attributes());
 
 		//Locals
-		addData<std::size_t>(data, function.localTypes.size());
-		for (auto& local : function.localTypes) {
+		addData<std::size_t>(data, function.localTypes().size());
+		for (auto& local : function.localTypes()) {
 			addString(data, local);
 		}
 
 		//Body
-		addData<std::size_t>(data, function.instructions.size());
+		addData<std::size_t>(data, function.instructions().size());
 
-		for (auto& instruction : function.instructions) {
+		for (auto& instruction : function.instructions()) {
 			addData<char>(data, (char)instruction.format);
 			addData<unsigned char>(data, (unsigned char)instruction.opCode);
 
@@ -102,22 +102,22 @@ namespace stackjit {
 	}
 
 	void AssemblyImageGenerator::generateFunctionDefinition(BinaryData& data, Loader::Function& function) {
-		addData<bool>(data, function.isExternal);
-		addData<bool>(data, function.isMemberFunction);
+		addData<bool>(data, function.isExternal());
+		addData<bool>(data, function.isMemberFunction());
 
-		if (function.isMemberFunction) {
-			addString(data, function.className);
-			addString(data, function.memberFunctionName);
+		if (function.isMemberFunction()) {
+			addString(data, function.className());
+			addString(data, function.memberFunctionName());
 		} else {
-			addString(data, function.name);
+			addString(data, function.name());
 		}
 
-		addData(data, function.parameters.size());
-		for (auto& param : function.parameters) {
+		addData(data, function.parameters().size());
+		for (auto& param : function.parameters()) {
 			addString(data, param);
 		}
 
-		addString(data, function.returnType);
+		addString(data, function.returnType());
 	}
 
 	void AssemblyImageGenerator::generateClassBody(BinaryData& data, Loader::Class& classDef) {

@@ -1,11 +1,11 @@
 #include "jit.h"
-#include "x64/codegenerator.h"
-#include "../type/type.h"
-#include "../vmstate.h"
-#include "binder.h"
-#include "../core/function.h"
-#include "../helpers.h"
 #include "memory.h"
+#include "binder.h"
+#include "x64/codegenerator.h"
+#include "../vmstate.h"
+#include "../helpers.h"
+#include "../type/type.h"
+#include "../core/function.h"
 #include "../core/functionsignature.h"
 #include <string.h>
 #include <iostream>

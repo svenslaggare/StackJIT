@@ -36,10 +36,10 @@ namespace stackjit {
 	void FunctionLoader::generateDefinition(VMState& vmState,
 											const Loader::Function& function,
 											FunctionDefinition& definition) {
-		auto returnType = LoaderHelpers::getType(vmState, function.returnType);
+		auto returnType = LoaderHelpers::getType(vmState, function.returnType());
 
 		std::vector<const Type*> parameters;
-		for (auto param : function.parameters) {
+		for (auto param : function.parameters()) {
 			parameters.push_back(LoaderHelpers::getType(vmState, param));
 		}
 
@@ -47,30 +47,30 @@ namespace stackjit {
 		AccessModifier accessModifier = DEFAULT_ACCESS_MODIFIER;
 		bool isVirtual = false;
 
-		if (function.isMemberFunction) {
-			classType = dynamic_cast<const ClassType*>(LoaderHelpers::getType(vmState, "Ref." + function.className));
+		if (function.isMemberFunction()) {
+			classType = dynamic_cast<const ClassType*>(LoaderHelpers::getType(vmState, "Ref." + function.className()));
 			if (classType == nullptr) {
-				throw std::runtime_error("'" + function.className + "' is not a class type.");
+				throw std::runtime_error("'" + function.className() + "' is not a class type.");
 			}
 
-			accessModifier = LoaderHelpers::getAccessModifier(function.attributes);
-			isVirtual = LoaderHelpers::getIsVirtual(function.attributes);
+			accessModifier = LoaderHelpers::getAccessModifier(function.attributes());
+			isVirtual = LoaderHelpers::getIsVirtual(function.attributes());
 		}
 
 		definition = FunctionDefinition(
-			function.isMemberFunction ? function.memberFunctionName : function.name,
+			function.isMemberFunction() ? function.memberFunctionName() : function.name(),
 			parameters,
 			returnType,
 			classType,
 			accessModifier,
-			function.memberFunctionName == ".constructor",
+			function.memberFunctionName() == ".constructor",
 			isVirtual);
 	}
 
 	void FunctionLoader::loadExternal(VMState& vmState,
 									  const Loader::Function& function,
 									  FunctionDefinition& loadedFunction) {
-		if (!function.isExternal) {
+		if (!function.isExternal()) {
 			throw std::runtime_error("Expected an external function");
 		}
 
@@ -86,16 +86,16 @@ namespace stackjit {
 	ManagedFunction* FunctionLoader::loadManaged(VMState& vmState,
 												 const Loader::Function& function,
 												 const FunctionDefinition& functionDefinition) {
-		if (function.isExternal) {
+		if (function.isExternal()) {
 			throw std::runtime_error("Expected a managed function");
 		}
 
 		auto loadedFunc = new ManagedFunction(functionDefinition);
 
 		//Locals
-		loadedFunc->setNumLocals(function.localTypes.size());
-		for (std::size_t local = 0; local < function.localTypes.size(); local++) {
-			auto localType = function.localTypes[local];
+		loadedFunc->setNumLocals(function.localTypes().size());
+		for (std::size_t local = 0; local < function.localTypes().size(); local++) {
+			auto localType = function.localTypes()[local];
 
 			if (localType != "") {
 				loadedFunc->setLocal(local, LoaderHelpers::getType(vmState, localType));
@@ -103,7 +103,7 @@ namespace stackjit {
 		}
 
 		//Instructions
-		for (auto& inst : function.instructions) {
+		for (auto& inst : function.instructions()) {
 			loadedFunc->instructions().push_back(loadInstruction(vmState, inst));
 		}
 

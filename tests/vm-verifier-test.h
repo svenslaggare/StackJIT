@@ -11,8 +11,8 @@ public:
 	//Tests invalid functions
 	void testFunction() {
 		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("function/no_main")), "The main function must be defined.");
-		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("function/invalid_main")), "The main function must have the following signature: 'main() Int'.");
-		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("function/invalid_main2")), "The main function must have the following signature: 'main() Int'.");
+		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("function/invalid_main")), "The main function must have the signature: 'main() Int' but got 'main(Int) Int'.");
+		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("function/invalid_main2")), "The main function must have the signature: 'main() Int' but got 'main() Void'.");
 
 		TS_ASSERT_EQUALS(stripErrorMessage(invokeVM("function/already_defined")), "The function 'test()' is already defined.");
 

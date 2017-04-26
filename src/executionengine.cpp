@@ -51,7 +51,7 @@ namespace stackjit {
 	const Loader::Function* getFunction(AssemblyImage& image, std::string funcName) {
 		for (auto& current : image.functions()) {
 			auto& func = current.second;
-			if (func.name == funcName) {
+			if (func.name() == funcName) {
 				return &func;
 			}
 		}
@@ -64,9 +64,9 @@ namespace stackjit {
 			auto mainFunc = getFunction(*image, "main");
 
 			if (mainFunc != nullptr) {
-				if (!(mainFunc->parameters.size() == 0
-					  && mainFunc->returnType == TypeSystem::toString(PrimitiveTypes::Integer))) {
-					throw std::runtime_error("The main function must have the following signature: 'main() Int'.");
+				if (!(mainFunc->parameters().size() == 0
+					  && mainFunc->returnType() == TypeSystem::toString(PrimitiveTypes::Integer))) {
+					throw std::runtime_error("The main function must have the signature: 'main() Int' but got '" + mainFunc->toString() + "'.");
 				}
 			} else {
 				throw std::runtime_error("The main function must be defined.");
@@ -167,7 +167,7 @@ namespace stackjit {
 					image->loadFunctionBody(current.first);
 				}
 
-				if (!currentFunc.isExternal) {
+				if (!currentFunc.isExternal()) {
 					FunctionLoader::generateDefinition(mVMState, currentFunc, funcDef);
 
 					auto signature = FunctionSignature::from(funcDef).str();
@@ -255,7 +255,7 @@ namespace stackjit {
 		//Generate instructions for all functions
 		for (auto& image : mImageContainer.images()) {
 			for (auto& currentFunc : image->functions()) {
-				if (!currentFunc.second.isExternal) {
+				if (!currentFunc.second.isExternal()) {
 					auto& funcDef = mVMState.binder().getFunction(currentFunc.first);
 					auto funcImage = mImageContainer.getFunction(currentFunc.first);
 					auto func = FunctionLoader::loadManaged(mVMState, *funcImage, funcDef);

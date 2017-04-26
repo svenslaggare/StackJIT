@@ -89,26 +89,26 @@ namespace stackjit {
 	}
 
 	void ByteCodeGenerator::generateFunction(std::ostream& stream, const Loader::Function& function) {
-		if (function.isExternal) {
-			stream << "extern " << Loader::getSignature(function) << " " << function.returnType << std::endl;
+		if (function.isExternal()) {
+			stream << "extern " << Loader::getSignature(function) << " " << function.returnType() << std::endl;
 		} else {
-			if (function.isMemberFunction) {
+			if (function.isMemberFunction()) {
 				stream << "member ";
 			} else {
 				stream << "func ";
 			}
 
-			stream << Loader::getSignature(function) << " " << function.returnType << std::endl;
+			stream << Loader::getSignature(function) << " " << function.returnType() << std::endl;
 
 			stream << "{" << std::endl;
 
-			ByteCodeGenerator::generateAttributes(stream, function.attributes);
+			ByteCodeGenerator::generateAttributes(stream, function.attributes());
 
-			if (function.localTypes.size() > 0) {
-				stream << "\t.locals " << function.localTypes.size() << std::endl;
+			if (function.localTypes().size() > 0) {
+				stream << "\t.locals " << function.localTypes().size() << std::endl;
 
 				std::size_t i = 0;
-				for (auto& local : function.localTypes) {
+				for (auto& local : function.localTypes()) {
 					if (local != "") {
 						stream << "\t.local " << i << " " << local << std::endl;
 					}
@@ -116,7 +116,7 @@ namespace stackjit {
 				}
 			}
 
-			for (auto& inst : function.instructions) {
+			for (auto& inst : function.instructions()) {
 				auto opCode = opCodeTable.at((unsigned char)inst.opCode);
 				std::transform(opCode.begin(), opCode.end(), opCode.begin(), ::toupper);
 				stream << "\t" << opCode;

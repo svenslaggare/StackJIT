@@ -93,30 +93,70 @@ namespace stackjit {
 		using AttributeContainer = std::unordered_map<std::string, Attribute>;
 
 		//Represents a function
-		struct Function {
-			std::string name;
-			std::string returnType;
-			std::vector<std::string> parameters;
+		class Function {
+		private:
+			std::string mName;
+			std::string mReturnType;
+			std::vector<std::string> mParameters;
 
-			bool isMemberFunction;
-			std::string className;
-			std::string memberFunctionName;
+			bool mIsMemberFunction;
+			std::string mClassName;
+			std::string mMemberFunctionName;
 
-			bool isExternal;
+			bool mIsExternal;
 
-			std::vector<Instruction> instructions;
-			std::vector<std::string> localTypes;
+			std::vector<Instruction> mInstructions;
+			std::vector<std::string> mLocalTypes;
 
-			AttributeContainer attributes;
-
+			AttributeContainer mAttributes;
+		public:
 			//Creates a new function
 			Function();
+			Function(std::string name, std::string returnType, const std::vector<std::string>& parameters, bool isExternal = false);
+
+			//Returns the name of the function
+			std::string name() const;
+
+			//Returns the return type
+			std::string returnType() const;
+
+			//Returns the parameter types
+			const std::vector<std::string>& parameters() const;
+
+			//Indicates if the function is an external defined one
+			bool isExternal() const;
+
+			//Indicates if the function is a member function
+			bool isMemberFunction() const;
+			bool& isMemberFunction();
+
+			//Returns the name of the class if member function
+			std::string className() const;
+			std::string& className();
+
+			//Returns the name of the function if member function
+			std::string memberFunctionName() const;
+			std::string& memberFunctionName();
+
+			//Returns the instructions
+			const std::vector<Instruction>& instructions() const;
+			std::vector<Instruction>& instructions();
+
+			//Returns the type of the locals
+			const std::vector<std::string>& localTypes() const;
+			std::vector<std::string>& localTypes();
+
+			const AttributeContainer& attributes() const;
+			AttributeContainer& attributes();
 
 			//Sets the number of locals
 			void setNumLocals(int num);
 
 			//Returns the number of locals
 			std::size_t numLocals() const;
+
+			//Returns a string representation of the current function
+			std::string toString() const;
 		};
 
 		//Represents a field in a class

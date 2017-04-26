@@ -44,19 +44,19 @@ namespace stackjit {
 	std::string FunctionSignature::createSignature(std::string name,
 												   const std::vector<T>& parameters,
 												   std::function<std::string (T)> toStringFn) {
-		std::string argsStr = "";
+		std::string parametersString = "";
 		bool isFirst = true;
 
 		for (auto param : parameters) {
 			if (isFirst) {
 				isFirst = false;
 			} else {
-				argsStr += " ";
+				parametersString += " ";
 			}
 
-			argsStr += toStringFn(param);
+			parametersString += toStringFn(param);
 		}
 
-		return name + "(" + argsStr + ")";
+		return name + "(" + parametersString + ")";
 	}
 }

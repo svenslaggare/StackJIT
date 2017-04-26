@@ -79,12 +79,12 @@ namespace stackjit {
 			auto bodyOffset = mFunctionBodyOffsets[function];
 
 			Loader::Function& func = mFunctions[function];
-			func.attributes = AssemblyImageLoader::loadAttributes(mImageData, bodyOffset);
+			func.attributes() = AssemblyImageLoader::loadAttributes(mImageData, bodyOffset);
 
 			auto numLocals = loadData<std::size_t>(mImageData, bodyOffset);
 			for (std::size_t i = 0; i < numLocals; i++) {
 				auto local = loadString(mImageData, bodyOffset);
-				func.localTypes.push_back(local);
+				func.localTypes().push_back(local);
 			}
 
 			auto numInst = loadData<std::size_t>(mImageData, bodyOffset);
@@ -94,31 +94,31 @@ namespace stackjit {
 
 				switch (format) {
 					case Loader::InstructionFormats::OpCodeOnly:
-						func.instructions.push_back(Loader::Instruction::make(opCode));
+						func.instructions().push_back(Loader::Instruction::make(opCode));
 						break;
 					case Loader::InstructionFormats::IntData: {
 							auto value = loadData<int>(mImageData, bodyOffset);
-							func.instructions.push_back(Loader::Instruction::makeWithInt(opCode, value));
+							func.instructions().push_back(Loader::Instruction::makeWithInt(opCode, value));
 						}
 						break;
 					case Loader::InstructionFormats::FloatData:	{
 							auto value = loadData<float>(mImageData, bodyOffset);
-							func.instructions.push_back(Loader::Instruction::makeWithFloat(opCode, value));
+							func.instructions().push_back(Loader::Instruction::makeWithFloat(opCode, value));
 						}
 						break;
 					case Loader::InstructionFormats::CharData: {
 							auto value = loadData<char>(mImageData, bodyOffset);
-							func.instructions.push_back(Loader::Instruction::makeWithChar(opCode, value));
+							func.instructions().push_back(Loader::Instruction::makeWithChar(opCode, value));
 						}
 						break;
 					case Loader::InstructionFormats::StringData: {
 							auto value = loadString(mImageData, bodyOffset);
-							func.instructions.push_back(Loader::Instruction::makeWithString(opCode, value));
+							func.instructions().push_back(Loader::Instruction::makeWithString(opCode, value));
 						}
 						break;
 					case Loader::InstructionFormats::StringConstantData: {
 							auto value = loadString(mImageData, bodyOffset);
-							func.instructions.push_back(Loader::Instruction::makeWithStringConstant(opCode, value));
+							func.instructions().push_back(Loader::Instruction::makeWithStringConstant(opCode, value));
 						}
 						break;
 					case Loader::InstructionFormats::Call: {
@@ -130,7 +130,7 @@ namespace stackjit {
 								params.push_back(loadString(mImageData, bodyOffset));
 							}
 
-							func.instructions.push_back(Loader::Instruction::makeCall(funcName, params));
+							func.instructions().push_back(Loader::Instruction::makeCall(funcName, params));
 						}
 						break;
 					case Loader::InstructionFormats::CallInstance: {
@@ -144,11 +144,11 @@ namespace stackjit {
 							}
 
 							if (opCode == OpCodes::NEW_OBJECT) {
-								func.instructions.push_back(Loader::Instruction::makeNewObject(
+								func.instructions().push_back(Loader::Instruction::makeNewObject(
 									calledClassType,
 									params));
 							} else {
-								func.instructions.push_back(Loader::Instruction::makeCallInstance(
+								func.instructions().push_back(Loader::Instruction::makeCallInstance(
 									calledClassType,
 									funcName,
 									params));
@@ -218,28 +218,33 @@ namespace stackjit {
 	}
 
 	Loader::Function AssemblyImageLoader::loadFunctionDefinition(BinaryData& data, std::size_t& index) {
-		Loader::Function func;
+		auto isExternal = loadData<bool>(data, index);
+		auto isMemberFunction = loadData<bool>(data, index);
 
-		func.isExternal = loadData<bool>(data, index);
-		func.isMemberFunction = loadData<bool>(data, index);
-
-		if (func.isMemberFunction) {
-			func.className = loadString(data, index);
-			func.memberFunctionName = loadString(data, index);
-			func.name = func.className + "::" + func.memberFunctionName;
+		std::string name;
+		std::string className;
+		std::string memberFunctionName;
+		if (isMemberFunction) {
+			className = loadString(data, index);
+			memberFunctionName = loadString(data, index);
+			name = className + "::" + memberFunctionName;
 		} else {
-			func.name = loadString(data, index);
+			name = loadString(data, index);
 		}
 
-		auto numParams = loadData<std::size_t>(data, index);
-		for (std::size_t i = 0; i < numParams; i++) {
-			std::string param = loadString(data, index);
-			func.parameters.push_back(param);
+		auto numParameters = loadData<std::size_t>(data, index);
+		std::vector<std::string> parameters;
+		for (std::size_t i = 0; i < numParameters; i++) {
+			parameters.push_back(loadString(data, index));
 		}
 
-		func.returnType = loadString(data, index);
+		auto returnType = loadString(data, index);
 
-		return func;
+		Loader::Function function(name, returnType, parameters, isExternal);
+		function.isMemberFunction() = isMemberFunction;
+		function.className() = className;
+		function.memberFunctionName() = memberFunctionName;
+		return function;
 	}
 
 	Loader::Class AssemblyImageLoader::loadClassDefinition(BinaryData& data, std::size_t& index) {

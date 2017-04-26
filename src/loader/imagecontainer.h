@@ -5,7 +5,7 @@
 
 namespace stackjit {
 	namespace Loader {
-		struct Function;
+		class Function;
 	}
 
 	class AssemblyImage;

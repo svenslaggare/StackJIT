@@ -31,7 +31,7 @@ namespace stackjit {
 		void nextTokenAtEnd();
 
 		//Parses a function definition
-		void parseFunctionDefinition(Loader::Function& function);
+		Loader::Function parseFunctionDefinition(bool isExternal);
 
 		//Reads the call parameters
 		void readCallParameters(std::vector<std::string>& parameters);

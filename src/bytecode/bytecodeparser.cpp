@@ -191,23 +191,25 @@ namespace stackjit {
 		}
 	}
 
-	void ByteCodeParser::parseFunctionDefinition(Loader::Function& function) {
-		function.name = nextToken();
+	Loader::Function ByteCodeParser::parseFunctionDefinition(bool isExternal) {
+		auto name = nextToken();
 
 		if (nextToken() != "(") {
 			throw std::runtime_error("Expected '(' after function name.");
 		}
 
+		std::vector<std::string> parameters;
 		while (true) {
 			auto parameter = nextToken();
 			if (parameter == ")") {
 				break;
 			}
 
-			function.parameters.push_back(parameter);
+			parameters.push_back(parameter);
 		}
 
-		function.returnType = nextToken();
+		auto returnType = nextToken();
+		return Loader::Function(name, returnType, parameters, isExternal);
 	}
 
 	void ByteCodeParser::readCallParameters(std::vector<std::string>& parameters) {
@@ -250,8 +252,7 @@ namespace stackjit {
 			if (attribute.values().count(key) == 0) {
 				attribute.values().insert({key, value});
 			} else {
-				throw std::runtime_error(
-						"The key '" + key + "' is already defined in the attribute '" + attributeName + "'.");
+				throw std::runtime_error("The key '" + key + "' is already defined in the attribute '" + attributeName + "'.");
 			}
 		}
 
@@ -263,36 +264,36 @@ namespace stackjit {
 		auto currentToLower = currentTokenToLower();
 
 		if (currentToLower == "@") {
-			parseAttribute(currentFunction.attributes);
+			parseAttribute(currentFunction.attributes());
 			return;
 		}
 
 		if (currentToLower == "ldint") {
 			int value = stoi(nextToken());
-			currentFunction.instructions.push_back(Instruction::makeWithInt(OpCodes::LOAD_INT, value));
+			currentFunction.instructions().push_back(Instruction::makeWithInt(OpCodes::LOAD_INT, value));
 			return;
 		}
 
 		if (currentToLower == "ldfloat") {
 			float value = stof(nextToken());
-			currentFunction.instructions.push_back(Instruction::makeWithFloat(OpCodes::LOAD_FLOAT, value));
+			currentFunction.instructions().push_back(Instruction::makeWithFloat(OpCodes::LOAD_FLOAT, value));
 			return;
 		}
 
 		if (currentToLower == "ldchar") {
 			char value = (char)stoi(nextToken());
-			currentFunction.instructions.push_back(Instruction::makeWithChar(OpCodes::LOAD_CHAR, value));
+			currentFunction.instructions().push_back(Instruction::makeWithChar(OpCodes::LOAD_CHAR, value));
 			return;
 		}
 
 		if (noOperandsInstructions.count(currentToLower) > 0) {
-			currentFunction.instructions.push_back(Instruction::make(noOperandsInstructions.at(currentToLower)));
+			currentFunction.instructions().push_back(Instruction::make(noOperandsInstructions.at(currentToLower)));
 			return;
 		}
 
 		if (stringOperandInstructions.count(currentToLower) > 0) {
 			std::string value = nextToken();
-			currentFunction.instructions.push_back(Instruction::makeWithString(stringOperandInstructions.at(currentToLower), value));
+			currentFunction.instructions().push_back(Instruction::makeWithString(stringOperandInstructions.at(currentToLower), value));
 			return;
 		}
 
@@ -319,7 +320,7 @@ namespace stackjit {
 				auto localType = nextToken();
 
 				if (localIndex >= 0 && localIndex < (int)currentFunction.numLocals()) {
-					currentFunction.localTypes.at((std::size_t)localIndex) = localType;
+					currentFunction.localTypes().at((std::size_t)localIndex) = localType;
 				} else {
 					throw std::runtime_error("Invalid local index.");
 				}
@@ -339,7 +340,7 @@ namespace stackjit {
 			auto opCode = currentToLower == "ldloc" ? OpCodes::LOAD_LOCAL : OpCodes::STORE_LOCAL;
 
 			if (local >= 0 && local < (int)currentFunction.numLocals()) {
-				currentFunction.instructions.push_back(Instruction::makeWithInt(opCode, local));
+				currentFunction.instructions().push_back(Instruction::makeWithInt(opCode, local));
 				return;
 			} else {
 				throw std::runtime_error("The local index is out of range.");
@@ -373,12 +374,12 @@ namespace stackjit {
 
 			if (isInstance) {
 				if (!isVirtual) {
-					currentFunction.instructions.push_back(Instruction::makeCallInstance(classType, funcName, parameters));
+					currentFunction.instructions().push_back(Instruction::makeCallInstance(classType, funcName, parameters));
 				} else {
-					currentFunction.instructions.push_back(Instruction::makeCallVirtual(classType, funcName, parameters));
+					currentFunction.instructions().push_back(Instruction::makeCallVirtual(classType, funcName, parameters));
 				}
 			} else {
-				currentFunction.instructions.push_back(Instruction::makeCall(funcName, parameters));
+				currentFunction.instructions().push_back(Instruction::makeCall(funcName, parameters));
 			}
 
 			return;
@@ -386,7 +387,7 @@ namespace stackjit {
 
 		if (currentToLower == "ldarg") {
 			int argumentNum = stoi(nextToken());
-			currentFunction.instructions.push_back(Instruction::makeWithInt(OpCodes::LOAD_ARG, argumentNum));
+			currentFunction.instructions().push_back(Instruction::makeWithInt(OpCodes::LOAD_ARG, argumentNum));
 			return;
 		}
 
@@ -413,24 +414,24 @@ namespace stackjit {
 
 			std::vector<std::string> parameters;
 			readCallParameters(parameters);
-			currentFunction.instructions.push_back(Instruction::makeNewObject(classType, parameters));
+			currentFunction.instructions().push_back(Instruction::makeNewObject(classType, parameters));
 			return;
 		}
 
 		if (currentToLower == "br") {
 			int target = stoi(nextToken());
-			currentFunction.instructions.push_back(Instruction::makeWithInt(OpCodes::BRANCH, target));
+			currentFunction.instructions().push_back(Instruction::makeWithInt(OpCodes::BRANCH, target));
 			return;
 		}
 
 		if (branchInstructions.count(currentToLower) > 0) {
 			int target = stoi(nextToken());
-			currentFunction.instructions.push_back(Instruction::makeWithInt(branchInstructions.at(currentToLower), target));
+			currentFunction.instructions().push_back(Instruction::makeWithInt(branchInstructions.at(currentToLower), target));
 			return;
 		}
 
 		if (currentToLower == "ldstr") {
-			currentFunction.instructions.push_back(Instruction::makeWithStringConstant(OpCodes::LOAD_STRING, nextToken()));
+			currentFunction.instructions().push_back(Instruction::makeWithStringConstant(OpCodes::LOAD_STRING, nextToken()));
 			return;
 		}
 
@@ -508,14 +509,13 @@ namespace stackjit {
 			auto topLevelCurrent = currentToken();
 
 			if (topLevelCurrent == "func") {
-				Function currentFunction;
-				parseFunctionDefinition(currentFunction);
+				auto function = parseFunctionDefinition(false);
 
-				if (currentFunction.name.find("::") != std::string::npos) {
+				if (function.name().find("::") != std::string::npos) {
 					throw std::runtime_error("'::' is only allowed in member functions.");
 				}
 
-				parseFunctionBody(assembly, currentFunction);
+				parseFunctionBody(assembly, function);
 			} else if (topLevelCurrent == "class") {
 				Class currentClass(nextToken());
 
@@ -526,31 +526,26 @@ namespace stackjit {
 
 				parseClassBody(assembly, currentClass);
 			} else if (topLevelCurrent == "extern") {
-				Function currentFunction;
-				parseFunctionDefinition(currentFunction);
-				currentFunction.isExternal = true;
-				assembly.functions().push_back(currentFunction);
+				auto function = parseFunctionDefinition(true);
+				assembly.functions().push_back(function);
 				nextTokenAtEnd();
 			} else if (topLevelCurrent == "member") {
-				Function currentFunction;
-				parseFunctionDefinition(currentFunction);
-
-				auto funcName = currentFunction.name;
+				auto function = parseFunctionDefinition(false);
 
 				//Get the class name
-				auto classNamePosition = funcName.find("::");
+				auto classNamePosition = function.name().find("::");
 				if (classNamePosition == std::string::npos) {
 					throw std::runtime_error("Expected '::' in member function name.");
 				}
 
-				auto classTypeName = funcName.substr(0, classNamePosition);
-				auto memberFunctionName = funcName.substr(classNamePosition + 2);
+				auto classTypeName = function.name().substr(0, classNamePosition);
+				auto memberFunctionName = function.name().substr(classNamePosition + 2);
 
-				currentFunction.className = classTypeName;
-				currentFunction.memberFunctionName = memberFunctionName;
-				currentFunction.isMemberFunction = true;
+				function.className() = classTypeName;
+				function.memberFunctionName() = memberFunctionName;
+				function.isMemberFunction() = true;
 
-				parseFunctionBody(assembly, currentFunction);
+				parseFunctionBody(assembly, function);
 			} else {
 				throw std::runtime_error("Invalid identifier '" + topLevelCurrent + "'");
 			}

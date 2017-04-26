@@ -54,7 +54,7 @@ namespace stackjit {
 		//Verifies the given instruction
 		void verifyInstruction(ManagedFunction& function,
 							   std::string functionSignature,
-							   Instruction& inst,
+							   Instruction& instruction,
 							   std::size_t index,
 							   InstructionTypes& operandStack,
 							   std::vector<BranchCheck>& branches);
