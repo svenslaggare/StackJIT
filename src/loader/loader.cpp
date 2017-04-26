@@ -3,93 +3,105 @@
 #include "../type/classmetadata.h"
 
 namespace stackjit {
-	Loader::Instruction::Instruction() {
+	Loader::Instruction::Instruction(Loader::InstructionFormats format, OpCodes opCode)
+		: mFormat(format), mOpCode(opCode) {
 
+	}
+
+	Loader::InstructionFormats Loader::Instruction::format() const {
+		return mFormat;
+	}
+
+	OpCodes Loader::Instruction::opCode() const {
+		return mOpCode;
+	}
+
+	float Loader::Instruction::floatValue() const {
+		return mFloatValue;
+	}
+
+	int Loader::Instruction::intValue() const {
+		return mIntValue;
+	}
+
+	char Loader::Instruction::charValue() const {
+		return mCharValue;
+	}
+
+	const std::string& Loader::Instruction::stringValue() const {
+		return mStringValue;
+	}
+
+	const std::vector<std::string>& Loader::Instruction::callParameters() const {
+		return mCallParameters;
+	}
+
+	const std::string& Loader::Instruction::calledClassType() const {
+		return mCalledClassType;
 	}
 
 	Loader::Instruction Loader::Instruction::make(OpCodes opCode) {
-		Loader::Instruction instruction;
-		instruction.opCode = opCode;
-		instruction.format = InstructionFormats::OpCodeOnly;
-		return instruction;
+		return Loader::Instruction(InstructionFormats::OpCodeOnly, opCode);
 	}
 
 	Loader::Instruction Loader::Instruction::makeWithInt(OpCodes opCode, int value) {
-		Loader::Instruction instruction;
-		instruction.intValue = value;
-		instruction.opCode = opCode;
-		instruction.format = InstructionFormats::IntData;
+		Loader::Instruction instruction(InstructionFormats::IntData, opCode);
+		instruction.mIntValue = value;
 		return instruction;
 	}
 
 	Loader::Instruction Loader::Instruction::makeWithFloat(OpCodes opCode, float value) {
-		Loader::Instruction instruction;
-		instruction.floatValue = value;
-		instruction.opCode = opCode;
-		instruction.format = InstructionFormats::FloatData;
+		Loader::Instruction instruction(InstructionFormats::FloatData, opCode);
+		instruction.mFloatValue = value;
 		return instruction;
 	}
 
 	Loader::Instruction Loader::Instruction::makeWithChar(OpCodes opCode, char value) {
-		Loader::Instruction instruction;
-		instruction.charValue = value;
-		instruction.opCode = opCode;
-		instruction.format = InstructionFormats::CharData;
+		Loader::Instruction instruction(InstructionFormats::CharData, opCode);
+		instruction.mCharValue = value;
 		return instruction;
 	}
 
 	Loader::Instruction Loader::Instruction::makeWithString(OpCodes opCode, std::string value) {
-		Loader::Instruction instruction;
-		instruction.stringValue = value;
-		instruction.opCode = opCode;
-		instruction.format = InstructionFormats::StringData;
+		Loader::Instruction instruction(InstructionFormats::StringData, opCode);
+		instruction.mStringValue = value;
 		return instruction;
 	}
 
 	Loader::Instruction Loader::Instruction::makeWithStringConstant(OpCodes opCode, std::string value) {
-		Loader::Instruction instruction;
-		instruction.stringValue = value;
-		instruction.opCode = opCode;
-		instruction.format = InstructionFormats::StringConstantData;
+		Loader::Instruction instruction(InstructionFormats::StringConstantData, opCode);
+		instruction.mStringValue = value;
 		return instruction;
 	}
 
 	Loader::Instruction Loader::Instruction::makeCall(std::string funcName, std::vector<std::string> parameters) {
-		Loader::Instruction instruction;
-		instruction.stringValue = funcName;
-		instruction.parameters = parameters;
-		instruction.opCode = OpCodes::CALL;
-		instruction.format = InstructionFormats::Call;
+		Loader::Instruction instruction(InstructionFormats::Call, OpCodes::CALL);
+		instruction.mStringValue = funcName;
+		instruction.mCallParameters = parameters;
 		return instruction;
 	}
 
 	Loader::Instruction Loader::Instruction::makeCallInstance(std::string classType, std::string funcName, std::vector<std::string> parameters) {
-		Loader::Instruction instruction;
-		instruction.calledClassType = classType;
-		instruction.stringValue = funcName;
-		instruction.parameters = parameters;
-		instruction.opCode = OpCodes::CALL_INSTANCE;
-		instruction.format = InstructionFormats::CallInstance;
+		Loader::Instruction instruction(InstructionFormats::CallInstance, OpCodes::CALL_INSTANCE);
+		instruction.mCalledClassType = classType;
+		instruction.mStringValue = funcName;
+		instruction.mCallParameters = parameters;
 		return instruction;
 	}
 
 	Loader::Instruction Loader::Instruction::makeCallVirtual(std::string classType, std::string funcName, std::vector<std::string> parameters) {
-		Loader::Instruction instruction;
-		instruction.calledClassType = classType;
-		instruction.stringValue = funcName;
-		instruction.parameters = parameters;
-		instruction.opCode = OpCodes::CALL_VIRTUAL;
-		instruction.format = InstructionFormats::CallInstance;
+		Loader::Instruction instruction(InstructionFormats::CallInstance, OpCodes::CALL_VIRTUAL);
+		instruction.mCalledClassType = classType;
+		instruction.mStringValue = funcName;
+		instruction.mCallParameters = parameters;
 		return instruction;
 	}
 
 	Loader::Instruction Loader::Instruction::makeNewObject(std::string classType, std::vector<std::string> parameters) {
-		Loader::Instruction instruction;
-		instruction.calledClassType = classType;
-		instruction.stringValue = ".constructor";
-		instruction.parameters = parameters;
-		instruction.opCode = OpCodes::NEW_OBJECT;
-		instruction.format = InstructionFormats::CallInstance;
+		Loader::Instruction instruction(InstructionFormats::CallInstance, OpCodes::NEW_OBJECT);
+		instruction.mCalledClassType = classType;
+		instruction.mStringValue = ".constructor";
+		instruction.mCallParameters = parameters;
 		return instruction;
 	}
 

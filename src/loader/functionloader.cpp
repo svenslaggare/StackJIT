@@ -12,21 +12,21 @@ namespace stackjit {
 	namespace {
 		//Loads the given instruction
 		Instruction loadInstruction(VMState& vmState, const Loader::Instruction& instruction) {
-			Instruction newInst(instruction.opCode);
+			Instruction newInst(instruction.opCode());
 
-			newInst.intValue = instruction.intValue;
-			newInst.charValue = instruction.charValue;
-			newInst.floatValue = instruction.floatValue;
-			newInst.stringValue = instruction.stringValue;
+			newInst.intValue = instruction.intValue();
+			newInst.charValue = instruction.charValue();
+			newInst.floatValue = instruction.floatValue();
+			newInst.stringValue = instruction.stringValue();
 
-			if (instruction.parameters.size() > 0) {
-				for (auto param : instruction.parameters) {
-					newInst.parameters.push_back(LoaderHelpers::getType(vmState, param));
+			if (instruction.callParameters().size() > 0) {
+				for (auto parameter : instruction.callParameters()) {
+					newInst.parameters.push_back(LoaderHelpers::getType(vmState, parameter));
 				}
 			}
 
-			if (instruction.calledClassType != "") {
-				newInst.classType = LoaderHelpers::getClassType(vmState, instruction.calledClassType);
+			if (instruction.calledClassType() != "") {
+				newInst.classType = LoaderHelpers::getClassType(vmState, instruction.calledClassType());
 			}
 
 			return newInst;

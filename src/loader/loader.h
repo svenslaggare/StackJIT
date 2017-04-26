@@ -19,27 +19,52 @@ namespace stackjit {
 		};
 
 		//Represents a parsed but not bound instruction.
-		struct Instruction {
+		class Instruction {
+		private:
 			//The instruction format
-			InstructionFormats format;
+			InstructionFormats mFormat;
 
 		    //The op code
-		    OpCodes opCode;
+		    OpCodes mOpCode;
 
 		    //Primitive values
-		    float floatValue;
-		    int intValue;
-		    char charValue;
-		    std::string stringValue;
+		    float mFloatValue;
+		    int mIntValue;
+		    char mCharValue;
+		    std::string mStringValue;
 
 		    //Used by call instructions
-		    std::vector<std::string> parameters;
+		    std::vector<std::string> mCallParameters;
 
 		    //Used by the object instructions
-		    std::string calledClassType;
-
+		    std::string mCalledClassType;
+		public:
 		    //Creates a new instruction
-		    Instruction();
+		    Instruction(InstructionFormats format, OpCodes opCode);
+
+			//Returns the instruction format
+			InstructionFormats format() const;
+
+			//Returns the OP code
+			OpCodes opCode() const;
+
+			//Returns the float value
+			float floatValue() const;
+
+			//Returns the int value
+			int intValue() const;
+
+			//Returns the char value
+			char charValue() const;
+
+			//Returns the string value
+			const std::string& stringValue() const;
+
+			//Returns the call parameters
+			const std::vector<std::string>& callParameters() const;
+
+			//Returns the type of the called class for object instructions
+			const std::string& calledClassType() const;
 
 		    //Creates a new instruction with the given op code
 		    static Instruction make(OpCodes opCode);

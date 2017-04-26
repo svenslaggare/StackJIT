@@ -117,59 +117,59 @@ namespace stackjit {
 			}
 
 			for (auto& inst : function.instructions()) {
-				auto opCode = opCodeTable.at((unsigned char)inst.opCode);
+				auto opCode = opCodeTable.at((unsigned char)inst.opCode());
 				std::transform(opCode.begin(), opCode.end(), opCode.begin(), ::toupper);
 				stream << "\t" << opCode;
 
-				switch (inst.format) {
+				switch (inst.format()) {
 					case Loader::InstructionFormats::OpCodeOnly:
 						break;
 					case Loader::InstructionFormats::IntData:
-						stream << " " << inst.intValue;
+						stream << " " << inst.intValue();
 						break;
 					case Loader::InstructionFormats::FloatData:
-						stream << " " << inst.floatValue;
+						stream << " " << inst.floatValue();
 						break;
 					case Loader::InstructionFormats::CharData:
-						stream << " " << (int)inst.charValue;
+						stream << " " << (int)inst.charValue();
 						break;
 					case Loader::InstructionFormats::StringData:
-						stream << " " << inst.stringValue;
+						stream << " " << inst.stringValue();
 						break;
 					case Loader::InstructionFormats::StringConstantData:
-						stream << " " << escapedString(inst.stringValue);
+						stream << " " << escapedString(inst.stringValue());
 						break;
 					case Loader::InstructionFormats::Call: {
-						stream << " " << inst.stringValue;
+						stream << " " << inst.stringValue();
 						stream << "(";
 						bool isFirst = true;
 
-						for (auto param : inst.parameters) {
+						for (auto parameter : inst.callParameters()) {
 							if (!isFirst) {
 								stream << " ";
 							} else {
 								isFirst = false;
 							}
 
-							stream << param;
+							stream << parameter;
 						}
 
 						stream << ")";
 						break;
 					}
 					case Loader::InstructionFormats::CallInstance: {
-						stream << " " << inst.calledClassType << "::" << inst.stringValue;
+						stream << " " << inst.calledClassType() << "::" << inst.stringValue();
 						stream << "(";
 						bool isFirst = true;
 
-						for (auto param : inst.parameters) {
+						for (auto parameter : inst.callParameters()) {
 							if (!isFirst) {
 								stream << " ";
 							} else {
 								isFirst = false;
 							}
 
-							stream << param;
+							stream << parameter;
 						}
 
 						stream << ")";
