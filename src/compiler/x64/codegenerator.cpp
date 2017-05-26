@@ -85,10 +85,10 @@ namespace stackjit {
 		}
 
 		mCallingConvention.moveArgsToStack(functionData);
-		zeroLocals(functionData.function, assembler);
+		generateZeroLocals(functionData.function, assembler);
 	}
 
-	void CodeGenerator::zeroLocals(ManagedFunction& function, Amd64Assembler& assembler) {
+	void CodeGenerator::generateZeroLocals(ManagedFunction& function, Amd64Assembler& assembler) {
 		//Zero the locals
 		if (function.numLocals() > 0) {
 			assembler.bitwiseXor(Registers::AX, Registers::AX);	//Zero rax

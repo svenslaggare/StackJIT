@@ -57,7 +57,7 @@ namespace stackjit {
 		void generateCall(Amd64Assembler& assembler, BytePtr funcPtr, IntRegister addressRegister = Registers::AX, bool shadowSpaceNeeded = true);
 
 		//Zeroes the locals
-		void zeroLocals(ManagedFunction& function, Amd64Assembler& assembler);
+		void generateZeroLocals(ManagedFunction& function, Amd64Assembler& assembler);
 
 		//Pushes a function to the call stack
 		void pushFunc(VMState& vmState, FunctionCompilationData& functionData, int instIndex, Amd64Assembler& assembler);
