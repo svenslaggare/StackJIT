@@ -337,7 +337,7 @@ namespace stackjit {
 			[&](CodeGen& codeGen, ExtendedRegisters x, Registers y) { Amd64Backend::xorRegToReg(codeGen, x, y); });
 	}
 
-	void Amd64Assembler::bitwiseNor(IntRegister intRegister, bool is32Bits) {
+	void Amd64Assembler::bitwiseNot(IntRegister intRegister, bool is32Bits) {
 		generateOneRegisterInstruction(
 			intRegister,
 			[&](CodeGen& codeGen, Registers x) { Amd64Backend::notReg(codeGen, x, is32Bits); },

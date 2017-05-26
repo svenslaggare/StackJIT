@@ -231,8 +231,8 @@ namespace stackjit {
 		//Applies bitwise XOR between the given registers
 		void bitwiseXor(IntRegister destination, IntRegister source, bool is32Bits = DEFAULT_IS_32_BITS);
 
-		//Applies bitwise NOR to the given register
-		void bitwiseNor(IntRegister intRegister, bool is32Bits = DEFAULT_IS_32_BITS);
+		//Applies bitwise NOT to the given register
+		void bitwiseNot(IntRegister intRegister, bool is32Bits = DEFAULT_IS_32_BITS);
 
 		//Moves the second register to the first
 		void move(IntRegister destination, IntRegister source);

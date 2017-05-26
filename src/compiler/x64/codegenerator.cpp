@@ -325,7 +325,7 @@ namespace stackjit {
 			}
 			case OpCodes::NOT:
 				operandStack.popReg(Registers::AX);
-				assembler.bitwiseNor(Registers::AX);
+				assembler.bitwiseNot(Registers::AX);
 				assembler.bitwiseAnd(Registers::AX, 1); //Clear the other bits, so that the value is either 0 or 1.
 				operandStack.pushReg(Registers::AX);
 				break;
