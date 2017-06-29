@@ -32,19 +32,31 @@ namespace stackjit {
 	private:
 		RegisterValue* mBasePtr;
 		const ManagedFunction* mFunction;
-		const std::vector<const Type*>& mOperandTypes;
+		const int mInstructionIndex;
+
+		//Returns the types of the operands for the current instruction
+		const std::vector<const Type*>& operandTypes() const;
 	public:
 		//Creates a new stack frame
 		StackFrame(RegisterValue* basePtr, const ManagedFunction* function, const int instructionIndex);
 
+		//Returns the base pointer for the current frame
+		RegisterValue* basePtr() const;
+
+		//Returns the function for the current frame
+		const ManagedFunction* function() const;
+
+		//Returns the index of the current instruction
+		int instructionIndex() const;
+
 		//Returns the given function argument
-		StackFrameEntry getArgument(std::size_t index);
+		StackFrameEntry getArgument(std::size_t index) const;
 
 		//Returns the given local
-		StackFrameEntry getLocal(std::size_t index);
+		StackFrameEntry getLocal(std::size_t index) const;
 
 		//Returns the given operand
-		StackFrameEntry getStackOperand(std::size_t index);
+		StackFrameEntry getStackOperand(std::size_t index) const;
 
 		//Returns the size of the operand stack at the current instruction
 		std::size_t operandStackSize() const;
@@ -54,7 +66,7 @@ namespace stackjit {
 	class StackWalker {
 	public:
 		using VisitReferenceFn = std::function<void (StackFrameEntry)>;
-		using VisitFrameFn = std::function<void (RegisterValue* basePtr, ManagedFunction* func, int instructionIndex)>;
+		using VisitFrameFn = std::function<void (const StackFrame& stackFrame)>;
 	private:
 		VMState& mVMState;
 
@@ -65,16 +77,12 @@ namespace stackjit {
 		void visitReference(StackFrameEntry frameEntry, VisitReferenceFn fn);
 
 		//Visits all the references in the given stack frame
-		void visitReferencesInFrame(RegisterValue* basePtr, ManagedFunction* func, int instructionIndex, VisitReferenceFn fn);
+		void visitReferencesInFrame(const StackFrame& stackFrame, VisitReferenceFn fn);
 	public:
 		//Creates a new stack walker
 		StackWalker(VMState& vmState);
 
 		//Visits all the references in all stack frames, starting at the given frame
-		void visitReferences(RegisterValue* basePtr,
-							 ManagedFunction* func,
-							 int instructionIndex,
-							 VisitReferenceFn fn,
-							 VisitFrameFn frameFn = {});
+		void visitReferences(const StackFrame& stackFrame, VisitReferenceFn fn,	VisitFrameFn frameFn = {});
 	};
 }

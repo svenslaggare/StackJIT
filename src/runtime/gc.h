@@ -16,11 +16,8 @@ namespace stackjit {
 
 	//Holds information needed to perform the collection provided by the runtime
 	struct GCRuntimeInformation {
-		RegisterValue* const basePtr;
-		ManagedFunction* const function;
-		const int instructionIndex;
-
-		GCRuntimeInformation(RegisterValue* basePtr, ManagedFunction* function, int instructionIndex);
+		const StackFrame stackFrame;
+		GCRuntimeInformation(const StackFrame& stackFrame);
 	};
 
 	//Represents the garbage collector
@@ -54,7 +51,7 @@ namespace stackjit {
 		void markValue(CollectorGeneration& generation, RegisterValue value, const Type* type);
 
 		//Marks the objects in all stack frames, starting at the given frame
-		void markAllObjects(CollectorGeneration& generation, RegisterValue* basePtr, ManagedFunction* func, int instIndex);
+		void markAllObjects(CollectorGeneration& generation, const StackFrame& stackFrame);
 
 		//Deletes unreachable objects.
 		void sweepObjects(CollectorGeneration& generation);

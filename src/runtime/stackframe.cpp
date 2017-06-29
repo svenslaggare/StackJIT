@@ -25,26 +25,42 @@ namespace stackjit {
 	StackFrame::StackFrame(RegisterValue* basePtr, const ManagedFunction* function, const int instructionIndex)
 		: mBasePtr(basePtr),
 		  mFunction(function),
-		  mOperandTypes(function->instructions()[instructionIndex].operandTypes()) {
+		  mInstructionIndex(instructionIndex) {
 	}
 
-	StackFrameEntry StackFrame::getArgument(std::size_t index) {
+	RegisterValue* StackFrame::basePtr() const {
+		return mBasePtr;
+	}
+
+	const ManagedFunction* StackFrame::function() const {
+		return mFunction;
+	}
+
+	int StackFrame::instructionIndex() const {
+		return mInstructionIndex;
+	}
+
+	const std::vector<const Type*>& StackFrame::operandTypes() const {
+		return mFunction->instructions()[mInstructionIndex].operandTypes();
+	}
+
+	StackFrameEntry StackFrame::getArgument(std::size_t index) const {
 		RegisterValue* argsStart = mBasePtr - 1;
 		return StackFrameEntry(argsStart - index, mFunction->def().parameters()[index]);
 	}
 
-	StackFrameEntry StackFrame::getLocal(std::size_t index) {
+	StackFrameEntry StackFrame::getLocal(std::size_t index) const {
 		RegisterValue* localsStart = mBasePtr - 1 - mFunction->def().numParameters();
 		return StackFrameEntry(localsStart - index, mFunction->getLocal(index));
 	}
 
-	StackFrameEntry StackFrame::getStackOperand(std::size_t index) {
+	StackFrameEntry StackFrame::getStackOperand(std::size_t index) const {
 		RegisterValue* stackStart = mBasePtr - 1 - mFunction->def().numParameters() - mFunction->numLocals();
-		return StackFrameEntry(stackStart - index, mOperandTypes[mOperandTypes.size() - 1 - index]);
+		return StackFrameEntry(stackStart - index, operandTypes()[operandTypes().size() - 1 - index]);
 	}
 
 	std::size_t StackFrame::operandStackSize() const {
-		return mOperandTypes.size();
+		return operandTypes().size();
 	}
 
 	//Stack walker
@@ -78,13 +94,9 @@ namespace stackjit {
 		}
 	}
 
-	void StackWalker::visitReferencesInFrame(RegisterValue* basePtr,
-											 ManagedFunction* func,
-											 int instructionIndex,
-											 VisitReferenceFn fn) {
-		StackFrame stackFrame(basePtr, func, instructionIndex);
-		auto numArgs = func->def().numParameters();
-		auto numLocals = func->numLocals();
+	void StackWalker::visitReferencesInFrame(const StackFrame& stackFrame, VisitReferenceFn fn) {
+		auto numArgs = stackFrame.function()->def().numParameters();
+		auto numLocals = stackFrame.function()->numLocals();
 		auto stackSize = stackFrame.operandStackSize();
 
 		for (std::size_t i = 0; i < numArgs; i++) {
@@ -103,17 +115,13 @@ namespace stackjit {
 		}
 	}
 
-	void StackWalker::visitReferences(RegisterValue* basePtr,
-									  ManagedFunction* func,
-									  int instructionIndex,
-									  VisitReferenceFn fn,
-									  VisitFrameFn frameFn) {
+	void StackWalker::visitReferences(const StackFrame& stackFrame,	VisitReferenceFn fn, VisitFrameFn frameFn) {
 		if (frameFn) {
-			frameFn(basePtr, func, instructionIndex);
+			frameFn(stackFrame);
 		}
 
 		//Visit the calling stack frame
-		visitReferencesInFrame(basePtr, func, instructionIndex, fn);
+		visitReferencesInFrame(stackFrame, fn);
 
 		//Then all other stack frames
 		auto topEntryPtr = mVMState.engine().callStack().top();
@@ -122,13 +130,14 @@ namespace stackjit {
 			auto callEntry = *topEntryPtr;
 			auto topFunc = callEntry.function;
 			auto callPoint = callEntry.callPoint;
-			auto callBasePtr = findBasePtr(basePtr, 0, topFuncIndex);
+			auto callBasePtr = findBasePtr(stackFrame.basePtr(), 0, topFuncIndex);
 
+			StackFrame callStackFrame(callBasePtr, topFunc, callPoint);
 			if (frameFn) {
-				frameFn(callBasePtr, topFunc, callPoint);
+				frameFn(callStackFrame);
 			}
 
-			visitReferencesInFrame(callBasePtr, topFunc, callPoint, fn);
+			visitReferencesInFrame(callStackFrame, fn);
 
 			topEntryPtr--;
 			topFuncIndex++;

@@ -12,6 +12,21 @@
 #include <iostream>
 
 namespace stackjit {
+	namespace {
+		//Returns the size of the given type
+		DataSize sizeOf(const Type* type) {
+			auto size = TypeSystem::sizeOfType(type);
+			DataSize dataSize = DataSize::Size64;
+			if (size == 4) {
+				dataSize = DataSize::Size32;
+			} else if (size == 1) {
+				dataSize = DataSize::Size8;
+			}
+
+			return dataSize;
+		}
+	}
+
 	MacroFunctionContext::MacroFunctionContext(const VMState& vmState,
 											   const CallingConvention& callingConvention,
 											   const ExceptionHandling& exceptionHandling,
@@ -570,8 +585,9 @@ namespace stackjit {
 			}
 			case OpCodes::LOAD_ARG: {
 				//Load rax with the argument
-				int argOffset = (instruction.intValue + stackOffset) * -Amd64Backend::REGISTER_SIZE;
-				assembler.move(Registers::AX, { Registers::BP, argOffset });
+				assembler.move(
+					Registers::AX,
+					{ Registers::BP, (instruction.intValue + stackOffset) * -Amd64Backend::REGISTER_SIZE });
 
 				//Push the loaded value
 				operandStack.pushReg(Registers::AX);
@@ -647,9 +663,9 @@ namespace stackjit {
 				operandStack.pushInt(0);
 				break;
 			case OpCodes::NEW_ARRAY: {
-				auto elemType = vmState.typeProvider().getType(instruction.stringValue);
+				auto elementType = vmState.typeProvider().getType(instruction.stringValue);
 				auto arrayType = static_cast<const ArrayType*>(
-						vmState.typeProvider().getType(TypeSystem::arrayTypeName(elemType)));
+						vmState.typeProvider().getType(TypeSystem::arrayTypeName(elementType)));
 
 				if (!vmState.config.disableGC) {
 					generateGCCall(assembler.data(), function, instructionIndex);
@@ -689,17 +705,10 @@ namespace stackjit {
 				assembler.add(Registers::AX, stackjit::ARRAY_LENGTH_SIZE);
 
 				//Store the element
-				auto elementSize = TypeSystem::sizeOfType(elementType);
-				DataSize dataSize = DataSize::Size64;
-				if (elementSize == 4) {
-					dataSize = DataSize::Size32;
-				} else if (elementSize == 1) {
-					dataSize = DataSize::Size8;
-				}
-
+				auto elementDataSize = sizeOf(elementType);
 				MemoryOperand elementOffset(Registers::AX);
-				if (dataSize != DataSize::Size8) {
-					assembler.move(elementOffset, Registers::DX, dataSize);
+				if (elementDataSize != DataSize::Size8) {
+					assembler.move(elementOffset, Registers::DX, elementDataSize);
 				} else {
 					assembler.move(elementOffset, Register8Bits::DL);
 				}
@@ -726,17 +735,10 @@ namespace stackjit {
 				assembler.add(Registers::AX, stackjit::ARRAY_LENGTH_SIZE);
 
 				//Load the element
-				auto elementSize = TypeSystem::sizeOfType(elementType);
-				DataSize dataSize = DataSize::Size64;
-				if (elementSize == 4) {
-					dataSize = DataSize::Size32;
-				} else if (elementSize == 1) {
-					dataSize = DataSize::Size8;
-				}
-
+				auto elementDataSize = sizeOf(elementType);
 				MemoryOperand elementOffset(Registers::AX);
-				if (dataSize != DataSize::Size8) {
-					assembler.move(Registers::CX, elementOffset, dataSize);
+				if (elementDataSize != DataSize::Size8) {
+					assembler.move(Registers::CX, elementOffset, elementDataSize);
 				} else {
 					assembler.move(Register8Bits::CL, elementOffset);
 				}
@@ -855,13 +857,7 @@ namespace stackjit {
 				int fieldOffset = (int)field.offset();
 
 				//Get the size of the field
-				auto elemSize = TypeSystem::sizeOfType(field.type());
-				DataSize dataSize = DataSize::Size64;
-				if (elemSize == 4) {
-					dataSize = DataSize::Size32;
-				} else if (elemSize == 1) {
-					dataSize = DataSize::Size8;
-				}
+				auto fieldDataSize = sizeOf(field.type());
 
 				if (instruction.opCode() == OpCodes::LOAD_FIELD) {
 					//Pop the operand
@@ -875,8 +871,8 @@ namespace stackjit {
 
 					//Load the field
 					MemoryOperand fieldMemoryOperand(Registers::AX);
-					if (dataSize != DataSize::Size8) {
-						assembler.move(Registers::CX, fieldMemoryOperand, dataSize);
+					if (fieldDataSize != DataSize::Size8) {
+						assembler.move(Registers::CX, fieldMemoryOperand, fieldDataSize);
 					} else {
 						assembler.move(Register8Bits::CL, fieldMemoryOperand);
 					}
@@ -892,8 +888,8 @@ namespace stackjit {
 
 					//Store the field
 					MemoryOperand fieldMemoryOperand(Registers::AX, fieldOffset);
-					if (dataSize != DataSize::Size8) {
-						assembler.move(fieldMemoryOperand, Registers::DX, dataSize);
+					if (fieldDataSize != DataSize::Size8) {
+						assembler.move(fieldMemoryOperand, Registers::DX, fieldDataSize);
 					} else {
 						assembler.move(fieldMemoryOperand, Register8Bits::DL);
 					}

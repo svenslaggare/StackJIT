@@ -26,8 +26,8 @@ namespace stackjit {
 		}
 	}
 
-	GCRuntimeInformation::GCRuntimeInformation(RegisterValue* basePtr, ManagedFunction* function, int instructionIndex)
-			: basePtr(basePtr), function(function), instructionIndex(instructionIndex) {
+	GCRuntimeInformation::GCRuntimeInformation(const StackFrame& stackFrame)
+			: stackFrame(stackFrame) {
 
 	}
 
@@ -104,7 +104,7 @@ namespace stackjit {
 		Helpers::setValue<std::size_t>(objPtr, 0, (PtrValue)type); //Type
 		Helpers::setValue<unsigned char>(objPtr, sizeof(PtrValue), 0); //GC info
 
-		//The returned ptr is to the data
+		//The returned pointer is to the data
 		return objPtr + stackjit::OBJECT_HEADER_SIZE;
 	}
 
@@ -197,18 +197,18 @@ namespace stackjit {
 		}
 	}
 
-	void GarbageCollector::markAllObjects(CollectorGeneration& generation, RegisterValue* basePtr, ManagedFunction* func, int instIndex) {
+	void GarbageCollector::markAllObjects(CollectorGeneration& generation, const StackFrame& stackFrame) {
 		if (mVMState.config.enableDebug && mVMState.config.printGCStackTrace) {
 			std::cout << "Stack trace: " << std::endl;
 		}
 
 		StackWalker stackWalker(mVMState);
-		stackWalker.visitReferences(basePtr, func, instIndex, [this, &generation](StackFrameEntry frameEntry) {
+		stackWalker.visitReferences(stackFrame, [this, &generation](StackFrameEntry frameEntry) {
 			markObject(generation, ObjectRef((RawObjectRef) frameEntry.value()));
-		}, [this](RegisterValue* frameBasePtr, ManagedFunction* frameFunc, int frameCallPoint) {
+		}, [this](const StackFrame& currentFrame) {
 			if (mVMState.config.enableDebug && mVMState.config.printGCStackTrace) {
-				std::cout << frameFunc->def().name() << " (" << frameCallPoint << ")" << std::endl;
-				Runtime::Internal::printAliveObjects(frameBasePtr, frameFunc, frameCallPoint, "\t");
+				std::cout << currentFrame.function()->def().name() << " (" << currentFrame.instructionIndex() << ")" << std::endl;
+				Runtime::Internal::printAliveObjects(currentFrame, "\t");
 			}
 		});
 
@@ -306,12 +306,10 @@ namespace stackjit {
 	void GarbageCollector::updateStackReferences(const GCRuntimeInformation& runtimeInformation, ForwardingTable& forwardingAddress) {
 		StackWalker stackWalker(mVMState);
 		stackWalker.visitReferences(
-				runtimeInformation.basePtr,
-				runtimeInformation.function,
-				runtimeInformation.instructionIndex,
-				[&](StackFrameEntry frameEntry) {
-					updateReference(forwardingAddress, (PtrValue*) frameEntry.valuePtr());
-				});
+			runtimeInformation.stackFrame,
+			[&](StackFrameEntry frameEntry) {
+				updateReference(forwardingAddress, (PtrValue*)frameEntry.valuePtr());
+			});
 	}
 
 	int GarbageCollector::moveObjects(CollectorGeneration& generation, ForwardingTable& forwardingAddress) {
@@ -402,9 +400,8 @@ namespace stackjit {
 	}
 
 	void GarbageCollector::collect(const GCRuntimeInformation& runtimeInformation, int generationNumber, bool forceGC) {
-		auto basePtr = runtimeInformation.basePtr;
-		auto func = runtimeInformation.function;
-		auto instIndex = runtimeInformation.instructionIndex;
+		auto func = runtimeInformation.stackFrame.function();
+		auto instIndex = runtimeInformation.stackFrame.instructionIndex();
 		auto& generation = getGeneration(generationNumber);
 
 		if (beginGC(generationNumber, forceGC)) {
@@ -429,7 +426,7 @@ namespace stackjit {
 			}
 
 			//Mark all objects
-			markAllObjects(generation, basePtr, func, instIndex);
+			markAllObjects(generation, runtimeInformation.stackFrame);
 
 	//		//Sweep objects
 	//		sweepObjects();

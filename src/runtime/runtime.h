@@ -10,7 +10,7 @@ namespace stackjit {
 	class ClassType;
 	class ArrayType;
 
-	//Defines the runtime
+	//Defines the interface to the runtime
 	namespace Runtime {
 		//Returns the vm state
 		VMState* vmState();
@@ -39,7 +39,7 @@ namespace stackjit {
 			std::string valueToString(RegisterValue value, const Type* type);
 
 			//Prints the alive objects
-			void printAliveObjects(RegisterValue* basePtr, ManagedFunction* func, int instructionIndex, std::string indentation = "");
+			void printAliveObjects(const StackFrame& stackFrame, std::string indentation = "");
 		};
 
 		//Compiles the given function
