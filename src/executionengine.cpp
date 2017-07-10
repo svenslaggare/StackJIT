@@ -40,8 +40,8 @@ namespace stackjit {
 	}
 
 	EntryPointFunction ExecutionEngine::entryPoint() const {
-	    if (mVMState.binder().isDefined(stackjit::entryPointSignature)) {
-	        return (EntryPointFunction)(mVMState.binder().getFunction(stackjit::entryPointSignature).entryPoint());
+	    if (mVMState.binder().isDefined(stackjit::ENTRY_POINT_SIGNATURE)) {
+	        return (EntryPointFunction)(mVMState.binder().getFunction(stackjit::ENTRY_POINT_SIGNATURE).entryPoint());
 	    } else {
 	        throw std::runtime_error("No entry point has been defined.");
 	    }
@@ -130,7 +130,7 @@ namespace stackjit {
 		}
 	}
 
-	void ExecutionEngine::load(bool loadBody) {
+	void ExecutionEngine::load(bool loadFunctionBodies) {
 		auto& binder = mVMState.binder();
 
 		if (!mHasMainInitialized) {
@@ -163,7 +163,7 @@ namespace stackjit {
 				auto& currentFunc = current.second;
 				FunctionDefinition funcDef;
 
-				if (loadBody) {
+				if (loadFunctionBodies) {
 					image->loadFunctionBody(current.first);
 				}
 
@@ -227,7 +227,7 @@ namespace stackjit {
 		return funcPtr;
 	}
 
-	bool ExecutionEngine::compileFunction(std::string signature, JitFunction& entryPoint) {
+	bool ExecutionEngine::compileFunction(const std::string& signature, JitFunction& entryPoint) {
 		auto funcImage = mImageContainer.getFunction(signature);
 
 		if (funcImage != nullptr && !mJIT.hasCompiled(signature)) {
@@ -246,7 +246,7 @@ namespace stackjit {
 		return false;
 	}
 
-	bool ExecutionEngine::compileFunction(std::string signature) {
+	bool ExecutionEngine::compileFunction(const std::string& signature) {
 		JitFunction entryPoint;
 		return compileFunction(signature, entryPoint);
 	}
@@ -269,10 +269,10 @@ namespace stackjit {
 		mJIT.resolveSymbols();
 	}
 
-	void ExecutionEngine::compile() {
+	void ExecutionEngine::loadAndCompileAll() {
 		load(true);
 		generateCode();
-	    mJIT.makeExecutable();
+		mJIT.makeExecutable();
 	}
 
 	CallStack& ExecutionEngine::callStack() {

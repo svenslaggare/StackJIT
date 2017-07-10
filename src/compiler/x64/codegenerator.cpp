@@ -115,7 +115,7 @@ namespace stackjit {
 		}
 	}
 
-	void CodeGenerator::pushFunc(VMState& vmState, FunctionCompilationData& functionData, int instIndex, Amd64Assembler& assembler) {
+	void CodeGenerator::pushFunc(VMState& vmState, FunctionCompilationData& functionData, int instructionIndex, Amd64Assembler& assembler) {
 		auto& function = functionData.function;
 
 		//Get the top pointer
@@ -131,7 +131,7 @@ namespace stackjit {
 		//Store the entry
 		assembler.moveLong(Registers::CX, (PtrValue)&function);
 		assembler.move({ Registers::AX, 0 }, Registers::CX);
-		assembler.moveInt(Registers::CX, instIndex);
+		assembler.moveInt(Registers::CX, instructionIndex);
 		assembler.move({ Registers::AX, sizeof(ManagedFunction*) }, Registers::CX);
 
 		//Update the top pointer

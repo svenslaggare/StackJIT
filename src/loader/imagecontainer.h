@@ -28,12 +28,12 @@ namespace stackjit {
 		void addImage(AssemblyImage* image);
 
 		//Returns the given function
-		const Loader::Function* getFunction(std::string function) const;
+		const Loader::Function* getFunction(const std::string& function) const;
 
 		//Loads the body given function if not already loaded
-		void loadFunctionBody(std::string function);
+		void loadFunctionBody(const std::string& function);
 
 		//Loads the body given class if not already loaded
-		void loadClassBody(std::string className);
+		void loadClassBody(const std::string& className);
 	};
 }

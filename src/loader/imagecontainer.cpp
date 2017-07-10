@@ -28,7 +28,7 @@ namespace stackjit {
 		}
 	}
 
-	const Loader::Function* ImageContainer::getFunction(std::string function) const {
+	const Loader::Function* ImageContainer::getFunction(const std::string& function) const {
 		if (mFuncToImage.count(function) > 0) {
 			return &mFuncToImage.at(function)->functions().at(function);
 		}
@@ -36,13 +36,13 @@ namespace stackjit {
 		return nullptr;
 	}
 
-	void ImageContainer::loadFunctionBody(std::string function) {
+	void ImageContainer::loadFunctionBody(const std::string& function) {
 		if (mFuncToImage.count(function) > 0) {
 			mFuncToImage[function]->loadFunctionBody(function);
 		}
 	}
 
-	void ImageContainer::loadClassBody(std::string className) {
+	void ImageContainer::loadClassBody(const std::string& className) {
 		if (mClassToImage.count(className) > 0) {
 			mClassToImage[className]->loadClassBody(className);
 		}

@@ -19,15 +19,15 @@ namespace stackjit {
 		}
 	}
 
-	bool Binder::isDefined(std::string signature) const {
+	bool Binder::isDefined(const std::string& signature) const {
 		return mDefinedFunctions.count(signature) > 0;
 	}
 
-	FunctionDefinition& Binder::getFunction(std::string signature) {
+	FunctionDefinition& Binder::getFunction(const std::string& signature) {
 		return mDefinedFunctions.at(signature);
 	}
 
-	const FunctionDefinition& Binder::getFunction(std::string signature) const {
+	const FunctionDefinition& Binder::getFunction(const std::string& signature) const {
 		return mDefinedFunctions.at(signature);
 	}
 }

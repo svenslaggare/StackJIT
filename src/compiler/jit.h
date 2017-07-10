@@ -58,13 +58,13 @@ namespace stackjit {
 		JITCompiler& operator=(const JITCompiler&) = delete;
 
 		//Indicates if the given function has been compiled
-		bool hasCompiled(std::string signature) const;
+		bool hasCompiled(const std::string& signature) const;
 
 		//Compiles the given function
 		JitFunction compileFunction(ManagedFunction* function);
 
 		//Resolves symbols for the given function
-		void resolveSymbols(std::string signature);
+		void resolveSymbols(const std::string& signature);
 
 		//Resolves symbols for all functions.
 		//This function should only be called after all functions has been compiled.

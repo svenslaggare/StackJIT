@@ -19,10 +19,10 @@ namespace stackjit {
 		bool define(FunctionDefinition funcDef);
 
 		//Indicates if the given function signature is defined
-		bool isDefined(std::string signature) const;
+		bool isDefined(const std::string& signature) const;
 
 		//Returns the function with the given signature
-		FunctionDefinition& getFunction(std::string signature);
-		const FunctionDefinition& getFunction(std::string signature) const;
+		FunctionDefinition& getFunction(const std::string& signature);
+		const FunctionDefinition& getFunction(const std::string& signature) const;
 	};
 }

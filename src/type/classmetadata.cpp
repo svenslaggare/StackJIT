@@ -78,15 +78,15 @@ namespace stackjit {
 		return mFields;
 	}
 
-	bool ClassMetadata::fieldExists(std::string fieldName) const {
-		return mFields.count(fieldName) > 0;
+	bool ClassMetadata::fieldExists(const std::string& name) const {
+		return mFields.count(name) > 0;
 	}
 
-	void ClassMetadata::addField(std::string name, const Type* type, AccessModifier accessModifier) {
+	void ClassMetadata::addField(const std::string& name, const Type* type, AccessModifier accessModifier) {
 		mFieldDefinitions.push_back(FieldDefinition(name, type, accessModifier));
 	}
 
-	void ClassMetadata::insertField(std::string name, const Field& field) {
+	void ClassMetadata::insertField(const std::string& name, const Field& field) {
 		if (mFields.count(name) > 0) {
 			throw std::runtime_error("The field '" + name + "' is already defined in the class '" + mName + "'.");
 		}
@@ -143,7 +143,7 @@ namespace stackjit {
 		return mVirtualFunctionToIndex.at(signature);
 	}
 
-	std::string ClassMetadata::getVirtualFunctionSignature(int index) const {
+	const std::string &ClassMetadata::getVirtualFunctionSignature(int index) const {
 		//No bounds checks, we assume that this function is only called with valid indices
 		return mVirtualFunctionMapping[index];
 	}
@@ -234,17 +234,17 @@ namespace stackjit {
 	}
 
 	//Provider
-	void ClassMetadataProvider::add(std::string className, ClassMetadata metadata) {
+	void ClassMetadataProvider::add(const std::string& className, ClassMetadata metadata) {
 		if (mClassesMetadata.count(className) == 0) {
 			mClassesMetadata.emplace(className, std::move(metadata));
 	    }
 	}
 
-	bool ClassMetadataProvider::isDefined(std::string className) const {
+	bool ClassMetadataProvider::isDefined(const std::string& className) const {
 		return mClassesMetadata.count(className) > 0;
 	}
 
-	const ClassMetadata& ClassMetadataProvider::getMetadata(std::string className) const {
+	const ClassMetadata& ClassMetadataProvider::getMetadata(const std::string& className) const {
 		if (mClassesMetadata.count(className) > 0) {
 	        return mClassesMetadata.at(className);
 	    } else {
@@ -252,7 +252,7 @@ namespace stackjit {
 	    }
 	}
 
-	ClassMetadata& ClassMetadataProvider::getMetadata(std::string className) {
+	ClassMetadata& ClassMetadataProvider::getMetadata(const std::string& className) {
 		if (mClassesMetadata.count(className) > 0) {
 			return mClassesMetadata.at(className);
 		} else {

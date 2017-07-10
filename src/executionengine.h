@@ -28,7 +28,7 @@ namespace stackjit {
 	using EntryPointFunction = int (*)();
 
 	//The signature of the entry point
-	const std::string entryPointSignature = "main()";
+	const std::string ENTRY_POINT_SIGNATURE = "main()";
 
 	//Represents the execution engine
 	class ExecutionEngine {
@@ -83,15 +83,15 @@ namespace stackjit {
 		//Loads the given assembly
 		void loadAssembly(Loader::Assembly& assembly, AssemblyType assemblyType);
 
-		//Loads the assemblies
-		void load(bool loadBody = false);
+		//Loads the all the data needed before execution
+		void load(bool loadFunctionBodies = false);
 
 		//Compiles the function with the given signature
-		bool compileFunction(std::string signature, JitFunction& entryPoint);
-		bool compileFunction(std::string signature);
+		bool compileFunction(const std::string& signature, JitFunction& entryPoint);
+		bool compileFunction(const std::string& signature);
 
-		//Compiles all functions
-		void compile();
+		//Loads and compiles all functions
+		void loadAndCompileAll();
 
 		//Returns the call stack
 		CallStack& callStack();

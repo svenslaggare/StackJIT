@@ -226,13 +226,13 @@ int main(int argc, char* argv[]) {
 
 		if (!vmState.config.lazyJIT) {
 			//Compile all functions
-			engine.compile();
+			engine.loadAndCompileAll();
 		} else {
 			//Load definitions
 			engine.load();
 
 			//Compile the entry point
-			engine.compileFunction(stackjit::entryPointSignature);
+			engine.compileFunction(stackjit::ENTRY_POINT_SIGNATURE);
 		}
 
 		//Execute the program

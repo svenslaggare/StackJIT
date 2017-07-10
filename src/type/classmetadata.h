@@ -82,7 +82,7 @@ namespace stackjit {
 		BytePtr* mVirtualFunctionTable;
 
 		//Inserts the given field
-		void insertField(std::string name, const Field& field);
+		void insertField(const std::string& name, const Field& field);
 
 		//Returns the root definition of the given virtual function
 		const FunctionDefinition* getVirtualFunctionRootDefinition(const FunctionDefinition* funcDef) const;
@@ -115,10 +115,10 @@ namespace stackjit {
 		const std::unordered_map<std::string, Field>& fields() const;
 
 		//Indicates if a field with the given name exits
-		bool fieldExists(std::string fieldName) const;
+		bool fieldExists(const std::string& name) const;
 
 		//Adds a new field to the class
-		void addField(std::string name, const Type* type, AccessModifier accessModifier);
+		void addField(const std::string& name, const Type* type, AccessModifier accessModifier);
 
 		//Creates the fields
 		void makeFields();
@@ -133,7 +133,7 @@ namespace stackjit {
 		int getVirtualFunctionIndex(const FunctionDefinition& funcDef) const;
 
 		//Returns the signature of the given virtual function
-		std::string getVirtualFunctionSignature(int index) const;
+		const std::string& getVirtualFunctionSignature(int index) const;
 
 		//Binds the given virtual function
 		void bindVirtualFunction(const FunctionDefinition& funcDef, BytePtr funcPtr);
@@ -151,14 +151,14 @@ namespace stackjit {
 		std::unordered_map<std::string, ClassMetadata> mClassesMetadata;
 	public:
 		//Adds metadata for the given class
-	    void add(std::string className, ClassMetadata metadata);
+	    void add(const std::string& className, ClassMetadata metadata);
 
 	    //Indicates if the struct is defined
-	    bool isDefined(std::string className) const;
+	    bool isDefined(const std::string& className) const;
 
 	    //Returns the metadata for the given class
-	    const ClassMetadata& getMetadata(std::string className) const;
-	    ClassMetadata& getMetadata(std::string className);
+	    const ClassMetadata& getMetadata(const std::string& className) const;
+	    ClassMetadata& getMetadata(const std::string& className);
 
 		//Creates the virtual function tables
 		void createVirtualFunctionTables(const VMState& vmState);

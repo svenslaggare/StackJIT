@@ -44,7 +44,7 @@ namespace stackjit {
 		}
 	}
 
-	bool JITCompiler::hasCompiled(std::string signature) const {
+	bool JITCompiler::hasCompiled(const std::string& signature) const {
 		return mFunctions.count(signature) > 0;
 	}
 
@@ -166,7 +166,7 @@ namespace stackjit {
 		functionData.unresolvedCalls.clear();
 	}
 
-	void JITCompiler::resolveSymbols(std::string signature) {
+	void JITCompiler::resolveSymbols(const std::string& signature) {
 		if (mFunctions.count(signature) > 0) {
 			auto& func = mFunctions.at(signature);
 			resolveCallTargets(func);

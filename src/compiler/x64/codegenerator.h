@@ -60,7 +60,7 @@ namespace stackjit {
 		void generateZeroLocals(ManagedFunction& function, Amd64Assembler& assembler);
 
 		//Pushes a function to the call stack
-		void pushFunc(VMState& vmState, FunctionCompilationData& functionData, int instIndex, Amd64Assembler& assembler);
+		void pushFunc(VMState& vmState, FunctionCompilationData& functionData, int instructionIndex, Amd64Assembler& assembler);
 
 		//Pops a function from the call stack
 		void popFunc(VMState& vmState, Amd64Assembler& assembler);
