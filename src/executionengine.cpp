@@ -15,11 +15,11 @@
 namespace stackjit {
 	ExecutionEngine::ExecutionEngine(VMState& vmState)
 		: mVMState(vmState),
-		  mFunctionLoader(vmState),
-		  mClassLoader(vmState),
 		  mJIT(vmState),
 		  mCallStack(2000),
-		  mVerifier(vmState) {
+		  mVerifier(vmState),
+		  mFunctionLoader(vmState),
+		  mClassLoader(vmState) {
 
 	}
 
