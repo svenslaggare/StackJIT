@@ -2,6 +2,8 @@
 #include "compiler/binder.h"
 #include "compiler/jit.h"
 #include "loader/loader.h"
+#include "loader/functionloader.h"
+#include "loader/classloader.h"
 #include "loader/verifier.h"
 #include "runtime/callstack.h"
 #include "loader/imageloader.h"
@@ -39,6 +41,9 @@ namespace stackjit {
 		Verifier mVerifier;
 
 		std::string mBaseDir;
+
+		FunctionLoader mFunctionLoader;
+		ClassLoader mClassLoader;
 
 		ImageContainer mImageContainer;
 		std::unordered_map<std::string, ManagedFunction*> mLoadedFunctions;

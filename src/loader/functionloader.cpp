@@ -33,14 +33,17 @@ namespace stackjit {
 		}
 	}
 
-	void FunctionLoader::generateDefinition(VMState& vmState,
-											const Loader::Function& function,
-											FunctionDefinition& definition) {
-		auto returnType = LoaderHelpers::getType(vmState, function.returnType());
+	FunctionLoader::FunctionLoader(VMState& vmState)
+		: mVMState(vmState) {
+
+	}
+
+	void FunctionLoader::generateDefinition(const Loader::Function& function, FunctionDefinition& definition) {
+		auto returnType = LoaderHelpers::getType(mVMState, function.returnType());
 
 		std::vector<const Type*> parameters;
 		for (auto param : function.parameters()) {
-			parameters.push_back(LoaderHelpers::getType(vmState, param));
+			parameters.push_back(LoaderHelpers::getType(mVMState, param));
 		}
 
 		const ClassType* classType = nullptr;
@@ -48,7 +51,7 @@ namespace stackjit {
 		bool isVirtual = false;
 
 		if (function.isMemberFunction()) {
-			classType = dynamic_cast<const ClassType*>(LoaderHelpers::getType(vmState, "Ref." + function.className()));
+			classType = dynamic_cast<const ClassType*>(LoaderHelpers::getType(mVMState, "Ref." + function.className()));
 			if (classType == nullptr) {
 				throw std::runtime_error("'" + function.className() + "' is not a class type.");
 			}
@@ -67,25 +70,21 @@ namespace stackjit {
 			isVirtual);
 	}
 
-	void FunctionLoader::loadExternal(VMState& vmState,
-									  const Loader::Function& function,
-									  FunctionDefinition& loadedFunction) {
+	void FunctionLoader::loadExternal(const Loader::Function& function,	FunctionDefinition& loadedFunction) {
 		if (!function.isExternal()) {
 			throw std::runtime_error("Expected an external function");
 		}
 
-		generateDefinition(vmState, function, loadedFunction);
+		generateDefinition(function, loadedFunction);
 		auto signature = FunctionSignature::from(loadedFunction).str();
 
 		//Check if defined
-		if (!vmState.binder().isDefined(signature)) {
+		if (!mVMState.binder().isDefined(signature)) {
 			throw std::runtime_error("The external function '" + signature + "' is not defined.");
 		}
 	}
 
-	ManagedFunction* FunctionLoader::loadManaged(VMState& vmState,
-												 const Loader::Function& function,
-												 const FunctionDefinition& functionDefinition) {
+	ManagedFunction* FunctionLoader::loadManaged(const Loader::Function& function, const FunctionDefinition& functionDefinition) {
 		if (function.isExternal()) {
 			throw std::runtime_error("Expected a managed function");
 		}
@@ -98,13 +97,13 @@ namespace stackjit {
 			auto localType = function.localTypes()[local];
 
 			if (localType != "") {
-				loadedFunc->setLocal(local, LoaderHelpers::getType(vmState, localType));
+				loadedFunc->setLocal(local, LoaderHelpers::getType(mVMState, localType));
 			}
 		}
 
 		//Instructions
 		for (auto& inst : function.instructions()) {
-			loadedFunc->instructions().push_back(loadInstruction(vmState, inst));
+			loadedFunc->instructions().push_back(loadInstruction(mVMState, inst));
 		}
 
 		return loadedFunc;

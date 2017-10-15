@@ -15,6 +15,8 @@
 namespace stackjit {
 	ExecutionEngine::ExecutionEngine(VMState& vmState)
 		: mVMState(vmState),
+		  mFunctionLoader(vmState),
+		  mClassLoader(vmState),
 		  mJIT(vmState),
 		  mCallStack(2000),
 		  mVerifier(vmState) {
@@ -139,7 +141,7 @@ namespace stackjit {
 		}
 
 		//Load classes
-		ClassLoader::loadClasses(mVMState, mImageContainer);
+		mClassLoader.loadClasses(mImageContainer);
 
 		if (!mHasMainInitialized) {
 			//Load native functions
@@ -168,14 +170,14 @@ namespace stackjit {
 				}
 
 				if (!currentFunc.isExternal()) {
-					FunctionLoader::generateDefinition(mVMState, currentFunc, funcDef);
+					mFunctionLoader.generateDefinition(currentFunc, funcDef);
 
 					auto signature = FunctionSignature::from(funcDef).str();
 					if (binder.isDefined(signature)) {
 						throw std::runtime_error("The function '" + signature + "' is already defined.");
 					}
 				} else {
-					FunctionLoader::loadExternal(mVMState, currentFunc, funcDef);
+					mFunctionLoader.loadExternal(currentFunc, funcDef);
 				}
 
 				binder.define(funcDef);
@@ -235,7 +237,7 @@ namespace stackjit {
 
 			//Load the function
 			mImageContainer.loadFunctionBody(signature);
-			auto func = FunctionLoader::loadManaged(mVMState, *funcImage, funcDef);
+			auto func = mFunctionLoader.loadManaged(*funcImage, funcDef);
 			mLoadedFunctions.insert({ FunctionSignature::from(func->def()).str(), func });
 
 			//Compile it
@@ -258,7 +260,7 @@ namespace stackjit {
 				if (!currentFunc.second.isExternal()) {
 					auto& funcDef = mVMState.binder().getFunction(currentFunc.first);
 					auto funcImage = mImageContainer.getFunction(currentFunc.first);
-					auto func = FunctionLoader::loadManaged(mVMState, *funcImage, funcDef);
+					auto func = mFunctionLoader.loadManaged(*funcImage, funcDef);
 					mLoadedFunctions.insert({ FunctionSignature::from(func->def()).str(), func });
 					compileFunction(func, false);
 				}
